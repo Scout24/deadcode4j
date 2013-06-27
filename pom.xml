@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>de.is24.mavenplugins</groupId>
+  <artifactId>deadcode-maven-plugin</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>maven-plugin</packaging>
+  <name>deadcode4j Maven Plugin</name>
+  <description>Finds unused classes of project</description>
+  <url>https://github.com/ImmobilienScout24/deadcode4j</url>
+
+  <organization>
+    <name>Immobilien Scout GmbH</name>
+    <url>http://www.immobilienscout24.de</url>
+  </organization>
+  <developers>
+    <developer>
+      <id>sebastiankirsch</id>
+      <name>Sebastian Kirsch</name>
+      <url>https://github.com/sebastiankirsch</url>
+    </developer>
+  </developers>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <issueManagement>
+    <system>github</system>
+    <url>https://github.com/ImmobilienScout24/deadcode4j/issues</url>
+  </issueManagement>
+  <scm>
+    <connection>scm:git:https://github.com/ImmobilienScout24/deadcode4j.git</connection>
+    <developerConnection>scm:git:https://github.com/ImmobilienScout24/deadcode4j.git</developerConnection>
+    <url>https://github.com/ImmobilienScout24/deadcode4j.git</url>
+  </scm>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.plugin.version>3.0.5</maven.plugin.version>
+  </properties>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.1</version>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-plugin-api</artifactId>
+      <version>${maven.plugin.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-core</artifactId>
+      <version>${maven.plugin.version}</version>
+    </dependency>
+  </dependencies>
+
+</project>
