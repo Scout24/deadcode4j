@@ -1,74 +1,143 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-  <groupId>de.is24.mavenplugins</groupId>
-  <artifactId>deadcode-maven-plugin</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
-  <packaging>maven-plugin</packaging>
-  <name>deadcode4j Maven Plugin</name>
-  <description>Finds unused classes of project</description>
-  <url>https://github.com/ImmobilienScout24/deadcode4j</url>
+    <groupId>de.is24.mavenplugins</groupId>
+    <artifactId>deadcode-maven-plugin</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>maven-plugin</packaging>
+    <name>deadcode4j Maven Plugin</name>
+    <description>Finds unused classes of project</description>
+    <url>https://github.com/ImmobilienScout24/deadcode4j</url>
 
-  <organization>
-    <name>Immobilien Scout GmbH</name>
-    <url>http://www.immobilienscout24.de</url>
-  </organization>
-  <developers>
-    <developer>
-      <id>sebastiankirsch</id>
-      <name>Sebastian Kirsch</name>
-      <url>https://github.com/sebastiankirsch</url>
-    </developer>
-  </developers>
-  <licenses>
-    <license>
-      <name>The Apache Software License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
+    <organization>
+        <name>Immobilien Scout GmbH</name>
+        <url>http://www.immobilienscout24.de</url>
+    </organization>
+    <developers>
+        <developer>
+            <id>sebastiankirsch</id>
+            <name>Sebastian Kirsch</name>
+            <url>https://github.com/sebastiankirsch</url>
+        </developer>
+    </developers>
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 
-  <issueManagement>
-    <system>github</system>
-    <url>https://github.com/ImmobilienScout24/deadcode4j/issues</url>
-  </issueManagement>
-  <scm>
-    <connection>scm:git:https://github.com/ImmobilienScout24/deadcode4j.git</connection>
-    <developerConnection>scm:git:https://github.com/ImmobilienScout24/deadcode4j.git</developerConnection>
-    <url>https://github.com/ImmobilienScout24/deadcode4j.git</url>
-  </scm>
+    <issueManagement>
+        <system>github</system>
+        <url>https://github.com/ImmobilienScout24/deadcode4j/issues</url>
+    </issueManagement>
+    <scm>
+        <connection>scm:git:https://github.com/ImmobilienScout24/deadcode4j.git</connection>
+        <developerConnection>scm:git:https://github.com/ImmobilienScout24/deadcode4j.git</developerConnection>
+        <url>https://github.com/ImmobilienScout24/deadcode4j.git</url>
+    </scm>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.plugin.version>3.0.5</maven.plugin.version>
-  </properties>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.plugin.version>3.0.5</maven.plugin.version>
 
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version>
-        <configuration>
-          <source>1.5</source>
-          <target>1.5</target>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+        <testScenarios.directory>${java.io.tmpdir}</testScenarios.directory>
+    </properties>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-plugin-api</artifactId>
-      <version>${maven.plugin.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-core</artifactId>
-      <version>${maven.plugin.version}</version>
-    </dependency>
-  </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>1.5</source>
+                    <target>1.5</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.16</version>
+                <configuration>
+                    <includes>
+                        <include>**/A_*.java</include>
+                    </includes>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copyTestClasses</id>
+                        <phase>process-test-classes</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <copy file="${project.build.testOutputDirectory}/SingleClass.class"
+                                      toDir="${testScenarios.directory}/singleclass"/>
+
+                                <copy file="${project.build.testOutputDirectory}/A.class"
+                                      toDir="${testScenarios.directory}/interdependentclasses"/>
+                                <copy file="${project.build.testOutputDirectory}/B.class"
+                                      toDir="${testScenarios.directory}/interdependentclasses"/>
+
+                                <copy file="${project.build.testOutputDirectory}/DependingClass.class"
+                                      toDir="${testScenarios.directory}/dependencychain"/>
+                                <copy file="${project.build.testOutputDirectory}/IndependentClass.class"
+                                      toDir="${testScenarios.directory}/dependencychain"/>
+
+                                <copy file="${project.build.testOutputDirectory}/SourceOne.class"
+                                      toDir="${testScenarios.directory}/source1"/>
+                                <copy file="${project.build.testOutputDirectory}/SourceTwo.class"
+                                      toDir="${testScenarios.directory}/source2"/>
+                            </tasks>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>2.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-plugin-api</artifactId>
+            <version>${maven.plugin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-core</artifactId>
+            <version>${maven.plugin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>3.18.0-GA</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-library</artifactId>
+            <version>1.3</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
 </project>

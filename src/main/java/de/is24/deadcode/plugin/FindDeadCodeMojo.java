@@ -12,9 +12,10 @@ import org.apache.maven.plugin.MojoFailureException;
  * @execute phase="compile"
  * @threadSafe true
  */
+@SuppressWarnings("UnusedDeclaration")
 public class FindDeadCodeMojo extends AbstractMojo {
-  public void execute() throws MojoExecutionException, MojoFailureException {
-    getLog().warn("I'm not implemented yet!");
-  }
+    public void execute() throws MojoExecutionException, MojoFailureException {
+        getLog().warn("I'm not implemented yet!");
+    }
 
 }
