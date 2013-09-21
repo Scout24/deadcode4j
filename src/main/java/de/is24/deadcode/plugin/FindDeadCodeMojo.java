@@ -44,7 +44,7 @@ public class FindDeadCodeMojo extends AbstractMojo {
     private void log(DeadCode deadCode) {
         Log log = getLog();
 
-        log.info("Analyzed " +deadCode.getAnalyzedClasses().size()+" class(es).");
+        log.info("Analyzed " + deadCode.getAnalyzedClasses().size() + " class(es).");
 
         int numberOfUnusedClasses = deadCode.getDeadClasses().size();
         if (numberOfUnusedClasses == 0) {
