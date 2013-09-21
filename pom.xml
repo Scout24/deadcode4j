@@ -8,7 +8,7 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
     <name>deadcode4j Maven Plugin</name>
-    <description>Finds unused classes of project</description>
+    <description>Finds unused classes of a project</description>
     <url>https://github.com/ImmobilienScout24/deadcode4j</url>
 
     <organization>
