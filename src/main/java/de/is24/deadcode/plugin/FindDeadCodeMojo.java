@@ -42,6 +42,10 @@ public class FindDeadCodeMojo extends AbstractMojo {
         return deadCodeFinder.findDeadCode(outputDirectoryOfProject());
     }
 
+    private File outputDirectoryOfProject() {
+        return new File(project.getBuild().getOutputDirectory());
+    }
+
     private void log(DeadCode deadCode) {
         Log log = getLog();
 
@@ -57,10 +61,6 @@ public class FindDeadCodeMojo extends AbstractMojo {
         for (String unusedClass : Ordering.natural().sortedCopy(deadCode.getDeadClasses())) {
             log.warn("  " + unusedClass);
         }
-    }
-
-    private File outputDirectoryOfProject() {
-        return new File(project.getBuild().getOutputDirectory());
     }
 
 }
