@@ -1,23 +1,24 @@
 package de.is24.deadcode;
 
 import javax.annotation.Nonnull;
+import java.util.Collection;
 
 public class DeadCode {
-    private final Iterable<String> analyzedClasses;
-    private final Iterable<String> deadClasses;
+    private final Collection<String> analyzedClasses;
+    private final Collection<String> deadClasses;
 
-    public DeadCode(@Nonnull Iterable<String> analyzedClasses, @Nonnull Iterable<String> deadClasses) {
+    public DeadCode(@Nonnull Collection<String> analyzedClasses, @Nonnull Collection<String> deadClasses) {
         this.analyzedClasses = analyzedClasses;
         this.deadClasses = deadClasses;
     }
 
     @Nonnull
-    public Iterable<String> getAnalyzedClasses() {
+    public Collection<String> getAnalyzedClasses() {
         return this.analyzedClasses;
     }
 
     @Nonnull
-    public Iterable<String> getDeadClasses() {
+    public Collection<String> getDeadClasses() {
         return this.deadClasses;
     }
 

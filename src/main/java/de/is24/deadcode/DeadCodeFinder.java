@@ -5,6 +5,7 @@ import javassist.NotFoundException;
 
 import javax.annotation.Nonnull;
 import java.io.File;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -21,7 +22,7 @@ public class DeadCodeFinder {
         DependencyAnalyzer dependencyAnalyzer = new DependencyAnalyzer(classPool, codeRepositories);
 
         AnalyzedCode analyzedCode = dependencyAnalyzer.analyze();
-        Iterable<String> deadClasses = determineDeadClasses(analyzedCode);
+        Collection<String> deadClasses = determineDeadClasses(analyzedCode);
 
         return new DeadCode(analyzedCode.getAnalyzedClasses(), deadClasses);
     }
@@ -40,7 +41,7 @@ public class DeadCodeFinder {
     }
 
     @Nonnull
-    private Iterable<String> determineDeadClasses(@Nonnull AnalyzedCode analyzedCode) {
+    private Collection<String> determineDeadClasses(@Nonnull AnalyzedCode analyzedCode) {
         Set<String> classesInUse = newHashSet();
         for (Iterable<String> usedClasses : analyzedCode.getDependenciesForClass().values()) {
             for (String clazz : usedClasses) {
