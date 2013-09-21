@@ -50,7 +50,9 @@ public final class A_DeadCodeFinder {
     }
 
     private File getTestSetup(String scenario) {
-        return new File(System.getProperty("java.io.tmpdir") + "/" + scenario);
+        File file = new File(System.getProperty("java.io.tmpdir") + "/" + scenario);
+        System.out.println(file);
+        return file;
     }
 
 }
