@@ -15,7 +15,7 @@ import java.io.File;
 /**
  * The FindDeadCodeMojo attempts to find unused code.
  *
- * @description Finds dead (unused) code
+ * @description Finds dead (i.e. unused) code
  * @goal find
  * @execute phase="compile"
  * @threadSafe true
