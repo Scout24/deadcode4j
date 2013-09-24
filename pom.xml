@@ -11,6 +11,12 @@
     <description>Finds unused classes of a project</description>
     <url>https://github.com/ImmobilienScout24/deadcode4j</url>
 
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
+    </parent>
+
     <organization>
         <name>Immobilien Scout GmbH</name>
         <url>http://www.immobilienscout24.de</url>
