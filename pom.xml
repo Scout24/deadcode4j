@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>de.is24.mavenplugins</groupId>
     <artifactId>deadcode-maven-plugin</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>maven-plugin</packaging>
     <name>deadcode4j Maven Plugin</name>
     <description>Finds unused classes of a project</description>
@@ -85,23 +84,16 @@
                         </goals>
                         <configuration>
                             <tasks>
-                                <copy file="${project.build.testOutputDirectory}/SingleClass.class"
-                                      toDir="${testScenarios.directory}/singleclass"/>
+                                <copy file="${project.build.testOutputDirectory}/SingleClass.class" toDir="${testScenarios.directory}/singleclass" />
 
-                                <copy file="${project.build.testOutputDirectory}/A.class"
-                                      toDir="${testScenarios.directory}/interdependentclasses"/>
-                                <copy file="${project.build.testOutputDirectory}/B.class"
-                                      toDir="${testScenarios.directory}/interdependentclasses"/>
+                                <copy file="${project.build.testOutputDirectory}/A.class" toDir="${testScenarios.directory}/interdependentclasses" />
+                                <copy file="${project.build.testOutputDirectory}/B.class" toDir="${testScenarios.directory}/interdependentclasses" />
 
-                                <copy file="${project.build.testOutputDirectory}/DependingClass.class"
-                                      toDir="${testScenarios.directory}/dependencychain"/>
-                                <copy file="${project.build.testOutputDirectory}/IndependentClass.class"
-                                      toDir="${testScenarios.directory}/dependencychain"/>
+                                <copy file="${project.build.testOutputDirectory}/DependingClass.class" toDir="${testScenarios.directory}/dependencychain" />
+                                <copy file="${project.build.testOutputDirectory}/IndependentClass.class" toDir="${testScenarios.directory}/dependencychain" />
 
-                                <copy file="${project.build.testOutputDirectory}/SourceOne.class"
-                                      toDir="${testScenarios.directory}/source1"/>
-                                <copy file="${project.build.testOutputDirectory}/SourceTwo.class"
-                                      toDir="${testScenarios.directory}/source2"/>
+                                <copy file="${project.build.testOutputDirectory}/SourceOne.class" toDir="${testScenarios.directory}/source1" />
+                                <copy file="${project.build.testOutputDirectory}/SourceTwo.class" toDir="${testScenarios.directory}/source2" />
                             </tasks>
                         </configuration>
                     </execution>
