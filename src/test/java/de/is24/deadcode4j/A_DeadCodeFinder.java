@@ -1,4 +1,4 @@
-package de.is24.deadcode;
+package de.is24.deadcode4j;
 
 import org.junit.Before;
 import org.junit.Test;

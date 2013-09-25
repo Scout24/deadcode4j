@@ -1,8 +1,8 @@
-package de.is24.deadcode.plugin;
+package de.is24.deadcode4j.plugin;
 
 import com.google.common.collect.Ordering;
-import de.is24.deadcode.DeadCode;
-import de.is24.deadcode.DeadCodeFinder;
+import de.is24.deadcode4j.DeadCode;
+import de.is24.deadcode4j.DeadCodeFinder;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
