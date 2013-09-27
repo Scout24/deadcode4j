@@ -21,7 +21,7 @@ public final class A_DeadCodeFinder {
     public void recognizesASingleClassAsDeadCode() {
         DeadCode deadCode = deadCodeFinder.findDeadCode(getTestSetup("singleclass"));
 
-        assertThat("Should analyze one class", deadCode.getAnalyzedClasses(),hasSize(1));
+        assertThat("Should analyze one class", deadCode.getAnalyzedClasses(), hasSize(1));
         assertThat("Should recognize one class as dead", deadCode.getDeadClasses(), hasSize(1));
     }
 
