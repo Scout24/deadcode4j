@@ -17,8 +17,8 @@ public class A_FindDeadCodeMojo extends AbstractMojoTestCase {
 
         findDeadCodeMojo.execute();
 
-        verify(logMock).info("Analyzed 2 class(es).");
-        verify(logMock).info("No unused classes found. Rejoice!");
+        verifyNumberOfAnalyzedClassesIs(2);
+        verifyNoDeadCodeWasFound();
     }
 
     public void test_logsThatOneDeadClassOfThreeWasFound() throws Exception {
@@ -26,9 +26,29 @@ public class A_FindDeadCodeMojo extends AbstractMojoTestCase {
 
         findDeadCodeMojo.execute();
 
-        verify(logMock).info("Analyzed 3 class(es).");
+        verifyNumberOfAnalyzedClassesIs(3);
         verify(logMock).warn("Found 1 unused class(es):");
         verify(logMock).warn("  SingleClass");
+    }
+
+    public void test_logsThatAClassWasIgnored() throws Exception {
+        FindDeadCodeMojo findDeadCodeMojo = setUpMojoForProject("ignoredClass");
+
+        findDeadCodeMojo.execute();
+
+        verifyNumberOfAnalyzedClassesIs(1);
+        verify(logMock).info("Ignoring 1 class(es) which seem(s) to be unused.");
+        verifyNoDeadCodeWasFound();
+    }
+
+    public void test_logsThatAnIgnoredClassDoesNotExist() throws Exception {
+        FindDeadCodeMojo findDeadCodeMojo = setUpMojoForProject("unknownIgnoredClass");
+
+        findDeadCodeMojo.execute();
+
+        verifyNumberOfAnalyzedClassesIs(0);
+        verify(logMock).warn("Class [com.acme.Foo] should be ignored, but is not dead. You should remove the configuration entry.");
+        verifyNoDeadCodeWasFound();
     }
 
     private FindDeadCodeMojo setUpMojoForProject(String project) throws Exception {
@@ -43,6 +63,14 @@ public class A_FindDeadCodeMojo extends AbstractMojoTestCase {
         findDeadCodeMojo.setLog(logMock);
 
         return findDeadCodeMojo;
+    }
+
+    private void verifyNumberOfAnalyzedClassesIs(int count) {
+        verify(logMock).info("Analyzed " + count + " class(es).");
+    }
+
+    private void verifyNoDeadCodeWasFound() {
+        verify(logMock).info("No unused classes found. Rejoice!");
     }
 
 }
