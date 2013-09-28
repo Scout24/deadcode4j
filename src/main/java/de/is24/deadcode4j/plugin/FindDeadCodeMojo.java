@@ -29,7 +29,11 @@ public class FindDeadCodeMojo extends AbstractMojo {
 
     @Component
     private MavenProject project;
-    /** Lists the "dead" classes that should be ignored. */
+    /**
+     * Lists the "dead" classes that should be ignored.
+     *
+     * @since 1.0.1
+     */
     @Parameter
     private Set<String> classesToIgnore;
 
