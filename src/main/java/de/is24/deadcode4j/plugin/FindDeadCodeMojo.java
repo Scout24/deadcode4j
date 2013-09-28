@@ -52,30 +52,43 @@ public class FindDeadCodeMojo extends AbstractMojo {
     }
 
     private void log(DeadCode deadCode) {
-        Log log = getLog();
-
-        log.info("Analyzed " + deadCode.getAnalyzedClasses().size() + " class(es).");
+        logAnalyzedClasses(deadCode.getAnalyzedClasses());
 
         Collection<String> deadClasses = newArrayList(deadCode.getDeadClasses());
-        int numberOfUnusedClasses = deadClasses.size();
-        if (this.classesToIgnore != null) {
-            for (String ignoredClass : this.classesToIgnore) {
-                if (!deadClasses.remove(ignoredClass)) {
-                    log.warn("Class [" + ignoredClass + "] should be ignored, but is not dead. You should remove the configuration entry.");
-                }
+        removeAndLogIgnoredClasses(deadClasses);
+
+        logDeadClasses(deadClasses);
+    }
+
+    private void logAnalyzedClasses(Collection<String> analyzedClasses) {
+        getLog().info("Analyzed " + analyzedClasses.size() + " class(es).");
+    }
+
+    private void removeAndLogIgnoredClasses(Collection<String> deadClasses) {
+        if (this.classesToIgnore == null)
+            return;
+
+        final int numberOfUnusedClasses = deadClasses.size();
+        for (String ignoredClass : this.classesToIgnore) {
+            if (!deadClasses.remove(ignoredClass)) {
+                getLog().warn("Class [" + ignoredClass + "] should be ignored, but is not dead. You should remove the configuration entry.");
             }
-            int removedClasses = numberOfUnusedClasses - deadClasses.size();
-            if (removedClasses != 0) {
-                log.info("Ignoring " + removedClasses + " class(es) which seem(s) to be unused.");
-            }
-            numberOfUnusedClasses = deadClasses.size();
         }
-        if (numberOfUnusedClasses == 0) {
+
+        int removedClasses = numberOfUnusedClasses - deadClasses.size();
+        if (removedClasses != 0) {
+            getLog().info("Ignoring " + removedClasses + " class(es) which seem(s) to be unused.");
+        }
+    }
+
+    private void logDeadClasses(Collection<String> deadClasses) {
+        Log log = getLog();
+        int numberOfDeadClasses = deadClasses.size();
+        if (numberOfDeadClasses == 0) {
             log.info("No unused classes found. Rejoice!");
             return;
         }
-
-        log.warn("Found " + numberOfUnusedClasses + " unused class(es):");
+        log.warn("Found " + numberOfDeadClasses + " unused class(es):");
         for (String unusedClass : Ordering.natural().sortedCopy(deadClasses)) {
             log.warn("  " + unusedClass);
         }
