@@ -4,9 +4,11 @@ import com.google.common.collect.Ordering;
 import de.is24.deadcode4j.DeadCode;
 import de.is24.deadcode4j.DeadCodeFinder;
 import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.Execute;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
 import java.io.File;
@@ -14,35 +16,24 @@ import java.util.Collection;
 import java.util.Set;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static org.apache.maven.plugins.annotations.LifecyclePhase.COMPILE;
 
 /**
- * The FindDeadCodeMojo attempts to find unused code.
+ * Finds dead (i.e. unused) code.
  *
- * @description Finds dead (i.e. unused) code
- * @goal find
- * @execute phase="compile"
- * @threadSafe true
+ * @since 1.0.0
  */
-@SuppressWarnings("UnusedDeclaration")
+@Mojo(name = "find", threadSafe = true)
+@Execute(phase = COMPILE)
 public class FindDeadCodeMojo extends AbstractMojo {
 
-    /**
-     * The Maven Project.
-     *
-     * @parameter expression="${project}"
-     * @readonly
-     * @required
-     */
+    @Component
     private MavenProject project;
-
-    /**
-     * Lists the "dead" classes that should be ignored.
-     *
-     * @parameter
-     */
+    /** Lists the "dead" classes that should be ignored. */
+    @Parameter
     private Set<String> classesToIgnore;
 
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() {
         DeadCode deadCode = analyzeCode();
         log(deadCode);
     }
