@@ -11,7 +11,7 @@ public class CodeContext {
     private final ClassLoader classLoader;
     private final ClassPool classPool;
 
-    public CodeContext(@Nonnull File[] codeRepositories,@Nonnull ClassLoader classLoader,@Nonnull ClassPool classPool) {
+    public CodeContext(@Nonnull File[] codeRepositories, @Nonnull ClassLoader classLoader, @Nonnull ClassPool classPool) {
         this.codeRepositories = codeRepositories;
         this.classLoader = classLoader;
         this.classPool = classPool;
