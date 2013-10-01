@@ -1,11 +1,9 @@
 package de.is24.deadcode4j;
 
-import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;
 
 import javax.annotation.Nonnull;
-import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -19,43 +17,27 @@ import static java.util.Collections.emptyList;
  *
  * @since 1.0.0
  */
-public class ClassFileAnalyzer implements Analyzer {
-    private ClassPool classPool;
+public class ClassFileAnalyzer extends AbstractAnalyzer {
     private final List<String> analyzedClasses = newArrayList();
     private final Map<String, Iterable<String>> dependenciesForClass = newHashMap();
 
-    @Nonnull
-    public AnalyzedCode analyze(CodeContext codeContext) {
-        classPool = codeContext.getClassPool();
-        for (File codeRepository : codeContext.getCodeRepositories()) {
-            analyzeRepository(codeRepository);
-        }
-
-        return new AnalyzedCode(analyzedClasses, dependenciesForClass);
-    }
-
-    private void analyzeRepository(@Nonnull File codeRepository) {
-        analyzeFile(codeRepository, codeRepository);
-
-    }
-
-    private void analyzeFile(@Nonnull File codeRepository, @Nonnull File file) {
-        if (!file.exists()) {
-            return;
-        }
-        if (file.isDirectory()) {
-            File[] children = file.listFiles();
-            if (children != null) {
-                for (File childNode : children) {
-                    analyzeFile(codeRepository, childNode);
-                }
-            }
-            return;
-        }
-        String fileName = file.getAbsolutePath().substring(codeRepository.getAbsolutePath().length() + 1);
-        if (fileName.endsWith(".class")) {
+    @Override
+    protected void doAnalysis(@Nonnull String fileName) {
+        if (!fileName.endsWith(".class")) {
             analyzeClass(fileName.substring(0, fileName.length() - 6).replace('/', '.'));
         }
+    }
+
+    @Nonnull
+    @Override
+    protected Collection<String> getAnalyzedClasses() {
+        return this.analyzedClasses;
+    }
+
+    @Nonnull
+    @Override
+    protected Map<String, ? extends Iterable<String>> getClassDependencies() {
+        return dependenciesForClass;
     }
 
     @SuppressWarnings("unchecked")
@@ -74,13 +56,11 @@ public class ClassFileAnalyzer implements Analyzer {
 
     @Nonnull
     private CtClass getClassFor(@Nonnull String clazz) {
-        final CtClass ctClass;
         try {
-            ctClass = this.classPool.get(clazz);
+            return super.codeContext.getClassPool().get(clazz);
         } catch (NotFoundException e) {
             throw new RuntimeException("Could not load class [" + clazz + "]!", e);
         }
-        return ctClass;
     }
 
 }
