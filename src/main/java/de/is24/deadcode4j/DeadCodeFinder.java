@@ -23,9 +23,9 @@ import static de.is24.deadcode4j.Utils.toUrls;
  */
 public class DeadCodeFinder {
 
-    private final Set<Analyzer> analyzers;
+    private final Set<? extends Analyzer> analyzers;
 
-    public DeadCodeFinder(@Nonnull Set<Analyzer> analyzers) {
+    public DeadCodeFinder(@Nonnull Set<? extends Analyzer> analyzers) {
         this.analyzers = analyzers;
     }
 
