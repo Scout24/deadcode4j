@@ -15,19 +15,14 @@ import static com.google.common.collect.Maps.newHashMap;
 import static java.util.Collections.emptyList;
 
 public class ClassFileAnalyzer {
-    private final ClassPool classPool;
-    private final File[] codeRepositories;
+    private ClassPool classPool;
     private final List<String> analyzedClasses = newArrayList();
     private final Map<String, Iterable<String>> dependenciesForClass = newHashMap();
 
-    public ClassFileAnalyzer(@Nonnull ClassPool classPool, @Nonnull File[] codeRepositories) {
-        this.classPool = classPool;
-        this.codeRepositories = codeRepositories;
-    }
-
     @Nonnull
-    public AnalyzedCode analyze() {
-        for (File codeRepository : codeRepositories) {
+    public AnalyzedCode analyze(CodeContext codeContext) {
+        classPool = codeContext.getClassPool();
+        for (File codeRepository : codeContext.getCodeRepositories()) {
             analyzeRepository(codeRepository);
         }
 

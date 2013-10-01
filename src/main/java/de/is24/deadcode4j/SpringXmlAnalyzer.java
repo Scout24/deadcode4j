@@ -16,18 +16,13 @@ import static com.google.common.collect.Lists.newArrayList;
  * @since 1.0.2
  */
 public class SpringXmlAnalyzer {
-    private final ClassLoader classLoader;
-    private final File[] codeRepositories;
+    private ClassLoader classLoader;
     private final Collection<String> referencedClasses = newArrayList();
 
-    public SpringXmlAnalyzer(@Nonnull ClassLoader classLoader, @Nonnull File[] codeRepositories) {
-        this.classLoader = classLoader;
-        this.codeRepositories = codeRepositories;
-    }
-
     @Nonnull
-    public AnalyzedCode analyze() {
-        for (File codeRepository : codeRepositories) {
+    public AnalyzedCode analyze(CodeContext codeContext) {
+        this.classLoader = codeContext.getClassLoader();
+        for (File codeRepository : codeContext.getCodeRepositories()) {
             analyzeRepository(codeRepository);
         }
 
