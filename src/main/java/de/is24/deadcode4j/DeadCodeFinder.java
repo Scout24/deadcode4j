@@ -5,6 +5,9 @@ import javassist.NotFoundException;
 
 import javax.annotation.Nonnull;
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -14,14 +17,28 @@ import static com.google.common.collect.Sets.newHashSet;
 
 public class DeadCodeFinder {
 
+    private static URL[] toUrls(@Nonnull File[] codeRepositories) {
+        URL[] urls = new URL[codeRepositories.length];
+        for (int i = urls.length; i-- > 0; )
+            try {
+                urls[i] = codeRepositories[i].toURI().toURL();
+            } catch (MalformedURLException e) {
+                throw new RuntimeException("Failed to set up code repositories!", e);
+            }
+        return urls;
+    }
+
     public DeadCodeFinder() {
     }
 
     public DeadCode findDeadCode(File... codeRepositories) {
         ClassPool classPool = setupJavassist(codeRepositories);
+        ClassLoader classLoader = new URLClassLoader(toUrls(codeRepositories));
         DependencyAnalyzer dependencyAnalyzer = new DependencyAnalyzer(classPool, codeRepositories);
+        SpringXmlAnalyzer springXmlAnalyzer = new SpringXmlAnalyzer(classLoader, codeRepositories);
 
         AnalyzedCode analyzedCode = dependencyAnalyzer.analyze();
+        analyzedCode = analyzedCode.merge(springXmlAnalyzer.analyze());
         Collection<String> deadClasses = determineDeadClasses(analyzedCode);
 
         return new DeadCode(analyzedCode.getAnalyzedClasses(), deadClasses);
