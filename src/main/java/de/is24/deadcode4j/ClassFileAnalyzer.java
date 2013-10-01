@@ -23,7 +23,7 @@ public class ClassFileAnalyzer extends AbstractAnalyzer {
 
     @Override
     protected void doAnalysis(@Nonnull String fileName) {
-        if (!fileName.endsWith(".class")) {
+        if (fileName.endsWith(".class")) {
             analyzeClass(fileName.substring(0, fileName.length() - 6).replace('/', '.'));
         }
     }
