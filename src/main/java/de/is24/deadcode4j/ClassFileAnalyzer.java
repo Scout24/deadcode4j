@@ -14,13 +14,13 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static java.util.Collections.emptyList;
 
-public class DependencyAnalyzer {
+public class ClassFileAnalyzer {
     private final ClassPool classPool;
     private final File[] codeRepositories;
     private final List<String> analyzedClasses = newArrayList();
     private final Map<String, Iterable<String>> dependenciesForClass = newHashMap();
 
-    public DependencyAnalyzer(@Nonnull ClassPool classPool, @Nonnull File[] codeRepositories) {
+    public ClassFileAnalyzer(@Nonnull ClassPool classPool, @Nonnull File[] codeRepositories) {
         this.classPool = classPool;
         this.codeRepositories = codeRepositories;
     }

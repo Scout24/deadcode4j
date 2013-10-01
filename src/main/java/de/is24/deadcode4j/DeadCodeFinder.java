@@ -34,10 +34,10 @@ public class DeadCodeFinder {
     public DeadCode findDeadCode(File... codeRepositories) {
         ClassPool classPool = setupJavassist(codeRepositories);
         ClassLoader classLoader = new URLClassLoader(toUrls(codeRepositories));
-        DependencyAnalyzer dependencyAnalyzer = new DependencyAnalyzer(classPool, codeRepositories);
+        ClassFileAnalyzer classFileAnalyzer = new ClassFileAnalyzer(classPool, codeRepositories);
         SpringXmlAnalyzer springXmlAnalyzer = new SpringXmlAnalyzer(classLoader, codeRepositories);
 
-        AnalyzedCode analyzedCode = dependencyAnalyzer.analyze();
+        AnalyzedCode analyzedCode = classFileAnalyzer.analyze();
         analyzedCode = analyzedCode.merge(springXmlAnalyzer.analyze());
         Collection<String> deadClasses = determineDeadClasses(analyzedCode);
 
