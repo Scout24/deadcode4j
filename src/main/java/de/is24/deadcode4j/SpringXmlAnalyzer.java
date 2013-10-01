@@ -15,7 +15,7 @@ import static com.google.common.collect.Lists.newArrayList;
 /**
  * @since 1.0.2
  */
-public class SpringXmlAnalyzer {
+public class SpringXmlAnalyzer implements Analyzer {
     private ClassLoader classLoader;
     private final Collection<String> referencedClasses = newArrayList();
 

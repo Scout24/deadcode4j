@@ -14,7 +14,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static java.util.Collections.emptyList;
 
-public class ClassFileAnalyzer {
+public class ClassFileAnalyzer implements Analyzer {
     private ClassPool classPool;
     private final List<String> analyzedClasses = newArrayList();
     private final Map<String, Iterable<String>> dependenciesForClass = newHashMap();

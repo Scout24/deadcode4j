@@ -1,5 +1,6 @@
 package de.is24.deadcode4j;
 
+import com.google.common.collect.Sets;
 import javassist.ClassPool;
 import javassist.NotFoundException;
 
@@ -9,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -28,7 +30,14 @@ public class DeadCodeFinder {
         return urls;
     }
 
+    private final Set<Analyzer> analyzers;
+
+    public DeadCodeFinder(@Nonnull Set<Analyzer> analyzers) {
+        this.analyzers = analyzers;
+    }
+
     public DeadCodeFinder() {
+        this(Sets.newHashSet(new ClassFileAnalyzer(), new SpringXmlAnalyzer()));
     }
 
     public DeadCode findDeadCode(File... codeRepositories) {
@@ -36,11 +45,12 @@ public class DeadCodeFinder {
         ClassLoader classLoader = new URLClassLoader(toUrls(codeRepositories));
         CodeContext codeContext = new CodeContext(codeRepositories, classLoader, classPool);
 
-        ClassFileAnalyzer classFileAnalyzer = new ClassFileAnalyzer();
-        SpringXmlAnalyzer springXmlAnalyzer = new SpringXmlAnalyzer();
 
-        AnalyzedCode analyzedCode = classFileAnalyzer.analyze(codeContext);
-        analyzedCode = analyzedCode.merge(springXmlAnalyzer.analyze(codeContext));
+        AnalyzedCode analyzedCode = new AnalyzedCode(Collections.<String>emptyList(), Collections.<String, Iterable<String>>emptyMap());
+        for (Analyzer analyzer : analyzers) {
+            analyzedCode = analyzedCode.merge(analyzer.analyze(codeContext));
+        }
+
         Collection<String> deadClasses = determineDeadClasses(analyzedCode);
 
         return new DeadCode(analyzedCode.getAnalyzedClasses(), deadClasses);
