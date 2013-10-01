@@ -3,6 +3,11 @@ package de.is24.deadcode4j;
 import javax.annotation.Nonnull;
 import java.util.Collection;
 
+/**
+ * <code>DeadCode</code> provides the results of the {@link DeadCodeFinder}.
+ *
+ * @since 1.0.0
+ */
 public class DeadCode {
     private final Collection<String> analyzedClasses;
     private final Collection<String> deadClasses;

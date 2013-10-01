@@ -16,6 +16,11 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 import static de.is24.deadcode4j.Utils.toUrls;
 
+/**
+ * The <code>DeadCodeFinder</code> ties everything together in order to ultimately find dead code.
+ *
+ * @since 1.0.0
+ */
 public class DeadCodeFinder {
 
     private final Set<Analyzer> analyzers;

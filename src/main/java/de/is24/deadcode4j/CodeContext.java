@@ -5,6 +5,11 @@ import javassist.ClassPool;
 import javax.annotation.Nonnull;
 import java.io.File;
 
+/**
+ * The <code>CodeContext</code> provides access to the code repositories and other convenient tools.
+ *
+ * @since 1.0.2
+ */
 public class CodeContext {
 
     private final File[] codeRepositories;

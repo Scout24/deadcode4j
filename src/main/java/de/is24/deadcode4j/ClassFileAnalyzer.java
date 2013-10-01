@@ -14,6 +14,11 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static java.util.Collections.emptyList;
 
+/**
+ * Analyzes class files: lists the classes a class is depending on.
+ *
+ * @since 1.0.0
+ */
 public class ClassFileAnalyzer implements Analyzer {
     private ClassPool classPool;
     private final List<String> analyzedClasses = newArrayList();

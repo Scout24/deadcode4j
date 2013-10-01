@@ -9,6 +9,11 @@ import java.util.Map;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 
+/**
+ * The <code>AnalyzedCode</code> provides access to the code repositories and other convenient tools.
+ *
+ * @since 1.0.0
+ */
 public class AnalyzedCode {
     private final Collection<String> analyzedClasses;
     private final Map<String, Iterable<String>> dependenciesForClass;

@@ -13,6 +13,8 @@ import java.util.Collections;
 import static com.google.common.collect.Lists.newArrayList;
 
 /**
+ * Analyzes Spring XML files: lists the classes being referenced.
+ *
  * @since 1.0.2
  */
 public class SpringXmlAnalyzer implements Analyzer {

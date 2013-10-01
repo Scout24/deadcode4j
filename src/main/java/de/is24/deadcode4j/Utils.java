@@ -5,6 +5,11 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+/**
+ * <code>Utils</code> provides some convenience methods on a technical level.
+ *
+ * @since 1.0.2
+ */
 final class Utils {
 
     private Utils() {
