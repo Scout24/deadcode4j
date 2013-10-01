@@ -6,8 +6,6 @@ import javassist.NotFoundException;
 
 import javax.annotation.Nonnull;
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collection;
 import java.util.Collections;
@@ -16,19 +14,9 @@ import java.util.Set;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
+import static de.is24.deadcode4j.Utils.toUrls;
 
 public class DeadCodeFinder {
-
-    private static URL[] toUrls(@Nonnull File[] codeRepositories) {
-        URL[] urls = new URL[codeRepositories.length];
-        for (int i = urls.length; i-- > 0; )
-            try {
-                urls[i] = codeRepositories[i].toURI().toURL();
-            } catch (MalformedURLException e) {
-                throw new RuntimeException("Failed to set up code repositories!", e);
-            }
-        return urls;
-    }
 
     private final Set<Analyzer> analyzers;
 
