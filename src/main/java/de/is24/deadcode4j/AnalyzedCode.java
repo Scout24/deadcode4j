@@ -16,9 +16,9 @@ import static com.google.common.collect.Maps.newHashMap;
  */
 public class AnalyzedCode {
     private final Collection<String> analyzedClasses;
-    private final Map<String, Iterable<String>> dependenciesForClass;
+    private final Map<String, ? extends Iterable<String>> dependenciesForClass;
 
-    public AnalyzedCode(@Nonnull Collection<String> analyzedClasses, @Nonnull Map<String, Iterable<String>> dependenciesForClass) {
+    public AnalyzedCode(@Nonnull Collection<String> analyzedClasses, @Nonnull Map<String, ? extends Iterable<String>> dependenciesForClass) {
         this.analyzedClasses = analyzedClasses;
         this.dependenciesForClass = dependenciesForClass;
     }
@@ -29,7 +29,7 @@ public class AnalyzedCode {
     }
 
     @Nonnull
-    public Map<String, Iterable<String>> getDependenciesForClass() {
+    public Map<String, ? extends Iterable<String>> getDependenciesForClass() {
         return dependenciesForClass;
     }
 
