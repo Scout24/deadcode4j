@@ -55,7 +55,7 @@ public class DeadCodeFinder {
 
         AnalyzedCode analyzedCode = new AnalyzedCode(Collections.<String>emptyList(), Collections.<String, Iterable<String>>emptyMap());
         for (Analyzer analyzer : analyzers) {
-            analyzedCode = analyzedCode.merge(analyzer.analyze());
+            analyzedCode = analyzedCode.merge(analyzer.getAnalyzedCode());
         }
         return analyzedCode;
     }

@@ -21,7 +21,7 @@ public abstract class AbstractAnalyzer implements Analyzer {
     }
 
     @Nonnull
-    public final AnalyzedCode analyze() {
+    public final AnalyzedCode getAnalyzedCode() {
         return new AnalyzedCode(getAnalyzedClasses(), getClassDependencies());
     }
 
