@@ -4,6 +4,7 @@ import javassist.ClassPool;
 
 import javax.annotation.Nonnull;
 import java.io.File;
+import java.util.Arrays;
 
 /**
  * The <code>CodeContext</code> provides access to the code repositories and other convenient tools.
@@ -17,14 +18,14 @@ public class CodeContext {
     private final ClassPool classPool;
 
     public CodeContext(@Nonnull File[] codeRepositories, @Nonnull ClassLoader classLoader, @Nonnull ClassPool classPool) {
-        this.codeRepositories = codeRepositories;
+        this.codeRepositories = Arrays.copyOf(codeRepositories, codeRepositories.length);
         this.classLoader = classLoader;
         this.classPool = classPool;
     }
 
     @Nonnull
     public File[] getCodeRepositories() {
-        return codeRepositories;
+        return Arrays.copyOf(this.codeRepositories, this.codeRepositories.length);
     }
 
     @Nonnull
