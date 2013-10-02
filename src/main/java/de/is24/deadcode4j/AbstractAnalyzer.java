@@ -14,12 +14,7 @@ import static java.util.Collections.emptyList;
  */
 public abstract class AbstractAnalyzer implements Analyzer {
 
-    /**
-     * The <code>CodeContext</code> to use for analysis.
-     *
-     * @since 1.0.2
-     */
-    protected CodeContext codeContext;
+    private CodeContext codeContext;
 
     /**
      * @since 1.0.2
@@ -44,11 +39,11 @@ public abstract class AbstractAnalyzer implements Analyzer {
      *
      * @since 1.0.2
      */
-    protected abstract void doAnalysis(@Nonnull String fileName);
+    protected abstract void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull String fileName);
 
     /**
      * The analyzed classes.
-     * This method will be called <b>after</b> calling {@link #doAnalysis(String)} for each file to analyze.
+     * This method will be called <b>after</b> calling {@link #doAnalysis(CodeContext, String)} for each file to analyze.
      * <p/>
      * Returns an empty list if not overridden.
      *
@@ -61,7 +56,7 @@ public abstract class AbstractAnalyzer implements Analyzer {
 
     /**
      * The computed class dependencies.
-     * This method will be called <b>after</b> calling {@link #doAnalysis(String)} for each file to analyze.
+     * This method will be called <b>after</b> calling {@link #doAnalysis(CodeContext, String)} for each file to analyze.
      *
      * @since 1.0.2
      */
@@ -87,7 +82,7 @@ public abstract class AbstractAnalyzer implements Analyzer {
             return;
         }
         String fileName = file.getAbsolutePath().substring(codeRepository.getAbsolutePath().length() + 1);
-        doAnalysis(fileName);
+        doAnalysis(this.codeContext, fileName);
     }
 
 

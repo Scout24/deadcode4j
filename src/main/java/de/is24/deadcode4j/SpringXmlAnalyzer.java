@@ -57,9 +57,9 @@ public class SpringXmlAnalyzer extends AbstractAnalyzer {
     }
 
     @Override
-    protected void doAnalysis(@Nonnull String fileName) {
+    protected void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull String fileName) {
         if (fileName.endsWith(".xml")) {
-            analyzeXmlFile(fileName);
+            analyzeXmlFile(codeContext.getClassLoader(), fileName);
         }
     }
 
@@ -69,9 +69,9 @@ public class SpringXmlAnalyzer extends AbstractAnalyzer {
         return Collections.<String, Iterable<String>>singletonMap("SpringBeans", referencedClasses);
     }
 
-    private void analyzeXmlFile(@Nonnull String file) {
+    private void analyzeXmlFile(@Nonnull ClassLoader classLoader, @Nonnull String file) {
         try {
-            parser.parse(super.codeContext.getClassLoader().getResourceAsStream(file), handler);
+            parser.parse(classLoader.getResourceAsStream(file), handler);
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse [" + file + "]!", e);
         }

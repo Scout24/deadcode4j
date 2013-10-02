@@ -1,5 +1,6 @@
 package de.is24.deadcode4j;
 
+import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;
 
@@ -22,9 +23,9 @@ public class ClassFileAnalyzer extends AbstractAnalyzer {
     private final Map<String, Iterable<String>> dependenciesForClass = newHashMap();
 
     @Override
-    protected void doAnalysis(@Nonnull String fileName) {
+    protected void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull String fileName) {
         if (fileName.endsWith(".class")) {
-            analyzeClass(fileName.substring(0, fileName.length() - 6).replace('/', '.'));
+            analyzeClass(codeContext.getClassPool(), fileName.substring(0, fileName.length() - 6).replace('/', '.'));
         }
     }
 
@@ -41,9 +42,9 @@ public class ClassFileAnalyzer extends AbstractAnalyzer {
     }
 
     @SuppressWarnings("unchecked")
-    private void analyzeClass(@Nonnull String clazz) {
+    private void analyzeClass(@Nonnull ClassPool classPool, @Nonnull String clazz) {
         analyzedClasses.add(clazz);
-        CtClass ctClass = getClassFor(clazz);
+        CtClass ctClass = getClassFor(classPool, clazz);
         Collection refClasses = ctClass.getRefClasses();
         if (refClasses == null) {
             refClasses = emptyList();
@@ -55,9 +56,9 @@ public class ClassFileAnalyzer extends AbstractAnalyzer {
     }
 
     @Nonnull
-    private CtClass getClassFor(@Nonnull String clazz) {
+    private CtClass getClassFor(@Nonnull ClassPool classPool, @Nonnull String clazz) {
         try {
-            return super.codeContext.getClassPool().get(clazz);
+            return classPool.get(clazz);
         } catch (NotFoundException e) {
             throw new RuntimeException("Could not load class [" + clazz + "]!", e);
         }
