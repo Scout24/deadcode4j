@@ -33,7 +33,8 @@ public class AnalyzedCode {
         return dependenciesForClass;
     }
 
-    public AnalyzedCode merge(AnalyzedCode analyzedCode) {
+    @Nonnull
+    public AnalyzedCode merge(@Nonnull AnalyzedCode analyzedCode) {
         ArrayList<String> combinedAnalyzedClasses = newArrayList(this.analyzedClasses);
         combinedAnalyzedClasses.addAll(analyzedCode.getAnalyzedClasses());
         HashMap<String, Iterable<String>> combinedDependenciesForClass = newHashMap(this.dependenciesForClass);

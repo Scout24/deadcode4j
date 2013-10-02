@@ -33,19 +33,22 @@ public class DeadCodeFinder {
         this(Sets.newHashSet(new ClassFileAnalyzer(), new SpringXmlAnalyzer()));
     }
 
+    @Nonnull
     public DeadCode findDeadCode(File... codeRepositories) {
         CodeContext codeContext = createCodeContext(codeRepositories);
         AnalyzedCode analyzedCode = analyzeCode(codeContext);
         return computeDeadCode(analyzedCode);
     }
 
-    private CodeContext createCodeContext(File[] codeRepositories) {
+    @Nonnull
+    private CodeContext createCodeContext(@Nonnull File[] codeRepositories) {
         ClassPool classPool = setupJavassist(codeRepositories);
         ClassLoader classLoader = new URLClassLoader(toUrls(codeRepositories));
         return new CodeContext(codeRepositories, classLoader, classPool);
     }
 
-    private AnalyzedCode analyzeCode(CodeContext codeContext) {
+    @Nonnull
+    private AnalyzedCode analyzeCode(@Nonnull CodeContext codeContext) {
         AnalyzedCode analyzedCode = new AnalyzedCode(Collections.<String>emptyList(), Collections.<String, Iterable<String>>emptyMap());
         for (Analyzer analyzer : analyzers) {
             analyzedCode = analyzedCode.merge(analyzer.analyze(codeContext));
@@ -53,11 +56,13 @@ public class DeadCodeFinder {
         return analyzedCode;
     }
 
-    private DeadCode computeDeadCode(AnalyzedCode analyzedCode) {
+    @Nonnull
+    private DeadCode computeDeadCode(@Nonnull AnalyzedCode analyzedCode) {
         Collection<String> deadClasses = determineDeadClasses(analyzedCode);
         return new DeadCode(analyzedCode.getAnalyzedClasses(), deadClasses);
     }
 
+    @Nonnull
     private ClassPool setupJavassist(@Nonnull File[] codeRepositories) {
         ClassPool classPool = new ClassPool(false);
 
