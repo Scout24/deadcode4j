@@ -1,7 +1,6 @@
 package de.is24.deadcode4j;
 
 import javax.annotation.Nonnull;
-import java.io.File;
 import java.util.Collection;
 import java.util.Map;
 
@@ -14,8 +13,6 @@ import static java.util.Collections.emptyList;
  */
 public abstract class AbstractAnalyzer implements Analyzer {
 
-    private CodeContext codeContext;
-
     /**
      * @since 1.0.2
      */
@@ -24,22 +21,9 @@ public abstract class AbstractAnalyzer implements Analyzer {
     }
 
     @Nonnull
-    public final AnalyzedCode analyze(@Nonnull CodeContext codeContext) {
-        this.codeContext = codeContext;
-
-        for (File codeRepository : codeContext.getCodeRepositories()) {
-            analyzeRepository(codeRepository);
-        }
-
+    public final AnalyzedCode analyze() {
         return new AnalyzedCode(getAnalyzedClasses(), getClassDependencies());
     }
-
-    /**
-     * Perform an analysis for the specified file.
-     *
-     * @since 1.0.2
-     */
-    protected abstract void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull String fileName);
 
     /**
      * The analyzed classes.
@@ -62,28 +46,5 @@ public abstract class AbstractAnalyzer implements Analyzer {
      */
     @Nonnull
     protected abstract Map<String, ? extends Iterable<String>> getClassDependencies();
-
-    private void analyzeRepository(@Nonnull File codeRepository) {
-        analyzeFile(codeRepository, codeRepository);
-
-    }
-
-    private void analyzeFile(@Nonnull File codeRepository, @Nonnull File file) {
-        if (!file.exists()) {
-            return;
-        }
-        if (file.isDirectory()) {
-            File[] children = file.listFiles();
-            if (children != null) {
-                for (File childNode : children) {
-                    analyzeFile(codeRepository, childNode);
-                }
-            }
-            return;
-        }
-        String fileName = file.getAbsolutePath().substring(codeRepository.getAbsolutePath().length() + 1);
-        doAnalysis(this.codeContext, fileName);
-    }
-
 
 }

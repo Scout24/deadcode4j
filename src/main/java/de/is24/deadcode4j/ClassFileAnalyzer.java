@@ -22,8 +22,7 @@ public class ClassFileAnalyzer extends AbstractAnalyzer {
     private final List<String> analyzedClasses = newArrayList();
     private final Map<String, Iterable<String>> dependenciesForClass = newHashMap();
 
-    @Override
-    protected void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull String fileName) {
+    public void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull String fileName) {
         if (fileName.endsWith(".class")) {
             analyzeClass(codeContext.getClassPool(), fileName.substring(0, fileName.length() - 6).replace('/', '.'));
         }

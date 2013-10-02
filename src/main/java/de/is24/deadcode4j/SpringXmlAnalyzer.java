@@ -56,8 +56,7 @@ public class SpringXmlAnalyzer extends AbstractAnalyzer {
         };
     }
 
-    @Override
-    protected void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull String fileName) {
+    public void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull String fileName) {
         if (fileName.endsWith(".xml")) {
             analyzeXmlFile(codeContext.getClassLoader(), fileName);
         }

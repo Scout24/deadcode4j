@@ -49,9 +49,13 @@ public class DeadCodeFinder {
 
     @Nonnull
     private AnalyzedCode analyzeCode(@Nonnull CodeContext codeContext) {
+        for (File codeRepository : codeContext.getCodeRepositories()) {
+            analyzeRepository(codeContext, codeRepository);
+        }
+
         AnalyzedCode analyzedCode = new AnalyzedCode(Collections.<String>emptyList(), Collections.<String, Iterable<String>>emptyMap());
         for (Analyzer analyzer : analyzers) {
-            analyzedCode = analyzedCode.merge(analyzer.analyze(codeContext));
+            analyzedCode = analyzedCode.merge(analyzer.analyze());
         }
         return analyzedCode;
     }
@@ -74,6 +78,29 @@ public class DeadCodeFinder {
             }
         }
         return classPool;
+    }
+
+    private void analyzeRepository(@Nonnull CodeContext codeContext, @Nonnull File codeRepository) {
+        analyzeFile(codeContext, codeRepository, codeRepository);
+
+    }
+
+    private void analyzeFile(@Nonnull CodeContext codeContext, @Nonnull File codeRepository, @Nonnull File file) {
+        if (!file.exists()) {
+            return;
+        }
+        if (file.isDirectory()) {
+            File[] children = file.listFiles();
+            if (children != null) {
+                for (File childNode : children) {
+                    analyzeFile(codeContext, codeRepository, childNode);
+                }
+            }
+            return;
+        }
+        String fileName = file.getAbsolutePath().substring(codeRepository.getAbsolutePath().length() + 1);
+        for (Analyzer analyzer : analyzers)
+            analyzer.doAnalysis(codeContext, fileName);
     }
 
     @Nonnull
