@@ -6,9 +6,9 @@ import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 public class ProjectStub extends MavenProjectStub {
 
     @SuppressWarnings("UnusedDeclaration") // configured via POM
-    public void setProject(String project) {
+    public void setOutputDirectory(String directory) {
         Build build = new Build();
-        build.setOutputDirectory(System.getProperty("java.io.tmpdir") + "/projects/" + project);
+        build.setOutputDirectory(directory);
         setBuild(build);
     }
 

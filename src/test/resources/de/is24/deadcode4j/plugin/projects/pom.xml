@@ -15,10 +15,11 @@
                 <artifactId>deadcode4j-maven-plugin</artifactId>
                 <configuration>
                     <classesToIgnore>
+                        <param>DependingClass</param>
                         <param>com.acme.Foo</param>
                     </classesToIgnore>
                     <project implementation="de.is24.deadcode4j.plugin.stubs.ProjectStub">
-                        <project>unknownIgnoredClass</project>
+                        <outputDirectory>${testScenarios.directory}</outputDirectory>
                     </project>
                 </configuration>
             </plugin>
