@@ -15,6 +15,6 @@ public interface Analyzer {
      *
      * @since 1.0.2
      */
-    public void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull String fileName);
+    void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull String fileName);
 
 }
