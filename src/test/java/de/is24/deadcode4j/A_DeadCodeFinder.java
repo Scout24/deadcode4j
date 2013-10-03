@@ -3,71 +3,62 @@ package de.is24.deadcode4j;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 
+import static com.google.common.collect.Maps.newHashMap;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptySet;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 
 public final class A_DeadCodeFinder {
 
     private DeadCodeFinder deadCodeFinder;
+    private Map<String, Iterable<String>> codeDependencies = newHashMap();
 
     @Before
     public void setUpObjectUnderTest() {
-        this.deadCodeFinder = new DeadCodeFinder();
+        Set<Analyzer> analyzers = emptySet();
+        this.deadCodeFinder = new DeadCodeFinder(analyzers);
+        codeDependencies.clear();
     }
 
     @Test
     public void recognizesASingleClassAsDeadCode() {
-        DeadCode deadCode = deadCodeFinder.findDeadCode(getClassSetup("singleclass"));
+        setUpDependency("SingleClass");
+        Collection<String> deadCode = deadCodeFinder.determineDeadClasses(provideAnalyzedCode());
 
-        assertThat("Should analyze one class", deadCode.getAnalyzedClasses(), hasSize(1));
-        assertThat("Should recognize one class as dead", deadCode.getDeadClasses(), hasSize(1));
+        assertThat("Should recognize one class as dead", deadCode, hasSize(1));
+        assertThat(deadCode, contains("SingleClass"));
     }
 
     @Test
     public void recognizesTwoInterdependentClassesAsLiveCode() {
-        DeadCode deadCode = deadCodeFinder.findDeadCode(getClassSetup("interdependentclasses"));
+        setUpDependency("A", "B");
+        setUpDependency("B", "A");
+        Collection<String> deadCode = deadCodeFinder.determineDeadClasses(provideAnalyzedCode());
 
-        assertThat("Should analyze two classes", deadCode.getAnalyzedClasses(), hasSize(2));
-        assertThat("Should find NO dead code", deadCode.getDeadClasses(), hasSize(0));
+        assertThat("Should find NO dead code", deadCode, hasSize(0));
     }
 
     @Test
     public void recognizesDependencyChainAsPartlyDeadCode() {
-        DeadCode deadCode = deadCodeFinder.findDeadCode(getClassSetup("dependencychain"));
+        setUpDependency("DependingClass", "IndependentClass");
+        setUpDependency("IndependentClass");
+        Collection<String> deadCode = deadCodeFinder.determineDeadClasses(provideAnalyzedCode());
 
-        assertThat("Should analyze two classes", deadCode.getAnalyzedClasses(), hasSize(2));
-        assertThat("Should recognize one class as dead", deadCode.getDeadClasses(), hasSize(1));
+        assertThat("Should recognize one class as dead", deadCode, hasSize(1));
     }
 
-    @Test
-    public void recognizesTwoInterdependentClassesFromDifferentSourcesAsLiveCode() {
-        DeadCode deadCode = deadCodeFinder.findDeadCode(getClassSetup("source1"), getClassSetup("source2"));
-
-        assertThat("Should analyze two classes", deadCode.getAnalyzedClasses(), hasSize(2));
-        assertThat("Should find NO dead code", deadCode.getDeadClasses(), hasSize(0));
+    private void setUpDependency(String depender, String... dependees) {
+        codeDependencies.put(depender, asList(dependees));
     }
 
-    @Test
-    public void recognizesASpringBeanAsLiveCode() throws URISyntaxException {
-        DeadCode deadCode = deadCodeFinder.findDeadCode(getClassSetup("singleclass"), getScenario("springbean"));
-
-        assertThat("Should analyze one class", deadCode.getAnalyzedClasses(), hasSize(1));
-        assertThat("Should find NO dead code", deadCode.getDeadClasses(), hasSize(0));
-    }
-
-    private File getClassSetup(String scenario) {
-        return new File(System.getProperty("java.io.tmpdir") + "/" + scenario);
-    }
-
-    private File getScenario(String scenario) throws URISyntaxException {
-        URL resource = getClass().getClassLoader().getResource("scenarios/" + scenario);
-        if (resource == null)
-            throw new AssertionError("Test setup is broken!");
-        return new File(resource.toURI());
+    private AnalyzedCode provideAnalyzedCode() {
+        return new AnalyzedCode(codeDependencies.keySet(), codeDependencies);
     }
 
 }

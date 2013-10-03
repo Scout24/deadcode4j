@@ -102,17 +102,6 @@
                         </goals>
                         <configuration>
                             <tasks>
-                                <copy file="${project.build.testOutputDirectory}/SingleClass.class" toDir="${testScenarios.directory}/singleclass" />
-
-                                <copy file="${project.build.testOutputDirectory}/A.class" toDir="${testScenarios.directory}/interdependentclasses" />
-                                <copy file="${project.build.testOutputDirectory}/B.class" toDir="${testScenarios.directory}/interdependentclasses" />
-
-                                <copy file="${project.build.testOutputDirectory}/DependingClass.class" toDir="${testScenarios.directory}/dependencychain" />
-                                <copy file="${project.build.testOutputDirectory}/IndependentClass.class" toDir="${testScenarios.directory}/dependencychain" />
-
-                                <copy file="${project.build.testOutputDirectory}/SourceOne.class" toDir="${testScenarios.directory}/source1" />
-                                <copy file="${project.build.testOutputDirectory}/SourceTwo.class" toDir="${testScenarios.directory}/source2" />
-
                                 <!-- A_FindDeadCodeMojo -->
                                 <copy file="${project.build.testOutputDirectory}/SingleClass.class" toDir="${testScenarios.directory}/projects/ignoredClass" />
 

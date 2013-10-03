@@ -93,7 +93,7 @@ public class DeadCodeFinder {
     }
 
     @Nonnull
-    private Collection<String> determineDeadClasses(@Nonnull AnalyzedCode analyzedCode) {
+    Collection<String> determineDeadClasses(@Nonnull AnalyzedCode analyzedCode) {
         Set<String> classesInUse = newHashSet();
         for (Iterable<String> usedClasses : analyzedCode.getCodeDependencies().values()) {
             for (String clazz : usedClasses) {
