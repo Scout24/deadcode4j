@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- * The <code>AnalyzedCode</code> provides access to the code repositories and other convenient tools.
+ * <code>AnalyzedCode</code> comprises the classes being analyzed as well as the code dependencies.
  *
  * @since 1.0.0
  */
