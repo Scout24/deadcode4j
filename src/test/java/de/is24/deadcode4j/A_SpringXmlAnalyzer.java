@@ -21,7 +21,7 @@ public final class A_SpringXmlAnalyzer {
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
         assertThat("Should have analyzed the XML file!", codeDependencies.size(), is(1));
-        assertThat(Iterables.getOnlyElement(codeDependencies.values()), contains("SingleClass"));
+        assertThat(Iterables.getOnlyElement(codeDependencies.values()), contains("SpringXmlBean"));
     }
 
     @Test
