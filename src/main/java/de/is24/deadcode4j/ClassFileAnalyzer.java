@@ -16,6 +16,7 @@ import static java.util.Collections.emptyList;
  */
 public class ClassFileAnalyzer implements Analyzer {
 
+    @Override
     public void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull String fileName) {
         if (fileName.endsWith(".class")) {
             analyzeClass(codeContext, fileName.substring(0, fileName.length() - 6).replace('/', '.'));

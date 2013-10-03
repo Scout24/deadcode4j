@@ -51,6 +51,7 @@ public class SpringXmlAnalyzer implements Analyzer {
         };
     }
 
+    @Override
     public void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull String fileName) {
         if (fileName.endsWith(".xml")) {
             analyzeXmlFile(codeContext, fileName);
