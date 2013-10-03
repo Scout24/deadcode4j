@@ -43,11 +43,9 @@ public class CodeContext {
     /**
      * Report code dependencies.
      *
-     * @param   depender
-     *          the depending entity, e.g. a class or a more conceptual entity like Spring XML files or a web.xml;
-     *          the latter should somehow be marked as such, e.g. "_Spring_"
-     * @param   dependees
-     *          the classes being depended upon
+     * @param depender  the depending entity, e.g. a class or a more conceptual entity like Spring XML files or a web.xml;
+     *                  the latter should somehow be marked as such, e.g. "_Spring_"
+     * @param dependees the classes being depended upon
      * @since 1.0.2
      */
     public void addDependencies(@Nonnull String depender, @Nonnull Collection<String> dependees) {
