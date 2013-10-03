@@ -48,8 +48,6 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.plugin.version>3.0.5</maven.plugin.version>
-
-        <testScenarios.directory>${java.io.tmpdir}</testScenarios.directory>
     </properties>
 
     <build>
@@ -89,32 +87,6 @@
                         <include>**/A_*.java</include>
                     </includes>
                 </configuration>
-            </plugin>
-
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copyTestClasses</id>
-                        <phase>process-test-classes</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <tasks>
-                                <!-- A_FindDeadCodeMojo -->
-                                <copy file="${project.build.testOutputDirectory}/SingleClass.class" toDir="${testScenarios.directory}/projects/ignoredClass" />
-
-                                <copy file="${project.build.testOutputDirectory}/A.class" toDir="${testScenarios.directory}/projects/noDeadCode" />
-                                <copy file="${project.build.testOutputDirectory}/B.class" toDir="${testScenarios.directory}/projects/noDeadCode" />
-
-                                <copy file="${project.build.testOutputDirectory}/A.class" toDir="${testScenarios.directory}/projects/oneDeadClassOfThree" />
-                                <copy file="${project.build.testOutputDirectory}/B.class" toDir="${testScenarios.directory}/projects/oneDeadClassOfThree" />
-                                <copy file="${project.build.testOutputDirectory}/SingleClass.class" toDir="${testScenarios.directory}/projects/oneDeadClassOfThree" />
-                            </tasks>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

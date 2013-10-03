@@ -1,68 +1,70 @@
 package de.is24.deadcode4j.plugin;
 
+import de.is24.deadcode4j.DeadCode;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.plugin.testing.AbstractMojoTestCase;
+import org.junit.Before;
+import org.junit.Test;
 
-import java.io.File;
+import java.util.List;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-public class A_FindDeadCodeMojo extends AbstractMojoTestCase {
+public class A_FindDeadCodeMojo {
 
     private Log logMock;
+    private FindDeadCodeMojo findDeadCodeMojo;
 
-    public void test_logsThatNoDeadCodeWasFound() throws Exception {
-        FindDeadCodeMojo findDeadCodeMojo = setUpMojoForProject("noDeadCode");
+    @Before
+    public void setUpMojo() {
+        findDeadCodeMojo = new FindDeadCodeMojo();
 
-        findDeadCodeMojo.execute();
+        logMock = mock(Log.class);
+        findDeadCodeMojo.setLog(logMock);
+    }
+
+    @Test
+    public void logsThatNoDeadCodeWasFound() throws Exception {
+        List<String> deadCode = emptyList();
+        findDeadCodeMojo.log(new DeadCode(newArrayList("A", "B"), deadCode));
 
         verifyNumberOfAnalyzedClassesIs(2);
         verifyNoDeadCodeWasFound();
     }
 
-    public void test_logsThatOneDeadClassOfThreeWasFound() throws Exception {
-        FindDeadCodeMojo findDeadCodeMojo = setUpMojoForProject("oneDeadClassOfThree");
-
-        findDeadCodeMojo.execute();
+    @Test
+    public void logsThatOneDeadClassOfThreeWasFound() throws Exception {
+        findDeadCodeMojo.log(new DeadCode(newArrayList("A", "B", "SingleClass"), singleton("SingleClass")));
 
         verifyNumberOfAnalyzedClassesIs(3);
         verify(logMock).warn("Found 1 unused class(es):");
         verify(logMock).warn("  SingleClass");
     }
 
-    public void test_logsThatAClassWasIgnored() throws Exception {
-        FindDeadCodeMojo findDeadCodeMojo = setUpMojoForProject("ignoredClass");
+    @Test
+    public void logsThatAClassWasIgnored() throws Exception {
+        findDeadCodeMojo.classesToIgnore = singleton("SingleClass");
 
-        findDeadCodeMojo.execute();
+        findDeadCodeMojo.log(new DeadCode(singleton("SingleClass"), singleton("SingleClass")));
 
         verifyNumberOfAnalyzedClassesIs(1);
         verify(logMock).info("Ignoring 1 class(es) which seem(s) to be unused.");
         verifyNoDeadCodeWasFound();
     }
 
-    public void test_logsThatAnIgnoredClassDoesNotExist() throws Exception {
-        FindDeadCodeMojo findDeadCodeMojo = setUpMojoForProject("unknownIgnoredClass");
+    @Test
+    public void logsThatAnIgnoredClassDoesNotExist() throws Exception {
+        findDeadCodeMojo.classesToIgnore = singleton("com.acme.Foo");
 
-        findDeadCodeMojo.execute();
+        List<String> emptyList = emptyList();
+        findDeadCodeMojo.log(new DeadCode(emptyList, emptyList));
 
         verifyNumberOfAnalyzedClassesIs(0);
         verify(logMock).warn("Class [com.acme.Foo] should be ignored, but is not dead. You should remove the configuration entry.");
         verifyNoDeadCodeWasFound();
-    }
-
-    private FindDeadCodeMojo setUpMojoForProject(String project) throws Exception {
-        File pom = getTestFile("src/test/resources/projects/" + project + "/pom.xml");
-        assertNotNull(pom);
-        assertTrue(pom.exists());
-
-        FindDeadCodeMojo findDeadCodeMojo = (FindDeadCodeMojo) lookupMojo("find", pom);
-        assertNotNull(findDeadCodeMojo);
-
-        logMock = mock(Log.class);
-        findDeadCodeMojo.setLog(logMock);
-
-        return findDeadCodeMojo;
     }
 
     private void verifyNumberOfAnalyzedClassesIs(int count) {

@@ -35,7 +35,7 @@ public class FindDeadCodeMojo extends AbstractMojo {
      * @since 1.0.1
      */
     @Parameter
-    private Set<String> classesToIgnore;
+    Set<String> classesToIgnore;
 
     public void execute() {
         DeadCode deadCode = analyzeCode();
@@ -51,7 +51,7 @@ public class FindDeadCodeMojo extends AbstractMojo {
         return new File(project.getBuild().getOutputDirectory());
     }
 
-    private void log(DeadCode deadCode) {
+    void log(DeadCode deadCode) {
         logAnalyzedClasses(deadCode.getAnalyzedClasses());
 
         Collection<String> deadClasses = newArrayList(deadCode.getDeadClasses());
