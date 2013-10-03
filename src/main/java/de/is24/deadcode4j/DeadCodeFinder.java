@@ -8,7 +8,6 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.net.URLClassLoader;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -53,11 +52,7 @@ public class DeadCodeFinder {
             analyzeRepository(codeContext, codeRepository);
         }
 
-        AnalyzedCode analyzedCode = new AnalyzedCode(Collections.<String>emptyList(), Collections.<String, Iterable<String>>emptyMap());
-        for (Analyzer analyzer : analyzers) {
-            analyzedCode = analyzedCode.merge(analyzer.getAnalyzedCode());
-        }
-        return analyzedCode;
+        return codeContext.getAnalyzedCode();
     }
 
     @Nonnull

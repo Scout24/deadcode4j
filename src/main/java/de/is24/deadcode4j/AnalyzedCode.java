@@ -1,13 +1,8 @@
 package de.is24.deadcode4j;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
-
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Maps.newHashMap;
 
 /**
  * The <code>AnalyzedCode</code> provides access to the code repositories and other convenient tools.
@@ -31,15 +26,6 @@ public class AnalyzedCode {
     @Nonnull
     public Map<String, ? extends Iterable<String>> getDependenciesForClass() {
         return dependenciesForClass;
-    }
-
-    @Nonnull
-    public AnalyzedCode merge(@Nonnull AnalyzedCode analyzedCode) {
-        ArrayList<String> combinedAnalyzedClasses = newArrayList(this.analyzedClasses);
-        combinedAnalyzedClasses.addAll(analyzedCode.getAnalyzedClasses());
-        HashMap<String, Iterable<String>> combinedDependenciesForClass = newHashMap(this.dependenciesForClass);
-        combinedDependenciesForClass.putAll(analyzedCode.getDependenciesForClass());
-        return new AnalyzedCode(combinedAnalyzedClasses, combinedDependenciesForClass);
     }
 
 }

@@ -7,8 +7,6 @@ import javax.annotation.Nonnull;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
 
 import static com.google.common.collect.Lists.newArrayList;
 
@@ -17,7 +15,7 @@ import static com.google.common.collect.Lists.newArrayList;
  *
  * @since 1.0.2
  */
-public class SpringXmlAnalyzer extends AbstractAnalyzer {
+public class SpringXmlAnalyzer implements Analyzer {
     private final SAXParser parser;
     private final DefaultHandler handler;
     private final Collection<String> referencedClasses = newArrayList();
@@ -58,22 +56,18 @@ public class SpringXmlAnalyzer extends AbstractAnalyzer {
 
     public void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull String fileName) {
         if (fileName.endsWith(".xml")) {
-            analyzeXmlFile(codeContext.getClassLoader(), fileName);
+            analyzeXmlFile(codeContext, fileName);
         }
     }
 
-    @Nonnull
-    @Override
-    protected Map<String, ? extends Iterable<String>> getClassDependencies() {
-        return Collections.<String, Iterable<String>>singletonMap("SpringBeans", referencedClasses);
-    }
-
-    private void analyzeXmlFile(@Nonnull ClassLoader classLoader, @Nonnull String file) {
+    private void analyzeXmlFile(@Nonnull CodeContext codeContext, @Nonnull String file) {
+        this.referencedClasses.clear();
         try {
-            parser.parse(classLoader.getResourceAsStream(file), handler);
+            parser.parse(codeContext.getClassLoader().getResourceAsStream(file), handler);
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse [" + file + "]!", e);
         }
+        codeContext.addDependencies("[Spring]", this.referencedClasses);
     }
 
 }

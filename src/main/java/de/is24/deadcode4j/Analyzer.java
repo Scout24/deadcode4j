@@ -8,7 +8,6 @@ import javax.annotation.Nonnull;
  * @since 1.0.2
  */
 public interface Analyzer {
-    public AnalyzedCode getAnalyzedCode();
 
     /**
      * Perform an analysis for the specified file.
@@ -16,4 +15,5 @@ public interface Analyzer {
      * @since 1.0.2
      */
     public void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull String fileName);
+
 }

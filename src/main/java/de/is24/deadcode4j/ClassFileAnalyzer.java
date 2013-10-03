@@ -6,11 +6,7 @@ import javassist.NotFoundException;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Maps.newHashMap;
 import static java.util.Collections.emptyList;
 
 /**
@@ -18,32 +14,18 @@ import static java.util.Collections.emptyList;
  *
  * @since 1.0.0
  */
-public class ClassFileAnalyzer extends AbstractAnalyzer {
-    private final List<String> analyzedClasses = newArrayList();
-    private final Map<String, Iterable<String>> dependenciesForClass = newHashMap();
+public class ClassFileAnalyzer implements Analyzer {
 
     public void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull String fileName) {
         if (fileName.endsWith(".class")) {
-            analyzeClass(codeContext.getClassPool(), fileName.substring(0, fileName.length() - 6).replace('/', '.'));
+            analyzeClass(codeContext, fileName.substring(0, fileName.length() - 6).replace('/', '.'));
         }
     }
 
-    @Nonnull
-    @Override
-    protected Collection<String> getAnalyzedClasses() {
-        return this.analyzedClasses;
-    }
-
-    @Nonnull
-    @Override
-    protected Map<String, ? extends Iterable<String>> getClassDependencies() {
-        return dependenciesForClass;
-    }
-
     @SuppressWarnings("unchecked")
-    private void analyzeClass(@Nonnull ClassPool classPool, @Nonnull String clazz) {
-        analyzedClasses.add(clazz);
-        CtClass ctClass = getClassFor(classPool, clazz);
+    private void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull String clazz) {
+        codeContext.addAnalyzedClass(clazz);
+        CtClass ctClass = getClassFor(codeContext.getClassPool(), clazz);
         Collection refClasses = ctClass.getRefClasses();
         if (refClasses == null) {
             refClasses = emptyList();
@@ -51,7 +33,7 @@ public class ClassFileAnalyzer extends AbstractAnalyzer {
             refClasses.remove(clazz);
         }
 
-        dependenciesForClass.put(clazz, refClasses);
+        codeContext.addDependencies(clazz, refClasses);
     }
 
     @Nonnull
