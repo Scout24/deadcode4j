@@ -67,7 +67,7 @@ public class SpringXmlAnalyzer implements Analyzer {
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse [" + file + "]!", e);
         }
-        codeContext.addDependencies("[Spring]", this.referencedClasses);
+        codeContext.addDependencies("_Spring_", this.referencedClasses);
     }
 
 }
