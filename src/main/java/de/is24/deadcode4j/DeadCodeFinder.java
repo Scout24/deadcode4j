@@ -35,7 +35,7 @@ public class DeadCodeFinder {
     @Nonnull
     public DeadCode findDeadCode(File... codeRepositories) {
         CodeContext codeContext = createCodeContext(codeRepositories);
-        AnalyzedCode analyzedCode = analyzeCode(codeContext);
+        AnalyzedCode analyzedCode = analyzeCode(codeContext, codeRepositories);
         return computeDeadCode(analyzedCode);
     }
 
@@ -43,12 +43,12 @@ public class DeadCodeFinder {
     private CodeContext createCodeContext(@Nonnull File[] codeRepositories) {
         ClassPool classPool = setupJavassist(codeRepositories);
         ClassLoader classLoader = new URLClassLoader(toUrls(codeRepositories));
-        return new CodeContext(codeRepositories, classLoader, classPool);
+        return new CodeContext(classLoader, classPool);
     }
 
     @Nonnull
-    private AnalyzedCode analyzeCode(@Nonnull CodeContext codeContext) {
-        for (File codeRepository : codeContext.getCodeRepositories()) {
+    private AnalyzedCode analyzeCode(@Nonnull CodeContext codeContext, @Nonnull File[] codeRepositories) {
+        for (File codeRepository : codeRepositories) {
             analyzeRepository(codeContext, codeRepository);
         }
 

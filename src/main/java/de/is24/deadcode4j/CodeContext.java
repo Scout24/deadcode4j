@@ -3,14 +3,16 @@ package de.is24.deadcode4j;
 import javassist.ClassPool;
 
 import javax.annotation.Nonnull;
-import java.io.File;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 /**
- * The <code>CodeContext</code> provides access to the code repositories and other convenient tools.
+ * The <code>CodeContext</code> is central access point for convenient analysis tools,
  * It provides the capability to {@link #addAnalyzedClass(String) report the existence of code} and
  * {@link #addDependencies(String, java.util.Collection) the dependencies of it}.
  *
@@ -18,21 +20,14 @@ import static com.google.common.collect.Sets.newHashSet;
  */
 public class CodeContext {
 
-    private final File[] codeRepositories;
     private final ClassLoader classLoader;
     private final ClassPool classPool;
     private final Set<String> analyzedClasses = newHashSet();
     private final Map<String, Set<String>> dependencyMap = newHashMap();
 
-    public CodeContext(@Nonnull File[] codeRepositories, @Nonnull ClassLoader classLoader, @Nonnull ClassPool classPool) {
-        this.codeRepositories = Arrays.copyOf(codeRepositories, codeRepositories.length);
+    public CodeContext(@Nonnull ClassLoader classLoader, @Nonnull ClassPool classPool) {
         this.classLoader = classLoader;
         this.classPool = classPool;
-    }
-
-    @Nonnull
-    public File[] getCodeRepositories() {
-        return Arrays.copyOf(this.codeRepositories, this.codeRepositories.length);
     }
 
     @Nonnull
