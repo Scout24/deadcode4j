@@ -11,11 +11,11 @@ import java.util.Map;
  */
 public class AnalyzedCode {
     private final Collection<String> analyzedClasses;
-    private final Map<String, ? extends Iterable<String>> dependenciesOfCode;
+    private final Map<String, ? extends Iterable<String>> codeDependencies;
 
-    public AnalyzedCode(@Nonnull Collection<String> analyzedClasses, @Nonnull Map<String, ? extends Iterable<String>> dependenciesOfCode) {
+    public AnalyzedCode(@Nonnull Collection<String> analyzedClasses, @Nonnull Map<String, ? extends Iterable<String>> codeDependencies) {
         this.analyzedClasses = analyzedClasses;
-        this.dependenciesOfCode = dependenciesOfCode;
+        this.codeDependencies = codeDependencies;
     }
 
     @Nonnull
@@ -24,8 +24,8 @@ public class AnalyzedCode {
     }
 
     @Nonnull
-    public Map<String, ? extends Iterable<String>> getDependenciesOfCode() {
-        return dependenciesOfCode;
+    public Map<String, ? extends Iterable<String>> getCodeDependencies() {
+        return codeDependencies;
     }
 
 }

@@ -20,7 +20,7 @@ public final class A_ClassFileAnalyzer {
         objectUnderTest.doAnalysis(codeContext, "SingleClass.class");
 
         assertThat("Should analyze one class", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(1));
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getDependenciesOfCode();
+        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
         assertThat("Should analyze one class", codeDependencies.size(), is(1));
         assertThat("Should find dependency to java.lang.Object (only)", getOnlyElement(codeDependencies.values()), contains("java.lang.Object"));
     }
@@ -33,7 +33,7 @@ public final class A_ClassFileAnalyzer {
         objectUnderTest.doAnalysis(codeContext, "DependingClass.class");
 
         assertThat("Should analyze one class", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(1));
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getDependenciesOfCode();
+        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
         assertThat("Should analyze one class", codeDependencies.size(), is(1));
         assertThat(getOnlyElement(codeDependencies.values()), hasItem("IndependentClass"));
     }
@@ -46,7 +46,7 @@ public final class A_ClassFileAnalyzer {
         objectUnderTest.doAnalysis(codeContext, "scenarios/springbean/spring.xml");
 
         assertThat("Should analyze no class", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(0));
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getDependenciesOfCode();
+        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
         assertThat("Should analyze no class", codeDependencies.size(), is(0));
     }
 
