@@ -20,6 +20,6 @@ v.1.0.0
 =======
 Features
 --------
-* Static Class file analysis based on Javassist
+* Static Class file analysis based on [Javassist](http://www.jboss.org/javassist/)
 
 ###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/1bf976e7d67d9fa5f142022e6a56bb0d5ab0...deadcode-maven-plugin-1.0.0)
