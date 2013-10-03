@@ -18,7 +18,7 @@ import static com.google.common.collect.Lists.newArrayList;
  */
 public class SpringXmlAnalyzer implements Analyzer {
     private final SAXParser parser;
-    private final DefaultHandler handler;
+    private final XmlHandler handler;
     private final Collection<String> referencedClasses = newArrayList();
 
     public SpringXmlAnalyzer() {
@@ -29,26 +29,7 @@ public class SpringXmlAnalyzer implements Analyzer {
         } catch (Exception e) {
             throw new RuntimeException("Failed to set up XML parser!", e);
         }
-        this.handler = new DefaultHandler() {
-            private boolean firstElement = true;
-
-            @Override
-            public void startElement(String uri, String localName, String qName, Attributes attributes) throws StopParsing {
-                if (firstElement && !"beans".equals(qName)) {
-                    throw new StopParsing();
-                } else {
-                    firstElement = false;
-                }
-                if (!"bean".equals(qName)) {
-                    return;
-                }
-
-                String className = attributes.getValue("class");
-                if (className != null) {
-                    referencedClasses.add(className);
-                }
-            }
-        };
+        this.handler = new XmlHandler();
     }
 
     @Override
@@ -60,6 +41,7 @@ public class SpringXmlAnalyzer implements Analyzer {
 
     private void analyzeXmlFile(@Nonnull CodeContext codeContext, @Nonnull String file) {
         this.referencedClasses.clear();
+        this.handler.reset();
         try {
             parser.parse(codeContext.getClassLoader().getResourceAsStream(file), handler);
         } catch (StopParsing command) {
@@ -76,6 +58,32 @@ public class SpringXmlAnalyzer implements Analyzer {
      * @since 1.0.2
      */
     private static class StopParsing extends SAXException {
+    }
+
+    private class XmlHandler extends DefaultHandler {
+        private boolean firstElement = true;
+
+        @Override
+        public void startElement(String uri, String localName, String qName, Attributes attributes) throws StopParsing {
+            if (firstElement && !"beans".equals(qName)) {
+                throw new StopParsing();
+            } else {
+                firstElement = false;
+            }
+            if (!"bean".equals(qName)) {
+                return;
+            }
+
+            String className = attributes.getValue("class");
+            if (className != null) {
+                referencedClasses.add(className);
+            }
+        }
+
+        public void reset() {
+            this.firstElement = true;
+        }
+
     }
 
 }
