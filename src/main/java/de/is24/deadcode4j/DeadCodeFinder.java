@@ -1,6 +1,5 @@
 package de.is24.deadcode4j;
 
-import com.google.common.collect.Sets;
 import javassist.ClassPool;
 import javassist.NotFoundException;
 
@@ -29,7 +28,7 @@ public class DeadCodeFinder {
     }
 
     public DeadCodeFinder() {
-        this(Sets.newHashSet(new ClassFileAnalyzer(), new SpringXmlAnalyzer()));
+        this(newHashSet(new ClassFileAnalyzer(), new SpringXmlAnalyzer()));
     }
 
     @Nonnull
