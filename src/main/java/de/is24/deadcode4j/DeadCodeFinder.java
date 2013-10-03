@@ -49,7 +49,7 @@ public class DeadCodeFinder {
     @Nonnull
     private AnalyzedCode analyzeCode(@Nonnull CodeContext codeContext, @Nonnull File[] codeRepositories) {
         for (File codeRepository : codeRepositories) {
-            analyzeRepository(codeContext, codeRepository);
+            analyzeFile(codeContext, codeRepository, codeRepository);
         }
 
         return codeContext.getAnalyzedCode();
@@ -73,11 +73,6 @@ public class DeadCodeFinder {
             }
         }
         return classPool;
-    }
-
-    private void analyzeRepository(@Nonnull CodeContext codeContext, @Nonnull File codeRepository) {
-        analyzeFile(codeContext, codeRepository, codeRepository);
-
     }
 
     private void analyzeFile(@Nonnull CodeContext codeContext, @Nonnull File codeRepository, @Nonnull File file) {
