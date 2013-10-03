@@ -49,6 +49,7 @@ public class CodeContext {
      * @since 1.0.2
      */
     public void addDependencies(@Nonnull String depender, @Nonnull Collection<String> dependees) {
+        System.out.println("Added dependencies for [" + depender + "]: " + dependees);
         Set<String> existingDependees = dependencyMap.get(depender);
         if (existingDependees == null) {
             existingDependees = new HashSet<String>();
@@ -63,6 +64,7 @@ public class CodeContext {
      * @since 1.0.2
      */
     public void addAnalyzedClass(@Nonnull String clazz) {
+        System.out.println("Added analyzed class: " + clazz);
         this.analyzedClasses.add(clazz);
     }
 

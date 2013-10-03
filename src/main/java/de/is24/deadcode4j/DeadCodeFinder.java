@@ -88,8 +88,10 @@ public class DeadCodeFinder {
             return;
         }
         String fileName = file.getAbsolutePath().substring(codeRepository.getAbsolutePath().length() + 1);
-        for (Analyzer analyzer : analyzers)
+        for (Analyzer analyzer : analyzers) {
+            System.out.println("Analyze " + fileName);
             analyzer.doAnalysis(codeContext, fileName);
+        }
     }
 
     @Nonnull
