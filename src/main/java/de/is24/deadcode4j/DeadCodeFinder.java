@@ -89,7 +89,6 @@ public class DeadCodeFinder {
         }
         String fileName = file.getAbsolutePath().substring(codeRepository.getAbsolutePath().length() + 1);
         for (Analyzer analyzer : analyzers) {
-            System.out.println("Analyze " + fileName);
             analyzer.doAnalysis(codeContext, fileName);
         }
     }
