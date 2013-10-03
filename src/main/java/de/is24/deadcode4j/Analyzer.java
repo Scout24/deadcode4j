@@ -11,6 +11,7 @@ public interface Analyzer {
 
     /**
      * Perform an analysis for the specified file.
+     * Results must be reported via the capabilities of the {@link CodeContext}.
      *
      * @since 1.0.2
      */
