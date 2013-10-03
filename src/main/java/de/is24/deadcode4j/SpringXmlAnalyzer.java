@@ -30,23 +30,19 @@ public class SpringXmlAnalyzer implements Analyzer {
         }
         this.handler = new DefaultHandler() {
             private boolean firstElement = true;
-            private boolean isSpringFile = false;
 
             @Override
-            public void startElement(String uri, String localName, String qName, Attributes attributes) {
-                if (firstElement && "beans".equals(qName)) {
-                    isSpringFile = true;
+            public void startElement(String uri, String localName, String qName, Attributes attributes) throws StopParsing {
+                if (firstElement && !"beans".equals(qName)) {
+                    throw new StopParsing();
                 } else {
                     firstElement = false;
-                }
-                if (!isSpringFile) {
-                    return;
                 }
                 if (!"bean".equals(qName)) {
                     return;
                 }
 
-                final String className = attributes.getValue("class");
+                String className = attributes.getValue("class");
                 if (className != null) {
                     referencedClasses.add(className);
                 }
@@ -64,6 +60,8 @@ public class SpringXmlAnalyzer implements Analyzer {
         this.referencedClasses.clear();
         try {
             parser.parse(codeContext.getClassLoader().getResourceAsStream(file), handler);
+        } catch (StopParsing command) {
+            return;
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse [" + file + "]!", e);
         }
