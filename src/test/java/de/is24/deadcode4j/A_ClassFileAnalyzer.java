@@ -43,7 +43,7 @@ public final class A_ClassFileAnalyzer {
         ClassFileAnalyzer objectUnderTest = new ClassFileAnalyzer();
 
         CodeContext codeContext = new CodeContext(mock(ClassLoader.class), new ClassPool(true));
-        objectUnderTest.doAnalysis(codeContext, "scenarios/springbean/spring.xml");
+        objectUnderTest.doAnalysis(codeContext, "spring.xml");
 
         assertThat("Should analyze no class", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(0));
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();

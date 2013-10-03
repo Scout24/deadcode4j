@@ -17,7 +17,7 @@ public final class A_SpringXmlAnalyzer {
         SpringXmlAnalyzer objectUnderTest = new SpringXmlAnalyzer();
 
         CodeContext codeContext = new CodeContext(getClass().getClassLoader(), mock(ClassPool.class));
-        objectUnderTest.doAnalysis(codeContext, "scenarios/springbean/spring.xml");
+        objectUnderTest.doAnalysis(codeContext, "spring.xml");
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
         assertThat("Should have analyzed the XML file!", codeDependencies.size(), is(1));
@@ -29,7 +29,7 @@ public final class A_SpringXmlAnalyzer {
         SpringXmlAnalyzer objectUnderTest = new SpringXmlAnalyzer();
 
         CodeContext codeContext = new CodeContext(getClass().getClassLoader(), mock(ClassPool.class));
-        objectUnderTest.doAnalysis(codeContext, "scenarios/nonspringxml/nospring.xml");
+        objectUnderTest.doAnalysis(codeContext, "nospring.xml");
 
         assertThat("Should not have analyzed the XML file!", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(0));
         assertThat("Should not have analyzed the XML file!", codeContext.getAnalyzedCode().getCodeDependencies().isEmpty());
