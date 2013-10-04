@@ -14,7 +14,7 @@ import static com.google.common.collect.Lists.newArrayList;
 /**
  * Analyzes Spring XML files: lists the classes being referenced.
  *
- * @since 1.0.2
+ * @since 1.1.0
  */
 public class SpringXmlAnalyzer implements Analyzer {
     private final SAXParser parser;
@@ -55,7 +55,7 @@ public class SpringXmlAnalyzer implements Analyzer {
     /**
      * Used to indicate that XML parsing can be stopped.
      *
-     * @since 1.0.2
+     * @since 1.1.0
      */
     private static class StopParsing extends SAXException {
     }

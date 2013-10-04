@@ -8,7 +8,7 @@ import java.net.URL;
 /**
  * <code>Utils</code> provides some convenience methods on a technical level.
  *
- * @since 1.0.2
+ * @since 1.1.0
  */
 final class Utils {
 

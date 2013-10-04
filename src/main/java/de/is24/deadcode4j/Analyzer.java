@@ -5,7 +5,7 @@ import javax.annotation.Nonnull;
 /**
  * An <code>Analyzer</code> analyzes code of all flavours: java classes, spring XML files, <tt>web.xml</tt> etc.
  *
- * @since 1.0.2
+ * @since 1.1.0
  */
 public interface Analyzer {
 
@@ -13,7 +13,7 @@ public interface Analyzer {
      * Perform an analysis for the specified file.
      * Results must be reported via the capabilities of the {@link CodeContext}.
      *
-     * @since 1.0.2
+     * @since 1.1.0
      */
     void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull String fileName);
 
