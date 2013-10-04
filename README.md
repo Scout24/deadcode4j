@@ -31,6 +31,7 @@ After performing the usage analysis, *deadcode4j* reports which classes are pres
 - Servlets, Filters, Tags are usually markes as dead, as they are not used by other classes, but listed in configuration files like `web.xml`
 - Classes being marked with Spring annotations like `@Bean`, `@Component` or `@Controller` usually are not referred to by other bytecode
 - *deadcode4j* does not consider test code, so classes used in tests only are deemed to be dead (this is a hint to move such classes to the test src)
+- [Java reflection](http://docs.oracle.com/javase/tutorial/reflect/). There's no cure for that.
 - As the Java compiler inlines constant expressions, class references may not exist in bytecode; this can be circumvented as outlined at [stackoverflow](http://stackoverflow.com/questions/1833581/when-to-use-intern-on-string-literals)
 - Finally, if the analyzed project isn't closed but represents more of a public API or library, expect *deadcode4j* to report many classes which are indeed used by other projects
 
