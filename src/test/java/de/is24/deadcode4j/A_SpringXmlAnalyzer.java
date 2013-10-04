@@ -25,6 +25,18 @@ public final class A_SpringXmlAnalyzer {
     }
 
     @Test
+    public void shouldParseSpringFilesWithNamespacePrefix() {
+        SpringXmlAnalyzer objectUnderTest = new SpringXmlAnalyzer();
+
+        CodeContext codeContext = new CodeContext(getClass().getClassLoader(), mock(ClassPool.class));
+        objectUnderTest.doAnalysis(codeContext, "spring-with-prefix.xml");
+
+        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        assertThat("Should have analyzed the XML file!", codeDependencies.size(), is(1));
+        assertThat(Iterables.getOnlyElement(codeDependencies.values()), contains("SpringXmlBean"));
+    }
+
+    @Test
     public void shouldNotParseNonSpringFiles() {
         SpringXmlAnalyzer objectUnderTest = new SpringXmlAnalyzer();
 

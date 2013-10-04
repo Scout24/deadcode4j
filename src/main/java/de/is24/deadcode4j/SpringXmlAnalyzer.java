@@ -25,6 +25,7 @@ public class SpringXmlAnalyzer implements Analyzer {
         try {
             SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+            factory.setFeature("http://xml.org/sax/features/namespaces", true);
             this.parser = factory.newSAXParser();
         } catch (Exception e) {
             throw new RuntimeException("Failed to set up XML parser!", e);
@@ -65,12 +66,12 @@ public class SpringXmlAnalyzer implements Analyzer {
 
         @Override
         public void startElement(String uri, String localName, String qName, Attributes attributes) throws StopParsing {
-            if (firstElement && !"beans".equals(qName)) {
+            if (firstElement && !"beans".equals(localName)) {
                 throw new StopParsing();
             } else {
                 firstElement = false;
             }
-            if (!"bean".equals(qName)) {
+            if (!"bean".equals(localName)) {
                 return;
             }
 
