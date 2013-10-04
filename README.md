@@ -22,7 +22,19 @@ Features
 - statical code analysis using [Javassist](http://www.jboss.org/javassist/)
 - parsing [Spring XML files](http://projects.spring.io/spring-framework/)
 
-After performing the usage analysis, *deadcode4j* reports which classes are presumably dead
+After performing the usage analysis, *deadcode4j* reports which classes are presumably dead.
+
+### False positives
+
+*deadcode4j* knows not everything. Given the approaches listed above, classes reported as being dead may not necessarily be dead. So, don't delete blindly, but double-check the results. Known caveats are:
+
+- Servlets, Filters, Tags are usually markes as dead, as they are not used by other classes, but listed in configuration files like `web.xml`
+- Classes being marked with Spring annotations like `@Bean`, `@Component` or `@Controller` usually are not referred to by other bytecode
+- *deadcode4j* does not consider test code, so classes used in tests only are deemed to be dead (this is a hint to move such classes to the test src)
+- As the Java compiler inlines constant expressions, class references may not exist in bytecode; this can be circumvented as outlined at [stackoverflow](http://stackoverflow.com/questions/1833581/when-to-use-intern-on-string-literals)
+- Finally, if the analyzed project isn't closed but represents more of a public API or library, expect *deadcode4j* to report many classes which are indeed used by other projects
+
+Obviously, those downsides should and will be tackled by upcoming releases. If you know of any other false positives, please report an [issue](https://github.com/ImmobilienScout24/deadcode4j/issues/new).
 
 Configuration
 ------------------
