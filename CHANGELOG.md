@@ -1,5 +1,10 @@
-v.1.0.2-SNAPSHOT
+v.1.1.1-SNAPSHOT
 ================
+
+###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.1.0...master)
+
+v.1.1.0
+=======
 Features
 --------
 * Added analysis of [Spring XML files](http://docs.spring.io/spring/docs/3.2.4.RELEASE/spring-framework-reference/html/beans.html#beans-factory-instantiation) to determine if a class is used
@@ -7,6 +12,8 @@ Features
 Internal
 --------
 * Integrated with [Travis](https://travis-ci.org/ImmobilienScout24/deadcode4j)
+
+###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.0.1...deadcode4j-maven-plugin-1.1.0)
 
 v1.0.1
 ======
