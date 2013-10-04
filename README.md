@@ -1,7 +1,7 @@
 deadcode4j [![Build Status](https://travis-ci.org/ImmobilienScout24/deadcode4j.png)](https://travis-ci.org/ImmobilienScout24/deadcode4j)
 ==========
 
-deadcode4j helps you find code that is no longer used by your application. It is especially useful for cleaning up legacy code.
+*deadcode4j* helps you find code that is no longer used by your application. It is especially useful for cleaning up legacy code.
 
 Usage
 -----
@@ -14,6 +14,16 @@ Simply run `mvn de.is24.mavenplugins:deadcode4j-maven-plugin:find` in the projec
     [WARNING]   de.is24.deadcode4j.Foo
     [WARNING]   de.is24.deadcode4j.Bar
 
+Features
+--------
+
+*deadcode4j* takes several approaches to analyze if a class is still in usage or not:
+
+- statical code analysis using [Javassist](http://www.jboss.org/javassist/)
+- parsing [Spring XML files](http://projects.spring.io/spring-framework/)
+
+After performing the usage analysis, *deadcode4j* reports which classes are presumably dead
+
 Configuration
 ------------------
 
@@ -25,7 +35,7 @@ If you want to configure the plugin and make use of some of its features, list *
           <plugin>
             <groupId>de.is24.mavenplugins</groupId>
             <artifactId>deadcode4j-maven-plugin</artifactId>
-            <version>1.0.1</version>
+            <version>1.1.0</version>
             <configuration>
               <classesToIgnore>
                 <!-- Java main class which IS used, I swear -->
