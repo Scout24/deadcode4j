@@ -1,5 +1,8 @@
 v.1.1.1-SNAPSHOT
 ================
+Features
+--------
+* Added analysis of `web.xml` files: recognizing listed listeners, filters & servlets as _live code_
 
 ###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.1.0...master)
 

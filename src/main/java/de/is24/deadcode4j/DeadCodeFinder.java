@@ -28,7 +28,7 @@ public class DeadCodeFinder {
     }
 
     public DeadCodeFinder() {
-        this(newHashSet(new ClassFileAnalyzer(), new SpringXmlAnalyzer()));
+        this(newHashSet(new ClassFileAnalyzer(), new SpringXmlAnalyzer(), new WebXmlAnalyzer()));
     }
 
     @Nonnull
