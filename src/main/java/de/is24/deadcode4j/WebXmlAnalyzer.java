@@ -56,7 +56,7 @@ public class WebXmlAnalyzer implements Analyzer {
     /**
      * Used to indicate that XML parsing can be stopped.
      *
-     * @since 1.1.0
+     * @since 1.1.1
      */
     private static class StopParsing extends SAXException {
     }
@@ -72,7 +72,7 @@ public class WebXmlAnalyzer implements Analyzer {
             } else {
                 firstElement = false;
             }
-            if ("listener-class".equals(localName)||"filter-class".equals(localName)||"servlet-class".equals(localName)) {
+            if ("listener-class".equals(localName) || "filter-class".equals(localName) || "servlet-class".equals(localName)) {
                 buffer = new StringBuilder(128);
             }
         }
