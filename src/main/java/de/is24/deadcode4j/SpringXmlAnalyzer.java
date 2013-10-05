@@ -1,7 +1,6 @@
 package de.is24.deadcode4j;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import javax.annotation.Nonnull;
@@ -40,14 +39,6 @@ public class SpringXmlAnalyzer extends XmlAnalyzer implements Analyzer {
             throw new RuntimeException("Failed to parse [" + file + "]!", e);
         }
         codeContext.addDependencies("_Spring_", this.referencedClasses);
-    }
-
-    /**
-     * Used to indicate that XML parsing can be stopped.
-     *
-     * @since 1.1.0
-     */
-    private static class StopParsing extends SAXException {
     }
 
     private class XmlHandler extends DefaultHandler {

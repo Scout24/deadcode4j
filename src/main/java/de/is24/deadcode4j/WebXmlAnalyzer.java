@@ -1,7 +1,6 @@
 package de.is24.deadcode4j;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import javax.annotation.Nonnull;
@@ -42,14 +41,6 @@ public class WebXmlAnalyzer extends XmlAnalyzer implements Analyzer {
         codeContext.addDependencies("_web.xml_", this.referencedClasses);
     }
 
-    /**
-     * Used to indicate that XML parsing can be stopped.
-     *
-     * @since 1.1.1
-     */
-    private static class StopParsing extends SAXException {
-    }
-
     private class XmlHandler extends DefaultHandler {
         private boolean firstElement = true;
         private StringBuilder buffer;
@@ -67,14 +58,14 @@ public class WebXmlAnalyzer extends XmlAnalyzer implements Analyzer {
         }
 
         @Override
-        public void characters(char[] ch, int start, int length) throws SAXException {
+        public void characters(char[] ch, int start, int length) {
             if (buffer != null) {
                 buffer.append(new String(ch, start, length).trim());
             }
         }
 
         @Override
-        public void endElement(String uri, String localName, String qName) throws SAXException {
+        public void endElement(String uri, String localName, String qName) {
             if (buffer != null) {
                 referencedClasses.add(buffer.toString());
                 buffer = null;

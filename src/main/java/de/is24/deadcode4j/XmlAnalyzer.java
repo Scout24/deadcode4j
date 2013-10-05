@@ -1,5 +1,7 @@
 package de.is24.deadcode4j;
 
+import org.xml.sax.SAXException;
+
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
@@ -21,6 +23,14 @@ public abstract class XmlAnalyzer {
         } catch (Exception e) {
             throw new RuntimeException("Failed to set up XML parser!", e);
         }
+    }
+
+    /**
+     * Used to indicate that XML parsing can be stopped.
+     *
+     * @since 1.1.1
+     */
+    protected static class StopParsing extends SAXException {
     }
 
 }
