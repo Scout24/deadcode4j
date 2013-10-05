@@ -12,7 +12,7 @@ import java.util.Collection;
 import static com.google.common.collect.Lists.newArrayList;
 
 /**
- * This <code>web.xml</code> files: lists the classes being referenced.
+ * Analyzes <code>web.xml</code> files: lists the listener, filter & servlet classes being referenced.
  *
  * @since 1.1.1
  */
