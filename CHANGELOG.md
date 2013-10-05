@@ -3,6 +3,7 @@ v.1.1.1-SNAPSHOT
 Features
 --------
 * Added analysis of `web.xml` files: recognizing listed listeners, filters & servlets as _live code_
+* Added analysis of [`*tld`](http://docs.oracle.com/javaee/5/tutorial/doc/bnamu.html) files: recognizing custom tags, tag extra infos, listeners, tag library validators & EL functions as _live code_
 
 ###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.1.0...master)
 
