@@ -5,8 +5,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import javax.annotation.Nonnull;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import java.util.Collection;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -17,20 +15,11 @@ import static com.google.common.collect.Lists.newArrayList;
  *
  * @since 1.1.1
  */
-public class TldAnalyzer implements Analyzer {
-    private final SAXParser parser;
+public class TldAnalyzer extends XmlAnalyzer implements Analyzer {
     private final XmlHandler handler;
     private final Collection<String> referencedClasses = newArrayList();
 
     public TldAnalyzer() {
-        try {
-            SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-            factory.setFeature("http://xml.org/sax/features/namespaces", true);
-            this.parser = factory.newSAXParser();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to set up XML parser!", e);
-        }
         this.handler = new XmlHandler();
     }
 
