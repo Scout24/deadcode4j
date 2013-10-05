@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<taglib
+        xmlns="http://java.sun.com/xml/ns/javaee"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-jsptaglibrary_2_1.xsd"
+        version="2.1">
+    <tlib-version>42</tlib-version>
+    <short-name>deadcode4jTld</short-name>
+
+    <validator>
+        <validator-class>TagLibraryValidator</validator-class>
+    </validator>
+
+    <listener>
+        <listener-class>
+            WebAppListener
+        </listener-class>
+    </listener>
+
+    <tag>
+        <name>deadcode4jTag</name>
+        <tag-class>TagClass</tag-class>
+        <tei-class>TagExtraInfo</tei-class>
+        <body-content>empty</body-content>
+    </tag>
+
+    <function>
+        <name>deadcode4jFunction</name>
+        <function-class><!-- a distracting comment -->TldFunction</function-class>
+        <function-signature>void foo()</function-signature>
+    </function>
+
+</taglib>
