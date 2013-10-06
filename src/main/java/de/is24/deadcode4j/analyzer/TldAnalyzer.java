@@ -1,4 +1,6 @@
-package de.is24.deadcode4j;
+package de.is24.deadcode4j.analyzer;
+
+import de.is24.deadcode4j.Analyzer;
 
 /**
  * Analyzes <code>*.tld</code> files: lists the function, listener, tag, tag extra info & validator classes being

@@ -1,5 +1,8 @@
 package de.is24.deadcode4j;
 
+import de.is24.deadcode4j.analyzer.SpringXmlAnalyzer;
+import de.is24.deadcode4j.analyzer.TldAnalyzer;
+import de.is24.deadcode4j.analyzer.WebXmlAnalyzer;
 import javassist.ClassPool;
 import javassist.NotFoundException;
 

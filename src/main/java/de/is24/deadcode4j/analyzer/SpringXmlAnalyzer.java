@@ -1,4 +1,6 @@
-package de.is24.deadcode4j;
+package de.is24.deadcode4j.analyzer;
+
+import de.is24.deadcode4j.Analyzer;
 
 /**
  * Analyzes Spring XML files: lists the classes being referenced.

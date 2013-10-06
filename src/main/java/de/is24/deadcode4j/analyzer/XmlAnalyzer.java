@@ -1,5 +1,7 @@
-package de.is24.deadcode4j;
+package de.is24.deadcode4j.analyzer;
 
+import de.is24.deadcode4j.Analyzer;
+import de.is24.deadcode4j.CodeContext;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -35,7 +37,7 @@ public abstract class XmlAnalyzer implements Analyzer {
      * constructor.
      *
      * @param dependerId    a description of the <i>depending entity</i> with which to
-     *                      call {@link CodeContext#addDependencies(String, java.util.Collection)}
+     *                      call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, java.util.Collection)}
      * @param endOfFileName the file suffix used to determine if a file should be analyzed; this can be a mere file
      *                      extension like <tt>.xml</tt> or a partial path like <tt>WEB-INF/web.xml</tt>
      * @param rootElement   the expected XML root element or <code>null</code> if such an element does not exist;

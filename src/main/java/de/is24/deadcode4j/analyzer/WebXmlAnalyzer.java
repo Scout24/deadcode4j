@@ -1,4 +1,6 @@
-package de.is24.deadcode4j;
+package de.is24.deadcode4j.analyzer;
+
+import de.is24.deadcode4j.Analyzer;
 
 /**
  * Analyzes <code>web.xml</code> files: lists the listener, filter & servlet classes being referenced.
