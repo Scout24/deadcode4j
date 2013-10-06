@@ -94,6 +94,7 @@
                 <configuration>
                     <includes>
                         <include>**/A_*.java</include>
+                        <include>**/An_*.java</include>
                     </includes>
                 </configuration>
             </plugin>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ns:root
+        xmlns:ns="http://deadcode4j.is24.de/junit"
+        xmlns:otherNs="http://deadcode4j.is24.de/junit">
+    <otherNs:elementWithClass>de.is24.deadcode4j.ClassInElement</otherNs:elementWithClass>
+    <anotherElementWithClass>de.is24.deadcode4j.FirstClassInAnotherElement</anotherElementWithClass>
+    <element attributeWithClass="de.is24.deadcode4j.ClassInAttribute" />
+    <otherNs:anotherElementWithClass>de.is24.deadcode4j.SecondClassInAnotherElement</otherNs:anotherElementWithClass>
+    <anotherElement attributeWithClass="de.is24.deadcode4j.ClassInAttributeOfOtherElement" />
+</ns:root>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+    <elementWithClass>de.is24.deadcode4j.ClassInElement</elementWithClass>
+    <anotherElementWithClass>de.is24.deadcode4j.FirstClassInAnotherElement</anotherElementWithClass>
+    <element attributeWithClass="de.is24.deadcode4j.ClassInAttribute" />
+    <anotherElementWithClass>de.is24.deadcode4j.SecondClassInAnotherElement</anotherElementWithClass>
+    <anotherElement attributeWithClass="de.is24.deadcode4j.ClassInAttributeOfOtherElement" />
+</root>
