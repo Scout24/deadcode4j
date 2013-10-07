@@ -14,6 +14,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
@@ -51,6 +52,12 @@ public class FindDeadCodeMojo extends AbstractMojo {
         logGoodbye();
     }
 
+    private void logWelcome() {
+        if (CLI.equals(mojoExecution.getSource())) {
+            getLog().info("Thanks for calling me! Let's see what I can do for you...");
+        }
+    }
+
     private DeadCode analyzeCode() {
         DeadCodeFinder deadCodeFinder = new DeadCodeFinder();
         return deadCodeFinder.findDeadCode(directoriesToAnalyze());
@@ -58,34 +65,43 @@ public class FindDeadCodeMojo extends AbstractMojo {
 
     private File[] directoriesToAnalyze() {
         List<File> files = newArrayList();
+        addOutputDirectory(files);
+        addWarSourceDirectory(files);
+        return files.toArray(new File[files.size()]);
+    }
+
+    private void addOutputDirectory(@Nonnull List<File> files) {
         File outputDirectory = new File(project.getBuild().getOutputDirectory());
         files.add(outputDirectory);
         if (getLog().isDebugEnabled()) {
             getLog().debug("Going to analyze output directory [" + outputDirectory + "]");
         }
+    }
+
+    private void addWarSourceDirectory(@Nonnull List<File> files) {
         Plugin plugin = project.getPlugin("org.apache.maven.plugins:maven-war-plugin");
-        if (plugin != null) {
-            Xpp3Dom configuration = (Xpp3Dom) plugin.getConfiguration();
-            Xpp3Dom warSourceDirectoryConfig = configuration == null ? null : configuration.getChild("warSourceDirectory");
-            if (warSourceDirectoryConfig != null) {
-                File warSourceDirectory = new File(warSourceDirectoryConfig.getValue());
-                files.add(warSourceDirectory);
+        if (plugin == null) {
+            return;
+        }
+        Xpp3Dom configuration = (Xpp3Dom) plugin.getConfiguration();
+        Xpp3Dom warSourceDirectoryConfig = configuration == null ? null : configuration.getChild("warSourceDirectory");
+        if (warSourceDirectoryConfig != null) {
+            File warSourceDirectory = new File(warSourceDirectoryConfig.getValue());
+            files.add(warSourceDirectory);
+            if (getLog().isDebugEnabled()) {
+                getLog().debug("Going to analyze custom war source directory [" + warSourceDirectory + "]");
+            }
+        } else {
+            File warSourceDirectory = new File(project.getBasedir(), "src/main/webapp");
+            if (warSourceDirectory.exists()) {
                 if (getLog().isDebugEnabled()) {
-                    getLog().debug("Going to analyze custom war source directory [" + warSourceDirectory + "]");
+                    getLog().debug("Going to analyze default war source directory [" + warSourceDirectory + "]");
                 }
+                files.add(warSourceDirectory);
             } else {
-                File warSourceDirectory = new File(project.getBasedir(), "src/main/webapp");
-                if (warSourceDirectory.exists()) {
-                    if (getLog().isDebugEnabled()) {
-                        getLog().debug("Going to analyze default war source directory [" + warSourceDirectory + "]");
-                    }
-                    files.add(warSourceDirectory);
-                } else {
-                    getLog().warn("Although maven-war-plugin is used, I cannot find a warSourceDirectory to consider!");
-                }
+                getLog().warn("Although maven-war-plugin is used, I cannot find a warSourceDirectory to consider!");
             }
         }
-        return files.toArray(new File[files.size()]);
     }
 
     void log(DeadCode deadCode) {
@@ -128,12 +144,6 @@ public class FindDeadCodeMojo extends AbstractMojo {
         log.warn("Found " + numberOfDeadClasses + " unused class(es):");
         for (String unusedClass : Ordering.natural().sortedCopy(deadClasses)) {
             log.warn("  " + unusedClass);
-        }
-    }
-
-    private void logWelcome() {
-        if (CLI.equals(mojoExecution.getSource())) {
-            getLog().info("Thanks for calling me! Let's see what I can do for you...");
         }
     }
 
