@@ -3,6 +3,7 @@ package de.is24.deadcode4j.plugin;
 import com.google.common.collect.Ordering;
 import de.is24.deadcode4j.DeadCode;
 import de.is24.deadcode4j.DeadCodeFinder;
+import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.logging.Log;
@@ -11,9 +12,11 @@ import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -50,15 +53,39 @@ public class FindDeadCodeMojo extends AbstractMojo {
 
     private DeadCode analyzeCode() {
         DeadCodeFinder deadCodeFinder = new DeadCodeFinder();
-        return deadCodeFinder.findDeadCode(outputDirectoryOfProject());
+        return deadCodeFinder.findDeadCode(directoriesToAnalyze());
     }
 
-    private File outputDirectoryOfProject() {
-        File file = new File(project.getBuild().getOutputDirectory());
+    private File[] directoriesToAnalyze() {
+        List<File> files = newArrayList();
+        File outputDirectory = new File(project.getBuild().getOutputDirectory());
+        files.add(outputDirectory);
         if (getLog().isDebugEnabled()) {
-            getLog().debug("Going to analyze output directory [" + file + "]");
+            getLog().debug("Going to analyze output directory [" + outputDirectory + "]");
         }
-        return file;
+        Plugin plugin = project.getPlugin("org.apache.maven.plugins:maven-war-plugin");
+        if (plugin != null) {
+            Xpp3Dom configuration = (Xpp3Dom) plugin.getConfiguration();
+            Xpp3Dom warSourceDirectoryConfig = configuration == null ? null : configuration.getChild("warSourceDirectory");
+            if (warSourceDirectoryConfig != null) {
+                File warSourceDirectory = new File(warSourceDirectoryConfig.getValue());
+                files.add(warSourceDirectory);
+                if (getLog().isDebugEnabled()) {
+                    getLog().debug("Going to analyze custom war source directory [" + warSourceDirectory + "]");
+                }
+            } else {
+                File warSourceDirectory = new File(project.getBasedir(), "src/main/webapp");
+                if (warSourceDirectory.exists()) {
+                    if (getLog().isDebugEnabled()) {
+                        getLog().debug("Going to analyze default war source directory [" + warSourceDirectory + "]");
+                    }
+                    files.add(warSourceDirectory);
+                } else {
+                    getLog().warn("Although maven-war-plugin is used, I cannot find a warSourceDirectory to consider!");
+                }
+            }
+        }
+        return files.toArray(new File[files.size()]);
     }
 
     void log(DeadCode deadCode) {

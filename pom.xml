@@ -113,6 +113,31 @@
             </plugin>
 
             <plugin>
+                <artifactId>maven-invoker-plugin</artifactId>
+                <version>1.8</version>
+                <configuration>
+                    <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
+                    <debug>false</debug>
+                    <goals>
+                        <goal>deadcode4j:find</goal>
+                    </goals>
+                    <localRepositoryPath>${project.build.directory}/it-repo</localRepositoryPath>
+                    <postBuildHookScript>verify</postBuildHookScript>
+                    <streamLogs>true</streamLogs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>integration-test</id>
+                        <goals>
+                            <goal>install</goal>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
                     <execution>
