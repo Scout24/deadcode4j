@@ -29,12 +29,6 @@ import static org.apache.maven.plugins.annotations.LifecyclePhase.COMPILE;
 @Execute(phase = COMPILE)
 public class FindDeadCodeMojo extends AbstractMojo {
 
-    @Component
-    private MojoExecution mojoExecution;
-
-    @Component
-    private MavenProject project;
-
     /**
      * Lists the "dead" classes that should be ignored.
      *
@@ -42,6 +36,10 @@ public class FindDeadCodeMojo extends AbstractMojo {
      */
     @Parameter
     Set<String> classesToIgnore;
+    @Component
+    private MojoExecution mojoExecution;
+    @Component
+    private MavenProject project;
 
     public void execute() {
         logWelcome();
@@ -56,7 +54,9 @@ public class FindDeadCodeMojo extends AbstractMojo {
     }
 
     private File outputDirectoryOfProject() {
-        return new File(project.getBuild().getOutputDirectory());
+        File file = new File(project.getBuild().getOutputDirectory());
+        getLog().info("Going to analyze output directory [" + file + "]...");
+        return file;
     }
 
     void log(DeadCode deadCode) {
