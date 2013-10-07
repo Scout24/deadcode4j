@@ -4,6 +4,7 @@ import com.google.common.collect.Ordering;
 import de.is24.deadcode4j.DeadCode;
 import de.is24.deadcode4j.DeadCodeFinder;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Execute;
@@ -16,6 +17,7 @@ import java.util.Collection;
 import java.util.Set;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static org.apache.maven.plugin.MojoExecution.Source.CLI;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.COMPILE;
 
 /**
@@ -28,7 +30,11 @@ import static org.apache.maven.plugins.annotations.LifecyclePhase.COMPILE;
 public class FindDeadCodeMojo extends AbstractMojo {
 
     @Component
+    private MojoExecution mojoExecution;
+
+    @Component
     private MavenProject project;
+
     /**
      * Lists the "dead" classes that should be ignored.
      *
@@ -38,8 +44,10 @@ public class FindDeadCodeMojo extends AbstractMojo {
     Set<String> classesToIgnore;
 
     public void execute() {
+        logWelcome();
         DeadCode deadCode = analyzeCode();
         log(deadCode);
+        logGoodbye();
     }
 
     private DeadCode analyzeCode() {
@@ -91,6 +99,19 @@ public class FindDeadCodeMojo extends AbstractMojo {
         log.warn("Found " + numberOfDeadClasses + " unused class(es):");
         for (String unusedClass : Ordering.natural().sortedCopy(deadClasses)) {
             log.warn("  " + unusedClass);
+        }
+    }
+
+    private void logWelcome() {
+        if (CLI.equals(mojoExecution.getSource())) {
+            getLog().info("Thanks for calling me! Let's see what I can do for you...");
+        }
+    }
+
+    private void logGoodbye() {
+        if (CLI.equals(mojoExecution.getSource())) {
+            getLog().info("Expected something different? Don't like the results? " +
+                    "Hop on over to https://github.com/ImmobilienScout24/deadcode4j to learn more!");
         }
     }
 
