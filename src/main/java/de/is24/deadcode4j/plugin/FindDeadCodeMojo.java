@@ -55,7 +55,9 @@ public class FindDeadCodeMojo extends AbstractMojo {
 
     private File outputDirectoryOfProject() {
         File file = new File(project.getBuild().getOutputDirectory());
-        getLog().info("Going to analyze output directory [" + file + "]...");
+        if (getLog().isDebugEnabled()) {
+            getLog().debug("Going to analyze output directory [" + file + "]");
+        }
         return file;
     }
 
