@@ -3,9 +3,12 @@ import java.io.*;
 File buildLog = new File(basedir, "build.log");
 BufferedReader reader = new BufferedReader(new FileReader(buildLog));
 String line;
+boolean success = false;
 while ((line = reader.readLine()) != null) {
     if (line.contains("No unused classes found.")) {
-        System.exit(0);
+        success = true;
     }
 }
-throw new RuntimeException("Found unused classes; this is not expected!");
+if (!success) {
+    throw new RuntimeException("Found unused classes; this is not expected!");
+}
