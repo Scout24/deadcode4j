@@ -4,7 +4,7 @@ Features
 --------
 * Added analysis of `web.xml` files: recognizing listed listeners, filters & servlets as _live code_
 * Added analysis of [`*tld`](http://docs.oracle.com/javaee/5/tutorial/doc/bnamu.html) files: recognizing custom tags, tag extra infos, listeners, tag library validators & EL functions as _live code_
-* Execute _package_ phase, scan [webappDirectory](http://maven.apache.org/plugins/maven-war-plugin/exploded-mojo.html#webappDirectory)`/WEB-INF`
+* Execute _package_ phase, scan [`webappDirectory/WEB-INF`](http://maven.apache.org/plugins/maven-war-plugin/exploded-mojo.html#webappDirectory) additionally to the output directory
 
 ###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.1.0...master)
 
