@@ -44,6 +44,10 @@
         <developerConnection>scm:git:https://github.com/ImmobilienScout24/deadcode4j.git</developerConnection>
         <url>https://github.com/ImmobilienScout24/deadcode4j.git</url>
     </scm>
+    <ciManagement>
+        <system>travis</system>
+        <url>https://travis-ci.org/ImmobilienScout24/deadcode4j</url>
+    </ciManagement>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
