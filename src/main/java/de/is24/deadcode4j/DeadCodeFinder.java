@@ -5,6 +5,7 @@ import de.is24.deadcode4j.analyzer.TldAnalyzer;
 import de.is24.deadcode4j.analyzer.WebXmlAnalyzer;
 import javassist.ClassPool;
 import javassist.NotFoundException;
+import org.codehaus.plexus.util.DirectoryScanner;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -51,7 +52,7 @@ public class DeadCodeFinder {
     @Nonnull
     private AnalyzedCode analyzeCode(@Nonnull CodeContext codeContext, @Nonnull File[] codeRepositories) {
         for (File codeRepository : codeRepositories) {
-            analyzeFile(codeContext, codeRepository, codeRepository);
+            analyzeRepository(codeContext, codeRepository);
         }
 
         return codeContext.getAnalyzedCode();
@@ -77,22 +78,18 @@ public class DeadCodeFinder {
         return classPool;
     }
 
-    private void analyzeFile(@Nonnull CodeContext codeContext, @Nonnull File codeRepository, @Nonnull File file) {
-        if (!file.exists()) {
-            return;
+    private void analyzeRepository(@Nonnull CodeContext codeContext, @Nonnull File codeRepository) {
+        DirectoryScanner scanner = new DirectoryScanner();
+        scanner.setBasedir(codeRepository);
+        if (codeRepository.getAbsolutePath().endsWith("WEB-INF")) {
+            scanner.setExcludes(new String[]{"classes/**"});
         }
-        if (file.isDirectory()) {
-            File[] children = file.listFiles();
-            if (children != null) {
-                for (File childNode : children) {
-                    analyzeFile(codeContext, codeRepository, childNode);
-                }
+        scanner.scan();
+
+        for (String file : scanner.getIncludedFiles()) {
+            for (Analyzer analyzer : analyzers) {
+                analyzer.doAnalysis(codeContext, file);
             }
-            return;
-        }
-        String fileName = file.getAbsolutePath().substring(codeRepository.getAbsolutePath().length() + 1);
-        for (Analyzer analyzer : analyzers) {
-            analyzer.doAnalysis(codeContext, fileName);
         }
     }
 
