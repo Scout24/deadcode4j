@@ -124,7 +124,7 @@
                     <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
                     <debug>false</debug>
                     <goals>
-                        <goal>deadcode4j:find</goal>
+                        <goal>${project.groupId}:${project.artifactId}:find</goal>
                     </goals>
                     <localRepositoryPath>${project.build.directory}/it-repo</localRepositoryPath>
                     <postBuildHookScript>verify</postBuildHookScript>

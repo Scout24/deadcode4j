@@ -30,7 +30,7 @@ import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
  *
  * @since 1.0.0
  */
-@Mojo(name = "find", threadSafe = true)
+@Mojo(name = "find", aggregator = true, threadSafe = true, requiresProject = true)
 @Execute(phase = PACKAGE)
 public class FindDeadCodeMojo extends AbstractMojo {
 
@@ -41,12 +41,11 @@ public class FindDeadCodeMojo extends AbstractMojo {
      */
     @Parameter
     Set<String> classesToIgnore;
-    @Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}", readonly = true, required = true)
-    private File defaultWebappDirectory;
     @Component
     private MojoExecution mojoExecution;
-    @Component
-    private MavenProject project;
+    @Parameter(property = "reactorProjects", readonly = true)
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+    private List<MavenProject> reactorProjects;
 
     public void execute() throws MojoExecutionException {
         logWelcome();
@@ -68,31 +67,48 @@ public class FindDeadCodeMojo extends AbstractMojo {
 
     private File[] directoriesToAnalyze() throws MojoExecutionException {
         List<File> files = newArrayList();
-        addOutputDirectory(files);
-        addWarSourceDirectory(files);
+        for (MavenProject project : reactorProjects) {
+            addDirectoriesOf(project, files);
+        }
         return files.toArray(new File[files.size()]);
     }
 
-    private void addOutputDirectory(@Nonnull List<File> files) throws MojoExecutionException {
-        File outputDirectory = new File(project.getBuild().getOutputDirectory());
-        if (!outputDirectory.exists()) {
-            throw new MojoExecutionException("The output directory does not exist - please make sure the project is compiled!");
+    private void addDirectoriesOf(@Nonnull MavenProject project, @Nonnull List<File> files)
+            throws MojoExecutionException {
+        addOutputDirectory(project, files);
+        addWarSourceDirectory(project, files);
+    }
+
+    private void addOutputDirectory(@Nonnull MavenProject project, @Nonnull List<File> files)
+            throws MojoExecutionException {
+        if ("pom".equalsIgnoreCase(project.getPackaging())) {
+            if (getLog().isDebugEnabled()) {
+                getLog().debug("Project [" + project.getGroupId() + ":" + project.getArtifactId() +
+                        "] has pom packaging, so it is skipped.");
+            }
+            return;
         }
-        files.add(outputDirectory);
-        if (getLog().isDebugEnabled()) {
-            getLog().debug("Going to analyze output directory [" + outputDirectory + "]");
+        File outputDirectory = new File(project.getBuild().getOutputDirectory());
+        if (outputDirectory.exists()) {
+            files.add(outputDirectory);
+            if (getLog().isDebugEnabled()) {
+                getLog().debug("Going to analyze output directory [" + outputDirectory + "].");
+            }
+        } else {
+            getLog().warn("The output directory of [" + project.getGroupId() + ":" + project.getArtifactId() +
+                    "] does not exist - let's just hope the project simply has nothing to provide!");
         }
     }
 
-    private void addWarSourceDirectory(@Nonnull List<File> files) throws MojoExecutionException {
+    private void addWarSourceDirectory(@Nonnull MavenProject project, @Nonnull List<File> files)
+            throws MojoExecutionException {
         if (!"war".equalsIgnoreCase(project.getPackaging()))
             return;
-        Plugin plugin = project.getPlugin("org.apache.maven.plugins:maven-war-plugin");
-        if (plugin == null) {
-            getLog().warn("Project uses war packaging, but I cannot find the maven-war-plugin! " +
-                    "This means I cannot analyze web.xml (and potentially other resources)!");
-            return;
+        if (getLog().isDebugEnabled()) {
+            getLog().debug("Project [" + project.getGroupId() + ":" + project.getArtifactId() +
+                    "] has war packaging, looking for webapp directory...");
         }
+        Plugin plugin = project.getPlugin("org.apache.maven.plugins:maven-war-plugin");
         Xpp3Dom configuration = (Xpp3Dom) plugin.getConfiguration();
         Xpp3Dom webappDirectoryConfig = configuration == null ? null : configuration.getChild("webappDirectory");
         final File webappDirectory;
@@ -102,13 +118,14 @@ public class FindDeadCodeMojo extends AbstractMojo {
                 getLog().debug("Going to analyze custom webapp directory [" + webappDirectory + "]");
             }
         } else {
-            webappDirectory = defaultWebappDirectory;
+            webappDirectory = new File(project.getBuild().getDirectory() + "/" + project.getBuild().getFinalName());
             if (getLog().isDebugEnabled()) {
                 getLog().debug("Going to analyze default webapp directory [" + webappDirectory + "]");
             }
         }
         if (!webappDirectory.exists()) {
-            throw new MojoExecutionException("The webapp directory does not exist - please make sure the project is compiled!");
+            throw new MojoExecutionException("The webapp directory of [" + project.getId() +
+                    "] does not exist - please make sure the project is packaged!");
         }
         files.add(new File(webappDirectory, "WEB-INF"));
     }

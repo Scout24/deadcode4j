@@ -18,9 +18,11 @@
                         <param>DependingClass</param>
                         <param>com.acme.Foo</param>
                     </classesToIgnore>
-                    <project implementation="de.is24.deadcode4j.plugin.stubs.ProjectStub">
-                        <outputDirectory>${testScenarios.directory}</outputDirectory>
-                    </project>
+                    <reactorProjects>
+                        <project implementation="de.is24.deadcode4j.plugin.stubs.ProjectStub">
+                            <outputDirectory>${testScenarios.directory}</outputDirectory>
+                        </project>
+                    </reactorProjects>
                 </configuration>
             </plugin>
         </plugins>
