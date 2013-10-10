@@ -1,5 +1,6 @@
-package de.is24.deadcode4j;
+package de.is24.deadcode4j.analyzer;
 
+import de.is24.deadcode4j.CodeContext;
 import javassist.ClassPool;
 import org.junit.Test;
 
