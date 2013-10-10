@@ -1,9 +1,5 @@
 package de.is24.deadcode4j;
 
-import de.is24.deadcode4j.analyzer.ClassFileAnalyzer;
-import de.is24.deadcode4j.analyzer.SpringXmlAnalyzer;
-import de.is24.deadcode4j.analyzer.TldAnalyzer;
-import de.is24.deadcode4j.analyzer.WebXmlAnalyzer;
 import javassist.ClassPool;
 import javassist.NotFoundException;
 import org.codehaus.plexus.util.DirectoryScanner;
@@ -30,10 +26,6 @@ public class DeadCodeFinder {
 
     public DeadCodeFinder(@Nonnull Set<? extends Analyzer> analyzers) {
         this.analyzers = analyzers;
-    }
-
-    public DeadCodeFinder() {
-        this(newHashSet(new ClassFileAnalyzer(), new SpringXmlAnalyzer(), new TldAnalyzer(), new WebXmlAnalyzer()));
     }
 
     @Nonnull

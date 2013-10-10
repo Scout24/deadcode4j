@@ -1,8 +1,13 @@
 package de.is24.deadcode4j.plugin;
 
 import com.google.common.collect.Ordering;
+import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.DeadCode;
 import de.is24.deadcode4j.DeadCodeFinder;
+import de.is24.deadcode4j.analyzer.ClassFileAnalyzer;
+import de.is24.deadcode4j.analyzer.SpringXmlAnalyzer;
+import de.is24.deadcode4j.analyzer.TldAnalyzer;
+import de.is24.deadcode4j.analyzer.WebXmlAnalyzer;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecution;
@@ -22,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newHashSet;
 import static org.apache.maven.plugin.MojoExecution.Source.CLI;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
 
@@ -61,7 +67,8 @@ public class FindDeadCodeMojo extends AbstractMojo {
     }
 
     private DeadCode analyzeCode() throws MojoExecutionException {
-        DeadCodeFinder deadCodeFinder = new DeadCodeFinder();
+        Set<Analyzer> analyzers = newHashSet(new ClassFileAnalyzer(), new SpringXmlAnalyzer(), new TldAnalyzer(), new WebXmlAnalyzer());
+        DeadCodeFinder deadCodeFinder = new DeadCodeFinder(analyzers);
         return deadCodeFinder.findDeadCode(directoriesToAnalyze());
     }
 
