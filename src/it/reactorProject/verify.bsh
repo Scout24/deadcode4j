@@ -5,7 +5,7 @@ BufferedReader reader = new BufferedReader(new FileReader(buildLog));
 String line;
 boolean analyzed = false, success = false;
 while ((line = reader.readLine()) != null) {
-    if (line.matches(".*Analyzed [1-9][0-9]* class\\(es\\).")) {
+    if (line.contains("Analyzed 1 class(es).")) {
         analyzed = true;
     } else if (line.contains("No unused classes found.")) {
         success = true;
