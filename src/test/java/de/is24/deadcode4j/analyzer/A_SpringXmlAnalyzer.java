@@ -12,14 +12,14 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 
-public final class A_SpringXmlAnalyzer {
+public final class A_SpringXmlAnalyzer extends AnAnalyzer {
 
     @Test
     public void shouldParseSpringFiles() {
         SpringXmlAnalyzer objectUnderTest = new SpringXmlAnalyzer();
 
         CodeContext codeContext = new CodeContext(getClass().getClassLoader(), mock(ClassPool.class));
-        objectUnderTest.doAnalysis(codeContext, "spring.xml");
+        objectUnderTest.doAnalysis(codeContext, getFile("spring.xml"));
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
         assertThat("Should have analyzed the XML file!", codeDependencies.size(), is(1));

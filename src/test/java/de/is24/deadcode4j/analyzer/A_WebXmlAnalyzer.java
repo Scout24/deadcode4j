@@ -12,14 +12,14 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 
-public final class A_WebXmlAnalyzer {
+public final class A_WebXmlAnalyzer extends AnAnalyzer {
 
     @Test
     public void shouldParseWebXmlFiles() {
         WebXmlAnalyzer objectUnderTest = new WebXmlAnalyzer();
 
         CodeContext codeContext = new CodeContext(getClass().getClassLoader(), mock(ClassPool.class));
-        objectUnderTest.doAnalysis(codeContext, "web.xml");
+        objectUnderTest.doAnalysis(codeContext, getFile("web.xml"));
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
         assertThat("Should have analyzed the XML file!", codeDependencies.size(), is(1));

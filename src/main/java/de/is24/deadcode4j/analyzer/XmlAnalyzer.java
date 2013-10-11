@@ -10,6 +10,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.Collection;
 import java.util.Map;
 
@@ -60,9 +62,9 @@ public abstract class XmlAnalyzer implements Analyzer {
     }
 
     @Override
-    public final void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull String fileName) {
-        if (fileName.endsWith(endOfFileName)) {
-            analyzeXmlFile(codeContext, fileName);
+    public final void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull File file) {
+        if (file.getName().endsWith(endOfFileName)) {
+            analyzeXmlFile(codeContext, file);
         }
     }
 
@@ -78,18 +80,18 @@ public abstract class XmlAnalyzer implements Analyzer {
     /**
      * Registers an XML element's attribute denoting a fully qualified class name.
      *
-     * @param elementName the name of the XML element the attribute may occur at
+     * @param elementName   the name of the XML element the attribute may occur at
      * @param attributeName the name of the attribute to register
      */
     protected void registerClassAttribute(@Nonnull String elementName, @Nonnull String attributeName) {
         this.relevantElements.put(elementName, attributeName);
     }
 
-    private void analyzeXmlFile(@Nonnull CodeContext codeContext, @Nonnull String file) {
+    private void analyzeXmlFile(@Nonnull CodeContext codeContext, @Nonnull File file) {
         this.referencedClasses.clear();
         this.handler.reset();
         try {
-            parser.parse(codeContext.getClassLoader().getResourceAsStream(file), handler);
+            parser.parse(new FileInputStream(file), handler);
         } catch (StopParsing command) {
             return;
         } catch (Exception e) {

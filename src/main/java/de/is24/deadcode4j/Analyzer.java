@@ -1,6 +1,7 @@
 package de.is24.deadcode4j;
 
 import javax.annotation.Nonnull;
+import java.io.File;
 
 /**
  * An <code>Analyzer</code> analyzes code of all flavours: java classes, spring XML files, <tt>web.xml</tt> etc.
@@ -15,6 +16,6 @@ public interface Analyzer {
      *
      * @since 1.1.0
      */
-    void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull String fileName);
+    void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull File fileName);
 
 }

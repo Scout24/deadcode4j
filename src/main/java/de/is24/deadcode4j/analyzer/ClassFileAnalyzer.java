@@ -4,9 +4,11 @@ import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
 import javassist.ClassPool;
 import javassist.CtClass;
-import javassist.NotFoundException;
 
 import javax.annotation.Nonnull;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Collection;
 
 import static java.util.Collections.emptyList;
@@ -19,33 +21,30 @@ import static java.util.Collections.emptyList;
 public class ClassFileAnalyzer implements Analyzer {
 
     @Override
-    public void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull String fileName) {
-        if (fileName.endsWith(".class")) {
-            analyzeClass(codeContext, fileName.substring(0, fileName.length() - 6).replace('/', '.'));
+    public void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull File file) {
+        if (file.getName().endsWith(".class")) {
+            analyzeClass(codeContext, file);
         }
     }
 
     @SuppressWarnings("unchecked")
-    private void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull String clazz) {
-        codeContext.addAnalyzedClass(clazz);
-        CtClass ctClass = getClassFor(codeContext.getClassPool(), clazz);
+    private void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull File clazz) {
+        final CtClass ctClass;
+        try {
+            ctClass = new ClassPool(false).makeClass(new FileInputStream(clazz));
+        } catch (IOException e) {
+            throw new RuntimeException("Could not analyze [" + clazz + "]!", e);
+        }
+        String className = ctClass.getName();
+        codeContext.addAnalyzedClass(className);
         Collection refClasses = ctClass.getRefClasses();
         if (refClasses == null) {
             refClasses = emptyList();
         } else {
-            refClasses.remove(clazz);
+            refClasses.remove(className);
         }
 
-        codeContext.addDependencies(clazz, refClasses);
-    }
-
-    @Nonnull
-    private CtClass getClassFor(@Nonnull ClassPool classPool, @Nonnull String clazz) {
-        try {
-            return classPool.get(clazz);
-        } catch (NotFoundException e) {
-            throw new RuntimeException("Could not load class [" + clazz + "]!", e);
-        }
+        codeContext.addDependencies(className, refClasses);
     }
 
 }

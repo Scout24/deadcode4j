@@ -81,7 +81,7 @@ public class DeadCodeFinder {
 
         for (String file : scanner.getIncludedFiles()) {
             for (Analyzer analyzer : analyzers) {
-                analyzer.doAnalysis(codeContext, file);
+                analyzer.doAnalysis(codeContext, new File(codeRepository, file));
             }
         }
     }

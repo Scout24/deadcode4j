@@ -12,14 +12,14 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 
-public final class A_TldAnalyzer {
+public final class A_TldAnalyzer extends AnAnalyzer {
 
     @Test
     public void shouldParseTldFiles() {
         TldAnalyzer objectUnderTest = new TldAnalyzer();
 
         CodeContext codeContext = new CodeContext(getClass().getClassLoader(), mock(ClassPool.class));
-        objectUnderTest.doAnalysis(codeContext, "taglib.tld");
+        objectUnderTest.doAnalysis(codeContext, getFile("taglib.tld"));
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
         assertThat("Should have analyzed the TLD file!", codeDependencies.size(), is(1));

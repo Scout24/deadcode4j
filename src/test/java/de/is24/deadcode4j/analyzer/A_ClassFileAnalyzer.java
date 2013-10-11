@@ -11,14 +11,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.mock;
 
-public final class A_ClassFileAnalyzer {
+public final class A_ClassFileAnalyzer extends AnAnalyzer {
 
     @Test
     public void parsesAClassFileReportsItsExistenceAndReportsItsDependencies() {
         ClassFileAnalyzer objectUnderTest = new ClassFileAnalyzer();
 
         CodeContext codeContext = new CodeContext(mock(ClassLoader.class), new ClassPool(true));
-        objectUnderTest.doAnalysis(codeContext, "SingleClass.class");
+        objectUnderTest.doAnalysis(codeContext, getFile("SingleClass.class"));
 
         assertThat("Should analyze one class", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(1));
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
@@ -31,7 +31,7 @@ public final class A_ClassFileAnalyzer {
         ClassFileAnalyzer objectUnderTest = new ClassFileAnalyzer();
 
         CodeContext codeContext = new CodeContext(mock(ClassLoader.class), new ClassPool(true));
-        objectUnderTest.doAnalysis(codeContext, "DependingClass.class");
+        objectUnderTest.doAnalysis(codeContext, getFile("DependingClass.class"));
 
         assertThat("Should analyze one class", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(1));
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
@@ -44,7 +44,7 @@ public final class A_ClassFileAnalyzer {
         ClassFileAnalyzer objectUnderTest = new ClassFileAnalyzer();
 
         CodeContext codeContext = new CodeContext(mock(ClassLoader.class), new ClassPool(true));
-        objectUnderTest.doAnalysis(codeContext, "spring.xml");
+        objectUnderTest.doAnalysis(codeContext, getFile("spring.xml"));
 
         assertThat("Should analyze no class", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(0));
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
