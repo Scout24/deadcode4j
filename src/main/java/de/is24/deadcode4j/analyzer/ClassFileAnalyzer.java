@@ -11,8 +11,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Collection;
 
-import static java.util.Collections.emptyList;
-
 /**
  * Analyzes class files: lists the classes a class is depending on.
  *
@@ -36,14 +34,11 @@ public class ClassFileAnalyzer implements Analyzer {
             throw new RuntimeException("Could not analyze [" + clazz + "]!", e);
         }
         String className = ctClass.getName();
-        codeContext.addAnalyzedClass(className);
-        Collection refClasses = ctClass.getRefClasses();
-        if (refClasses == null) {
-            refClasses = emptyList();
-        } else {
-            refClasses.remove(className);
-        }
 
+        Collection refClasses = ctClass.getRefClasses();
+        refClasses.remove(className);
+
+        codeContext.addAnalyzedClass(className);
         codeContext.addDependencies(className, refClasses);
     }
 
