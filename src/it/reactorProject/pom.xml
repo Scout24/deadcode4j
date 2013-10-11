@@ -20,6 +20,7 @@
 
     <modules>
         <module>javaProject</module>
+        <module>secondWebAppProject</module>
         <module>webAppProject</module>
     </modules>
 
