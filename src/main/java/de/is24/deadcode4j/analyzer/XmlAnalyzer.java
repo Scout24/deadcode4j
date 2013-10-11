@@ -24,7 +24,7 @@ import static com.google.common.collect.Maps.newHashMap;
  * @since 1.1.1
  */
 public abstract class XmlAnalyzer implements Analyzer {
-
+    private static final String NO_ATTRIBUTE = "no attribute";
     private final SAXParser parser;
     private final XmlHandler handler;
     private final String dependerId;
@@ -74,7 +74,7 @@ public abstract class XmlAnalyzer implements Analyzer {
      * @param elementName the name of the XML element to register
      */
     protected void registerClassElement(@Nonnull String elementName) {
-        this.relevantElements.put(elementName, "");
+        this.relevantElements.put(elementName, NO_ATTRIBUTE);
     }
 
     /**
@@ -126,7 +126,7 @@ public abstract class XmlAnalyzer implements Analyzer {
             }
             String attributeName = relevantElements.get(localName);
             if (attributeName != null) {
-                if ("".equals(attributeName)) {
+                if (NO_ATTRIBUTE.equals(attributeName)) {
                     buffer = new StringBuilder(128);
                 } else {
                     String className = attributes.getValue(attributeName);
