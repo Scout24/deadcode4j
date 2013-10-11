@@ -1,7 +1,5 @@
 package de.is24.deadcode4j;
 
-import javassist.ClassPool;
-
 import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.HashSet;
@@ -12,33 +10,16 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 /**
- * The <code>CodeContext</code> is central access point for convenient analysis tools,
- * It provides the capability to {@link #addAnalyzedClass(String) report the existence of code} and
+ * The <code>CodeContext</code> provides the capability to
+ * {@link #addAnalyzedClass(String) report the existence of code} and
  * {@link #addDependencies(String, java.util.Collection) the dependencies of it}.
  *
  * @since 1.1.0
  */
 public class CodeContext {
 
-    private final ClassLoader classLoader;
-    private final ClassPool classPool;
     private final Set<String> analyzedClasses = newHashSet();
     private final Map<String, Set<String>> dependencyMap = newHashMap();
-
-    public CodeContext(@Nonnull ClassLoader classLoader, @Nonnull ClassPool classPool) {
-        this.classLoader = classLoader;
-        this.classPool = classPool;
-    }
-
-    @Nonnull
-    public ClassLoader getClassLoader() {
-        return classLoader;
-    }
-
-    @Nonnull
-    public ClassPool getClassPool() {
-        return classPool;
-    }
 
     /**
      * Report code dependencies.

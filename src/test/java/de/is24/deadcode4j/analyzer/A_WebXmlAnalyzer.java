@@ -1,7 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.CodeContext;
-import javassist.ClassPool;
 import org.junit.Test;
 
 import java.util.Map;
@@ -10,7 +9,6 @@ import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.mock;
 
 public final class A_WebXmlAnalyzer extends AnAnalyzer {
 
@@ -18,7 +16,7 @@ public final class A_WebXmlAnalyzer extends AnAnalyzer {
     public void shouldParseWebXmlFiles() {
         WebXmlAnalyzer objectUnderTest = new WebXmlAnalyzer();
 
-        CodeContext codeContext = new CodeContext(getClass().getClassLoader(), mock(ClassPool.class));
+        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("web.xml"));
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();

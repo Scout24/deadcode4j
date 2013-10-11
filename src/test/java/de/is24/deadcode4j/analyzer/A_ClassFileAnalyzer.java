@@ -1,7 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.CodeContext;
-import javassist.ClassPool;
 import org.junit.Test;
 
 import java.util.Map;
@@ -9,7 +8,6 @@ import java.util.Map;
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.mockito.Mockito.mock;
 
 public final class A_ClassFileAnalyzer extends AnAnalyzer {
 
@@ -17,7 +15,7 @@ public final class A_ClassFileAnalyzer extends AnAnalyzer {
     public void parsesAClassFileReportsItsExistenceAndReportsItsDependencies() {
         ClassFileAnalyzer objectUnderTest = new ClassFileAnalyzer();
 
-        CodeContext codeContext = new CodeContext(mock(ClassLoader.class), new ClassPool(true));
+        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("SingleClass.class"));
 
         assertThat("Should analyze one class", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(1));
@@ -30,7 +28,7 @@ public final class A_ClassFileAnalyzer extends AnAnalyzer {
     public void reportsTheDependencyOfAClassToAnother() {
         ClassFileAnalyzer objectUnderTest = new ClassFileAnalyzer();
 
-        CodeContext codeContext = new CodeContext(mock(ClassLoader.class), new ClassPool(true));
+        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("DependingClass.class"));
 
         assertThat("Should analyze one class", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(1));
@@ -43,7 +41,7 @@ public final class A_ClassFileAnalyzer extends AnAnalyzer {
     public void doesNotParseNonClassFile() {
         ClassFileAnalyzer objectUnderTest = new ClassFileAnalyzer();
 
-        CodeContext codeContext = new CodeContext(mock(ClassLoader.class), new ClassPool(true));
+        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("spring.xml"));
 
         assertThat("Should analyze no class", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(0));

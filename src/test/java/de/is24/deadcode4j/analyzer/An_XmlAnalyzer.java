@@ -1,7 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.CodeContext;
-import javassist.ClassPool;
 import org.junit.Test;
 
 import java.util.Map;
@@ -9,7 +8,6 @@ import java.util.Map;
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.mockito.Mockito.mock;
 
 public final class An_XmlAnalyzer extends AnAnalyzer {
 
@@ -18,7 +16,7 @@ public final class An_XmlAnalyzer extends AnAnalyzer {
         XmlAnalyzer objectUnderTest = new XmlAnalyzer("junit", ".xml", null) {
         };
 
-        CodeContext codeContext = createCodeContext();
+        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/empty.xml"));
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
@@ -31,7 +29,7 @@ public final class An_XmlAnalyzer extends AnAnalyzer {
         XmlAnalyzer objectUnderTest = new XmlAnalyzer(dependerId, ".xml", null) {
         };
 
-        CodeContext codeContext = createCodeContext();
+        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/empty.xml"));
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
@@ -44,7 +42,7 @@ public final class An_XmlAnalyzer extends AnAnalyzer {
         XmlAnalyzer objectUnderTest = new XmlAnalyzer("junit", ".acme", null) {
         };
 
-        CodeContext codeContext = createCodeContext();
+        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/empty.xml"));
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
@@ -56,7 +54,7 @@ public final class An_XmlAnalyzer extends AnAnalyzer {
         XmlAnalyzer objectUnderTest = new XmlAnalyzer("junit", ".xml", "acme") {
         };
 
-        CodeContext codeContext = createCodeContext();
+        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/empty.xml"));
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
@@ -71,7 +69,7 @@ public final class An_XmlAnalyzer extends AnAnalyzer {
             }
         };
 
-        CodeContext codeContext = createCodeContext();
+        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
@@ -87,7 +85,7 @@ public final class An_XmlAnalyzer extends AnAnalyzer {
             }
         };
 
-        CodeContext codeContext = createCodeContext();
+        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
@@ -103,7 +101,7 @@ public final class An_XmlAnalyzer extends AnAnalyzer {
             }
         };
 
-        CodeContext codeContext = createCodeContext();
+        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
@@ -123,7 +121,7 @@ public final class An_XmlAnalyzer extends AnAnalyzer {
             }
         };
 
-        CodeContext codeContext = createCodeContext();
+        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
@@ -143,7 +141,7 @@ public final class An_XmlAnalyzer extends AnAnalyzer {
             }
         };
 
-        CodeContext codeContext = createCodeContext();
+        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/prefixed.xml"));
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
@@ -151,10 +149,6 @@ public final class An_XmlAnalyzer extends AnAnalyzer {
         assertThat(getOnlyElement(codeDependencies.values()),
                 containsInAnyOrder("de.is24.deadcode4j.ClassInElement", "de.is24.deadcode4j.FirstClassInAnotherElement",
                         "de.is24.deadcode4j.SecondClassInAnotherElement", "de.is24.deadcode4j.ClassInAttribute"));
-    }
-
-    private CodeContext createCodeContext() {
-        return new CodeContext(getClass().getClassLoader(), mock(ClassPool.class));
     }
 
 }
