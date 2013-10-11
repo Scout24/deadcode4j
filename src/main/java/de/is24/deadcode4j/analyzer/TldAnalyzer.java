@@ -17,6 +17,9 @@ public class TldAnalyzer extends XmlAnalyzer implements Analyzer {
         registerClassElement("tag-class");
         registerClassElement("tei-class");
         registerClassElement("validator-class");
+        // this was valid at least for J2EE 1.2, see http://java.sun.com/j2ee/dtds/web-jsptaglibrary_1_1.dtd
+        registerClassElement("tagclass");
+        registerClassElement("teiclass");
     }
 
 }
