@@ -131,7 +131,7 @@ public abstract class XmlAnalyzer implements Analyzer {
                 } else {
                     String className = attributes.getValue(attributeName);
                     if (className != null) {
-                        referencedClasses.add(className);
+                        referencedClasses.add(className.trim());
                     }
                 }
             }
