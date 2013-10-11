@@ -8,6 +8,9 @@ Features
     * org.springframework.context.annotation.Import (hopefully this is recognized by Javassist anyways)
 * JSR330 annotations
     * javax.inject.Named
+* Hibernate annotations
+    * org.hibernate.annotations.Type
+    * investigate
 * recognize cyclic dependencies
 * generate a report
 
