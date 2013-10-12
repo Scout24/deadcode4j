@@ -1,4 +1,12 @@
-v.1.2.0-SNAPSHOT
+v.1.3.0-SNAPSHOT
+================
+Features
+--------
+* nothing as of yet
+
+###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.2.0...master)
+
+v.1.2.0
 ================
 Features
 --------
@@ -13,7 +21,7 @@ Internal
 * use [commons-io](http://commons.apache.org/io/) to iterate over files
 * use [Invoker Plugin](http://maven.apache.org/plugins/maven-invoker-plugin/) to test the plugin
 
-###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.1.0...master)
+###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.1.0...deadcode4j-maven-plugin-1.2.0)
 
 v.1.1.0
 =======
