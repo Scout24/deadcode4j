@@ -17,11 +17,11 @@ public class CodeRepository {
     private final FileFilter fileFilter;
 
     public CodeRepository(@Nonnull File directory, @Nonnull FileFilter fileFilter) {
-        this.fileFilter = fileFilter;
         if (!directory.isDirectory()) {
             throw new IllegalArgumentException("No valid directory: " + directory);
         }
         this.directory = directory;
+        this.fileFilter = fileFilter;
     }
 
     public CodeRepository(@Nonnull File directory) {
