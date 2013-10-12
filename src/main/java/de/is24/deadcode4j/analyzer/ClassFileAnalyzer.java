@@ -4,6 +4,7 @@ import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
 import javassist.ClassPool;
 import javassist.CtClass;
+import org.apache.commons.io.IOUtils;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -28,10 +29,14 @@ public class ClassFileAnalyzer implements Analyzer {
     @SuppressWarnings("unchecked")
     private void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull File clazz) {
         final CtClass ctClass;
+        FileInputStream in = null;
         try {
-            ctClass = new ClassPool(false).makeClass(new FileInputStream(clazz));
+            in = new FileInputStream(clazz);
+            ctClass = new ClassPool(false).makeClass(in);
         } catch (IOException e) {
             throw new RuntimeException("Could not analyze [" + clazz + "]!", e);
+        } finally {
+            IOUtils.closeQuietly(in);
         }
         String className = ctClass.getName();
 

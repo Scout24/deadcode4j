@@ -2,6 +2,7 @@ package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
+import org.apache.commons.io.IOUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -12,6 +13,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.Map;
 
@@ -90,12 +92,16 @@ public abstract class XmlAnalyzer implements Analyzer {
     private void analyzeXmlFile(@Nonnull CodeContext codeContext, @Nonnull File file) {
         this.referencedClasses.clear();
         this.handler.reset();
+        InputStream in = null;
         try {
-            parser.parse(new FileInputStream(file), handler);
+            in = new FileInputStream(file);
+            parser.parse(in, handler);
         } catch (StopParsing command) {
             return;
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse [" + file + "]!", e);
+        } finally {
+            IOUtils.closeQuietly(in);
         }
         codeContext.addDependencies(dependerId, this.referencedClasses);
     }
