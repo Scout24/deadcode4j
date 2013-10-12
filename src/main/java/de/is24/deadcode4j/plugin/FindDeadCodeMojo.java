@@ -84,10 +84,10 @@ public class FindDeadCodeMojo extends AbstractMojo {
     private DeadCode analyzeCode() throws MojoExecutionException {
         Set<Analyzer> analyzers = newHashSet(new ClassFileAnalyzer(), new SpringXmlAnalyzer(), new TldAnalyzer(), new WebXmlAnalyzer());
         DeadCodeFinder deadCodeFinder = new DeadCodeFinder(analyzers);
-        return deadCodeFinder.findDeadCode(directoriesToAnalyze());
+        return deadCodeFinder.findDeadCode(gatherCodeRepositories());
     }
 
-    private CodeRepository[] directoriesToAnalyze() throws MojoExecutionException {
+    private CodeRepository[] gatherCodeRepositories() throws MojoExecutionException {
         List<CodeRepository> codeRepositories = newArrayList();
         for (MavenProject project : reactorProjects) {
             addIfNonNull(codeRepositories, getCodeRepositoryFor(project));
