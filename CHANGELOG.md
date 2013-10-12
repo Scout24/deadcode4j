@@ -11,6 +11,7 @@ Internal
 --------
 * handle each file independently, i.e. no more setup of a ClassPool & ClassLoader with which to access all classes/files
 * use [commons-io](http://commons.apache.org/io/) to iterate over files
+* use [Invoker Plugin](http://maven.apache.org/plugins/maven-invoker-plugin/) to test the plugin
 
 ###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.1.0...master)
 
