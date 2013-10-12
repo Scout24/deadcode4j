@@ -1,10 +1,7 @@
 package de.is24.deadcode4j;
 
 import org.apache.commons.io.DirectoryWalker;
-import org.apache.commons.io.filefilter.AbstractFileFilter;
-import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
-import org.apache.commons.io.filefilter.TrueFileFilter;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -51,24 +48,12 @@ public class DeadCodeFinder {
     }
 
     private void analyzeRepository(@Nonnull CodeContext codeContext, @Nonnull CodeRepository codeRepository) {
-        final File directory = codeRepository.getDirectory();
-        final IOFileFilter fileFilter;
-        if (directory.getAbsolutePath().endsWith("WEB-INF")) {
-            fileFilter = FileFilterUtils.notFileFilter(new AbstractFileFilter() {
-                @Override
-                public boolean accept(File dir, String name) {
-                    return directory.equals(dir) && "classes".equals(name);
-                }
-            });
-        } else {
-            fileFilter = TrueFileFilter.TRUE;
-        }
-
-        CodeRepositoryAnalyzer codeRepositoryAnalyzer = new CodeRepositoryAnalyzer(fileFilter, this.analyzers, codeContext);
+        CodeRepositoryAnalyzer codeRepositoryAnalyzer =
+                new CodeRepositoryAnalyzer(codeRepository.getFileFilter(), this.analyzers, codeContext);
         try {
-            codeRepositoryAnalyzer.analyze(directory);
+            codeRepositoryAnalyzer.analyze(codeRepository.getDirectory());
         } catch (IOException e) {
-            throw new RuntimeException("Failed to parse files of [" + codeRepository + "]!", e);
+            throw new RuntimeException("Failed to parse files of " + codeRepository + "!", e);
         }
     }
 

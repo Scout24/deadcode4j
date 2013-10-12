@@ -9,6 +9,9 @@ import de.is24.deadcode4j.analyzer.ClassFileAnalyzer;
 import de.is24.deadcode4j.analyzer.SpringXmlAnalyzer;
 import de.is24.deadcode4j.analyzer.TldAnalyzer;
 import de.is24.deadcode4j.analyzer.WebXmlAnalyzer;
+import org.apache.commons.io.filefilter.AbstractFileFilter;
+import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecution;
@@ -135,7 +138,14 @@ public class FindDeadCodeMojo extends AbstractMojo {
             throw new MojoExecutionException("The webapp directory of [" + project.getId() +
                     "] does not exist - please make sure the project is packaged!");
         }
-        codeRepositories.add(new CodeRepository(new File(webappDirectory, "WEB-INF")));
+        final File directory = new File(webappDirectory, "WEB-INF");
+        IOFileFilter fileFilter = FileFilterUtils.notFileFilter(new AbstractFileFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return directory.equals(dir) && "classes".equals(name);
+            }
+        });
+        codeRepositories.add(new CodeRepository(directory, fileFilter));
     }
 
     void log(DeadCode deadCode) {
