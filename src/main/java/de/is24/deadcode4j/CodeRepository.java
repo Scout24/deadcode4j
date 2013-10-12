@@ -1,9 +1,8 @@
 package de.is24.deadcode4j;
 
-import org.apache.commons.io.filefilter.IOFileFilter;
-
 import javax.annotation.Nonnull;
 import java.io.File;
+import java.io.FileFilter;
 
 import static org.apache.commons.io.filefilter.TrueFileFilter.TRUE;
 
@@ -15,9 +14,9 @@ import static org.apache.commons.io.filefilter.TrueFileFilter.TRUE;
 public class CodeRepository {
 
     private final File directory;
-    private final IOFileFilter fileFilter;
+    private final FileFilter fileFilter;
 
-    public CodeRepository(@Nonnull File directory, @Nonnull IOFileFilter fileFilter) {
+    public CodeRepository(@Nonnull File directory, @Nonnull FileFilter fileFilter) {
         this.fileFilter = fileFilter;
         if (!directory.isDirectory()) {
             throw new IllegalArgumentException("No valid directory: " + directory);
@@ -38,7 +37,7 @@ public class CodeRepository {
         return directory;
     }
 
-    public IOFileFilter getFileFilter() {
+    public FileFilter getFileFilter() {
         return fileFilter;
     }
 

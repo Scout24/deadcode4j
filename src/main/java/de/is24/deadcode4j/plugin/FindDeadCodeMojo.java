@@ -9,7 +9,6 @@ import de.is24.deadcode4j.analyzer.ClassFileAnalyzer;
 import de.is24.deadcode4j.analyzer.SpringXmlAnalyzer;
 import de.is24.deadcode4j.analyzer.TldAnalyzer;
 import de.is24.deadcode4j.analyzer.WebXmlAnalyzer;
-import org.apache.commons.io.filefilter.AbstractFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.maven.model.Plugin;
@@ -32,6 +31,8 @@ import java.util.Set;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
+import static org.apache.commons.io.filefilter.FileFilterUtils.asFileFilter;
+import static org.apache.commons.io.filefilter.FileFilterUtils.notFileFilter;
 import static org.apache.maven.plugin.MojoExecution.Source.CLI;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
 
@@ -139,12 +140,9 @@ public class FindDeadCodeMojo extends AbstractMojo {
                     "] does not exist - please make sure the project is packaged!");
         }
         final File directory = new File(webappDirectory, "WEB-INF");
-        IOFileFilter fileFilter = FileFilterUtils.notFileFilter(new AbstractFileFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return directory.equals(dir) && "classes".equals(name);
-            }
-        });
+        IOFileFilter fileFilter = notFileFilter(FileFilterUtils.orFileFilter(
+                asFileFilter(new SubDirectoryFilter(directory, "classes")),
+                asFileFilter(new SubDirectoryFilter(directory, "lib"))));
         codeRepositories.add(new CodeRepository(directory, fileFilter));
     }
 

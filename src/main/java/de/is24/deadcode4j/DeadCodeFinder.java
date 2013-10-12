@@ -1,10 +1,10 @@
 package de.is24.deadcode4j;
 
 import org.apache.commons.io.DirectoryWalker;
-import org.apache.commons.io.filefilter.IOFileFilter;
 
 import javax.annotation.Nonnull;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -76,7 +76,7 @@ public class DeadCodeFinder {
         private final Iterable<? extends Analyzer> analyzers;
         private final CodeContext codeContext;
 
-        public CodeRepositoryAnalyzer(@Nonnull IOFileFilter fileFilter, @Nonnull Iterable<? extends Analyzer> analyzers, @Nonnull CodeContext codeContext) {
+        public CodeRepositoryAnalyzer(@Nonnull FileFilter fileFilter, @Nonnull Iterable<? extends Analyzer> analyzers, @Nonnull CodeContext codeContext) {
             super(fileFilter, -1);
             this.analyzers = analyzers;
             this.codeContext = codeContext;
