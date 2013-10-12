@@ -6,7 +6,7 @@ import de.is24.deadcode4j.Analyzer;
  * Analyzes <code>*.tld</code> files: lists the function, listener, tag, tag extra info & validator classes being
  * referenced.
  *
- * @since 1.1.1
+ * @since 1.2.0
  */
 public class TldAnalyzer extends XmlAnalyzer implements Analyzer {
 

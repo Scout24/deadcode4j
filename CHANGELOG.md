@@ -1,4 +1,4 @@
-v.1.1.1-SNAPSHOT
+v.1.2.0-SNAPSHOT
 ================
 Features
 --------

@@ -21,7 +21,7 @@ import static com.google.common.collect.Maps.newHashMap;
 /**
  * Serves as a base class with which to analyze XML files.
  *
- * @since 1.1.1
+ * @since 1.2.0
  */
 public abstract class XmlAnalyzer implements Analyzer {
     private static final String NO_ATTRIBUTE = "no attribute";
@@ -44,7 +44,7 @@ public abstract class XmlAnalyzer implements Analyzer {
      *                      extension like <tt>.xml</tt> or a partial path like <tt>WEB-INF/web.xml</tt>
      * @param rootElement   the expected XML root element or <code>null</code> if such an element does not exist;
      *                      i.e. there are multiple valid root elements
-     * @since 1.1.1
+     * @since 1.2.0
      */
     protected XmlAnalyzer(@Nonnull String dependerId, @Nonnull String endOfFileName, @Nullable String rootElement) {
         try {
@@ -103,7 +103,7 @@ public abstract class XmlAnalyzer implements Analyzer {
     /**
      * Used to indicate that XML parsing can be stopped.
      *
-     * @since 1.1.1
+     * @since 1.2.0
      */
     private static class StopParsing extends SAXException {
     }
@@ -111,7 +111,7 @@ public abstract class XmlAnalyzer implements Analyzer {
     /**
      * Used to indicate that XML parsing can be stopped.
      *
-     * @since 1.1.1
+     * @since 1.2.0
      */
     private class XmlHandler extends DefaultHandler {
         private boolean firstElement = true;

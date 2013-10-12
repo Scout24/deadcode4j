@@ -5,7 +5,7 @@ import de.is24.deadcode4j.Analyzer;
 /**
  * Analyzes <code>web.xml</code> files: lists the listener, filter & servlet classes being referenced.
  *
- * @since 1.1.1
+ * @since 1.2.0
  */
 public class WebXmlAnalyzer extends XmlAnalyzer implements Analyzer {
 
