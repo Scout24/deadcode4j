@@ -1,9 +1,14 @@
 package de.is24.deadcode4j;
 
-import org.codehaus.plexus.util.DirectoryScanner;
+import org.apache.commons.io.DirectoryWalker;
+import org.apache.commons.io.filefilter.AbstractFileFilter;
+import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 
 import javax.annotation.Nonnull;
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -45,18 +50,24 @@ public class DeadCodeFinder {
         return new DeadCode(analyzedCode.getAnalyzedClasses(), deadClasses);
     }
 
-    private void analyzeRepository(@Nonnull CodeContext codeContext, @Nonnull File codeRepository) {
-        DirectoryScanner scanner = new DirectoryScanner();
-        scanner.setBasedir(codeRepository);
+    private void analyzeRepository(@Nonnull CodeContext codeContext, @Nonnull final File codeRepository) {
+        final IOFileFilter fileFilter;
         if (codeRepository.getAbsolutePath().endsWith("WEB-INF")) {
-            scanner.setExcludes(new String[]{"classes/**"});
+            fileFilter = FileFilterUtils.notFileFilter(new AbstractFileFilter() {
+                @Override
+                public boolean accept(File dir, String name) {
+                    return codeRepository.equals(dir) && "classes".equals(name);
+                }
+            });
+        } else {
+            fileFilter = TrueFileFilter.TRUE;
         }
-        scanner.scan();
 
-        for (String file : scanner.getIncludedFiles()) {
-            for (Analyzer analyzer : analyzers) {
-                analyzer.doAnalysis(codeContext, new File(codeRepository, file));
-            }
+        CodeRepositoryAnalyzer codeRepositoryAnalyzer = new CodeRepositoryAnalyzer(fileFilter, this.analyzers, codeContext);
+        try {
+            codeRepositoryAnalyzer.analyze(codeRepository);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to parse files of [" + codeRepository + "]!", e);
         }
     }
 
@@ -72,6 +83,29 @@ public class DeadCodeFinder {
         List<String> deadClasses = newArrayList(analyzedCode.getAnalyzedClasses());
         deadClasses.removeAll(classesInUse);
         return deadClasses;
+    }
+
+    private static class CodeRepositoryAnalyzer extends DirectoryWalker {
+
+        private final Iterable<? extends Analyzer> analyzers;
+        private final CodeContext codeContext;
+
+        public CodeRepositoryAnalyzer(@Nonnull IOFileFilter fileFilter, @Nonnull Iterable<? extends Analyzer> analyzers, @Nonnull CodeContext codeContext) {
+            super(fileFilter, -1);
+            this.analyzers = analyzers;
+            this.codeContext = codeContext;
+        }
+
+        public void analyze(File codeRepository) throws IOException {
+            super.walk(codeRepository, null);
+        }
+
+        @Override
+        protected void handleFile(File file, int depth, Collection results) throws IOException {
+            for (Analyzer analyzer : this.analyzers)
+                analyzer.doAnalysis(this.codeContext, file);
+        }
+
     }
 
 }
