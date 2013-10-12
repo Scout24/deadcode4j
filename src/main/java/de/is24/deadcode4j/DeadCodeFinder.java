@@ -27,13 +27,14 @@ public class DeadCodeFinder {
     }
 
     @Nonnull
-    public DeadCode findDeadCode(CodeRepository... codeRepositories) {
-        AnalyzedCode analyzedCode = analyzeCode(new CodeContext(), codeRepositories);
+    public DeadCode findDeadCode(@Nonnull Iterable<CodeRepository> codeRepositories) {
+        AnalyzedCode analyzedCode = analyzeCode(codeRepositories);
         return computeDeadCode(analyzedCode);
     }
 
     @Nonnull
-    private AnalyzedCode analyzeCode(@Nonnull CodeContext codeContext, @Nonnull CodeRepository[] codeRepositories) {
+    private AnalyzedCode analyzeCode(@Nonnull Iterable<CodeRepository> codeRepositories) {
+        CodeContext codeContext = new CodeContext();
         for (CodeRepository codeRepository : codeRepositories) {
             analyzeRepository(codeContext, codeRepository);
         }

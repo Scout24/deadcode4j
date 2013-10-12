@@ -87,12 +87,12 @@ public class FindDeadCodeMojo extends AbstractMojo {
         return deadCodeFinder.findDeadCode(gatherCodeRepositories());
     }
 
-    private CodeRepository[] gatherCodeRepositories() throws MojoExecutionException {
+    private Iterable<CodeRepository> gatherCodeRepositories() throws MojoExecutionException {
         List<CodeRepository> codeRepositories = newArrayList();
         for (MavenProject project : reactorProjects) {
             addIfNonNull(codeRepositories, getCodeRepositoryFor(project));
         }
-        return codeRepositories.toArray(new CodeRepository[codeRepositories.size()]);
+        return codeRepositories;
     }
 
     @Nullable
