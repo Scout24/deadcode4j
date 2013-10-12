@@ -30,14 +30,14 @@ public class DeadCodeFinder {
     }
 
     @Nonnull
-    public DeadCode findDeadCode(File... codeRepositories) {
+    public DeadCode findDeadCode(CodeRepository... codeRepositories) {
         AnalyzedCode analyzedCode = analyzeCode(new CodeContext(), codeRepositories);
         return computeDeadCode(analyzedCode);
     }
 
     @Nonnull
-    private AnalyzedCode analyzeCode(@Nonnull CodeContext codeContext, @Nonnull File[] codeRepositories) {
-        for (File codeRepository : codeRepositories) {
+    private AnalyzedCode analyzeCode(@Nonnull CodeContext codeContext, @Nonnull CodeRepository[] codeRepositories) {
+        for (CodeRepository codeRepository : codeRepositories) {
             analyzeRepository(codeContext, codeRepository);
         }
 
@@ -50,13 +50,14 @@ public class DeadCodeFinder {
         return new DeadCode(analyzedCode.getAnalyzedClasses(), deadClasses);
     }
 
-    private void analyzeRepository(@Nonnull CodeContext codeContext, @Nonnull final File codeRepository) {
+    private void analyzeRepository(@Nonnull CodeContext codeContext, @Nonnull CodeRepository codeRepository) {
+        final File directory = codeRepository.getDirectory();
         final IOFileFilter fileFilter;
-        if (codeRepository.getAbsolutePath().endsWith("WEB-INF")) {
+        if (directory.getAbsolutePath().endsWith("WEB-INF")) {
             fileFilter = FileFilterUtils.notFileFilter(new AbstractFileFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
-                    return codeRepository.equals(dir) && "classes".equals(name);
+                    return directory.equals(dir) && "classes".equals(name);
                 }
             });
         } else {
@@ -65,7 +66,7 @@ public class DeadCodeFinder {
 
         CodeRepositoryAnalyzer codeRepositoryAnalyzer = new CodeRepositoryAnalyzer(fileFilter, this.analyzers, codeContext);
         try {
-            codeRepositoryAnalyzer.analyze(codeRepository);
+            codeRepositoryAnalyzer.analyze(directory);
         } catch (IOException e) {
             throw new RuntimeException("Failed to parse files of [" + codeRepository + "]!", e);
         }

@@ -2,6 +2,7 @@ package de.is24.deadcode4j.plugin;
 
 import com.google.common.collect.Ordering;
 import de.is24.deadcode4j.Analyzer;
+import de.is24.deadcode4j.CodeRepository;
 import de.is24.deadcode4j.DeadCode;
 import de.is24.deadcode4j.DeadCodeFinder;
 import de.is24.deadcode4j.analyzer.ClassFileAnalyzer;
@@ -72,21 +73,21 @@ public class FindDeadCodeMojo extends AbstractMojo {
         return deadCodeFinder.findDeadCode(directoriesToAnalyze());
     }
 
-    private File[] directoriesToAnalyze() throws MojoExecutionException {
-        List<File> files = newArrayList();
+    private CodeRepository[] directoriesToAnalyze() throws MojoExecutionException {
+        List<CodeRepository> codeRepositories = newArrayList();
         for (MavenProject project : reactorProjects) {
-            addDirectoriesOf(project, files);
+            addDirectoriesOf(project, codeRepositories);
         }
-        return files.toArray(new File[files.size()]);
+        return codeRepositories.toArray(new CodeRepository[codeRepositories.size()]);
     }
 
-    private void addDirectoriesOf(@Nonnull MavenProject project, @Nonnull List<File> files)
+    private void addDirectoriesOf(@Nonnull MavenProject project, @Nonnull List<CodeRepository> codeRepositories)
             throws MojoExecutionException {
-        addOutputDirectory(project, files);
-        addWarSourceDirectory(project, files);
+        addOutputDirectory(project, codeRepositories);
+        addWarSourceDirectory(project, codeRepositories);
     }
 
-    private void addOutputDirectory(@Nonnull MavenProject project, @Nonnull List<File> files)
+    private void addOutputDirectory(@Nonnull MavenProject project, @Nonnull List<CodeRepository> codeRepositories)
             throws MojoExecutionException {
         if ("pom".equalsIgnoreCase(project.getPackaging())) {
             if (getLog().isDebugEnabled()) {
@@ -97,7 +98,7 @@ public class FindDeadCodeMojo extends AbstractMojo {
         }
         File outputDirectory = new File(project.getBuild().getOutputDirectory());
         if (outputDirectory.exists()) {
-            files.add(outputDirectory);
+            codeRepositories.add(new CodeRepository(outputDirectory));
             if (getLog().isDebugEnabled()) {
                 getLog().debug("Going to analyze output directory [" + outputDirectory + "].");
             }
@@ -107,7 +108,7 @@ public class FindDeadCodeMojo extends AbstractMojo {
         }
     }
 
-    private void addWarSourceDirectory(@Nonnull MavenProject project, @Nonnull List<File> files)
+    private void addWarSourceDirectory(@Nonnull MavenProject project, @Nonnull List<CodeRepository> codeRepositories)
             throws MojoExecutionException {
         if (!"war".equalsIgnoreCase(project.getPackaging()))
             return;
@@ -134,7 +135,7 @@ public class FindDeadCodeMojo extends AbstractMojo {
             throw new MojoExecutionException("The webapp directory of [" + project.getId() +
                     "] does not exist - please make sure the project is packaged!");
         }
-        files.add(new File(webappDirectory, "WEB-INF"));
+        codeRepositories.add(new CodeRepository(new File(webappDirectory, "WEB-INF")));
     }
 
     void log(DeadCode deadCode) {
