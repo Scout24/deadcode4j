@@ -17,5 +17,3 @@ Features
 Internals
 ---------
 * integrate logging; candidate for slf4j is http://code.google.com/p/slf4j-maven-plugin-log (multithreading issue though)
-* use commons-io DirectoryWalker instead of plexus thing
-    * also provide filter for `WEB-INF/classes` from outside, as this is nothing the DeadCodeFinder should be aware of

@@ -7,6 +7,11 @@ Features
 * Execute _package_ phase, scan [`webappDirectory/WEB-INF`](http://maven.apache.org/plugins/maven-war-plugin/exploded-mojo.html#webappDirectory) additionally to the output directory
 * Mojo is now marked as an aggregator, analyzing all projects of a reactor
 
+Internal
+--------
+* handle each file independently, i.e. no more setup of a ClassPool & ClassLoader with which to access all classes/files
+* use [commons-io](http://commons.apache.org/io/) to iterate over files
+
 ###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.1.0...master)
 
 v.1.1.0
