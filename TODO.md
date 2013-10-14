@@ -6,10 +6,10 @@ Features
     * org.springframework.stereotype.Service
     * org.springframework.stereotype.Repository
     * org.springframework.context.annotation.Import (hopefully this is recognized by Javassist anyways)
-* JSR330 annotations
+* JEE6
     * javax.inject.Named
-* Hibernate annotations
     * javax.persistence.metamodel.StaticMetamodel
+* Hibernate annotations
     * org.hibernate.annotations.Type
     * investigate
 * recognize cyclic dependencies
