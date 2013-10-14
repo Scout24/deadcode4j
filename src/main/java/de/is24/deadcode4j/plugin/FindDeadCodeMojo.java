@@ -5,7 +5,7 @@ import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeRepository;
 import de.is24.deadcode4j.DeadCode;
 import de.is24.deadcode4j.DeadCodeFinder;
-import de.is24.deadcode4j.analyzer.ClassFileAnalyzer;
+import de.is24.deadcode4j.analyzer.ClassDependencyAnalyzer;
 import de.is24.deadcode4j.analyzer.SpringXmlAnalyzer;
 import de.is24.deadcode4j.analyzer.TldAnalyzer;
 import de.is24.deadcode4j.analyzer.WebXmlAnalyzer;
@@ -82,7 +82,7 @@ public class FindDeadCodeMojo extends AbstractMojo {
     }
 
     private DeadCode analyzeCode() throws MojoExecutionException {
-        Set<Analyzer> analyzers = newHashSet(new ClassFileAnalyzer(), new SpringXmlAnalyzer(), new TldAnalyzer(), new WebXmlAnalyzer());
+        Set<Analyzer> analyzers = newHashSet(new ClassDependencyAnalyzer(), new SpringXmlAnalyzer(), new TldAnalyzer(), new WebXmlAnalyzer());
         DeadCodeFinder deadCodeFinder = new DeadCodeFinder(analyzers);
         return deadCodeFinder.findDeadCode(gatherCodeRepositories());
     }

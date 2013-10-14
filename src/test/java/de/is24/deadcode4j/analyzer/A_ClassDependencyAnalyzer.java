@@ -9,11 +9,11 @@ import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-public final class A_ClassFileAnalyzer extends AnAnalyzer {
+public final class A_ClassDependencyAnalyzer extends AnAnalyzer {
 
     @Test
     public void parsesAClassFileReportsItsExistenceAndReportsItsDependencies() {
-        ClassFileAnalyzer objectUnderTest = new ClassFileAnalyzer();
+        ClassDependencyAnalyzer objectUnderTest = new ClassDependencyAnalyzer();
 
         CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("SingleClass.class"));
@@ -26,7 +26,7 @@ public final class A_ClassFileAnalyzer extends AnAnalyzer {
 
     @Test
     public void reportsTheDependencyOfAClassToAnother() {
-        ClassFileAnalyzer objectUnderTest = new ClassFileAnalyzer();
+        ClassDependencyAnalyzer objectUnderTest = new ClassDependencyAnalyzer();
 
         CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("DependingClass.class"));
@@ -39,7 +39,7 @@ public final class A_ClassFileAnalyzer extends AnAnalyzer {
 
     @Test
     public void doesNotParseNonClassFile() {
-        ClassFileAnalyzer objectUnderTest = new ClassFileAnalyzer();
+        ClassDependencyAnalyzer objectUnderTest = new ClassDependencyAnalyzer();
 
         CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("spring.xml"));

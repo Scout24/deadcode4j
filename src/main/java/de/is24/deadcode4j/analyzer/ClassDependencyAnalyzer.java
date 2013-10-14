@@ -12,7 +12,7 @@ import java.util.Collection;
  *
  * @since 1.0.0
  */
-public class ClassFileAnalyzer extends ByteCodeAnalyzer implements Analyzer {
+public class ClassDependencyAnalyzer extends ByteCodeAnalyzer implements Analyzer {
 
     @Override
     protected void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
