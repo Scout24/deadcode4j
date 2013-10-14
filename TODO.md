@@ -9,6 +9,7 @@ Features
 * JSR330 annotations
     * javax.inject.Named
 * Hibernate annotations
+    * javax.persistence.metamodel.StaticMetamodel
     * org.hibernate.annotations.Type
     * investigate
 * recognize cyclic dependencies
