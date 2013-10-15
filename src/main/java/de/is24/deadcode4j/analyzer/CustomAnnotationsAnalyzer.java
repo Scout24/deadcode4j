@@ -8,9 +8,10 @@ import javassist.bytecode.annotation.Annotation;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
-import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.singleton;
 
 /**
@@ -20,7 +21,7 @@ import static java.util.Collections.singleton;
  */
 public class CustomAnnotationsAnalyzer extends ByteCodeAnalyzer {
 
-    private final List<String> customAnnotations;
+    private final Collection<String> customAnnotations;
 
     /**
      * Creates a new <code>CustomAnnotationsAnalyzer</code>.
@@ -29,7 +30,7 @@ public class CustomAnnotationsAnalyzer extends ByteCodeAnalyzer {
      * @since 1.3.0
      */
     public CustomAnnotationsAnalyzer(@Nonnull Iterable<String> customAnnotations) {
-        this.customAnnotations = newArrayList(customAnnotations);
+        this.customAnnotations = newHashSet(customAnnotations);
         if (this.customAnnotations.isEmpty()) {
             throw new IllegalArgumentException("customAnnotations cannot by empty!");
         }
