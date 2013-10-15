@@ -2,7 +2,7 @@ v.1.3.0-SNAPSHOT
 ================
 Features
 --------
-* nothing as of yet
+* Added possibility to specify which annotations mark a class as being _live code_
 
 ###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.2.0...master)
 

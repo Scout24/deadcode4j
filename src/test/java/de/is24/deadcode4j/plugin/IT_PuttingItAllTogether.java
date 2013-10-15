@@ -39,8 +39,7 @@ public class IT_PuttingItAllTogether extends AbstractMojoTestCase {
         verify(logMock).info("Analyzed 14 class(es).");
         verify(logMock).info("Ignoring 1 class(es) which seem(s) to be unused.");
         verify(logMock).warn("Class [com.acme.Foo] should be ignored, but is not dead. You should remove the configuration entry.");
-        verify(logMock).warn("Found 3 unused class(es):");
-        verify(logMock).warn("  AnnotatedClass");
+        verify(logMock).warn("Found 2 unused class(es):");
         verify(logMock).warn("  DeadServlet");
         verify(logMock).warn("  SingleClass");
     }

@@ -28,7 +28,7 @@ public class CustomAnnotationsAnalyzer extends ByteCodeAnalyzer {
      * @param customAnnotations a list of fully qualified (annotation) class names indicating a class is still in use
      * @since 1.3.0
      */
-    public CustomAnnotationsAnalyzer(@Nonnull List<String> customAnnotations) {
+    public CustomAnnotationsAnalyzer(@Nonnull Iterable<String> customAnnotations) {
         this.customAnnotations = newArrayList(customAnnotations);
         if (this.customAnnotations.isEmpty()) {
             throw new IllegalArgumentException("customAnnotations cannot by empty!");

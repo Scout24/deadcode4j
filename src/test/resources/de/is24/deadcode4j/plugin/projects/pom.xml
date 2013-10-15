@@ -14,6 +14,9 @@
                 <groupId>de.is24.mavenplugins</groupId>
                 <artifactId>deadcode4j-maven-plugin</artifactId>
                 <configuration>
+                    <annotationsMarkingLiveCode>
+                        <param>de.is24.deadcode4j.junit.Annotation</param>
+                    </annotationsMarkingLiveCode>
                     <classesToIgnore>
                         <param>DependingClass</param>
                         <param>com.acme.Foo</param>

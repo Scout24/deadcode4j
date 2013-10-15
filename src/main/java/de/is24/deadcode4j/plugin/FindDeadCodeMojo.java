@@ -5,10 +5,7 @@ import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeRepository;
 import de.is24.deadcode4j.DeadCode;
 import de.is24.deadcode4j.DeadCodeFinder;
-import de.is24.deadcode4j.analyzer.ClassDependencyAnalyzer;
-import de.is24.deadcode4j.analyzer.SpringXmlAnalyzer;
-import de.is24.deadcode4j.analyzer.TldAnalyzer;
-import de.is24.deadcode4j.analyzer.WebXmlAnalyzer;
+import de.is24.deadcode4j.analyzer.*;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.AbstractMojo;
@@ -55,6 +52,13 @@ public class FindDeadCodeMojo extends AbstractMojo {
      */
     @Parameter
     Set<String> classesToIgnore;
+    /**
+     * Lists the fqcn of the annotations marking a class as being "live code".
+     *
+     * @since 1.3.0
+     */
+    @Parameter
+    private Set<String> annotationsMarkingLiveCode;
     @Component
     private MojoExecution mojoExecution;
     @Parameter(property = "reactorProjects", readonly = true)
@@ -83,6 +87,10 @@ public class FindDeadCodeMojo extends AbstractMojo {
 
     private DeadCode analyzeCode() throws MojoExecutionException {
         Set<Analyzer> analyzers = newHashSet(new ClassDependencyAnalyzer(), new SpringXmlAnalyzer(), new TldAnalyzer(), new WebXmlAnalyzer());
+        if (annotationsMarkingLiveCode != null && !annotationsMarkingLiveCode.isEmpty()) {
+            analyzers.add(new CustomAnnotationsAnalyzer(annotationsMarkingLiveCode));
+            getLog().info("Treating classes annotated with any of [" + annotationsMarkingLiveCode + "] as live code.");
+        }
         DeadCodeFinder deadCodeFinder = new DeadCodeFinder(analyzers);
         return deadCodeFinder.findDeadCode(gatherCodeRepositories());
     }
