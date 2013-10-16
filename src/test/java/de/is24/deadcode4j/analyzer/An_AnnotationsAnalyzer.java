@@ -11,13 +11,14 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-public final class A_CustomAnnotationsAnalyzer extends AnAnalyzer {
+public final class An_AnnotationsAnalyzer extends AnAnalyzer {
 
-    private CustomAnnotationsAnalyzer objectUnderTest;
+    private AnnotationsAnalyzer objectUnderTest;
 
     @Before
     public void setUpObjectUnderTest() {
-        this.objectUnderTest = new CustomAnnotationsAnalyzer(asList("de.is24.deadcode4j.junit.Annotation"));
+        this.objectUnderTest = new AnnotationsAnalyzer("junit", asList("de.is24.deadcode4j.junit.Annotation")) {
+        };
     }
 
     @Test
