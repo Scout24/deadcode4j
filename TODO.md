@@ -1,9 +1,5 @@
 Features
 --------
-* JEE6
-   * javax.annotation.ManagedBean
-   * javax.inject.Named
-   * javax.persistence.metamodel.StaticMetamodel
 * Hibernate annotations
    * org.hibernate.annotations.Type
    * investigate

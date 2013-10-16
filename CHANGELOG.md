@@ -2,6 +2,10 @@ v.1.3.0-SNAPSHOT
 ================
 Features
 --------
+* Mark classes being annotated with those JEE annotations as _live code_:
+   * [`javax.annotation.ManagedBean`](http://docs.oracle.com/javaee/6/api/javax/annotation/ManagedBean.html)
+   * [`javax.inject.Named`](http://docs.oracle.com/javaee/6/api/javax/inject/Named.html)
+   * [`javax.persistence.metamodel.StaticMetamodel`](http://docs.oracle.com/javaee/6/api/javax/persistence/metamodel/StaticMetamodel.html)
 * Mark classes being annotated with those [Spring annotations](http://docs.spring.io/spring/docs/3.2.4.RELEASE/spring-framework-reference/html/beans.html#beans-stereotype-annotations) as _live code_:
     * org.springframework.stereotype.Component
     * org.springframework.stereotype.Controller

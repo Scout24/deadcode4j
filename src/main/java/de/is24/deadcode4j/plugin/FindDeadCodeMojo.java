@@ -88,6 +88,7 @@ public class FindDeadCodeMojo extends AbstractMojo {
     private DeadCode analyzeCode() throws MojoExecutionException {
         Set<Analyzer> analyzers = newHashSet(
                 new ClassDependencyAnalyzer(),
+                new JeeAnnotationsAnalyzer(),
                 new SpringAnnotationsAnalyzer(),
                 new SpringXmlAnalyzer(),
                 new TldAnalyzer(),
