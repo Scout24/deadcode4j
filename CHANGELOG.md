@@ -2,6 +2,12 @@ v.1.3.0-SNAPSHOT
 ================
 Features
 --------
+* Mark classes being annotated with those [Spring annotations](http://docs.spring.io/spring/docs/3.2.4.RELEASE/spring-framework-reference/html/beans.html#beans-stereotype-annotations) as _live code_:
+    * org.springframework.stereotype.Component
+    * org.springframework.stereotype.Controller
+    * org.springframework.stereotype.Service
+    * org.springframework.stereotype.Repository
+    * org.springframework.jmx.export.annotation.ManagedResource
 * Added possibility to specify which annotations mark a class as being _live code_
 
 ###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.2.0...master)

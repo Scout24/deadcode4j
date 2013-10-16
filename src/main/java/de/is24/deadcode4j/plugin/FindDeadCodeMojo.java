@@ -86,7 +86,12 @@ public class FindDeadCodeMojo extends AbstractMojo {
     }
 
     private DeadCode analyzeCode() throws MojoExecutionException {
-        Set<Analyzer> analyzers = newHashSet(new ClassDependencyAnalyzer(), new SpringXmlAnalyzer(), new TldAnalyzer(), new WebXmlAnalyzer());
+        Set<Analyzer> analyzers = newHashSet(
+                new ClassDependencyAnalyzer(),
+                new SpringAnnotationsAnalyzer(),
+                new SpringXmlAnalyzer(),
+                new TldAnalyzer(),
+                new WebXmlAnalyzer());
         if (annotationsMarkingLiveCode != null && !annotationsMarkingLiveCode.isEmpty()) {
             analyzers.add(new CustomAnnotationsAnalyzer(annotationsMarkingLiveCode));
             getLog().info("Treating classes annotated with any of [" + annotationsMarkingLiveCode + "] as live code.");

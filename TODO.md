@@ -1,10 +1,5 @@
 Features
 --------
-* Spring annotations
-   * org.springframework.stereotype.Component
-   * org.springframework.stereotype.Controller
-   * org.springframework.stereotype.Service
-   * org.springframework.stereotype.Repository
 * JEE6
    * javax.annotation.ManagedBean
    * javax.inject.Named
