@@ -1,6 +1,5 @@
 package de.is24.deadcode4j.plugin;
 
-import com.google.common.collect.Ordering;
 import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeRepository;
 import de.is24.deadcode4j.DeadCode;
@@ -11,7 +10,6 @@ import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -22,7 +20,6 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,6 +28,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static de.is24.deadcode4j.Utils.*;
+import static java.util.Collections.emptySet;
 import static org.apache.commons.io.filefilter.FileFilterUtils.asFileFilter;
 import static org.apache.commons.io.filefilter.FileFilterUtils.notFileFilter;
 import static org.apache.maven.plugin.MojoExecution.Source.CLI;
@@ -51,7 +49,7 @@ public class FindDeadCodeMojo extends AbstractMojo {
      * @since 1.0.1
      */
     @Parameter
-    Set<String> classesToIgnore;
+    private Set<String> classesToIgnore = emptySet();
     /**
      * Lists the fqcn of the annotations marking a class as being "live code".
      *
@@ -116,47 +114,8 @@ public class FindDeadCodeMojo extends AbstractMojo {
         return packagingHandler.getCodeRepositoryFor(project);
     }
 
-    void log(DeadCode deadCode) {
-        logAnalyzedClasses(deadCode.getAnalyzedClasses());
-
-        Collection<String> deadClasses = newArrayList(deadCode.getDeadClasses());
-        removeAndLogIgnoredClasses(deadClasses);
-
-        logDeadClasses(deadClasses);
-    }
-
-    private void logAnalyzedClasses(Collection<String> analyzedClasses) {
-        getLog().info("Analyzed " + analyzedClasses.size() + " class(es).");
-    }
-
-    private void removeAndLogIgnoredClasses(Collection<String> deadClasses) {
-        if (this.classesToIgnore == null)
-            return;
-
-        final int numberOfUnusedClasses = deadClasses.size();
-        for (String ignoredClass : this.classesToIgnore) {
-            if (!deadClasses.remove(ignoredClass)) {
-                getLog().warn("Class [" + ignoredClass + "] should be ignored, but is not dead. You should remove the configuration entry.");
-            }
-        }
-
-        int removedClasses = numberOfUnusedClasses - deadClasses.size();
-        if (removedClasses != 0) {
-            getLog().info("Ignoring " + removedClasses + " class(es) which seem(s) to be unused.");
-        }
-    }
-
-    private void logDeadClasses(Collection<String> deadClasses) {
-        Log log = getLog();
-        int numberOfDeadClasses = deadClasses.size();
-        if (numberOfDeadClasses == 0) {
-            log.info("No unused classes found. Rejoice!");
-            return;
-        }
-        log.warn("Found " + numberOfDeadClasses + " unused class(es):");
-        for (String unusedClass : Ordering.natural().sortedCopy(deadClasses)) {
-            log.warn("  " + unusedClass);
-        }
+    private void log(DeadCode deadCode) {
+        new DeadCodeLogger(getLog()).log(deadCode, this.classesToIgnore);
     }
 
     private void logGoodbye() {

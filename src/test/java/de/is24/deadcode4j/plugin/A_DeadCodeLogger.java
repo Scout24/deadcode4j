@@ -5,31 +5,35 @@ import org.apache.maven.plugin.logging.Log;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.Collections;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singleton;
+import static java.util.Arrays.asList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-public class A_FindDeadCodeMojo {
+public class A_DeadCodeLogger {
 
+    private final Collection<String> noClasses = Collections.emptyList();
+    private DeadCodeLogger objectUnderTest;
     private Log logMock;
-    private FindDeadCodeMojo findDeadCodeMojo;
+
+    private static Collection<String> classes(String... classes) {
+        return asList(classes);
+    }
 
     @Before
     public void setUpMojo() {
-        findDeadCodeMojo = new FindDeadCodeMojo();
-
         logMock = mock(Log.class);
-        findDeadCodeMojo.setLog(logMock);
+        objectUnderTest = new DeadCodeLogger(logMock);
     }
 
     @Test
     public void logsThatNoDeadCodeWasFound() throws Exception {
-        List<String> deadCode = emptyList();
-        findDeadCodeMojo.log(new DeadCode(newArrayList("A", "B"), deadCode));
+        DeadCode deadCode = new DeadCode(classes("A", "B"), noClasses);
+        Collection<String> ignoredClasses = noClasses;
+
+        objectUnderTest.log(deadCode, ignoredClasses);
 
         verifyNumberOfAnalyzedClassesIs(2);
         verifyNoDeadCodeWasFound();
@@ -37,7 +41,10 @@ public class A_FindDeadCodeMojo {
 
     @Test
     public void logsThatOneDeadClassOfThreeWasFound() throws Exception {
-        findDeadCodeMojo.log(new DeadCode(newArrayList("A", "B", "SingleClass"), singleton("SingleClass")));
+        DeadCode deadCode = new DeadCode(classes("A", "B", "SingleClass"), classes("SingleClass"));
+        Collection<String> ignoredClasses = noClasses;
+
+        objectUnderTest.log(deadCode, ignoredClasses);
 
         verifyNumberOfAnalyzedClassesIs(3);
         verify(logMock).warn("Found 1 unused class(es):");
@@ -46,9 +53,10 @@ public class A_FindDeadCodeMojo {
 
     @Test
     public void logsThatAClassWasIgnored() throws Exception {
-        findDeadCodeMojo.classesToIgnore = singleton("SingleClass");
+        DeadCode deadCode = new DeadCode(classes("SingleClass"), classes("SingleClass"));
+        Collection<String> ignoredClasses = classes("SingleClass");
 
-        findDeadCodeMojo.log(new DeadCode(singleton("SingleClass"), singleton("SingleClass")));
+        objectUnderTest.log(deadCode, ignoredClasses);
 
         verifyNumberOfAnalyzedClassesIs(1);
         verify(logMock).info("Ignoring 1 class(es) which seem(s) to be unused.");
@@ -57,10 +65,10 @@ public class A_FindDeadCodeMojo {
 
     @Test
     public void logsThatAnIgnoredClassDoesNotExist() throws Exception {
-        findDeadCodeMojo.classesToIgnore = singleton("com.acme.Foo");
+        DeadCode deadCode = new DeadCode(noClasses, noClasses);
+        Collection<String> ignoredClasses = classes("com.acme.Foo");
 
-        List<String> emptyList = emptyList();
-        findDeadCodeMojo.log(new DeadCode(emptyList, emptyList));
+        objectUnderTest.log(deadCode, ignoredClasses);
 
         verifyNumberOfAnalyzedClassesIs(0);
         verify(logMock).warn("Class [com.acme.Foo] should be ignored, but is not dead. You should remove the configuration entry.");
