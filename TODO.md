@@ -2,6 +2,8 @@ Features
 --------
 * Hibernate annotations
    * org.hibernate.annotations.Type
+   * org.hibernate.annotations.TypeDef
+   * org.hibernate.annotations.TypeDefs
    * investigate
 * recognize cyclic dependencies
 * generate a report
