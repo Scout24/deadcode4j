@@ -7,6 +7,7 @@ import java.util.Arrays;
 /**
  * Analyzes class files: marks a class as being in use if it is annotated with one of those Spring annotations:
  * <ul>
+ * <li>org.springframework.context.annotation.Configuration</li>
  * <li>org.springframework.jmx.export.annotation.ManagedResource</li>
  * <li>org.springframework.stereotype.Component</li>
  * <li>org.springframework.stereotype.Controller</li>
@@ -20,6 +21,7 @@ public final class SpringAnnotationsAnalyzer extends AnnotationsAnalyzer impleme
 
     public SpringAnnotationsAnalyzer() {
         super("_Spring-Annotation_", Arrays.asList(
+                "org.springframework.context.annotation.Configuration",
                 "org.springframework.jmx.export.annotation.ManagedResource",
                 "org.springframework.stereotype.Component",
                 "org.springframework.stereotype.Controller",

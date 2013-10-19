@@ -11,6 +11,7 @@ Features
     * org.springframework.stereotype.Controller
     * org.springframework.stereotype.Service
     * org.springframework.stereotype.Repository
+    * org.springframework.context.annotation.Configuration
     * org.springframework.jmx.export.annotation.ManagedResource
 * Added possibility to specify which annotations mark a class as being _live code_
 
