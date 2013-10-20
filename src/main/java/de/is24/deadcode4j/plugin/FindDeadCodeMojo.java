@@ -125,7 +125,7 @@ public class FindDeadCodeMojo extends AbstractMojo {
         }
     }
 
-    private static interface PackagingHandler {
+    private interface PackagingHandler {
         @Nullable
         CodeRepository getCodeRepositoryFor(@Nonnull MavenProject project) throws MojoExecutionException;
     }
