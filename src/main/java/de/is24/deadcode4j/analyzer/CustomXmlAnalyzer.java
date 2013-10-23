@@ -12,6 +12,8 @@ import java.util.regex.Pattern;
  */
 public class CustomXmlAnalyzer extends XmlAnalyzer {
 
+    private static final Pattern XPATH_PATTERN = Pattern.compile("^(?<element>[^/]+)/(?:@(?<attribute>.*)|text\\(\\))$");
+
     /**
      * Creates a new <code>CustomXmlAnalyzer</code>.
      * Be sure to call {@link #registerXPath(String)} after construction.
@@ -39,10 +41,9 @@ public class CustomXmlAnalyzer extends XmlAnalyzer {
      * @throws IllegalArgumentException if <code>xPath</code> is not supported
      */
     public void registerXPath(String xPath) throws IllegalArgumentException {
-        Pattern pattern = Pattern.compile("^(?<element>[^/]+)/(?:@(?<attribute>.*)|text\\(\\))$");
-        Matcher matcher = pattern.matcher(xPath);
+        Matcher matcher = XPATH_PATTERN.matcher(xPath);
         if (!matcher.matches()) {
-            throw new IllegalArgumentException("[" + xPath + "] is not an allowed XPath expression!");
+            throw new IllegalArgumentException("Although [" + xPath + "] may be a valid XPath expression, it is not supported!");
         }
         String element = matcher.group("element");
         String attribute = matcher.group("attribute");
