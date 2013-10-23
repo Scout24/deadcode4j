@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
  */
 public class CustomXmlAnalyzer extends XmlAnalyzer {
 
-    private static final Pattern XPATH_PATTERN = Pattern.compile("^(?<element>[^/]+)/(?:@(?<attribute>.*)|text\\(\\))$");
+    private static final Pattern XPATH_PATTERN = Pattern.compile("^([^/]+)/(?:@(.*)|text\\(\\))$");
 
     /**
      * Creates a new <code>CustomXmlAnalyzer</code>.
@@ -45,8 +45,8 @@ public class CustomXmlAnalyzer extends XmlAnalyzer {
         if (!matcher.matches()) {
             throw new IllegalArgumentException("Although [" + xPath + "] may be a valid XPath expression, it is not supported!");
         }
-        String element = matcher.group("element");
-        String attribute = matcher.group("attribute");
+        String element = matcher.group(1);
+        String attribute = matcher.group(2);
         if (attribute != null) {
             registerClassAttribute(element, attribute);
         } else {
