@@ -1,7 +1,8 @@
 Features
 --------
 * Hibernate annotations
-   * org.hibernate.annotations.Type
+   * org.hibernate.annotations.GenericGenerator(strategy)
+   * org.hibernate.annotations.Type(type)
    * org.hibernate.annotations.TypeDef
    * org.hibernate.annotations.TypeDefs
    * investigate
