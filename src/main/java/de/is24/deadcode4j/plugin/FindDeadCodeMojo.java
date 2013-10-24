@@ -43,13 +43,8 @@ import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
 @Execute(phase = PACKAGE)
 public class FindDeadCodeMojo extends AbstractMojo {
 
-    /**
-     * Lists the "dead" classes that should be ignored.
-     *
-     * @since 1.0.1
-     */
-    @Parameter
-    private Set<String> classesToIgnore = emptySet();
+    private final Map<String, PackagingHandler> packagingHandlers = newHashMap();
+    private final PackagingHandler defaultPackagingHandler = new DefaultPackagingHandler();
     /**
      * Lists the fqcn of the annotations marking a class as being "live code".
      *
@@ -57,13 +52,18 @@ public class FindDeadCodeMojo extends AbstractMojo {
      */
     @Parameter
     private Set<String> annotationsMarkingLiveCode;
+    /**
+     * Lists the "dead" classes that should be ignored.
+     *
+     * @since 1.0.1
+     */
+    @Parameter
+    private Set<String> classesToIgnore = emptySet();
     @Component
     private MojoExecution mojoExecution;
     @Parameter(property = "reactorProjects", readonly = true)
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private List<MavenProject> reactorProjects;
-    private final Map<String, PackagingHandler> packagingHandlers = newHashMap();
-    private final PackagingHandler defaultPackagingHandler = new DefaultPackagingHandler();
 
     public FindDeadCodeMojo() {
         packagingHandlers.put("pom", new PomPackagingHandler());
