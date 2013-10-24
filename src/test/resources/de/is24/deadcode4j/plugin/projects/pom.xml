@@ -21,6 +21,15 @@
                         <param>DependingClass</param>
                         <param>com.acme.Foo</param>
                     </classesToIgnore>
+                    <customXmls>
+                        <customXml>
+                            <rootElement>nospring</rootElement>
+                            <endOfFileName>.xml</endOfFileName>
+                            <xPaths>
+                                <param>bean/@class</param>
+                            </xPaths>
+                        </customXml>
+                    </customXmls>
                     <reactorProjects>
                         <project implementation="de.is24.deadcode4j.plugin.stubs.ProjectStub">
                             <outputDirectory>${testScenarios.directory}</outputDirectory>

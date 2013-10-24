@@ -12,7 +12,6 @@ Features
     * context-param:contextClass
     * context-param:contextInitializerClasses
 * [CXF XML endpoint definitions](http://cxf.apache.org/schemas/jaxws.xsd)
-* Custom XML finder
 * JBoss XML files
 * Aspectj XML files
 * Spring/Quartz XML bean definition

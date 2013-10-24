@@ -28,6 +28,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static de.is24.deadcode4j.Utils.*;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static org.apache.commons.io.filefilter.FileFilterUtils.asFileFilter;
 import static org.apache.commons.io.filefilter.FileFilterUtils.notFileFilter;
@@ -51,7 +52,7 @@ public class FindDeadCodeMojo extends AbstractMojo {
      * @since 1.3.0
      */
     @Parameter
-    private Set<String> annotationsMarkingLiveCode;
+    private Set<String> annotationsMarkingLiveCode = emptySet();
     /**
      * Lists the "dead" classes that should be ignored.
      *
@@ -59,6 +60,13 @@ public class FindDeadCodeMojo extends AbstractMojo {
      */
     @Parameter
     private Set<String> classesToIgnore = emptySet();
+    /**
+     * Lists the custom XML analysis configurations to set up.
+     *
+     * @since 1.3.0
+     */
+    @Parameter
+    private List<CustomXml> customXmls = emptyList();
     @Component
     private MojoExecution mojoExecution;
     @Parameter(property = "reactorProjects", readonly = true)
@@ -91,9 +99,18 @@ public class FindDeadCodeMojo extends AbstractMojo {
                 new SpringXmlAnalyzer(),
                 new TldAnalyzer(),
                 new WebXmlAnalyzer());
-        if (annotationsMarkingLiveCode != null && !annotationsMarkingLiveCode.isEmpty()) {
+        if (!annotationsMarkingLiveCode.isEmpty()) {
             analyzers.add(new CustomAnnotationsAnalyzer(annotationsMarkingLiveCode));
             getLog().info("Treating classes annotated with any of [" + annotationsMarkingLiveCode + "] as live code.");
+        }
+        if (!customXmls.isEmpty()) {
+            for (CustomXml customXml: customXmls) {
+                CustomXmlAnalyzer customXmlAnalyzer = new CustomXmlAnalyzer("_custom-XML_", customXml.getEndOfFileName(), customXml.getRootElement());
+                for (String xPath: customXml.getXPaths()) {
+                    customXmlAnalyzer.registerXPath(xPath);
+                }
+                analyzers.add(customXmlAnalyzer);
+            }
         }
         DeadCodeFinder deadCodeFinder = new DeadCodeFinder(analyzers);
         return deadCodeFinder.findDeadCode(gatherCodeRepositories());
