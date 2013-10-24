@@ -99,21 +99,29 @@ public class FindDeadCodeMojo extends AbstractMojo {
                 new SpringXmlAnalyzer(),
                 new TldAnalyzer(),
                 new WebXmlAnalyzer());
-        if (!annotationsMarkingLiveCode.isEmpty()) {
-            analyzers.add(new CustomAnnotationsAnalyzer(annotationsMarkingLiveCode));
-            getLog().info("Treating classes annotated with any of [" + annotationsMarkingLiveCode + "] as live code.");
-        }
-        if (!customXmls.isEmpty()) {
-            for (CustomXml customXml: customXmls) {
-                CustomXmlAnalyzer customXmlAnalyzer = new CustomXmlAnalyzer("_custom-XML_", customXml.getEndOfFileName(), customXml.getRootElement());
-                for (String xPath: customXml.getXPaths()) {
-                    customXmlAnalyzer.registerXPath(xPath);
-                }
-                analyzers.add(customXmlAnalyzer);
-            }
-        }
+        addCustomAnnotationsAnalyzerIfConfigured(analyzers);
+        addCustomXmlAnalyzerIfConfigured(analyzers);
         DeadCodeFinder deadCodeFinder = new DeadCodeFinder(analyzers);
         return deadCodeFinder.findDeadCode(gatherCodeRepositories());
+    }
+
+    private void addCustomAnnotationsAnalyzerIfConfigured(Set<Analyzer> analyzers) {
+        if (annotationsMarkingLiveCode.isEmpty())
+            return;
+        analyzers.add(new CustomAnnotationsAnalyzer(annotationsMarkingLiveCode));
+        getLog().info("Treating classes annotated with any of [" + annotationsMarkingLiveCode + "] as live code.");
+    }
+
+    private void addCustomXmlAnalyzerIfConfigured(Set<Analyzer> analyzers) {
+        if (customXmls.isEmpty())
+            return;
+        for (CustomXml customXml : customXmls) {
+            CustomXmlAnalyzer customXmlAnalyzer = new CustomXmlAnalyzer("_custom-XML_", customXml.getEndOfFileName(), customXml.getRootElement());
+            for (String xPath : customXml.getXPaths()) {
+                customXmlAnalyzer.registerXPath(xPath);
+            }
+            analyzers.add(customXmlAnalyzer);
+        }
     }
 
     private Iterable<CodeRepository> gatherCodeRepositories() throws MojoExecutionException {
