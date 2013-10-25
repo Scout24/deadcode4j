@@ -72,7 +72,7 @@ public class DeadCodeFinder {
         return deadClasses;
     }
 
-    private static class CodeRepositoryAnalyzer extends DirectoryWalker {
+    private static class CodeRepositoryAnalyzer extends DirectoryWalker<Void> {
 
         private final Iterable<? extends Analyzer> analyzers;
         private final CodeContext codeContext;
