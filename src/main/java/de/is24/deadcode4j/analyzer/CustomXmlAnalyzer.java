@@ -26,8 +26,22 @@ public class CustomXmlAnalyzer extends XmlAnalyzer {
      *                      i.e. there are multiple valid root elements
      * @since 1.3.0
      */
-    public CustomXmlAnalyzer(@Nonnull String dependerId, @Nonnull String endOfFileName, @Nullable String rootElement) {
+    protected CustomXmlAnalyzer(@Nonnull String dependerId, @Nonnull String endOfFileName, @Nullable String rootElement) {
         super(dependerId, endOfFileName, rootElement);
+    }
+
+    /**
+     * Creates a new <code>CustomXmlAnalyzer</code>.
+     * Be sure to call {@link #registerXPath(String)} after construction.
+     *
+     * @param endOfFileName the file suffix used to determine if a file should be analyzed; this can be a mere file
+     *                      extension like <tt>.xml</tt> or a partial path like <tt>WEB-INF/web.xml</tt>
+     * @param rootElement   the expected XML root element or <code>null</code> if such an element does not exist;
+     *                      i.e. there are multiple valid root elements
+     * @since 1.3.0
+     */
+    public CustomXmlAnalyzer(@Nonnull String endOfFileName, @Nullable String rootElement) {
+        this("_custom-XML_", endOfFileName, rootElement);
     }
 
     /**
