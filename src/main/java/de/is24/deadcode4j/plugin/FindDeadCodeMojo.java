@@ -42,6 +42,7 @@ import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
  */
 @Mojo(name = "find", aggregator = true, threadSafe = true, requiresProject = true)
 @Execute(phase = PACKAGE)
+@SuppressWarnings("PMD.TooManyStaticImports")
 public class FindDeadCodeMojo extends AbstractMojo {
 
     private final Map<String, PackagingHandler> packagingHandlers = newHashMap();
