@@ -119,6 +119,7 @@ public class FindDeadCodeMojo extends AbstractMojo {
             CustomXmlAnalyzer customXmlAnalyzer = new CustomXmlAnalyzer("_custom-XML_", customXml.getEndOfFileName(), customXml.getRootElement());
             for (String xPath : customXml.getXPaths()) {
                 customXmlAnalyzer.registerXPath(xPath);
+                getLog().info("Treating classes found at [/" + customXml.getRootElement() + "//" + xPath + "] as live code.");
             }
             analyzers.add(customXmlAnalyzer);
         }
