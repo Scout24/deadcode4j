@@ -53,10 +53,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <version.findbugs>2.0.2</version.findbugs>
-        <maven.plugin.version>3.0.5</maven.plugin.version>
-
         <testScenarios.directory>${java.io.tmpdir}/deadcode4j</testScenarios.directory>
+
+        <version.findbugs>2.0.2</version.findbugs>
+        <version.maven>3.0.5</version.maven>
     </properties>
 
     <build>
@@ -203,12 +203,12 @@
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api</artifactId>
-            <version>${maven.plugin.version}</version>
+            <version>${version.maven}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-core</artifactId>
-            <version>${maven.plugin.version}</version>
+            <version>${version.maven}</version>
         </dependency>
         <dependency>
             <groupId>org.javassist</groupId>
@@ -248,7 +248,7 @@
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-compat</artifactId>
-            <version>${maven.plugin.version}</version>
+            <version>${version.maven}</version>
             <scope>test</scope>
         </dependency>
 
