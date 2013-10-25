@@ -2,6 +2,8 @@ package de.is24.deadcode4j.plugin;
 
 import java.util.List;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 /**
  * <code>CustomXml</code> is used to configure a {@link de.is24.deadcode4j.analyzer.CustomXmlAnalyzer}.
  *
@@ -14,7 +16,7 @@ public class CustomXml {
     @SuppressWarnings("UnusedDeclaration")
     private String rootElement;
     @SuppressWarnings("UnusedDeclaration")
-    private List<String> xPaths;
+    private List<String> xPaths = newArrayList();
 
     public String getEndOfFileName() {
         return endOfFileName;
