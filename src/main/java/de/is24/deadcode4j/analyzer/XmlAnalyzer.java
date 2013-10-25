@@ -57,6 +57,9 @@ public abstract class XmlAnalyzer implements Analyzer {
         } catch (Exception e) {
             throw new RuntimeException("Failed to set up XML parser!", e);
         }
+        if (endOfFileName.trim().length() == 0) {
+            throw new IllegalArgumentException("[endOfFileName] must be set!");
+        }
         this.handler = new XmlHandler();
         this.dependerId = dependerId;
         this.endOfFileName = endOfFileName;
