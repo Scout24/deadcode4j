@@ -52,6 +52,8 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <version.findbugs>2.0.2</version.findbugs>
         <maven.plugin.version>3.0.5</maven.plugin.version>
 
         <testScenarios.directory>${java.io.tmpdir}/deadcode4j</testScenarios.directory>
@@ -188,7 +190,13 @@
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
-            <version>2.0.1</version>
+            <version>${version.findbugs}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>annotations</artifactId>
+            <version>${version.findbugs}</version>
             <scope>provided</scope>
         </dependency>
 
