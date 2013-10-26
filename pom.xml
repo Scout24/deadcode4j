@@ -4,7 +4,7 @@
 
     <groupId>de.is24.mavenplugins</groupId>
     <artifactId>deadcode4j-maven-plugin</artifactId>
-    <version>1.3.0-SNAPSHOT</version>
+    <version>1.3</version>
     <packaging>maven-plugin</packaging>
     <name>deadcode4j Maven Plugin</name>
     <description>Finds unused classes of a project</description>
