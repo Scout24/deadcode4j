@@ -77,4 +77,4 @@ _Note that it if you do not intend to bind *deadcode4j* to a lifecycle phase, it
 
 -   **classesToIgnore**
 
-    A list of classes that should be ignored by *deadcode4j* (and thus not listed as being dead).
+    A list of fully qualified classes that should be ignored by *deadcode4j* (and thus not listed as being dead).
