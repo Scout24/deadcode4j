@@ -1,4 +1,11 @@
-v.1.3.0-SNAPSHOT
+v.1.4-SNAPSHOT
+================
+Features
+--------
+
+###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.3...master)
+
+v.1.3
 ================
 Features
 --------
@@ -16,7 +23,7 @@ Features
 * Added possibility to specify which annotations mark a class as being _live code_
 * Added possibility to specify a custom XML analyzer treating either an element's text or attribute as a used class
 
-###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.2.0...master)
+###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.2.0...deadcode4j-maven-plugin-1.3)
 
 v.1.2.0
 ================
