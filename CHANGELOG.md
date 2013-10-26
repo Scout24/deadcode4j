@@ -10,16 +10,16 @@ v.1.3
 Features
 --------
 * Mark classes being annotated with those JEE annotations as _live code_:
-   * [`javax.annotation.ManagedBean`](http://docs.oracle.com/javaee/6/api/javax/annotation/ManagedBean.html)
-   * [`javax.inject.Named`](http://docs.oracle.com/javaee/6/api/javax/inject/Named.html)
-   * [`javax.persistence.metamodel.StaticMetamodel`](http://docs.oracle.com/javaee/6/api/javax/persistence/metamodel/StaticMetamodel.html)
+    * [`javax.annotation.ManagedBean`](http://docs.oracle.com/javaee/6/api/javax/annotation/ManagedBean.html)
+    * [`javax.inject.Named`](http://docs.oracle.com/javaee/6/api/javax/inject/Named.html)
+    * [`javax.persistence.metamodel.StaticMetamodel`](http://docs.oracle.com/javaee/6/api/javax/persistence/metamodel/StaticMetamodel.html)
 * Mark classes being annotated with those [Spring annotations](http://docs.spring.io/spring/docs/3.2.4.RELEASE/spring-framework-reference/html/beans.html#beans-stereotype-annotations) as _live code_:
-    * org.springframework.stereotype.Component
-    * org.springframework.stereotype.Controller
-    * org.springframework.stereotype.Service
-    * org.springframework.stereotype.Repository
-    * org.springframework.context.annotation.Configuration
-    * org.springframework.jmx.export.annotation.ManagedResource
+    * `org.springframework.stereotype.Component`
+    * `org.springframework.stereotype.Controller`
+    * `org.springframework.stereotype.Service`
+    * `org.springframework.stereotype.Repository`
+    * `org.springframework.context.annotation.Configuration`
+    * `org.springframework.jmx.export.annotation.ManagedResource`
 * Added possibility to specify which annotations mark a class as being _live code_
 * Added possibility to specify a custom XML analyzer treating either an element's text or attribute as a used class
 
