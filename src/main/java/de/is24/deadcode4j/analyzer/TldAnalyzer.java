@@ -8,7 +8,7 @@ import de.is24.deadcode4j.Analyzer;
  *
  * @since 1.2.0
  */
-public class TldAnalyzer extends XmlAnalyzer implements Analyzer {
+public class TldAnalyzer extends SimpleXmlAnalyzer implements Analyzer {
 
     public TldAnalyzer() {
         super("_tld_", ".tld", "taglib");

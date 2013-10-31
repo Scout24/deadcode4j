@@ -7,7 +7,7 @@ import de.is24.deadcode4j.Analyzer;
  *
  * @since 1.1.0
  */
-public class SpringXmlAnalyzer extends XmlAnalyzer implements Analyzer {
+public class SpringXmlAnalyzer extends SimpleXmlAnalyzer implements Analyzer {
 
     public SpringXmlAnalyzer() {
         super("_Spring-XML_", ".xml", "beans");

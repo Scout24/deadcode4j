@@ -1,5 +1,7 @@
 package de.is24.deadcode4j.analyzer;
 
+import de.is24.deadcode4j.Analyzer;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.regex.Matcher;
@@ -10,7 +12,7 @@ import java.util.regex.Pattern;
  *
  * @since 1.3
  */
-public class CustomXmlAnalyzer extends XmlAnalyzer {
+public class CustomXmlAnalyzer extends SimpleXmlAnalyzer implements Analyzer {
 
     private static final Pattern XPATH_PATTERN = Pattern.compile("^([^/]+)/(?:@(.*)|text\\(\\))$");
 

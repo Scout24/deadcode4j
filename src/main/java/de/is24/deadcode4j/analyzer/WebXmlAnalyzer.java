@@ -7,7 +7,7 @@ import de.is24.deadcode4j.Analyzer;
  *
  * @since 1.2.0
  */
-public class WebXmlAnalyzer extends XmlAnalyzer implements Analyzer {
+public class WebXmlAnalyzer extends SimpleXmlAnalyzer implements Analyzer {
 
     public WebXmlAnalyzer() {
         super("_web.xml_", "web.xml", "web-app");
