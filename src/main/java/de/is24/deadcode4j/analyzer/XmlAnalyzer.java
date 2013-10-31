@@ -31,7 +31,6 @@ public abstract class XmlAnalyzer implements Analyzer {
     private final XmlHandler handler;
     private final String dependerId;
     private final String endOfFileName;
-    private final String rootElement;
     private final Map<String, String> relevantElements = newHashMap();
     private final Collection<String> referencedClasses = newArrayList();
 
@@ -60,10 +59,9 @@ public abstract class XmlAnalyzer implements Analyzer {
         if (endOfFileName.trim().length() == 0) {
             throw new IllegalArgumentException("[endOfFileName] must be set!");
         }
-        this.handler = new XmlHandler();
+        this.handler = new XmlHandler(rootElement);
         this.dependerId = dependerId;
         this.endOfFileName = endOfFileName;
-        this.rootElement = rootElement;
     }
 
     @Override
@@ -123,8 +121,13 @@ public abstract class XmlAnalyzer implements Analyzer {
      * @since 1.2.0
      */
     private class XmlHandler extends DefaultHandler {
+        private final String rootElement;
         private boolean firstElement = true;
         private StringBuilder buffer;
+
+        public XmlHandler(String rootElement) {
+            this.rootElement = rootElement;
+        }
 
         @Override
         public void startElement(String uri, String localName, String qName, Attributes attributes) throws StopParsing {
