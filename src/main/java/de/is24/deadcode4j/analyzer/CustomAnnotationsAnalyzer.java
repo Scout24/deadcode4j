@@ -5,7 +5,7 @@ import javax.annotation.Nonnull;
 /**
  * Analyzes class files: marks a class as being in use if it is annotated with one of the specified annotations.
  *
- * @since 1.3.0
+ * @since 1.3
  */
 public class CustomAnnotationsAnalyzer extends AnnotationsAnalyzer {
 
@@ -13,7 +13,7 @@ public class CustomAnnotationsAnalyzer extends AnnotationsAnalyzer {
      * Creates a new <code>CustomAnnotationsAnalyzer</code>.
      *
      * @param customAnnotations a list of fully qualified (annotation) class names indicating a class is still in use
-     * @since 1.3.0
+     * @since 1.3
      */
     public CustomAnnotationsAnalyzer(@Nonnull Iterable<String> customAnnotations) {
         super("_custom-annotations_", customAnnotations);

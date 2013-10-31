@@ -15,7 +15,7 @@ import java.util.Arrays;
  * <li>org.springframework.stereotype.Repository</li>
  * </ul>
  *
- * @since 1.3.0
+ * @since 1.3
  */
 public final class SpringAnnotationsAnalyzer extends AnnotationsAnalyzer implements Analyzer {
 

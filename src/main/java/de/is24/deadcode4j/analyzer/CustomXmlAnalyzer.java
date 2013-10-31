@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 /**
  * Analyzes XML files: lists the registered elements' text or attribute values as being referenced classes.
  *
- * @since 1.3.0
+ * @since 1.3
  */
 public class CustomXmlAnalyzer extends XmlAnalyzer {
 
@@ -24,7 +24,7 @@ public class CustomXmlAnalyzer extends XmlAnalyzer {
      *                      extension like <tt>.xml</tt> or a partial path like <tt>WEB-INF/web.xml</tt>
      * @param rootElement   the expected XML root element or <code>null</code> if such an element does not exist;
      *                      i.e. there are multiple valid root elements
-     * @since 1.3.0
+     * @since 1.3
      */
     protected CustomXmlAnalyzer(@Nonnull String dependerId, @Nonnull String endOfFileName, @Nullable String rootElement) {
         super(dependerId, endOfFileName, rootElement);
@@ -38,7 +38,7 @@ public class CustomXmlAnalyzer extends XmlAnalyzer {
      *                      extension like <tt>.xml</tt> or a partial path like <tt>WEB-INF/web.xml</tt>
      * @param rootElement   the expected XML root element or <code>null</code> if such an element does not exist;
      *                      i.e. there are multiple valid root elements
-     * @since 1.3.0
+     * @since 1.3
      */
     public CustomXmlAnalyzer(@Nonnull String endOfFileName, @Nullable String rootElement) {
         this("_custom-XML_", endOfFileName, rootElement);

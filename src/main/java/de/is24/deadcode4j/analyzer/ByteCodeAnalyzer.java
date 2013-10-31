@@ -14,7 +14,7 @@ import java.io.IOException;
 /**
  * Serves as a base class with which to analyze byte code (classes).
  *
- * @since 1.3.0
+ * @since 1.3
  */
 public abstract class ByteCodeAnalyzer implements Analyzer {
 
@@ -29,7 +29,7 @@ public abstract class ByteCodeAnalyzer implements Analyzer {
      * Perform an analysis for the specified class.
      * Results must be reported via the capabilities of the {@link CodeContext}.
      *
-     * @since 1.3.0
+     * @since 1.3
      */
     protected abstract void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz);
 

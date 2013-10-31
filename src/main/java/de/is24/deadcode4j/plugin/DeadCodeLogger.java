@@ -12,7 +12,7 @@ import static com.google.common.collect.Lists.newArrayList;
 /**
  * The <code>DeadCodeLogger</code> is responsible for logging the findings of a code analysis.
  *
- * @since 1.3.0
+ * @since 1.3
  */
 public class DeadCodeLogger {
 

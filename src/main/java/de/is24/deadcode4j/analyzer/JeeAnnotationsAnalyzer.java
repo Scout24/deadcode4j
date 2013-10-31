@@ -12,7 +12,7 @@ import java.util.Arrays;
  * <li>javax.persistence.metamodel.StaticMetamodel</li>
  * </ul>
  *
- * @since 1.3.0
+ * @since 1.3
  */
 public final class JeeAnnotationsAnalyzer extends AnnotationsAnalyzer implements Analyzer {
 

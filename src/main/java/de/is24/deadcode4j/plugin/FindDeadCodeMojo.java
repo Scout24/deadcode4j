@@ -50,7 +50,7 @@ public class FindDeadCodeMojo extends AbstractMojo {
     /**
      * Lists the fqcn of the annotations marking a class as being "live code".
      *
-     * @since 1.3.0
+     * @since 1.3
      */
     @Parameter
     private Set<String> annotationsMarkingLiveCode = emptySet();
@@ -64,7 +64,7 @@ public class FindDeadCodeMojo extends AbstractMojo {
     /**
      * Lists the custom XML analysis configurations to set up.
      *
-     * @since 1.3.0
+     * @since 1.3
      */
     @Parameter
     private List<CustomXml> customXmls = emptyList();

@@ -9,7 +9,7 @@ import static com.google.common.collect.Lists.newArrayList;
 /**
  * <code>CustomXml</code> is used to configure a {@link de.is24.deadcode4j.analyzer.CustomXmlAnalyzer}.
  *
- * @since 1.3.0
+ * @since 1.3
  */
 public class CustomXml {
 

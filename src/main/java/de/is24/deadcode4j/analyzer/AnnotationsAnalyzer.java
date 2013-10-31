@@ -17,7 +17,7 @@ import static java.util.Collections.singleton;
 /**
  * Serves as a base class with which to mark classes as being in use if they carry one of the specified annotations.
  *
- * @since 1.3.0
+ * @since 1.3
  */
 public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
 
@@ -30,7 +30,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
      * @param dependerId  a description of the <i>depending entity</i> with which to
      *                    call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, java.util.Collection)}
      * @param annotations a list of fully qualified (annotation) class names indicating a class is still in use
-     * @since 1.3.0
+     * @since 1.3
      */
     protected AnnotationsAnalyzer(@Nonnull String dependerId, @Nonnull Iterable<String> annotations) {
         this.dependerId = dependerId;
