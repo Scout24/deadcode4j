@@ -115,11 +115,7 @@ public abstract class XmlAnalyzer implements Analyzer {
     private static class StopParsing extends SAXException {
     }
 
-    /**
-     * Used to indicate that XML parsing can be stopped.
-     *
-     * @since 1.2.0
-     */
+    /** @since 1.2.0 */
     private class XmlHandler extends DefaultHandler {
         private final String rootElement;
         private boolean firstElement = true;
