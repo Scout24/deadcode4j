@@ -12,7 +12,6 @@ import java.util.Collection;
 import java.util.List;
 
 import static com.google.common.collect.Sets.newHashSet;
-import static java.util.Collections.singleton;
 
 /**
  * Serves as a base class with which to mark classes as being in use if they carry one of the specified annotations.
@@ -46,7 +45,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
         codeContext.addAnalyzedClass(className);
         for (String annotation : getAnnotationsOf(clazz)) {
             if (this.annotations.contains(annotation)) {
-                codeContext.addDependencies(this.dependerId, singleton(className));
+                codeContext.addDependencies(this.dependerId, className);
             }
         }
     }

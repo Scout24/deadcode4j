@@ -8,6 +8,7 @@ import java.util.Set;
 
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
+import static java.util.Arrays.asList;
 
 /**
  * The <code>CodeContext</code> provides the capability to
@@ -27,6 +28,7 @@ public class CodeContext {
      * @param depender  the depending entity, e.g. a class or a more conceptual entity like Spring XML files or a web.xml;
      *                  the latter should somehow be marked as such, e.g. "_Spring_"
      * @param dependees the classes being depended upon
+     * @see #addDependencies(String, String...)
      * @since 1.1.0
      */
     public void addDependencies(@Nonnull String depender, @Nonnull Collection<String> dependees) {
@@ -36,6 +38,19 @@ public class CodeContext {
             dependencyMap.put(depender, existingDependees);
         }
         existingDependees.addAll(dependees);
+    }
+
+    /**
+     * Report code dependencies.
+     *
+     * @param depender  the depending entity, e.g. a class or a more conceptual entity like Spring XML files or a web.xml;
+     *                  the latter should somehow be marked as such, e.g. "_Spring_"
+     * @param dependees the classes being depended upon
+     * @see #addDependencies(String, java.util.Collection)
+     * @since 1.4
+     */
+    public void addDependencies(@Nonnull String depender, @Nonnull String... dependees) {
+        addDependencies(depender, asList(dependees));
     }
 
     /**

@@ -10,7 +10,6 @@ import javax.annotation.Nullable;
 import java.util.Map;
 
 import static com.google.common.collect.Maps.newHashMap;
-import static java.util.Collections.singleton;
 
 /**
  * Serves as simple base class with which to analyze XML files by defining which element nodes' text or attributes
@@ -96,7 +95,7 @@ public abstract class SimpleXmlAnalyzer extends XmlAnalyzer implements Analyzer 
                 } else {
                     String className = attributes.getValue(attributeName);
                     if (className != null) {
-                        codeContext.addDependencies(dependerId, singleton(className.trim()));
+                        codeContext.addDependencies(dependerId, className.trim());
                     }
                 }
             }
@@ -112,7 +111,7 @@ public abstract class SimpleXmlAnalyzer extends XmlAnalyzer implements Analyzer 
         @Override
         public void endElement(String uri, String localName, String qName) {
             if (buffer != null) {
-                codeContext.addDependencies(dependerId, singleton(buffer.toString()));
+                codeContext.addDependencies(dependerId, buffer.toString());
                 buffer = null;
             }
         }
