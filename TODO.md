@@ -9,9 +9,6 @@ Features
 * JAXB annotations
     * javax.xml.bind.annotation.XmlSchema
 * Spring Web Flow XML
-* org.springframework.web.context.ContextLoader
-    * context-param:contextClass
-    * context-param:contextInitializerClasses
 * [CXF XML endpoint definitions](http://cxf.apache.org/schemas/jaxws.xsd)
 * JBoss XML files
 * Aspectj XML files
