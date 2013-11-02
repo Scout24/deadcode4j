@@ -6,8 +6,6 @@ Features
    * org.hibernate.annotations.TypeDef
    * org.hibernate.annotations.TypeDefs
    * investigate
-* JAXB annotations
-    * javax.xml.bind.annotation.XmlSchema
 * Spring Web Flow XML
 * [CXF XML endpoint definitions](http://cxf.apache.org/schemas/jaxws.xsd)
 * JBoss XML files

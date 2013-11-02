@@ -5,6 +5,7 @@ Features
 * More thorough analysis of `web.xml` files: look for the parameters specified by Spring's [`ContextLoader`](http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/context/ContextLoader.html) and [`FrameworkServlet`](http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/servlet/FrameworkServlet.html)
     * `contextClass` for an instance of `ConfigurableWebApplicationContext`
     * `contextInitializerClasses` for instances of `ApplicationContextInitializer`
+* Mark classes being annotated with the JAXB annotation `javax.xml.bind.annotation.XmlSchema` as _live code_
 
 ###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.3...master)
 
