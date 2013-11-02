@@ -23,6 +23,14 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
     private final Collection<String> annotations;
     private final String dependerId;
 
+    private AnnotationsAnalyzer(@Nonnull String dependerId, @Nonnull Collection<String> annotations) {
+        this.dependerId = dependerId;
+        this.annotations = annotations;
+        if (this.annotations.isEmpty()) {
+            throw new IllegalArgumentException("annotations cannot by empty!");
+        }
+    }
+
     /**
      * Creates a new <code>AnnotationsAnalyzer</code>.
      *
@@ -32,11 +40,19 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
      * @since 1.3
      */
     protected AnnotationsAnalyzer(@Nonnull String dependerId, @Nonnull Iterable<String> annotations) {
-        this.dependerId = dependerId;
-        this.annotations = newHashSet(annotations);
-        if (this.annotations.isEmpty()) {
-            throw new IllegalArgumentException("annotations cannot by empty!");
-        }
+        this(dependerId, newHashSet(annotations));
+    }
+
+    /**
+     * Creates a new <code>AnnotationsAnalyzer</code>.
+     *
+     * @param dependerId  a description of the <i>depending entity</i> with which to
+     *                    call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, java.util.Collection)}
+     * @param annotations a list of fully qualified (annotation) class names indicating a class is still in use
+     * @since 1.4
+     */
+    protected AnnotationsAnalyzer(@Nonnull String dependerId, @Nonnull String... annotations) {
+        this(dependerId, newHashSet(annotations));
     }
 
     @Override

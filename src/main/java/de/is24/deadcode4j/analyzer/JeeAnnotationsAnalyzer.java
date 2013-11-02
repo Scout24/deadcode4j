@@ -2,8 +2,6 @@ package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.Analyzer;
 
-import java.util.Arrays;
-
 /**
  * Analyzes class files: marks a class as being in use if it is annotated with one of those JEE annotations:
  * <ul>
@@ -17,10 +15,10 @@ import java.util.Arrays;
 public final class JeeAnnotationsAnalyzer extends AnnotationsAnalyzer implements Analyzer {
 
     public JeeAnnotationsAnalyzer() {
-        super("_JEE-Annotation_", Arrays.asList(
+        super("_JEE-Annotation_",
                 "javax.annotation.ManagedBean",
                 "javax.inject.Named",
-                "javax.persistence.metamodel.StaticMetamodel"));
+                "javax.persistence.metamodel.StaticMetamodel");
     }
 
 }

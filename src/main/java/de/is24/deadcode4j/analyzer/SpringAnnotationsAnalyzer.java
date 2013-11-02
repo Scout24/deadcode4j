@@ -2,8 +2,6 @@ package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.Analyzer;
 
-import java.util.Arrays;
-
 /**
  * Analyzes class files: marks a class as being in use if it is annotated with one of those Spring annotations:
  * <ul>
@@ -20,13 +18,13 @@ import java.util.Arrays;
 public final class SpringAnnotationsAnalyzer extends AnnotationsAnalyzer implements Analyzer {
 
     public SpringAnnotationsAnalyzer() {
-        super("_Spring-Annotation_", Arrays.asList(
+        super("_Spring-Annotation_",
                 "org.springframework.context.annotation.Configuration",
                 "org.springframework.jmx.export.annotation.ManagedResource",
                 "org.springframework.stereotype.Component",
                 "org.springframework.stereotype.Controller",
                 "org.springframework.stereotype.Service",
-                "org.springframework.stereotype.Repository"));
+                "org.springframework.stereotype.Repository");
     }
 
 }

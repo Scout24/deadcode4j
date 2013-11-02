@@ -7,7 +7,6 @@ import org.junit.Test;
 import java.util.Map;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
-import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
@@ -17,7 +16,7 @@ public final class An_AnnotationsAnalyzer extends AnAnalyzer {
 
     @Before
     public void setUpObjectUnderTest() {
-        this.objectUnderTest = new AnnotationsAnalyzer("junit", asList("de.is24.deadcode4j.junit.Annotation")) {
+        this.objectUnderTest = new AnnotationsAnalyzer("junit", "de.is24.deadcode4j.junit.Annotation") {
         };
     }
 
