@@ -78,7 +78,7 @@ If you want to configure the plugin and make use of some of its features, list *
       </pluginManagement>
     </build>
 
-Now it even gets easier: run `mvn deadcode4j:find` and you'll get
+Now run `mvn de.is24.mavenplugins:deadcode4j-maven-plugin:find` again and you'll get
 
     [INFO] --- deadcode4j-maven-plugin:1.3:find (default-cli) @ someProject ---
     [INFO] Analyzed 42 class(es).
