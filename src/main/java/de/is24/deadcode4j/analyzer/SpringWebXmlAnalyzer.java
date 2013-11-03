@@ -9,6 +9,7 @@ import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Deque;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.collect.Iterables.elementsEqual;
 import static java.util.Arrays.asList;
 
@@ -58,21 +59,15 @@ public class SpringWebXmlAnalyzer extends XmlAnalyzer {
             public void endElement(String uri, String localName, String qName) {
                 if (isAtParameterLevel()) {
                     reportDependencies();
+                    clearParameter();
+                } else {
+                    storeCharacters(localName);
                 }
                 deque.removeLast();
-                storeCharacters(localName);
             }
 
             private boolean isAtParameterLevel() {
-                return isAtContextParameter() || isAtServletInitParameter();
-            }
-
-            private boolean isAtContextParameter() {
-                return matchesPath(CONTEXT_PARAM_PATH);
-            }
-
-            private boolean isAtServletInitParameter() {
-                return matchesPath(SERVLET_INIT_PARAM_PATH);
+                return matchesPath(CONTEXT_PARAM_PATH) || matchesPath(SERVLET_INIT_PARAM_PATH);
             }
 
             private boolean matchesPath(Collection<String> path) {
@@ -80,15 +75,21 @@ public class SpringWebXmlAnalyzer extends XmlAnalyzer {
             }
 
             private void reportDependencies() {
-                if (paramValue != null) {
-                    if ("contextClass".equals(paramName)) {
-                        codeContext.addDependencies("_Spring-Context_", paramValue);
-                    } else if ("contextInitializerClasses".equals(paramName)) {
-                        for (String initializerClass : paramValue.split(",")) {
+                if (paramValue == null) {
+                    return;
+                }
+                if ("contextClass".equals(paramName)) {
+                    codeContext.addDependencies("_Spring-Context_", paramValue);
+                } else if ("contextInitializerClasses".equals(paramName)) {
+                    for (String initializerClass : paramValue.split(",")) {
+                        if (!isNullOrEmpty(initializerClass)) {
                             codeContext.addDependencies("_Spring-ContextInitializer_", initializerClass.trim());
                         }
                     }
                 }
+            }
+
+            private void clearParameter() {
                 paramName = null;
                 paramValue = null;
             }
