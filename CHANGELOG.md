@@ -37,6 +37,7 @@ Features
     * `org.springframework.jmx.export.annotation.ManagedResource`
 * Added possibility to specify which annotations mark a class as being _live code_
 * Added possibility to specify a custom XML analyzer treating either an element's text or attribute as a used class
+* Added goal `find-without-packaging` to speed up execution if need be
 
 ###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.2.0...deadcode4j-maven-plugin-1.3)
 

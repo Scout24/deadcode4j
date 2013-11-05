@@ -39,7 +39,7 @@ import static org.apache.maven.plugin.MojoExecution.Source.CLI;
  * @see FindDeadCodeMojo
  * @since 1.4
  */
-@Mojo(name = "findWithoutPackaging", aggregator = true, threadSafe = true, requiresProject = true)
+@Mojo(name = "find-without-packaging", aggregator = true, threadSafe = true, requiresProject = true)
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class FindDeadCodeWithoutPackagingMojo extends AbstractMojo {
 
