@@ -59,6 +59,7 @@ public abstract class XmlAnalyzer implements Analyzer {
     @Nonnull
     protected abstract DefaultHandler createHandlerFor(@Nonnull CodeContext codeContext);
 
+    @SuppressWarnings("PMD.EmptyCatchBlock")
     private void analyzeXmlFile(@Nonnull CodeContext codeContext, @Nonnull File file) {
         InputStream in = null;
         try {

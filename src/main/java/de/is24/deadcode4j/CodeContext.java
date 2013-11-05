@@ -20,6 +20,7 @@ import static java.util.Arrays.asList;
  *
  * @since 1.1.0
  */
+@SuppressWarnings("PMD.TooManyStaticImports")
 public class CodeContext {
 
     private final Set<String> analyzedClasses = newHashSet();
