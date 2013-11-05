@@ -7,6 +7,8 @@ Features
     * `contextInitializerClasses` for instances of `ApplicationContextInitializer`
 * Mark classes being annotated with the JAXB annotation `javax.xml.bind.annotation.XmlSchema` as _live code_
 * Classes whose members are annotated with [`org.hibernate.annotations.Type`](http://docs.jboss.org/hibernate/annotations/3.5/api/org/hibernate/annotations/Type.html) now depend on the class defining the associated [`org.hibernate.annotations.TypeDef`](http://docs.jboss.org/hibernate/annotations/3.5/api/org/hibernate/annotations/TypeDef.html)
+* Mark classes being annotated with those [JSF](https://javaserverfaces.java.net/) as _live code_:
+    * `javax.faces.convert.FacesConverter`
 
 ###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.3...master)
 
