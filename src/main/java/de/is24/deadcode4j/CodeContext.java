@@ -32,6 +32,7 @@ public class CodeContext {
      * @since 1.1.0
      */
     public void addDependencies(@Nonnull String depender, @Nonnull Collection<String> dependees) {
+        dependees.remove(depender); // this would be cheating
         Set<String> existingDependees = dependencyMap.get(depender);
         if (existingDependees == null) {
             existingDependees = new HashSet<String>();

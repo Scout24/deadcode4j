@@ -20,7 +20,6 @@ public class ClassDependencyAnalyzer extends ByteCodeAnalyzer implements Analyze
 
         @SuppressWarnings("unchecked")
         Collection<String> refClasses = clazz.getRefClasses();
-        refClasses.remove(className);
 
         codeContext.addAnalyzedClass(className);
         codeContext.addDependencies(className, refClasses);
