@@ -1,5 +1,6 @@
 package de.is24.deadcode4j;
 
+import com.google.common.base.Function;
 import org.apache.maven.project.MavenProject;
 
 import javax.annotation.Nonnull;
@@ -22,6 +23,23 @@ public final class Utils {
     @Nonnull
     public static String getKeyFor(@Nonnull MavenProject project) {
         return project.getGroupId() + ":" + project.getArtifactId();
+    }
+
+    /**
+     * Returns a <code>Function</code> transforming a <code>MavenProject</code> into it's
+     * {@link #getKeyFor(org.apache.maven.project.MavenProject) key representation}.
+     *
+     * @see #getKeyFor(org.apache.maven.project.MavenProject)
+     * @since 1.4
+     */
+    @Nonnull
+    public static Function<MavenProject, String> toKey() {
+        return new Function<MavenProject, String>() {
+            @Override
+            public String apply(@Nullable MavenProject input) {
+                return input == null? null: getKeyFor(input);
+            }
+        };
     }
 
     /**

@@ -14,14 +14,23 @@
                 <groupId>de.is24.mavenplugins</groupId>
                 <artifactId>deadcode4j-maven-plugin</artifactId>
                 <version>@project.version@</version>
+                <configuration>
+                    <modulesToSkip>
+                        <param>secondReactorProject</param>
+                        <param>secondJavaProject</param>
+                    </modulesToSkip>
+                </configuration>
             </plugin>
         </plugins>
     </build>
 
     <modules>
         <module>javaProject</module>
-        <module>secondWebAppProject</module>
         <module>webAppProject</module>
+        <module>secondWebAppProject</module>
+
+        <module>secondJavaProject</module>
+        <module>secondReactorProject</module>
     </modules>
 
 </project>

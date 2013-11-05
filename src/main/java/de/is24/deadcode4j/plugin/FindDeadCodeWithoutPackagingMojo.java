@@ -19,11 +19,10 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Lists.transform;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static de.is24.deadcode4j.Utils.*;
@@ -66,6 +65,15 @@ public class FindDeadCodeWithoutPackagingMojo extends AbstractMojo {
      */
     @Parameter
     private List<CustomXml> customXmls = emptyList();
+    @Component
+    private MavenProject project;
+    /**
+     * Lists the modules that should not be analyzed.
+     *
+     * @since 1.4
+     */
+    @Parameter
+    private List<String> modulesToSkip = emptyList();
     @Component
     private MojoExecution mojoExecution;
     @Parameter(property = "reactorProjects", readonly = true)
@@ -112,7 +120,7 @@ public class FindDeadCodeWithoutPackagingMojo extends AbstractMojo {
         if (annotationsMarkingLiveCode.isEmpty())
             return;
         analyzers.add(new CustomAnnotationsAnalyzer(annotationsMarkingLiveCode));
-        getLog().info("Treating classes annotated with any of [" + annotationsMarkingLiveCode + "] as live code.");
+        getLog().info("Treating classes annotated with any of " + annotationsMarkingLiveCode + " as live code.");
     }
 
     private void addCustomXmlAnalyzerIfConfigured(Set<Analyzer> analyzers) {
@@ -133,10 +141,37 @@ public class FindDeadCodeWithoutPackagingMojo extends AbstractMojo {
 
     private Iterable<CodeRepository> gatherCodeRepositories() throws MojoExecutionException {
         List<CodeRepository> codeRepositories = newArrayList();
-        for (MavenProject project : reactorProjects) {
+        for (MavenProject project : getProjectsToAnalyze()) {
             addIfNonNull(codeRepositories, getCodeRepositoryFor(project));
         }
         return codeRepositories;
+    }
+
+    private Collection<MavenProject> getProjectsToAnalyze() {
+        if (this.modulesToSkip.isEmpty()) {
+            return this.reactorProjects;
+        }
+        getLog().info("Skipping modules " + this.modulesToSkip + ":");
+        int baseDirPathIndex = project.getBasedir().getAbsolutePath().length() + 1;
+        ArrayList<MavenProject> mavenProjects = newArrayList(this.reactorProjects);
+        for (MavenProject mavenProject : this.reactorProjects) {
+            if (project.equals(mavenProject)) {
+                continue;
+            }
+            String projectPath = mavenProject.getBasedir().getAbsolutePath();
+            String modulePath = projectPath.substring(baseDirPathIndex);
+            if (this.modulesToSkip.contains(modulePath)) {
+                getLog().info("  Project [" + getKeyFor(mavenProject) + "] will be skipped.");
+                mavenProjects.remove(mavenProject);
+                List<MavenProject> collectedProjects = mavenProject.getCollectedProjects();
+                if (collectedProjects.size() > 0) {
+                    getLog().info("  Aggregated Projects " + transform(collectedProjects, toKey()) + " will be skipped.");
+                    mavenProjects.removeAll(collectedProjects);
+                }
+            }
+        }
+
+        return mavenProjects;
     }
 
     @Nullable
