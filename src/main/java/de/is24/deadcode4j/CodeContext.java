@@ -6,6 +6,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static com.google.common.base.Predicates.equalTo;
+import static com.google.common.base.Predicates.not;
+import static com.google.common.collect.Collections2.filter;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
@@ -32,7 +35,7 @@ public class CodeContext {
      * @since 1.1.0
      */
     public void addDependencies(@Nonnull String depender, @Nonnull Collection<String> dependees) {
-        dependees.remove(depender); // this would be cheating
+        dependees = filter(dependees, not(equalTo(depender))); // this would be cheating
         Set<String> existingDependees = dependencyMap.get(depender);
         if (existingDependees == null) {
             existingDependees = new HashSet<String>();
