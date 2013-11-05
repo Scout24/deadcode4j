@@ -7,8 +7,7 @@ import javassist.CtField;
 import javassist.CtMethod;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.AttributeInfo;
-import javassist.bytecode.annotation.Annotation;
-import javassist.bytecode.annotation.StringMemberValue;
+import javassist.bytecode.annotation.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -21,7 +20,8 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 /**
- * Analyzes class files: looks for <code>org.hibernate.annotations.TypeDef</code> and
+ * Analyzes class files: looks for
+ * <code>org.hibernate.annotations.TypeDef</code>/<code>org.hibernate.annotations.TypeDefs</code> and
  * <code>org.hibernate.annotations.Type</code> annotations and sets up a dependency between the class annotated with
  * <code>@Type</code> and the associated <code>@TypeDef</code> annotated class
  * (i.e. <code>Type.type</code> &rarr; <code>TypeDef.name</code>).
@@ -37,6 +37,7 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
     protected final void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
         codeContext.addAnalyzedClass(clazz.getName());
         processTypeDefAnnotation(clazz);
+        processTypeDefsAnnotation(clazz);
         processTypeAnnotations(clazz);
         reportDependencies(codeContext);
     }
@@ -44,6 +45,10 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
     private void processTypeDefAnnotation(@Nonnull CtClass clazz) {
         @SuppressWarnings("unchecked") List<AttributeInfo> attributes = clazz.getClassFile2().getAttributes();
         Annotation typeDef = getAnnotation(attributes, "org.hibernate.annotations.TypeDef");
+        reportTypedefinition(clazz, typeDef);
+    }
+
+    private void reportTypedefinition(@Nonnull CtClass clazz, @Nullable Annotation typeDef) {
         if (typeDef != null) {
             String typeName = ((StringMemberValue) typeDef.getMemberValue("name")).getValue();
             this.typeDefinitions.put(typeName, clazz.getName());
@@ -51,7 +56,7 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
     }
 
     @Nullable
-    private Annotation getAnnotation(@Nonnull List<AttributeInfo> attributes,@Nonnull String typeName) {
+    private Annotation getAnnotation(@Nonnull List<AttributeInfo> attributes, @Nonnull String typeName) {
         for (AttributeInfo attribute : attributes) {
             if (AnnotationsAttribute.class.isInstance(attribute)) {
                 for (Annotation annotation : AnnotationsAttribute.class.cast(attribute).getAnnotations()) {
@@ -64,20 +69,30 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
         return null;
     }
 
+    private void processTypeDefsAnnotation(@Nonnull CtClass clazz) {
+        @SuppressWarnings("unchecked") List<AttributeInfo> attributes = clazz.getClassFile2().getAttributes();
+        Annotation typeDefs = getAnnotation(attributes, "org.hibernate.annotations.TypeDefs");
+        if (typeDefs != null) {
+            for (MemberValue memberValue : ((ArrayMemberValue) typeDefs.getMemberValue("value")).getValue()) {
+                reportTypedefinition(clazz, ((AnnotationMemberValue) memberValue).getValue());
+            }
+        }
+    }
+
     private void processTypeAnnotations(@Nonnull CtClass clazz) {
         for (CtField field : clazz.getDeclaredFields()) {
             @SuppressWarnings("unchecked") List<AttributeInfo> attributes = field.getFieldInfo2().getAttributes();
-            processMemmerAnnotations(attributes, clazz);
+            processMemberAnnotations(attributes, clazz);
         }
 
         for (CtMethod method : clazz.getDeclaredMethods()) {
             @SuppressWarnings("unchecked") List<AttributeInfo> attributes = method.getMethodInfo2().getAttributes();
-            processMemmerAnnotations(attributes, clazz);
+            processMemberAnnotations(attributes, clazz);
         }
 
     }
 
-    private void processMemmerAnnotations(List<AttributeInfo> attributes, CtClass clazz) {
+    private void processMemberAnnotations(List<AttributeInfo> attributes, CtClass clazz) {
         Annotation annotation = getAnnotation(attributes, "org.hibernate.annotations.Type");
         if (annotation != null) {
             String typeName = ((StringMemberValue) annotation.getMemberValue("type")).getValue();

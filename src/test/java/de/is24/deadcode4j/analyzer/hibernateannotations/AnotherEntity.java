@@ -2,9 +2,9 @@ package de.is24.deadcode4j.analyzer.hibernateannotations;
 
 import org.hibernate.annotations.Type;
 
-public class Entity {
+public class AnotherEntity {
 
-    @Type(type = "byteClass")
+    @Type(type = "shortClass")
     private Number id;
 
 }
