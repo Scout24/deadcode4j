@@ -11,7 +11,7 @@ Features
 * Custom Subclass definition
 * _Detection 2.0_
     * check if a Spring bean is really used
-    * check if a FacesConverter is really used
+    * check if JSF stuff is really used
 * Class.forName
 * JSP imports
 * recognize cyclic dependencies
