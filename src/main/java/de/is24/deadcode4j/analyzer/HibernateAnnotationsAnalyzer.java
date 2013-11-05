@@ -13,12 +13,10 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * Analyzes class files: looks for <code>org.hibernate.annotations.TypeDef</code> annotations and
- * <ul>
- *     <li>sets up a dependency from the <i><code>typeClass</code></i> to the annotated class</li>
- *     <li>sets up a dependency from classes having a field or method being annotated with
- *     <code>org.hibernate.annotations.Type</code> to the associated <i><code>typeClass</code></i></li>
- * </ul>
+ * Analyzes class files: looks for <code>org.hibernate.annotations.TypeDef</code> and
+ * <code>org.hibernate.annotations.Type</code> annotations and sets up a dependency between the class annotated with
+ * <code>@Type</code> and the associated <code>@TypeDef</code> annotated class
+ * (i.e. <code>Type.type</code> &rarr; <code>TypeDef.name</code>).
  *
  * @since 1.4
  */
