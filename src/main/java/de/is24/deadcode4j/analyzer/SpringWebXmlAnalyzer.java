@@ -1,5 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
+import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
@@ -23,7 +24,7 @@ import static java.util.Arrays.asList;
  *
  * @since 1.4
  */
-public class SpringWebXmlAnalyzer extends XmlAnalyzer {
+public class SpringWebXmlAnalyzer extends XmlAnalyzer implements Analyzer {
     private static final Collection<String> CONTEXT_PARAM_PATH = asList("web-app", "context-param");
     private static final Collection<String> SERVLET_INIT_PARAM_PATH = asList("web-app", "servlet", "init-param");
 

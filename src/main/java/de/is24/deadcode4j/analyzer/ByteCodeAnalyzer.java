@@ -16,7 +16,7 @@ import java.io.IOException;
  *
  * @since 1.3
  */
-public abstract class ByteCodeAnalyzer implements Analyzer {
+public abstract class ByteCodeAnalyzer extends AnalyzerAdapter implements Analyzer {
 
     @Override
     public final void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull File file) {

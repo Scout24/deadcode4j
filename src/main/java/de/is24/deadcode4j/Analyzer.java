@@ -18,4 +18,12 @@ public interface Analyzer {
      */
     void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull File fileName);
 
+    /**
+     * Indicates that all files have been processed.
+     * This method offers <code>Analyzer</code>s the possibility to report dependencies based on the whole project.
+     *
+     * @since 1.4
+     */
+    void finishAnalysis(@Nonnull CodeContext codeContext);
+
 }

@@ -18,7 +18,7 @@ import java.io.InputStream;
  *
  * @since 1.2.0
  */
-public abstract class XmlAnalyzer implements Analyzer {
+public abstract class XmlAnalyzer extends AnalyzerAdapter implements Analyzer {
     private final SAXParser parser;
     private final String endOfFileName;
 

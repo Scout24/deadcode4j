@@ -1,5 +1,6 @@
 package de.is24.deadcode4j.plugin;
 
+import com.google.common.collect.Sets;
 import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeRepository;
 import de.is24.deadcode4j.DeadCode;
@@ -24,7 +25,6 @@ import java.util.*;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.transform;
 import static com.google.common.collect.Maps.newHashMap;
-import static com.google.common.collect.Sets.newHashSet;
 import static de.is24.deadcode4j.Utils.*;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
@@ -99,7 +99,7 @@ public class FindDeadCodeWithoutPackagingMojo extends AbstractMojo {
     }
 
     private DeadCode analyzeCode() throws MojoExecutionException {
-        Set<Analyzer> analyzers = newHashSet(
+        Set<Analyzer> analyzers = Sets.<Analyzer>newHashSet(
                 new ClassDependencyAnalyzer(),
                 new HibernateAnnotationsAnalyzer(),
                 new JaxbAnnotationsAnalyzer(),

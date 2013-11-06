@@ -93,6 +93,12 @@ public class DeadCodeFinder {
                 analyzer.doAnalysis(this.codeContext, file);
         }
 
+        @Override
+        protected void handleEnd(Collection<Void> results) throws IOException {
+            for (Analyzer analyzer : this.analyzers)
+                analyzer.finishAnalysis(this.codeContext);
+        }
+
     }
 
 }
