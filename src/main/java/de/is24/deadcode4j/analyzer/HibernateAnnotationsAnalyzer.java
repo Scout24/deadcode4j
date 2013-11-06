@@ -12,7 +12,6 @@ import javassist.bytecode.annotation.*;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -39,6 +38,10 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
         processTypeDefAnnotation(clazz);
         processTypeDefsAnnotation(clazz);
         processTypeAnnotations(clazz);
+    }
+
+    @Override
+    public void finishAnalysis(@Nonnull CodeContext codeContext) {
         reportDependencies(codeContext);
     }
 
@@ -113,19 +116,21 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
     }
 
     private void reportDependencies(@Nonnull CodeContext codeContext) {
-        HashSet<String> reportedTypes = newHashSet();
         for (Map.Entry<String, Collection<String>> typeUsage : this.typeUsages.entrySet()) {
             String typeName = typeUsage.getKey();
             String classDefiningType = this.typeDefinitions.get(typeName);
+
+            String dependee = null;
             if (classDefiningType != null) {
+                dependee = classDefiningType;
+            } else if (codeContext.getAnalyzedCode().getAnalyzedClasses().contains(typeName)) {
+                dependee = typeName;
+            } // no matter what else, scope is outside of the analyzed project
+            if (dependee != null) {
                 for (String classUsingType : typeUsage.getValue()) {
-                    codeContext.addDependencies(classUsingType, classDefiningType);
+                    codeContext.addDependencies(classUsingType, dependee);
                 }
-                reportedTypes.add(typeName);
             }
-        }
-        for (String reportedType : reportedTypes) {
-            this.typeUsages.remove(reportedType);
         }
     }
 
