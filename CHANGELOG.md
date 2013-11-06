@@ -6,7 +6,9 @@ Features
     * `contextClass` for an instance of `ConfigurableWebApplicationContext`
     * `contextInitializerClasses` for instances of `ApplicationContextInitializer`
 * Mark classes being annotated with the JAXB annotation `javax.xml.bind.annotation.XmlSchema` as _live code_
-* Classes whose members are annotated with [`org.hibernate.annotations.Type`](http://docs.jboss.org/hibernate/annotations/3.5/api/org/hibernate/annotations/Type.html) now depend on the class defining the associated [`org.hibernate.annotations.TypeDef`](http://docs.jboss.org/hibernate/annotations/3.5/api/org/hibernate/annotations/TypeDef.html)
+* Classes whose members are annotated with [`org.hibernate.annotations.Type`](http://docs.jboss.org/hibernate/annotations/3.5/api/org/hibernate/annotations/Type.html) now depend on
+    * either the class defining the associated [`org.hibernate.annotations.TypeDef`](http://docs.jboss.org/hibernate/annotations/3.5/api/org/hibernate/annotations/TypeDef.html)
+    * or the class specified as `type` if it is part of the analyzed project
 * Mark classes being annotated with those [JSF](https://javaserverfaces.java.net/) as _live code_:
     * `javax.faces.component.behavior.FacesBehavior`
     * `javax.faces.convert.FacesConverter`

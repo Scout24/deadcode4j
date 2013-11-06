@@ -2,7 +2,6 @@ Features
 --------
 * Hibernate annotations
    * org.hibernate.annotations.GenericGenerator(strategy)
-   * org.hibernate.annotations.Type(type)
    * The class using `javax.persistence.GeneratedValue` depends on the class defining the associated `org.hibernate.annotations.GenericGenerator`
 * Spring Web Flow XML
 * [CXF XML endpoint definitions](http://cxf.apache.org/schemas/jaxws.xsd)
