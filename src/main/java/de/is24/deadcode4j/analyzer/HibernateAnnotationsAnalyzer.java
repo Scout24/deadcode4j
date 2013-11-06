@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -82,17 +83,16 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void processTypeAnnotations(@Nonnull CtClass clazz) {
+        List<AttributeInfo> attributes = newArrayList();
         for (CtField field : clazz.getDeclaredFields()) {
-            @SuppressWarnings("unchecked") List<AttributeInfo> attributes = field.getFieldInfo2().getAttributes();
-            processMemberAnnotations(attributes, clazz);
+            attributes.addAll(field.getFieldInfo2().getAttributes());
         }
-
         for (CtMethod method : clazz.getDeclaredMethods()) {
-            @SuppressWarnings("unchecked") List<AttributeInfo> attributes = method.getMethodInfo2().getAttributes();
-            processMemberAnnotations(attributes, clazz);
+            attributes.addAll(method.getMethodInfo2().getAttributes());
         }
-
+        processMemberAnnotations(attributes, clazz);
     }
 
     private void processMemberAnnotations(List<AttributeInfo> attributes, CtClass clazz) {
