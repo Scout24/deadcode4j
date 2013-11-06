@@ -10,7 +10,7 @@ import javassist.bytecode.AttributeInfo;
 import javassist.bytecode.annotation.*;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.lang.annotation.ElementType;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +18,8 @@ import java.util.Map;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
+import static java.lang.annotation.ElementType.*;
+import static java.util.Arrays.asList;
 
 /**
  * Analyzes class files: looks for
@@ -47,57 +49,59 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
     }
 
     private void processTypeDefAnnotation(@Nonnull CtClass clazz) {
-        @SuppressWarnings("unchecked") List<AttributeInfo> attributes = clazz.getClassFile2().getAttributes();
-        Annotation typeDef = getAnnotation(attributes, "org.hibernate.annotations.TypeDef");
-        reportTypedefinition(clazz, typeDef);
-    }
-
-    private void reportTypedefinition(@Nonnull CtClass clazz, @Nullable Annotation typeDef) {
-        if (typeDef != null) {
-            String typeName = ((StringMemberValue) typeDef.getMemberValue("name")).getValue();
-            this.typeDefinitions.put(typeName, clazz.getName());
+        for (Annotation annotation : getAnnotations(clazz, "org.hibernate.annotations.TypeDef", TYPE)) {
+            reportTypeDefinition(clazz, annotation);
         }
     }
 
-    @Nullable
-    private Annotation getAnnotation(@Nonnull List<AttributeInfo> attributes, @Nonnull String typeName) {
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    private Collection<Annotation> getAnnotations(@Nonnull CtClass clazz, @Nonnull String typeName, ElementType... elementTypes) {
+        List<ElementType> types = asList(elementTypes);
+        List<AttributeInfo> attributes = newArrayList();
+        if (types.contains(ElementType.TYPE)) {
+            attributes.addAll(clazz.getClassFile2().getAttributes());
+        }
+        if (types.contains(METHOD)) {
+            for (CtMethod method : clazz.getDeclaredMethods()) {
+                attributes.addAll(method.getMethodInfo2().getAttributes());
+            }
+        }
+        if (types.contains(FIELD)) {
+            for (CtField field : clazz.getDeclaredFields()) {
+                attributes.addAll(field.getFieldInfo2().getAttributes());
+            }
+        }
+
+        List<Annotation> annotations = newArrayList();
         for (AttributeInfo attribute : attributes) {
             if (AnnotationsAttribute.class.isInstance(attribute)) {
                 for (Annotation annotation : AnnotationsAttribute.class.cast(attribute).getAnnotations()) {
                     if (typeName.equals(annotation.getTypeName()))
-                        return annotation;
+                        annotations.add(annotation);
                 }
             }
         }
 
-        return null;
+        return annotations;
+    }
+
+    private void reportTypeDefinition(@Nonnull CtClass clazz, @Nonnull Annotation annotation) {
+        String typeName = ((StringMemberValue) annotation.getMemberValue("name")).getValue();
+        this.typeDefinitions.put(typeName, clazz.getName());
     }
 
     private void processTypeDefsAnnotation(@Nonnull CtClass clazz) {
-        @SuppressWarnings("unchecked") List<AttributeInfo> attributes = clazz.getClassFile2().getAttributes();
-        Annotation typeDefs = getAnnotation(attributes, "org.hibernate.annotations.TypeDefs");
-        if (typeDefs != null) {
-            for (MemberValue memberValue : ((ArrayMemberValue) typeDefs.getMemberValue("value")).getValue()) {
-                reportTypedefinition(clazz, ((AnnotationMemberValue) memberValue).getValue());
+        for (Annotation annotation : getAnnotations(clazz, "org.hibernate.annotations.TypeDefs", TYPE)) {
+            for (MemberValue memberValue : ((ArrayMemberValue) annotation.getMemberValue("value")).getValue()) {
+                reportTypeDefinition(clazz, ((AnnotationMemberValue) memberValue).getValue());
             }
         }
     }
 
     @SuppressWarnings("unchecked")
     private void processTypeAnnotations(@Nonnull CtClass clazz) {
-        List<AttributeInfo> attributes = newArrayList();
-        for (CtField field : clazz.getDeclaredFields()) {
-            attributes.addAll(field.getFieldInfo2().getAttributes());
-        }
-        for (CtMethod method : clazz.getDeclaredMethods()) {
-            attributes.addAll(method.getMethodInfo2().getAttributes());
-        }
-        processMemberAnnotations(attributes, clazz);
-    }
-
-    private void processMemberAnnotations(List<AttributeInfo> attributes, CtClass clazz) {
-        Annotation annotation = getAnnotation(attributes, "org.hibernate.annotations.Type");
-        if (annotation != null) {
+        for (Annotation annotation : getAnnotations(clazz, "org.hibernate.annotations.Type", METHOD, FIELD)) {
             String typeName = ((StringMemberValue) annotation.getMemberValue("type")).getValue();
             reportTypeUsage(clazz, typeName);
         }
