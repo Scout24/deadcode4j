@@ -6,6 +6,6 @@ import javax.persistence.Id;
 
 public class ClassUsingTypeWithoutTypeDef {
     @Id
-    @Type(type = "java.lang.Long")
+    @Type(type = "IndependentClass")
     private Number id;
 }

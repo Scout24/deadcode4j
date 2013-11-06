@@ -71,13 +71,14 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
     public void shouldRecognizeDependencyFromClassWithTypeAnnotatedMethodToReferencedClass() {
         CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassUsingTypeWithoutTypeDef.class"));
+        objectUnderTest.doAnalysis(codeContext, getFile("IndependentClass.class"));
         objectUnderTest.finishAnalysis(codeContext);
 
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
         assertThat("Should have analyzed the class files!", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(2));
-        assertThat(codeDependencies.keySet(), contains("de.is24.deadcode4j.analyzer.hibernateannotations.ClassUsingTypeWithoutTypeDef"));
-        assertThat(concat(codeDependencies.values()), contains("java.lang.Long"));
+        assertThat(codeDependencies.keySet(), hasItem("de.is24.deadcode4j.analyzer.hibernateannotations.ClassUsingTypeWithoutTypeDef"));
+        assertThat(concat(codeDependencies.values()), contains("IndependentClass"));
     }
 
 }
