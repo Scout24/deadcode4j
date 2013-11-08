@@ -21,7 +21,7 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
     }
 
     @Test
-    public void shouldRecognizeDependencyFromClassWithTypeAnnotatedFieldToTypeDefAnnotatedClass() {
+    public void recognizesDependencyFromClassWithTypeAnnotatedFieldToTypeDefAnnotatedClass() {
         CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassWithTypeDef.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassUsingTypeAtField.class"));
@@ -35,7 +35,7 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
     }
 
     @Test
-    public void shouldRecognizeDependencyFromClassWithTypeAnnotatedMethodToTypeDefAnnotatedClass() {
+    public void recognizesDependencyFromClassWithTypeAnnotatedMethodToTypeDefAnnotatedClass() {
         CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassWithTypeDef.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassUsingTypeAtMethod.class"));
@@ -49,7 +49,7 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
     }
 
     @Test
-    public void shouldRecognizeDependencyFromTypeAnnotatedClassesToTypeDefsAnnotatedPackage() {
+    public void recognizesDependencyFromTypeAnnotatedClassesToTypeDefsAnnotatedPackage() {
         CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/Entity.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/package-info.class"));
@@ -68,7 +68,7 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
     }
 
     @Test
-    public void shouldRecognizeDependencyFromClassWithTypeAnnotatedMethodToReferencedClass() {
+    public void recognizesDependencyFromClassWithTypeAnnotatedMethodToReferencedClass() {
         CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassUsingTypeWithoutTypeDef.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("IndependentClass.class"));
