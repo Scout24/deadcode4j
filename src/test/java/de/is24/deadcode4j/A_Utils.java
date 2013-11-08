@@ -4,12 +4,13 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Set;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 
 public final class A_Utils {
 
@@ -53,6 +54,31 @@ public final class A_Utils {
         Integer value = Utils.getValueOrDefault(map, "key", 23);
 
         assertThat(value, is(mappedValue));
+    }
+
+    @Test
+    public void addsSetToMapIfNoMappedSetExists() {
+        final String key = "foo";
+        final Integer value = 42;
+        Map<String, Set<Integer>> map = newHashMap();
+
+        Utils.addToMappedSet(map, key, value);
+
+        Set<Integer> values = newHashSet(value);
+        assertThat(map, hasEntry(key, values));
+    }
+
+    @Test
+    public void preservesExistingSetIfMappedSetExists() {
+        final String key = "foo";
+        final Integer newValue = 42;
+        Map<String, Set<Integer>> map = newHashMap();
+        Set<Integer> existingSet = newHashSet();
+        map.put(key, existingSet);
+
+        Utils.addToMappedSet(map, key, newValue);
+
+        assertThat(map, hasEntry(is(equalTo(key)), is(sameInstance(existingSet))));
     }
 
 }

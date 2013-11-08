@@ -7,6 +7,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
+
+import static com.google.common.collect.Sets.newHashSet;
 
 /**
  * Provides convenience methods.
@@ -37,7 +40,7 @@ public final class Utils {
         return new Function<MavenProject, String>() {
             @Override
             public String apply(@Nullable MavenProject input) {
-                return input == null? null: getKeyFor(input);
+                return input == null ? null : getKeyFor(input);
             }
         };
     }
@@ -63,6 +66,21 @@ public final class Utils {
 
     private Utils() {
         super();
+    }
+
+    /**
+     * Adds the given value to a <code>Set</code> being mapped by the specified key - and creates a new <code>Set</code>
+     * if the map does not already contain one.
+     *
+     * @since 1.4
+     */
+    public static <K, V> void addToMappedSet(Map<K, Set<V>> map, K key, V value) {
+        Set<V> values = map.get(key);
+        if (values == null) {
+            values = newHashSet();
+            map.put(key, values);
+        }
+        values.add(value);
     }
 
 }
