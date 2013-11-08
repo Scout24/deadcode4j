@@ -2,7 +2,6 @@ package de.is24.deadcode4j;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -11,6 +10,7 @@ import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Collections2.filter;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
+import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
 import static java.util.Arrays.asList;
 
 /**
@@ -37,11 +37,7 @@ public class CodeContext {
      */
     public void addDependencies(@Nonnull String depender, @Nonnull Collection<String> dependees) {
         dependees = filter(dependees, not(equalTo(depender))); // this would be cheating
-        Set<String> existingDependees = dependencyMap.get(depender);
-        if (existingDependees == null) {
-            existingDependees = new HashSet<String>();
-            dependencyMap.put(depender, existingDependees);
-        }
+        Set<String> existingDependees = getOrAddMappedSet(this.dependencyMap, depender);
         existingDependees.addAll(dependees);
     }
 

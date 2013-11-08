@@ -68,6 +68,21 @@ public final class Utils {
         super();
     }
 
+
+    /**
+     * Retrieves an existing <code>Set</code> being mapped by the specified key or puts a new one into the map.
+     *
+     * @since 1.4
+     */
+    public static <K, V> Set<V> getOrAddMappedSet(Map<K, Set<V>> map, K key) {
+        Set<V> values = map.get(key);
+        if (values == null) {
+            values = newHashSet();
+            map.put(key, values);
+        }
+        return values;
+    }
+
     /**
      * Adds the given value to a <code>Set</code> being mapped by the specified key - and creates a new <code>Set</code>
      * if the map does not already contain one.
@@ -75,11 +90,7 @@ public final class Utils {
      * @since 1.4
      */
     public static <K, V> void addToMappedSet(Map<K, Set<V>> map, K key, V value) {
-        Set<V> values = map.get(key);
-        if (values == null) {
-            values = newHashSet();
-            map.put(key, values);
-        }
+        Set<V> values = getOrAddMappedSet(map, key);
         values.add(value);
     }
 
