@@ -30,8 +30,8 @@ public final class A_SuperClassAnalyzer extends AnAnalyzer {
     public void reportsASubClassAsLiveCode() {
         Analyzer objectUnderTest = new SuperClassAnalyzer("junit", "javax.servlet.http.HttpServlet", "java.lang.Thread") {
         };
-
         CodeContext codeContext = new CodeContext();
+
         objectUnderTest.doAnalysis(codeContext, getFile("DeadServlet.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("SubClassThatShouldBeLive.class"));
 
@@ -44,8 +44,8 @@ public final class A_SuperClassAnalyzer extends AnAnalyzer {
     public void doesNotReportASubClassWithIrrelevantSuperClass() {
         Analyzer objectUnderTest = new SuperClassAnalyzer("junit", "java.lang.Thread") {
         };
-
         CodeContext codeContext = new CodeContext();
+
         objectUnderTest.doAnalysis(codeContext, getFile("DeadServlet.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("SubClassThatShouldBeLive.class"));
 

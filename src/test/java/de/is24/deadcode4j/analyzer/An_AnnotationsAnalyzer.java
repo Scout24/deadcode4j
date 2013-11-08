@@ -15,7 +15,7 @@ public final class An_AnnotationsAnalyzer extends AnAnalyzer {
 
     @Test
     public void reportsExistenceOfClass() {
-        AnnotationsAnalyzer objectUnderTest = new AnnotationsAnalyzer("junit", "de.is24.deadcode4j.junit.Annotation") {
+        Analyzer objectUnderTest = new AnnotationsAnalyzer("junit", "de.is24.deadcode4j.junit.Annotation") {
         };
         CodeContext codeContext = new CodeContext();
 
