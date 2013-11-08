@@ -8,7 +8,6 @@ import javassist.CtClass;
 import javax.annotation.Nonnull;
 import java.util.Collection;
 
-
 /**
  * Serves as a base class with which to mark classes as being in use if they are a direct subclass of one of the
  * specified classes.
