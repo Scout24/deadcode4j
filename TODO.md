@@ -10,7 +10,7 @@ Features
 * _Detection 2.0_
     * check if a Spring bean is really used
     * check if JSF stuff is really used
-    * check if GenericGenerator ist really used
+    * check if GenericGenerator is really used
 * Class.forName
 * JSP imports
 * recognize cyclic dependencies
