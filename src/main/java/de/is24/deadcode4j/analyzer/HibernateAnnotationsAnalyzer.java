@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static com.google.common.collect.Maps.newHashMap;
-import static de.is24.deadcode4j.Utils.addToMappedSet;
+import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
 import static java.lang.annotation.ElementType.*;
 import static java.util.Arrays.asList;
 
@@ -100,7 +100,7 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
     private void processTypeAnnotations(@Nonnull CtClass clazz) {
         for (Annotation annotation : getAnnotations(clazz, "org.hibernate.annotations.Type", METHOD, FIELD)) {
             String typeName = getStringFrom(annotation, "type");
-            addToMappedSet(this.typeUsages, typeName, clazz.getName());
+            getOrAddMappedSet(this.typeUsages, typeName).add(clazz.getName());
         }
     }
 
@@ -112,7 +112,7 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
 
     private void processGenericGenerator(CtClass clazz, Annotation annotation) {
         String generatorStrategy = getStringFrom(annotation, "strategy");
-        addToMappedSet(this.generatorDefinitions, clazz.getName(), generatorStrategy);
+        getOrAddMappedSet(this.generatorDefinitions, clazz.getName()).add(generatorStrategy);
     }
 
     private void processGenericGenerators(CtClass clazz) {

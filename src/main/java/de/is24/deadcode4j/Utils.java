@@ -83,15 +83,4 @@ public final class Utils {
         return values;
     }
 
-    /**
-     * Adds the given value to a <code>Set</code> being mapped by the specified key - and creates a new <code>Set</code>
-     * if the map does not already contain one.
-     *
-     * @since 1.4
-     */
-    public static <K, V> void addToMappedSet(Map<K, Set<V>> map, K key, V value) {
-        Set<V> values = getOrAddMappedSet(map, key);
-        values.add(value);
-    }
-
 }
