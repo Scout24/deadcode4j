@@ -1,5 +1,7 @@
 package de.is24.deadcode4j.analyzer;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
 import javassist.CtClass;
@@ -10,6 +12,7 @@ import javassist.bytecode.AttributeInfo;
 import javassist.bytecode.annotation.*;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.lang.annotation.ElementType;
 import java.util.Collection;
 import java.util.List;
@@ -64,6 +67,25 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
         return annotations;
     }
 
+    private static String getStringFrom(Annotation annotation, String memberName) {
+        MemberValue memberValue = annotation.getMemberValue(memberName);
+        if (!StringMemberValue.class.isInstance(memberValue))
+            throw new IllegalArgumentException("The member [" + memberName + "] is no StringMemberValue!");
+        return StringMemberValue.class.cast(memberValue).getValue();
+    }
+
+    private static Iterable<Annotation> getAnnotationsFrom(Annotation annotation, String memberName) {
+        MemberValue memberValue = annotation.getMemberValue(memberName);
+        if (!ArrayMemberValue.class.isInstance(memberValue))
+            throw new IllegalArgumentException("The member [" + memberName + "] is no ArrayMemberValue!");
+        return Iterables.transform(asList(ArrayMemberValue.class.cast(memberValue).getValue()), new Function<MemberValue, Annotation>() {
+            @Override
+            public Annotation apply(@Nullable MemberValue memberValue) {
+                return memberValue == null ? null : ((AnnotationMemberValue) memberValue).getValue();
+            }
+        });
+    }
+
     private final Map<String, String> typeDefinitions = newHashMap();
     private final Map<String, Set<String>> typeUsages = newHashMap();
     private final Map<String, Set<String>> generatorDefinitions = newHashMap();
@@ -90,21 +112,21 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
     }
 
     private void processTypeDefinition(@Nonnull CtClass clazz, @Nonnull Annotation annotation) {
-        String typeName = ((StringMemberValue) annotation.getMemberValue("name")).getValue();
+        String typeName = getStringFrom(annotation, "name");
         this.typeDefinitions.put(typeName, clazz.getName());
     }
 
     private void processTypeDefsAnnotation(@Nonnull CtClass clazz) {
         for (Annotation annotation : getAnnotations(clazz, "org.hibernate.annotations.TypeDefs", TYPE)) {
-            for (MemberValue memberValue : ((ArrayMemberValue) annotation.getMemberValue("value")).getValue()) {
-                processTypeDefinition(clazz, ((AnnotationMemberValue) memberValue).getValue());
+            for (Annotation childAnnotation : getAnnotationsFrom(annotation, "value")) {
+                processTypeDefinition(clazz, childAnnotation);
             }
         }
     }
 
     private void processTypeAnnotations(@Nonnull CtClass clazz) {
         for (Annotation annotation : getAnnotations(clazz, "org.hibernate.annotations.Type", METHOD, FIELD)) {
-            String typeName = ((StringMemberValue) annotation.getMemberValue("type")).getValue();
+            String typeName = getStringFrom(annotation, "type");
             addToMappedSet(this.typeUsages, typeName, clazz.getName());
         }
     }
@@ -116,14 +138,14 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
     }
 
     private void processGenericGenerator(CtClass clazz, Annotation annotation) {
-        String generatorStrategy = ((StringMemberValue) annotation.getMemberValue("strategy")).getValue();
+        String generatorStrategy = getStringFrom(annotation, "strategy");
         addToMappedSet(this.generatorDefinitions, clazz.getName(), generatorStrategy);
     }
 
     private void processGenericGenerators(CtClass clazz) {
         for (Annotation annotation : getAnnotations(clazz, "org.hibernate.annotations.GenericGenerators", TYPE)) {
-            for (MemberValue memberValue : ((ArrayMemberValue) annotation.getMemberValue("value")).getValue()) {
-                processGenericGenerator(clazz, ((AnnotationMemberValue) memberValue).getValue());
+            for (Annotation childAnnotation : getAnnotationsFrom(annotation, "value")) {
+                processGenericGenerator(clazz, childAnnotation);
             }
         }
     }
