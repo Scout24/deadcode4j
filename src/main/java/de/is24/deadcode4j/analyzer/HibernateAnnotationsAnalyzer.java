@@ -1,25 +1,20 @@
 package de.is24.deadcode4j.analyzer;
 
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
 import javassist.CtClass;
-import javassist.CtField;
-import javassist.CtMethod;
-import javassist.bytecode.AnnotationsAttribute;
-import javassist.bytecode.AttributeInfo;
 import javassist.bytecode.annotation.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.annotation.ElementType;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static de.is24.deadcode4j.Utils.addToMappedSet;
 import static java.lang.annotation.ElementType.*;
@@ -36,35 +31,13 @@ import static java.util.Arrays.asList;
  */
 public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements Analyzer {
     @Nonnull
-    @SuppressWarnings("unchecked")
-    private static Collection<Annotation> getAnnotations(@Nonnull CtClass clazz, @Nonnull String typeName, ElementType... elementTypes) {
-        List<ElementType> types = asList(elementTypes);
-        List<AttributeInfo> attributes = newArrayList();
-        if (types.contains(ElementType.TYPE)) {
-            attributes.addAll(clazz.getClassFile2().getAttributes());
-        }
-        if (types.contains(METHOD)) {
-            for (CtMethod method : clazz.getDeclaredMethods()) {
-                attributes.addAll(method.getMethodInfo2().getAttributes());
+    private static Iterable<Annotation> getAnnotations(@Nonnull CtClass clazz, @Nonnull final String typeName, ElementType... elementTypes) {
+        return Iterables.filter(getAnnotations(clazz, elementTypes), new Predicate<Annotation>() {
+            @Override
+            public boolean apply(@Nullable Annotation annotation) {
+                return annotation != null && typeName.equals(annotation.getTypeName());
             }
-        }
-        if (types.contains(FIELD)) {
-            for (CtField field : clazz.getDeclaredFields()) {
-                attributes.addAll(field.getFieldInfo2().getAttributes());
-            }
-        }
-
-        List<Annotation> annotations = newArrayList();
-        for (AttributeInfo attribute : attributes) {
-            if (AnnotationsAttribute.class.isInstance(attribute)) {
-                for (Annotation annotation : AnnotationsAttribute.class.cast(attribute).getAnnotations()) {
-                    if (typeName.equals(annotation.getTypeName()))
-                        annotations.add(annotation);
-                }
-            }
-        }
-
-        return annotations;
+        });
     }
 
     private static String getStringFrom(Annotation annotation, String memberName) {
@@ -106,7 +79,7 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
     }
 
     private void processTypeDefAnnotation(@Nonnull CtClass clazz) {
-        for (Annotation annotation : getAnnotations(clazz, "org.hibernate.annotations.TypeDef", TYPE)) {
+        for (Annotation annotation : getAnnotations(clazz, "org.hibernate.annotations.TypeDef", PACKAGE, TYPE)) {
             processTypeDefinition(clazz, annotation);
         }
     }
@@ -117,7 +90,7 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
     }
 
     private void processTypeDefsAnnotation(@Nonnull CtClass clazz) {
-        for (Annotation annotation : getAnnotations(clazz, "org.hibernate.annotations.TypeDefs", TYPE)) {
+        for (Annotation annotation : getAnnotations(clazz, "org.hibernate.annotations.TypeDefs", PACKAGE, TYPE)) {
             for (Annotation childAnnotation : getAnnotationsFrom(annotation, "value")) {
                 processTypeDefinition(clazz, childAnnotation);
             }
@@ -132,7 +105,7 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
     }
 
     private void processGenericGenerator(CtClass clazz) {
-        for (Annotation annotation : getAnnotations(clazz, "org.hibernate.annotations.GenericGenerator", TYPE, METHOD, FIELD)) {
+        for (Annotation annotation : getAnnotations(clazz, "org.hibernate.annotations.GenericGenerator", PACKAGE, TYPE, METHOD, FIELD)) {
             processGenericGenerator(clazz, annotation);
         }
     }
@@ -143,7 +116,7 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
     }
 
     private void processGenericGenerators(CtClass clazz) {
-        for (Annotation annotation : getAnnotations(clazz, "org.hibernate.annotations.GenericGenerators", TYPE)) {
+        for (Annotation annotation : getAnnotations(clazz, "org.hibernate.annotations.GenericGenerators", PACKAGE, TYPE)) {
             for (Annotation childAnnotation : getAnnotationsFrom(annotation, "value")) {
                 processGenericGenerator(clazz, childAnnotation);
             }

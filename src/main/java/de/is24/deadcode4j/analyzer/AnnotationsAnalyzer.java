@@ -2,16 +2,14 @@ package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.CodeContext;
 import javassist.CtClass;
-import javassist.bytecode.AnnotationsAttribute;
-import javassist.bytecode.AttributeInfo;
 import javassist.bytecode.annotation.Annotation;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import static com.google.common.collect.Sets.newHashSet;
+import static java.lang.annotation.ElementType.PACKAGE;
+import static java.lang.annotation.ElementType.TYPE;
 
 /**
  * Serves as a base class with which to mark classes as being in use if they carry one of the specified annotations.
@@ -59,27 +57,10 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
     protected final void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
         String className = clazz.getName();
         codeContext.addAnalyzedClass(className);
-        for (String annotation : getAnnotationsOf(clazz)) {
-            if (this.annotations.contains(annotation)) {
+        for (Annotation annotation : getAnnotations(clazz, PACKAGE, TYPE)) {
+            if (this.annotations.contains(annotation.getTypeName()))
                 codeContext.addDependencies(this.dependerId, className);
-            }
         }
-    }
-
-    private Iterable<String> getAnnotationsOf(CtClass ctClass) {
-        @SuppressWarnings("unchecked") List<AttributeInfo> attributes = ctClass.getClassFile2().getAttributes();
-
-        ArrayList<String> annotations = new ArrayList<String>();
-        for (AttributeInfo attribute : attributes) {
-            if (!AnnotationsAttribute.class.isInstance(attribute)) {
-                continue;
-            }
-            for (Annotation annotation : AnnotationsAttribute.class.cast(attribute).getAnnotations()) {
-                annotations.add(annotation.getTypeName());
-            }
-        }
-
-        return annotations;
     }
 
 }
