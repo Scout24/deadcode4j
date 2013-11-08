@@ -30,6 +30,11 @@ import static java.util.Arrays.asList;
  * @since 1.4
  */
 public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements Analyzer {
+
+    private final Map<String, String> typeDefinitions = newHashMap();
+    private final Map<String, Set<String>> typeUsages = newHashMap();
+    private final Map<String, Set<String>> generatorDefinitions = newHashMap();
+
     @Nonnull
     private static Iterable<Annotation> getAnnotations(@Nonnull CtClass clazz, @Nonnull final String typeName, ElementType... elementTypes) {
         return Iterables.filter(getAnnotations(clazz, elementTypes), new Predicate<Annotation>() {
@@ -40,14 +45,16 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
         });
     }
 
-    private static String getStringFrom(Annotation annotation, String memberName) {
+    @Nullable
+    private static String getStringFrom(@Nonnull Annotation annotation, @Nonnull String memberName) {
         MemberValue memberValue = annotation.getMemberValue(memberName);
         if (!StringMemberValue.class.isInstance(memberValue))
             throw new IllegalArgumentException("The member [" + memberName + "] is no StringMemberValue!");
         return StringMemberValue.class.cast(memberValue).getValue();
     }
 
-    private static Iterable<Annotation> getAnnotationsFrom(Annotation annotation, String memberName) {
+    @Nonnull
+    private static Iterable<Annotation> getAnnotationsFrom(@Nonnull Annotation annotation, @Nonnull String memberName) {
         MemberValue memberValue = annotation.getMemberValue(memberName);
         if (!ArrayMemberValue.class.isInstance(memberValue))
             throw new IllegalArgumentException("The member [" + memberName + "] is no ArrayMemberValue!");
@@ -58,10 +65,6 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
             }
         });
     }
-
-    private final Map<String, String> typeDefinitions = newHashMap();
-    private final Map<String, Set<String>> typeUsages = newHashMap();
-    private final Map<String, Set<String>> generatorDefinitions = newHashMap();
 
     @Override
     protected final void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
