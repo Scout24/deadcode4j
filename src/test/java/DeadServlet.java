@@ -1,5 +1,5 @@
 import javax.servlet.http.HttpServlet;
 
-/** This class should not be recognized as live even though it is a servlet. */
+@Deprecated
 public class DeadServlet extends HttpServlet {
 }
