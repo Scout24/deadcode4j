@@ -35,6 +35,9 @@
                             <outputDirectory>${testScenarios.directory}</outputDirectory>
                         </project>
                     </reactorProjects>
+                    <superClassesMarkingLiveCode>
+                        <param>java.lang.Thread</param>
+                    </superClassesMarkingLiveCode>
                 </configuration>
             </plugin>
         </plugins>

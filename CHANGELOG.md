@@ -22,7 +22,8 @@ Features
     * `javax.faces.validator.FacesValidator`
     * `javax.faces.view.facelets.FaceletsResourceResolver`
 * Added possibility to specify which modules should be skipped (configuration parameter __`modulesToSkip`__)
-* Mark classes being _direct_ subclasses of [`org.exolab.castor.xml.util.XMLClassDescriptorImpl`](http://castor.codehaus.org/) as _live code_
+* Mark classes being __direct__ subclasses of [`org.exolab.castor.xml.util.XMLClassDescriptorImpl`](http://castor.codehaus.org/) as _live code_
+* Added possibility to specify which classes mark a __direct__ subclass of those as being _live code_
 
 ###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.3...master)
 

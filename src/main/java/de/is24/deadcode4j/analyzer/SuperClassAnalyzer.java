@@ -20,6 +20,14 @@ public abstract class SuperClassAnalyzer extends ByteCodeAnalyzer implements Ana
     private final String dependerId;
     private final Collection<String> superClasses;
 
+    private SuperClassAnalyzer(@Nonnull String dependerId, @Nonnull Collection<String> classNames) {
+        this.dependerId = dependerId;
+        this.superClasses = classNames;
+        if (this.superClasses.isEmpty()) {
+            throw new IllegalArgumentException("classNames cannot by empty!");
+        }
+    }
+
     /**
      * Creates a new <code>SuperClassAnalyzer</code>.
      *
@@ -29,11 +37,19 @@ public abstract class SuperClassAnalyzer extends ByteCodeAnalyzer implements Ana
      * @since 1.4
      */
     protected SuperClassAnalyzer(@Nonnull String dependerId, @Nonnull String... classNames) {
-        this.dependerId = dependerId;
-        this.superClasses = Sets.newHashSet(classNames);
-        if (this.superClasses.isEmpty()) {
-            throw new IllegalArgumentException("classNames cannot by empty!");
-        }
+        this(dependerId, Sets.newHashSet(classNames));
+    }
+
+    /**
+     * Creates a new <code>SuperClassAnalyzer</code>.
+     *
+     * @param dependerId a description of the <i>depending entity</i> with which to
+     *                   call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, java.util.Collection)}
+     * @param classNames a list of fully qualified class names indicating that the extending class is still in use
+     * @since 1.4
+     */
+    public SuperClassAnalyzer(String dependerId, Iterable<String> classNames) {
+        this(dependerId, Sets.newHashSet(classNames));
     }
 
     @Override

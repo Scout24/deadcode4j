@@ -79,6 +79,13 @@ public class FindDeadCodeWithoutPackagingMojo extends AbstractMojo {
     @Parameter(property = "reactorProjects", readonly = true)
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private List<MavenProject> reactorProjects;
+    /**
+     * Lists the fqcn of the classes marking a direct subclass as being "live code".
+     *
+     * @since 1.4
+     */
+    @Parameter
+    private Set<String> superClassesMarkingLiveCode = emptySet();
 
     public FindDeadCodeWithoutPackagingMojo() {
         packagingHandlers.put("pom", new PomPackagingHandler());
@@ -112,6 +119,7 @@ public class FindDeadCodeWithoutPackagingMojo extends AbstractMojo {
                 new TldAnalyzer(),
                 new WebXmlAnalyzer());
         addCustomAnnotationsAnalyzerIfConfigured(analyzers);
+        addCustomSuperClassesAnalyzerIfConfigured(analyzers);
         addCustomXmlAnalyzerIfConfigured(analyzers);
         DeadCodeFinder deadCodeFinder = new DeadCodeFinder(analyzers);
         return deadCodeFinder.findDeadCode(gatherCodeRepositories());
@@ -122,6 +130,13 @@ public class FindDeadCodeWithoutPackagingMojo extends AbstractMojo {
             return;
         analyzers.add(new CustomAnnotationsAnalyzer(annotationsMarkingLiveCode));
         getLog().info("Treating classes annotated with any of " + annotationsMarkingLiveCode + " as live code.");
+    }
+
+    private void addCustomSuperClassesAnalyzerIfConfigured(Set<Analyzer> analyzers) {
+        if (superClassesMarkingLiveCode.isEmpty())
+            return;
+        analyzers.add(new CustomSuperClassAnalyzer(superClassesMarkingLiveCode));
+        getLog().info("Treating classes being direct subclasses of any of " + superClassesMarkingLiveCode + " as live code.");
     }
 
     private void addCustomXmlAnalyzerIfConfigured(Set<Analyzer> analyzers) {

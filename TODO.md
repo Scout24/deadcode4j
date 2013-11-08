@@ -7,7 +7,6 @@ Features
 * JBoss XML files
 * Aspectj XML files
 * Spring/Quartz XML bean definition
-* Custom Subclass definition
 * _Detection 2.0_
     * check if a Spring bean is really used
     * check if JSF stuff is really used
