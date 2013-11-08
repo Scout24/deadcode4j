@@ -12,7 +12,8 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.disjoint;
 
 /**
- * Serves as a base class with which to mark classes as being in use if they implement one of the specified interfaces.
+ * Serves as a base class with which to mark classes as being in use if they explicitly implement one of the specified
+ * interfaces.
  *
  * @since 1.4
  */
