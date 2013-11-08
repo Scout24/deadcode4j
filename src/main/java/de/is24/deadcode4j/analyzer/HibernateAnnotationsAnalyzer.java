@@ -31,35 +31,9 @@ import static java.util.Arrays.asList;
  * @since 1.4
  */
 public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements Analyzer {
-
-    private final Map<String, String> typeDefinitions = newHashMap();
-    private final Map<String, Collection<String>> typeUsages = newHashMap();
-    private final Map<String, Collection<String>> generatorDefinitions = newHashMap();
-
-    @Override
-    protected final void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
-        codeContext.addAnalyzedClass(clazz.getName());
-        processTypeDefAnnotation(clazz);
-        processTypeDefsAnnotation(clazz);
-        processTypeAnnotations(clazz);
-        processGenericGenerator(clazz);
-        processGenericGenerators(clazz);
-    }
-
-    @Override
-    public void finishAnalysis(@Nonnull CodeContext codeContext) {
-        reportDependencies(codeContext);
-    }
-
-    private void processTypeDefAnnotation(@Nonnull CtClass clazz) {
-        for (Annotation annotation : getAnnotations(clazz, "org.hibernate.annotations.TypeDef", TYPE)) {
-            reportTypeDefinition(clazz, annotation);
-        }
-    }
-
     @Nonnull
     @SuppressWarnings("unchecked")
-    private Collection<Annotation> getAnnotations(@Nonnull CtClass clazz, @Nonnull String typeName, ElementType... elementTypes) {
+    private static Collection<Annotation> getAnnotations(@Nonnull CtClass clazz, @Nonnull String typeName, ElementType... elementTypes) {
         List<ElementType> types = asList(elementTypes);
         List<AttributeInfo> attributes = newArrayList();
         if (types.contains(ElementType.TYPE)) {
@@ -89,7 +63,32 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
         return annotations;
     }
 
-    private void reportTypeDefinition(@Nonnull CtClass clazz, @Nonnull Annotation annotation) {
+    private final Map<String, String> typeDefinitions = newHashMap();
+    private final Map<String, Collection<String>> typeUsages = newHashMap();
+    private final Map<String, Collection<String>> generatorDefinitions = newHashMap();
+
+    @Override
+    protected final void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
+        codeContext.addAnalyzedClass(clazz.getName());
+        processTypeDefAnnotation(clazz);
+        processTypeDefsAnnotation(clazz);
+        processTypeAnnotations(clazz);
+        processGenericGenerator(clazz);
+        processGenericGenerators(clazz);
+    }
+
+    @Override
+    public void finishAnalysis(@Nonnull CodeContext codeContext) {
+        reportDependencies(codeContext);
+    }
+
+    private void processTypeDefAnnotation(@Nonnull CtClass clazz) {
+        for (Annotation annotation : getAnnotations(clazz, "org.hibernate.annotations.TypeDef", TYPE)) {
+            processTypeDefinition(clazz, annotation);
+        }
+    }
+
+    private void processTypeDefinition(@Nonnull CtClass clazz, @Nonnull Annotation annotation) {
         String typeName = ((StringMemberValue) annotation.getMemberValue("name")).getValue();
         this.typeDefinitions.put(typeName, clazz.getName());
     }
@@ -97,7 +96,7 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
     private void processTypeDefsAnnotation(@Nonnull CtClass clazz) {
         for (Annotation annotation : getAnnotations(clazz, "org.hibernate.annotations.TypeDefs", TYPE)) {
             for (MemberValue memberValue : ((ArrayMemberValue) annotation.getMemberValue("value")).getValue()) {
-                reportTypeDefinition(clazz, ((AnnotationMemberValue) memberValue).getValue());
+                processTypeDefinition(clazz, ((AnnotationMemberValue) memberValue).getValue());
             }
         }
     }
@@ -106,17 +105,13 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
     private void processTypeAnnotations(@Nonnull CtClass clazz) {
         for (Annotation annotation : getAnnotations(clazz, "org.hibernate.annotations.Type", METHOD, FIELD)) {
             String typeName = ((StringMemberValue) annotation.getMemberValue("type")).getValue();
-            reportTypeUsage(clazz, typeName);
+            Collection<String> classesUsingType = this.typeUsages.get(typeName);
+            if (classesUsingType == null) {
+                classesUsingType = newHashSet();
+                this.typeUsages.put(typeName, classesUsingType);
+            }
+            classesUsingType.add(clazz.getName());
         }
-    }
-
-    private void reportTypeUsage(@Nonnull CtClass clazz, @Nonnull String typeName) {
-        Collection<String> classesUsingType = this.typeUsages.get(typeName);
-        if (classesUsingType == null) {
-            classesUsingType = newHashSet();
-            this.typeUsages.put(typeName, classesUsingType);
-        }
-        classesUsingType.add(clazz.getName());
     }
 
     private void processGenericGenerator(CtClass clazz) {
