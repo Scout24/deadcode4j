@@ -11,11 +11,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 
-public final class An_InterfaceAnalyzer extends AnAnalyzer {
+public final class An_InterfacesAnalyzer extends AnAnalyzer {
 
     @Test
     public void reportsExistenceOfClasses() {
-        Analyzer objectUnderTest = new InterfaceAnalyzer("junit", "java.lang.Cloneable") {
+        Analyzer objectUnderTest = new InterfacesAnalyzer("junit", "java.lang.Cloneable") {
         };
         CodeContext codeContext = new CodeContext();
 
@@ -27,8 +27,8 @@ public final class An_InterfaceAnalyzer extends AnAnalyzer {
     }
 
     @Test
-    public void reportsAnnotatedClassAsBeingUsed() {
-        Analyzer objectUnderTest = new InterfaceAnalyzer("junit", "java.lang.Cloneable", "java.io.Serializable") {
+    public void reportsImplementingClassAsBeingUsed() {
+        Analyzer objectUnderTest = new InterfacesAnalyzer("junit", "java.lang.Cloneable", "java.io.Serializable") {
         };
         CodeContext codeContext = new CodeContext();
 
@@ -41,8 +41,8 @@ public final class An_InterfaceAnalyzer extends AnAnalyzer {
     }
 
     @Test
-    public void doesNotReportUnannotatedClassAsBeingUsed() {
-        Analyzer objectUnderTest = new InterfaceAnalyzer("junit", "java.lang.Cloneable") {
+    public void doesNotReportNonImplementingClassAsBeingUsed() {
+        Analyzer objectUnderTest = new InterfacesAnalyzer("junit", "java.lang.Cloneable") {
         };
         CodeContext codeContext = new CodeContext();
 

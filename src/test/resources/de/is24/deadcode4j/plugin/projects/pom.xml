@@ -30,6 +30,9 @@
                             </xPaths>
                         </customXml>
                     </customXmls>
+                    <interfacesMarkingLiveCode>
+                        <param>java.lang.Cloneable</param>
+                    </interfacesMarkingLiveCode>
                     <reactorProjects>
                         <project implementation="de.is24.deadcode4j.plugin.stubs.ProjectStub">
                             <outputDirectory>${testScenarios.directory}</outputDirectory>
