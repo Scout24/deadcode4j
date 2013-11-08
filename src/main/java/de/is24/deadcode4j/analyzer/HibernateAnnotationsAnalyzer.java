@@ -33,7 +33,8 @@ import static java.util.Arrays.asList;
 public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements Analyzer {
 
     private final Map<String, String> typeDefinitions = newHashMap();
-    private Map<String, Collection<String>> typeUsages = newHashMap();
+    private final Map<String, Collection<String>> typeUsages = newHashMap();
+    private final Map<String, Collection<String>> generatorDefinitions = newHashMap();
 
     @Override
     protected final void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
@@ -41,6 +42,8 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
         processTypeDefAnnotation(clazz);
         processTypeDefsAnnotation(clazz);
         processTypeAnnotations(clazz);
+        processGenericGenerator(clazz);
+        processGenericGenerators(clazz);
     }
 
     @Override
@@ -111,15 +114,46 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
         Collection<String> classesUsingType = this.typeUsages.get(typeName);
         if (classesUsingType == null) {
             classesUsingType = newHashSet();
-            Collection<String> previous = this.typeUsages.put(typeName, classesUsingType);
-            if (previous != null) {
-                classesUsingType.addAll(previous);
-            }
+            this.typeUsages.put(typeName, classesUsingType);
         }
         classesUsingType.add(clazz.getName());
     }
 
+    private void processGenericGenerator(CtClass clazz) {
+        for (Annotation annotation : getAnnotations(clazz, "org.hibernate.annotations.GenericGenerator", TYPE, METHOD, FIELD)) {
+            processGenericGenerator(clazz, annotation);
+        }
+    }
+
+    private void processGenericGenerator(CtClass clazz, Annotation annotation) {
+        String clazzName = clazz.getName();
+        Collection<String> generators = this.generatorDefinitions.get(clazzName);
+        if (generators == null) {
+            generators = newArrayList();
+            this.generatorDefinitions.put(clazzName, generators);
+        }
+        String generatorStrategy = ((StringMemberValue) annotation.getMemberValue("strategy")).getValue();
+        generators.add(generatorStrategy);
+    }
+
+    private void processGenericGenerators(CtClass clazz) {
+        for (Annotation annotation : getAnnotations(clazz, "org.hibernate.annotations.GenericGenerators", TYPE)) {
+            for (MemberValue memberValue : ((ArrayMemberValue) annotation.getMemberValue("value")).getValue()) {
+                processGenericGenerator(clazz, ((AnnotationMemberValue) memberValue).getValue());
+            }
+        }
+    }
+
     private void reportDependencies(@Nonnull CodeContext codeContext) {
+        final Collection<String> analyzedClasses = codeContext.getAnalyzedCode().getAnalyzedClasses();
+
+        for (Map.Entry<String, Collection<String>> generatorDefinition : this.generatorDefinitions.entrySet()) {
+            for (String generator : generatorDefinition.getValue()) {
+                if (analyzedClasses.contains(generator))
+                    codeContext.addDependencies(generatorDefinition.getKey(), generator);
+            }
+        }
+
         for (Map.Entry<String, Collection<String>> typeUsage : this.typeUsages.entrySet()) {
             String typeName = typeUsage.getKey();
             String classDefiningType = this.typeDefinitions.get(typeName);
@@ -127,7 +161,7 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
             String dependee = null;
             if (classDefiningType != null) {
                 dependee = classDefiningType;
-            } else if (codeContext.getAnalyzedCode().getAnalyzedClasses().contains(typeName)) {
+            } else if (analyzedClasses.contains(typeName)) {
                 dependee = typeName;
             } // no matter what else, scope is outside of the analyzed project
             if (dependee != null) {

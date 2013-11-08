@@ -10,6 +10,7 @@ import java.util.Map;
 import static com.google.common.collect.Iterables.concat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertTrue;
 
 public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
 
@@ -79,6 +80,49 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
         assertThat("Should have analyzed the class files!", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(2));
         assertThat(codeDependencies.keySet(), hasItem("de.is24.deadcode4j.analyzer.hibernateannotations.ClassUsingTypeWithoutTypeDef"));
         assertThat(concat(codeDependencies.values()), contains("IndependentClass"));
+    }
+
+    @Test
+    public void reportsDependencyToDefinedStrategyIfStrategyIsPartOfTheAnalysis() {
+        CodeContext codeContext = new CodeContext();
+
+        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassDefiningGenericGenerator.class"));
+        objectUnderTest.doAnalysis(codeContext, getFile("IndependentClass.class"));
+        objectUnderTest.finishAnalysis(codeContext);
+
+        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        assertThat("Should have analyzed the class files!", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(2));
+        assertThat(codeDependencies.keySet(), containsInAnyOrder(
+                "de.is24.deadcode4j.analyzer.hibernateannotations.ClassDefiningGenericGenerator"));
+        assertThat(concat(codeDependencies.values()), contains("IndependentClass"));
+    }
+
+    @Test
+    public void doesNotReportDependencyToDefinedStrategyIfStrategyIsNoPartOfTheAnalysis() {
+        CodeContext codeContext = new CodeContext();
+
+        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassDefiningGenericGenerator.class"));
+        objectUnderTest.finishAnalysis(codeContext);
+
+        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        assertThat("Should have analyzed the class files!", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(1));
+        assertTrue("Should not report any dependency!", codeDependencies.isEmpty());
+    }
+
+    @Test
+    public void reportsDependencyToDefinedStrategies() {
+        CodeContext codeContext = new CodeContext();
+
+        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/package-info.class"));
+        objectUnderTest.doAnalysis(codeContext, getFile("IndependentClass.class"));
+        objectUnderTest.doAnalysis(codeContext, getFile("DependingClass.class"));
+        objectUnderTest.finishAnalysis(codeContext);
+
+        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        assertThat("Should have analyzed the class files!", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(3));
+        assertThat(codeDependencies.keySet(), containsInAnyOrder(
+                "de.is24.deadcode4j.analyzer.hibernateannotations.package-info"));
+        assertThat(concat(codeDependencies.values()), containsInAnyOrder("IndependentClass", "DependingClass"));
     }
 
 }
