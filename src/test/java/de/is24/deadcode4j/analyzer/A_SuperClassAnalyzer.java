@@ -28,16 +28,16 @@ public final class A_SuperClassAnalyzer extends AnAnalyzer {
 
     @Test
     public void reportsASubClassAsLiveCode() {
-        Analyzer objectUnderTest = new SuperClassAnalyzer("junit", "java.lang.Object", "java.lang.Thread") {
+        Analyzer objectUnderTest = new SuperClassAnalyzer("junit", "javax.servlet.http.HttpServlet", "java.lang.Thread") {
         };
 
         CodeContext codeContext = new CodeContext();
-        objectUnderTest.doAnalysis(codeContext, getFile("DependingClass.class"));
+        objectUnderTest.doAnalysis(codeContext, getFile("DeadServlet.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("SubClassThatShouldBeLive.class"));
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
         assertThat("Should have reported some dependencies!", codeDependencies.size(), is(1));
-        assertThat(concat(codeDependencies.values()), containsInAnyOrder("DependingClass", "SubClassThatShouldBeLive"));
+        assertThat(concat(codeDependencies.values()), containsInAnyOrder("DeadServlet", "SubClassThatShouldBeLive"));
     }
 
     @Test
@@ -46,7 +46,7 @@ public final class A_SuperClassAnalyzer extends AnAnalyzer {
         };
 
         CodeContext codeContext = new CodeContext();
-        objectUnderTest.doAnalysis(codeContext, getFile("DependingClass.class"));
+        objectUnderTest.doAnalysis(codeContext, getFile("DeadServlet.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("SubClassThatShouldBeLive.class"));
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
