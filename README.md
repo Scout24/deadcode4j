@@ -20,7 +20,7 @@ As an alternative, you can run `mvn de.is24.mavenplugins:deadcode4j-maven-plugin
 ## Features
 *deadcode4j* takes several approaches to analyze if a class is still in usage or not:
 
-- statical code analysis using [Javassist](http://www.jboss.org/javassist/)
+- statical code analysis using [Javassist](http://www.jboss.org/javassist/), recognizing class dependencies
 - parsing [Spring XML files](http://projects.spring.io/spring-framework/): files ending with `.xml` are examined, each `bean` element's `class` attribute is treated as _live code_
 - parsing `web.xml`
     - recognizing listed listeners, filters & servlets (according to the [XSD](http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd) files)
