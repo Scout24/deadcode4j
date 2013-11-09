@@ -1,10 +1,7 @@
-deadcode4j [![Build Status](https://travis-ci.org/ImmobilienScout24/deadcode4j.png)](https://travis-ci.org/ImmobilienScout24/deadcode4j)
-==========
-
+# deadcode4j [![Build Status](https://travis-ci.org/ImmobilienScout24/deadcode4j.png)](https://travis-ci.org/ImmobilienScout24/deadcode4j)
 *deadcode4j* helps you find code that is no longer used by your application. It is especially useful for cleaning up legacy code.
 
-Usage
------
+## Usage
 ### `deadcode4j-maven-plugin:find`
 Simply run `mvn de.is24.mavenplugins:deadcode4j-maven-plugin:find` in the project you want to analyze.
 *deadcode4j* will trigger the _package phase_ to be executed for a project (and for all modules listed in a reactor project) before analyzing the output directories.
@@ -19,9 +16,7 @@ The output will look something like this:
 ### `deadcode4j-maven-plugin:find-without-packaging`
 As an alternative, you can run `mvn de.is24.mavenplugins:deadcode4j-maven-plugin:find-without-packaging` which performs the same analysis, but without triggering the _package phase_.
 
-Features
---------
-
+## Features
 *deadcode4j* takes several approaches to analyze if a class is still in usage or not:
 
 - statical code analysis using [Javassist](http://www.jboss.org/javassist/)
@@ -78,8 +73,7 @@ After performing the usage analysis, *deadcode4j* reports which classes are pres
 
 Obviously, those downsides should and will be tackled by upcoming releases. If you know of any other false positives, please report an [issue](https://github.com/ImmobilienScout24/deadcode4j/issues/new).
 
-Configuration
-------------------
+## Configuration
 
 If you want to configure the plugin and make use of some of its features, list *deadcode4j* in your `pom.xml`:
 
@@ -89,7 +83,7 @@ If you want to configure the plugin and make use of some of its features, list *
           <plugin>
             <groupId>de.is24.mavenplugins</groupId>
             <artifactId>deadcode4j-maven-plugin</artifactId>
-            <version>1.3</version>
+            <version>1.4</version>
             <configuration>
               <annotationsMarkingLiveCode>
                 <param>de.is24.deadcode4j.LiveCode</param>
@@ -106,7 +100,7 @@ If you want to configure the plugin and make use of some of its features, list *
 
 Now run `mvn de.is24.mavenplugins:deadcode4j-maven-plugin:find` again and you'll get
 
-    [INFO] --- deadcode4j-maven-plugin:1.3:find (default-cli) @ someProject ---
+    [INFO] --- deadcode4j-maven-plugin:1.4:find (default-cli) @ someProject ---
     [INFO] Analyzed 42 class(es).
     [INFO] Ignoring 1 class(es) which seem(s) to be unused.
     [WARNING] Found 1 unused class(es):
