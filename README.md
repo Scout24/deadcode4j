@@ -72,7 +72,7 @@ After performing the usage analysis, *deadcode4j* reports which classes are pres
 - As the Java compiler inlines constant expressions, class references may not exist in bytecode; this can be circumvented as outlined at [stackoverflow](http://stackoverflow.com/questions/1833581/when-to-use-intern-on-string-literals)
 - Finally, if the analyzed project isn't closed but represents more of a public API or library, expect *deadcode4j* to report many classes which are indeed used by other projects
 
-Obviously, those downsides should and will be tackled by upcoming releases. If you know of any other false positives, please report an [issue](https://github.com/ImmobilienScout24/deadcode4j/issues/new).
+If you know of any other false positives, please report an [issue](https://github.com/ImmobilienScout24/deadcode4j/issues/new).
 
 ## Configuration
 
