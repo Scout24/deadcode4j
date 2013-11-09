@@ -9,9 +9,10 @@ The output will look something like this:
 
     [INFO] --- deadcode4j-maven-plugin:1.4:find (default-cli) @ someProject ---
     [INFO] Analyzed 42 class(es).
-    [WARNING] Found 2 unused class(es):
+    [WARNING] Found 3 unused class(es):
     [WARNING]   de.is24.deadcode4j.Foo
     [WARNING]   de.is24.deadcode4j.Bar
+    [WARNING]   de.is24.deadcode4j.SomeAnnotatedClass
 
 ### `deadcode4j-maven-plugin:find-without-packaging`
 As an alternative, you can run `mvn de.is24.mavenplugins:deadcode4j-maven-plugin:find-without-packaging` which performs the same analysis, but without triggering the _package phase_.
