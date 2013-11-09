@@ -6,6 +6,15 @@ import de.is24.deadcode4j.Analyzer;
  * Analyzes class files: marks a class as being in use if it is annotated with one of those JEE annotations:
  * <ul>
  * <li>javax.annotation.ManagedBean</li>
+ * <li>javax.faces.component.behavior.FacesBehavior</li>
+ * <li>javax.faces.convert.FacesConverter</li>
+ * <li>javax.faces.event.ListenerFor</li>
+ * <li>javax.faces.event.ListenersFor</li>
+ * <li>javax.faces.event.NamedEvent</li>
+ * <li>javax.faces.render.FacesBehaviorRenderer</li>
+ * <li>javax.faces.render.FacesRenderer</li>
+ * <li>javax.faces.validator.FacesValidator</li>
+ * <li>javax.faces.view.facelets.FaceletsResourceResolver</li>
  * <li>javax.inject.Named</li>
  * <li>javax.persistence.metamodel.StaticMetamodel</li>
  * <li>javax.xml.bind.annotation.XmlSchema</li>
