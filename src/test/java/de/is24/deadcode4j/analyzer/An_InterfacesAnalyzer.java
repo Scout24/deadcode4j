@@ -11,11 +11,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 
-public final class A_SuperClassAnalyzer extends AnAnalyzer {
+public final class An_InterfacesAnalyzer extends AnAnalyzer {
 
     @Test
     public void reportsExistenceOfClasses() {
-        Analyzer objectUnderTest = new SuperClassAnalyzer("junit", "java.lang.Thread") {
+        Analyzer objectUnderTest = new InterfacesAnalyzer("junit", "java.lang.Cloneable") {
         };
         CodeContext codeContext = new CodeContext();
 
@@ -27,31 +27,31 @@ public final class A_SuperClassAnalyzer extends AnAnalyzer {
     }
 
     @Test
-    public void reportsASubClassAsLiveCode() {
-        Analyzer objectUnderTest = new SuperClassAnalyzer("junit", "javax.servlet.http.HttpServlet", "java.lang.Thread") {
+    public void reportsImplementingClassAsBeingUsed() {
+        Analyzer objectUnderTest = new InterfacesAnalyzer("junit", "java.lang.Cloneable", "java.io.Serializable") {
         };
         CodeContext codeContext = new CodeContext();
 
+        objectUnderTest.doAnalysis(codeContext, getFile("ClassImplementingCloneable.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("DeadServlet.class"));
-        objectUnderTest.doAnalysis(codeContext, getFile("SubClassThatShouldBeLive.class"));
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
         assertThat("Should have reported some dependencies!", codeDependencies.size(), is(1));
-        assertThat(concat(codeDependencies.values()), containsInAnyOrder("DeadServlet", "SubClassThatShouldBeLive"));
+        assertThat(concat(codeDependencies.values()), containsInAnyOrder("ClassImplementingCloneable", "DeadServlet"));
     }
 
     @Test
-    public void doesNotReportASubClassWithIrrelevantSuperClass() {
-        Analyzer objectUnderTest = new SuperClassAnalyzer("junit", "java.lang.Thread") {
+    public void doesNotReportNonImplementingClassAsBeingUsed() {
+        Analyzer objectUnderTest = new InterfacesAnalyzer("junit", "java.lang.Cloneable") {
         };
         CodeContext codeContext = new CodeContext();
 
+        objectUnderTest.doAnalysis(codeContext, getFile("ClassImplementingCloneable.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("DeadServlet.class"));
-        objectUnderTest.doAnalysis(codeContext, getFile("SubClassThatShouldBeLive.class"));
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
         assertThat("Should have reported some dependencies!", codeDependencies.size(), is(1));
-        assertThat(concat(codeDependencies.values()), containsInAnyOrder("SubClassThatShouldBeLive"));
+        assertThat(concat(codeDependencies.values()), containsInAnyOrder("ClassImplementingCloneable"));
     }
 
 }

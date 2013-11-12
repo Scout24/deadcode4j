@@ -44,8 +44,8 @@ public abstract class ByteCodeAnalyzer extends AnalyzerAdapter implements Analyz
         List<ElementType> types = asList(elementTypes);
         List<AttributeInfo> attributes = newArrayList();
 
-        if ((clazz.getName().endsWith("package-info") && types.contains(ElementType.PACKAGE)) ||
-                (!clazz.getName().endsWith("package-info") && types.contains(ElementType.TYPE))) {
+        if (clazz.getName().endsWith("package-info") && types.contains(ElementType.PACKAGE) ||
+                !clazz.getName().endsWith("package-info") && types.contains(ElementType.TYPE)) {
             attributes.addAll(clazz.getClassFile2().getAttributes());
         }
         if (types.contains(METHOD)) {

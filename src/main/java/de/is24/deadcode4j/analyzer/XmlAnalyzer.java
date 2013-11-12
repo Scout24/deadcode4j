@@ -79,7 +79,7 @@ public abstract class XmlAnalyzer extends AnalyzerAdapter implements Analyzer {
      *
      * @since 1.2.0
      */
-    protected static class StopParsing extends SAXException {
+    protected static final class StopParsing extends SAXException {
     }
 
 }

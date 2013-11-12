@@ -59,26 +59,23 @@ public final class A_Utils {
     @Test
     public void addsSetToMapIfNoMappedSetExists() {
         final String key = "foo";
-        final Integer value = 42;
         Map<String, Set<Integer>> map = newHashMap();
 
-        Utils.addToMappedSet(map, key, value);
+        Set<Integer> set = Utils.getOrAddMappedSet(map, key);
 
-        Set<Integer> values = newHashSet(value);
-        assertThat(map, hasEntry(key, values));
+        assertThat(map, hasEntry(is(equalTo(key)), is(sameInstance(set))));
     }
 
     @Test
     public void preservesExistingSetIfMappedSetExists() {
         final String key = "foo";
-        final Integer newValue = 42;
         Map<String, Set<Integer>> map = newHashMap();
         Set<Integer> existingSet = newHashSet();
         map.put(key, existingSet);
 
-        Utils.addToMappedSet(map, key, newValue);
+        Set<Integer> set = Utils.getOrAddMappedSet(map, key);
 
-        assertThat(map, hasEntry(is(equalTo(key)), is(sameInstance(existingSet))));
+        assertThat(set, is(sameInstance(existingSet)));
     }
 
 }

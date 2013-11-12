@@ -1,4 +1,12 @@
-v.1.4-SNAPSHOT
+v.1.5-SNAPSHOT
+================
+Features
+--------
+* ...
+
+###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.4...master)
+
+v.1.4
 ================
 Features
 --------
@@ -11,7 +19,7 @@ Features
         * either the class defining the associated [`org.hibernate.annotations.TypeDef`](http://docs.jboss.org/hibernate/annotations/3.5/api/org/hibernate/annotations/TypeDef.html)
         * or the class specified as `type` if it is part of the analyzed project
     * Classes being annotated with [`org.hibernate.annotations.GenericGenerator`](http://docs.jboss.org/hibernate/annotations/3.5/api/org/hibernate/annotations/GenericGenerator.html) now depend on the class specified as `strategy` if it is part of the analyzed project
-* Mark classes being annotated with those [JSF](https://javaserverfaces.java.net/) as _live code_:
+* Mark classes being annotated with those [JSF](https://javaserverfaces.java.net/) annotations as _live code_:
     * `javax.faces.component.behavior.FacesBehavior`
     * `javax.faces.convert.FacesConverter`
     * `javax.faces.event.ListenerFor`
@@ -23,9 +31,10 @@ Features
     * `javax.faces.view.facelets.FaceletsResourceResolver`
 * Added possibility to specify which modules should be skipped (configuration parameter __`modulesToSkip`__)
 * Mark classes being __direct__ subclasses of [`org.exolab.castor.xml.util.XMLClassDescriptorImpl`](http://castor.codehaus.org/) as _live code_
-* Added possibility to specify which classes mark a __direct__ subclass of those as being _live code_
+* Added possibility to specify which classes mark a __direct__ subclass of those as being _live code_  (configuration parameter __`superClassesMarkingLiveCode`__)
+* Added possibility to specify which interfaces being __explicitly__ implemented mark a class as beig _live code_ (configuration parameter __`interfacesMarkingLiveCode`__)
 
-###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.3...master)
+###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.3...deadcode4j-maven-plugin-1.4)
 
 v.1.3
 ================

@@ -1,5 +1,6 @@
 import javax.servlet.http.HttpServlet;
+import java.io.Serializable;
 
-/** This class should not be recognized as live even though it is a servlet. */
-public class DeadServlet extends HttpServlet {
+@Deprecated
+public class DeadServlet extends HttpServlet implements Serializable {
 }

@@ -1,29 +1,30 @@
-deadcode4j [![Build Status](https://travis-ci.org/ImmobilienScout24/deadcode4j.png)](https://travis-ci.org/ImmobilienScout24/deadcode4j)
-==========
-
+# deadcode4j [![Build Status](https://travis-ci.org/ImmobilienScout24/deadcode4j.png)](https://travis-ci.org/ImmobilienScout24/deadcode4j)
 *deadcode4j* helps you find code that is no longer used by your application. It is especially useful for cleaning up legacy code.
 
-Usage
------
-
+## Usage
+### `deadcode4j-maven-plugin:find`
 Simply run `mvn de.is24.mavenplugins:deadcode4j-maven-plugin:find` in the project you want to analyze.
 *deadcode4j* will trigger the _package phase_ to be executed for a project (and for all modules listed in a reactor project) before analyzing the output directories.
 The output will look something like this:
 
-    [INFO] --- deadcode4j-maven-plugin:1.3:find (default-cli) @ someProject ---
+    [INFO] --- deadcode4j-maven-plugin:1.4:find (default-cli) @ someProject ---
     [INFO] Analyzed 42 class(es).
-    [WARNING] Found 2 unused class(es):
+    [WARNING] Found 3 unused class(es):
     [WARNING]   de.is24.deadcode4j.Foo
     [WARNING]   de.is24.deadcode4j.Bar
+    [WARNING]   de.is24.deadcode4j.SomeAnnotatedClass
 
-Features
---------
+### `deadcode4j-maven-plugin:find-without-packaging`
+As an alternative, you can run `mvn de.is24.mavenplugins:deadcode4j-maven-plugin:find-without-packaging` which performs the same analysis, but without triggering the _package phase_.
 
+## Features
 *deadcode4j* takes several approaches to analyze if a class is still in usage or not:
 
-- statical code analysis using [Javassist](http://www.jboss.org/javassist/)
+- statical code analysis using [Javassist](http://www.jboss.org/javassist/), recognizing class dependencies
 - parsing [Spring XML files](http://projects.spring.io/spring-framework/): files ending with `.xml` are examined, each `bean` element's `class` attribute is treated as _live code_
-- parsing [`web.xml`](http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd) files: recognizing listed listeners, filters & servlets
+- parsing `web.xml`
+    - recognizing listed listeners, filters & servlets (according to the [XSD](http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd) files)
+    - look for the parameters defined by Spring's [ContextLoader](http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/context/ContextLoader.html) and [FrameworkServlet](http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/servlet/FrameworkServlet.html): `contextClass` & `contextInitializerClasses`, treating the configured classes as _live code_
 - parsing [`*tld`](http://docs.oracle.com/javaee/5/tutorial/doc/bnamu.html) files: recognizing custom tags, tag extra infos, listeners, tag library validators & EL functions
 - recognizing classes annotated with those [Spring annotations](http://docs.spring.io/spring/docs/3.2.4.RELEASE/spring-framework-reference/html/beans.html#beans-stereotype-annotations) as _live code_:
     - `org.springframework.context.annotation.Configuration`
@@ -32,14 +33,36 @@ Features
     - `org.springframework.stereotype.Controller`
     - `org.springframework.stereotype.Service`
     - `org.springframework.stereotype.Repository`
-- recognizing classes annotated with those JEE annotations as _live code_:
+- recognizing classes annotated with JEE annotations as _live code_:
     - [`javax.annotation.ManagedBean`](http://docs.oracle.com/javaee/6/api/javax/annotation/ManagedBean.html)
     - [`javax.inject.Named`](http://docs.oracle.com/javaee/6/api/javax/inject/Named.html)
     - [`javax.persistence.metamodel.StaticMetamodel`](http://docs.oracle.com/javaee/6/api/javax/persistence/metamodel/StaticMetamodel.html)
-- recognizing classes annotated with custom specified annotations as _live code_
-- custom XML file parsing: treating classes referenced in elements' text or attributes as _live code_
+    - JAXB annotation [`javax.xml.bind.annotation.XmlSchema`](http://docs.oracle.com/javaee/6/api/javax/xml/bind/annotation/XmlSchema.html)
+    - [JSF](https://javaserverfaces.java.net/) annotations
+        - `javax.faces.component.behavior.FacesBehavior`
+        - `javax.faces.convert.FacesConverter`
+        - `javax.faces.event.ListenerFor`
+        - `javax.faces.event.ListenersFor`
+        - `javax.faces.event.NamedEvent`
+        - `javax.faces.render.FacesBehaviorRenderer`
+        - `javax.faces.render.FacesRenderer`
+        - `javax.faces.validator.FacesValidator`
+        - `javax.faces.view.facelets.FaceletsResourceResolver`
+- processing [Hibernate Annotations](http://docs.jboss.org/hibernate/annotations/3.5/reference/en/html/)
+    - recognizing the `strategy` value of the [`org.hibernate.annotations.GenericGenerator`](http://docs.jboss.org/hibernate/annotations/3.5/api/org/hibernate/annotations/GenericGenerator.html) annotation as _live code_
+    - recognizing the `type` value of the [`org.hibernate.annotations.Type`](http://docs.jboss.org/hibernate/annotations/3.5/api/org/hibernate/annotations/Type.html) annotation as _live code_
+    - recognizing classes annotated with a [`org.hibernate.annotations.TypeDef`](http://docs.jboss.org/hibernate/annotations/3.5/api/org/hibernate/annotations/TypeDef.html) that is referenced by another class in the project as _live code_
+- recognizing `*Descriptor` classes being generated by [Castor](http://castor.codehaus.org/) as _live code_
+- Customization
+    - recognizing classes annotated with custom specified annotations as _live code_
+    - recognizing classes *directly*<sup>1</sup> implementing custom specified interfaces as _live code_
+    - recognizing classes *directly*<sup>2</sup> extending custom specified classes as _live code_
+    - custom XML file parsing: treating classes referenced in elements' text or attributes as _live code_
 
 After performing the usage analysis, *deadcode4j* reports which classes are presumably dead.
+
+> <sup>1</sup> When examining `class C extends B implements A`, only `B` is recognized as implementing `A`; you can circumvent this by defining `C extends B implements A`  
+> <sup>2</sup> When examining `class C extends B extends A`, only `B` is recognized as subclass of `A`; no circumvention here - create an issue if you think this is absolutely required!
 
 ### False positives
 
@@ -50,10 +73,9 @@ After performing the usage analysis, *deadcode4j* reports which classes are pres
 - As the Java compiler inlines constant expressions, class references may not exist in bytecode; this can be circumvented as outlined at [stackoverflow](http://stackoverflow.com/questions/1833581/when-to-use-intern-on-string-literals)
 - Finally, if the analyzed project isn't closed but represents more of a public API or library, expect *deadcode4j* to report many classes which are indeed used by other projects
 
-Obviously, those downsides should and will be tackled by upcoming releases. If you know of any other false positives, please report an [issue](https://github.com/ImmobilienScout24/deadcode4j/issues/new).
+If you know of any other false positives, please report an [issue](https://github.com/ImmobilienScout24/deadcode4j/issues/new).
 
-Configuration
-------------------
+## Configuration
 
 If you want to configure the plugin and make use of some of its features, list *deadcode4j* in your `pom.xml`:
 
@@ -63,7 +85,7 @@ If you want to configure the plugin and make use of some of its features, list *
           <plugin>
             <groupId>de.is24.mavenplugins</groupId>
             <artifactId>deadcode4j-maven-plugin</artifactId>
-            <version>1.3</version>
+            <version>1.4</version>
             <configuration>
               <annotationsMarkingLiveCode>
                 <param>de.is24.deadcode4j.LiveCode</param>
@@ -80,7 +102,7 @@ If you want to configure the plugin and make use of some of its features, list *
 
 Now run `mvn de.is24.mavenplugins:deadcode4j-maven-plugin:find` again and you'll get
 
-    [INFO] --- deadcode4j-maven-plugin:1.3:find (default-cli) @ someProject ---
+    [INFO] --- deadcode4j-maven-plugin:1.4:find (default-cli) @ someProject ---
     [INFO] Analyzed 42 class(es).
     [INFO] Ignoring 1 class(es) which seem(s) to be unused.
     [WARNING] Found 1 unused class(es):
@@ -127,3 +149,17 @@ _Note that it if you do not intend to bind *deadcode4j* to a lifecycle phase, it
 
         A list of XPath definitions identifying an XML node which is to be recognized as a class being in use.
         Supported expressions are: `element/text()` and `element/@attribute`
+
+- **interfacesMarkingLiveCode**
+
+    A list of fully qualified interface names which, if implemented, mark classes as being  _live code_  
+    _see limitations mentioned in the **Features** section_
+
+- **modulesToSkip**
+
+    A list of the modules to skip
+
+- **superClassesMarkingLiveCode**
+
+    A list of fully qualified class names which, if extended, mark classes as being  _live code_  
+    _see limitations mentioned in the **Features** section_

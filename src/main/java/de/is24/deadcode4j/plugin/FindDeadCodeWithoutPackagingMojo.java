@@ -65,6 +65,13 @@ public class FindDeadCodeWithoutPackagingMojo extends AbstractMojo {
      */
     @Parameter
     private List<CustomXml> customXmls = emptyList();
+    /**
+     * Lists the fqcn of the interfaces marking a class as being "live code".
+     *
+     * @since 1.4
+     */
+    @Parameter
+    private Set<String> interfacesMarkingLiveCode = emptySet();
     @Component
     private MavenProject project;
     /**
@@ -110,15 +117,14 @@ public class FindDeadCodeWithoutPackagingMojo extends AbstractMojo {
                 new CastorClassesAnalyzer(),
                 new ClassDependencyAnalyzer(),
                 new HibernateAnnotationsAnalyzer(),
-                new JaxbAnnotationsAnalyzer(),
                 new JeeAnnotationsAnalyzer(),
-                new JsfAnnotationsAnalyzer(),
                 new SpringAnnotationsAnalyzer(),
                 new SpringWebXmlAnalyzer(),
                 new SpringXmlAnalyzer(),
                 new TldAnalyzer(),
                 new WebXmlAnalyzer());
         addCustomAnnotationsAnalyzerIfConfigured(analyzers);
+        addCustomInterfacesAnalyzerIfConfigured(analyzers);
         addCustomSuperClassesAnalyzerIfConfigured(analyzers);
         addCustomXmlAnalyzerIfConfigured(analyzers);
         DeadCodeFinder deadCodeFinder = new DeadCodeFinder(analyzers);
@@ -130,6 +136,13 @@ public class FindDeadCodeWithoutPackagingMojo extends AbstractMojo {
             return;
         analyzers.add(new CustomAnnotationsAnalyzer(annotationsMarkingLiveCode));
         getLog().info("Treating classes annotated with any of " + annotationsMarkingLiveCode + " as live code.");
+    }
+
+    private void addCustomInterfacesAnalyzerIfConfigured(Set<Analyzer> analyzers) {
+        if (interfacesMarkingLiveCode.isEmpty())
+            return;
+        analyzers.add(new CustomInterfacesAnalyzer(interfacesMarkingLiveCode));
+        getLog().info("Treating classes explicitly implementing any of " + interfacesMarkingLiveCode + " as live code.");
     }
 
     private void addCustomSuperClassesAnalyzerIfConfigured(Set<Analyzer> analyzers) {
