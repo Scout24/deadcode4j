@@ -163,3 +163,6 @@ _Note that it if you do not intend to bind *deadcode4j* to a lifecycle phase, it
 
     A list of fully qualified class names which, if extended, mark classes as being  _live code_  
     _see limitations mentioned in the **Features** section_
+
+## In closing
+Read [here](http://sebastiankirsch.blogspot.com/2013/10/introducing-dedcode4j.html) how it all started.
