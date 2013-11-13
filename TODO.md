@@ -14,6 +14,9 @@ Features
 * Class.forName
 * JSP imports
 * recognize cyclic dependencies
+    * actually, better to report which parts of the code are really used
+    * "really used" means either marked as such manually or because the application breaks if the class (and its minions) is removed, i.e. the class is listed in sth. like web.xml
+    * then we work on transitively from there
 * generate a report
 
 Internals
