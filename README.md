@@ -100,6 +100,8 @@ If you want to configure the plugin and make use of some of its features, list *
       </pluginManagement>
     </build>
 
+As *deadcode4j* uses [semantic versioning](http://semver.org/), you may safely define the version as `<version>[1.4,1.5)</version>` (if the Maven installation you are using supports version ranges) to benefit from bugfixes immediately.
+
 Now run `mvn de.is24.mavenplugins:deadcode4j-maven-plugin:find` again and you'll get
 
     [INFO] --- deadcode4j-maven-plugin:1.4:find (default-cli) @ someProject ---
