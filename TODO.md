@@ -1,23 +1,23 @@
 Features
 --------
-* Hibernate annotations
-   * The class using `javax.persistence.GeneratedValue` depends on the class defining the associated [`org.hibernate.annotations.GenericGenerator`](http://docs.jboss.org/hibernate/orm/4.2/manual/en-US/html/ch05.html#mapping-declaration-id-generator) &rarr; this is probably only relevant for package annotations
-* Spring Web Flow XML
-* [CXF XML endpoint definitions](http://cxf.apache.org/schemas/jaxws.xsd)
-* JBoss XML files
-* Aspectj XML files
-* Spring/Quartz XML bean definition
-* _Detection 2.0_
-    * check if a Spring bean is really used
-    * check if JSF stuff is really used
-    * check if GenericGenerator is really used
-* Class.forName
-* JSP imports
 * recognize cyclic dependencies
     * actually, better to report which parts of the code are really used
     * "really used" means either marked as such manually or because the application breaks if the class (and its minions) is removed, i.e. the class is listed in sth. like web.xml
     * then we work on transitively from there
-* generate a report
+* Hibernate annotations
+   * The class using `javax.persistence.GeneratedValue` depends on the class defining the associated [`org.hibernate.annotations.GenericGenerator`](http://docs.jboss.org/hibernate/orm/4.2/manual/en-US/html/ch05.html#mapping-declaration-id-generator) &rarr; this is probably only relevant for package annotations
+* _Detection 2.0_
+    * check if a Spring bean is really used
+    * check if JSF stuff is really used
+    * check if GenericGenerator is really used
+    * generate a report
+* Spring/Quartz XML bean definition (could be done using custom XML for the moment, but really is awkward)
+* Spring Web Flow XML (can be done using custom XML for the moment)
+* [CXF XML endpoint definitions](http://cxf.apache.org/schemas/jaxws.xsd) (can be done using custom XML for the moment)
+* JBoss XML files (can be done using custom XML for the moment)
+* Aspectj XML files (can be done using custom XML for the moment)
+* JSP imports (with plain parsing, this means a huge effort; better look for a way to use [Jspc](http://mojo.codehaus.org/jspc-maven-plugin/) and parse the bytecode?
+* Class.forName (this would probably require to analyze the .java files; also, it is most likely that this is done in a dynamic matter)
 
 Internals
 ---------
