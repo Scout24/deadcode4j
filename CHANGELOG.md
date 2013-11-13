@@ -6,6 +6,7 @@
 
 # v.1.4 [&rarr;announcement](http://sebastiankirsch.blogspot.com/2013/11/deadcode4j-v14-released.html)
 ## Features
+* introduced new goal `find-without-packaging`
 * More thorough analysis of `web.xml` files: look for the parameters specified by Spring's [`ContextLoader`](http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/context/ContextLoader.html) and [`FrameworkServlet`](http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/servlet/FrameworkServlet.html)
     * `contextClass` for an instance of `ConfigurableWebApplicationContext`
     * `contextInitializerClasses` for instances of `ApplicationContextInitializer`
@@ -29,6 +30,11 @@
 * Mark classes being __direct__ subclasses of [`org.exolab.castor.xml.util.XMLClassDescriptorImpl`](http://castor.codehaus.org/) as _live code_
 * Added possibility to specify which classes mark a __direct__ subclass of those as being _live code_  (configuration parameter __`superClassesMarkingLiveCode`__)
 * Added possibility to specify which interfaces being __explicitly__ implemented mark a class as beig _live code_ (configuration parameter __`interfacesMarkingLiveCode`__)
+
+## Internal
+* expanded lifecycle of `Analyzer`s: now there's a `finishAnalysis` method being called at the end, enabling post-processing
+* refactored `XmlAnalyzer`: only handling the basics now (setting up the SAX parser and checking the file name), introduced `SimpleXmlAnalyzer` providing the old functionality
+* defined centralized annotation discovery `ByteCodeAnalyzer.getAnnotations`
 
 ###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.3...deadcode4j-maven-plugin-1.4)
 
@@ -62,6 +68,7 @@
 * handle each file independently, i.e. no more setup of a ClassPool & ClassLoader with which to access all classes/files
 * use [commons-io](http://commons.apache.org/io/) to iterate over files
 * use [Invoker Plugin](http://maven.apache.org/plugins/maven-invoker-plugin/) to test the plugin
+* introduced `de.is24.deadcode4j.Utils` class providing convenience functions
 
 ###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.1.0...deadcode4j-maven-plugin-1.2.0)
 
