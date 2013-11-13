@@ -1,15 +1,12 @@
-v.1.5-SNAPSHOT
-================
-Features
---------
+# v.1.5-SNAPSHOT
+## Features
 * ...
 
 ###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.4...master)
 
-v.1.4
-================
-Features
---------
+# v.1.4 [&rarr;announcement](http://sebastiankirsch.blogspot.com/2013/11/deadcode4j-v14-released.html)
+## Features
+* introduced new goal `find-without-packaging`
 * More thorough analysis of `web.xml` files: look for the parameters specified by Spring's [`ContextLoader`](http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/context/ContextLoader.html) and [`FrameworkServlet`](http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/servlet/FrameworkServlet.html)
     * `contextClass` for an instance of `ConfigurableWebApplicationContext`
     * `contextInitializerClasses` for instances of `ApplicationContextInitializer`
@@ -34,12 +31,15 @@ Features
 * Added possibility to specify which classes mark a __direct__ subclass of those as being _live code_  (configuration parameter __`superClassesMarkingLiveCode`__)
 * Added possibility to specify which interfaces being __explicitly__ implemented mark a class as beig _live code_ (configuration parameter __`interfacesMarkingLiveCode`__)
 
+## Internal
+* expanded lifecycle of `Analyzer`s: now there's a `finishAnalysis` method being called at the end, enabling post-processing
+* refactored `XmlAnalyzer`: only handling the basics now (setting up the SAX parser and checking the file name), introduced `SimpleXmlAnalyzer` providing the old functionality
+* defined centralized annotation discovery `ByteCodeAnalyzer.getAnnotations`
+
 ###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.3...deadcode4j-maven-plugin-1.4)
 
-v.1.3
-================
-Features
---------
+# v.1.3 [&rarr;announcement](http://sebastiankirsch.blogspot.com/2013/10/deadcode4j-v13-released.html)
+## Features
 * Mark classes being annotated with those JEE annotations as _live code_:
     * [`javax.annotation.ManagedBean`](http://docs.oracle.com/javaee/6/api/javax/annotation/ManagedBean.html)
     * [`javax.inject.Named`](http://docs.oracle.com/javaee/6/api/javax/inject/Named.html)
@@ -57,47 +57,38 @@ Features
 
 ###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.2.0...deadcode4j-maven-plugin-1.3)
 
-v.1.2.0
-================
-Features
---------
+# v.1.2.0 [&rarr;announcement](http://sebastiankirsch.blogspot.com/2013/10/deadcode4j-v120-released.html)
+## Features
 * Added analysis of `web.xml` files: recognizing listed listeners, filters & servlets as _live code_
 * Added analysis of [`*tld`](http://docs.oracle.com/javaee/5/tutorial/doc/bnamu.html) files: recognizing custom tags, tag extra infos, listeners, tag library validators & EL functions as _live code_
 * Execute _package_ phase, scan [`webappDirectory/WEB-INF`](http://maven.apache.org/plugins/maven-war-plugin/exploded-mojo.html#webappDirectory) additionally to the output directory
 * Mojo is now marked as an aggregator, analyzing all projects of a reactor
 
-Internal
---------
+## Internal
 * handle each file independently, i.e. no more setup of a ClassPool & ClassLoader with which to access all classes/files
 * use [commons-io](http://commons.apache.org/io/) to iterate over files
 * use [Invoker Plugin](http://maven.apache.org/plugins/maven-invoker-plugin/) to test the plugin
+* introduced `de.is24.deadcode4j.Utils` class providing convenience functions
 
 ###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.1.0...deadcode4j-maven-plugin-1.2.0)
 
-v.1.1.0
-=======
-Features
---------
+# v.1.1.0 [&rarr;announcement](http://sebastiankirsch.blogspot.com/2013/10/introducing-dedcode4j.html)
+## Features
 * Added analysis of [Spring XML files](http://docs.spring.io/spring/docs/3.2.4.RELEASE/spring-framework-reference/html/beans.html#beans-factory-instantiation) to determine if a class is used
 
-Internal
---------
+## Internal
 * Integrated with [Travis](https://travis-ci.org/ImmobilienScout24/deadcode4j)
 
 ###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.0.1...deadcode4j-maven-plugin-1.1.0)
 
-v1.0.1
-======
-Features
---------
+# v1.0.1
+## Features
 * Added possibility to ignore presumably _dead code_
 
 ###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode-maven-plugin-1.0.0...deadcode4j-maven-plugin-1.0.1)
 
-v.1.0.0
-=======
-Features
---------
+# v.1.0.0
+## Features
 * Static Class file analysis based on [Javassist](http://www.jboss.org/javassist/)
 
 ###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/1bf976e7d67d9fa5f142022e6a56bb0d5ab0...deadcode-maven-plugin-1.0.0)

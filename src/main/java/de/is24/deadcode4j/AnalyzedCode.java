@@ -23,6 +23,9 @@ public class AnalyzedCode {
         return analyzedClasses;
     }
 
+    /**
+     * Returns a map consisting of code artifacts (typically classes) pointing to their dependencies.
+     */
     @Nonnull
     public Map<String, ? extends Iterable<String>> getCodeDependencies() {
         return codeDependencies;
