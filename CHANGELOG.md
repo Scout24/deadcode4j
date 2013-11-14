@@ -1,11 +1,20 @@
 # v.1.5-SNAPSHOT
 ## Features
+* ...
+
+## Internal
+* ...
+
+###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.4.1...master)
+
+# v.1.4.1
+## Features
 * introduced new goal `help`
 
 ## Internal
 * explicitly list all dependencies
 
-###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.4...master)
+###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.4...deadcode4j-maven-plugin-1.4.1)
 
 # v.1.4 [&rarr;announcement](http://sebastiankirsch.blogspot.com/2013/11/deadcode4j-v14-released.html)
 ## Features

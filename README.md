@@ -7,7 +7,7 @@ Simply run `mvn de.is24.mavenplugins:deadcode4j-maven-plugin:find -Dmaven.test.s
 *deadcode4j* will trigger the _package phase_ to be executed for a project (and for all modules listed in a reactor project) before analyzing the output directories.
 The output will look something like this:
 
-    [INFO] --- deadcode4j-maven-plugin:1.4:find (default-cli) @ someProject ---
+    [INFO] --- deadcode4j-maven-plugin:1.4.1:find (default-cli) @ someProject ---
     [INFO] Analyzed 42 class(es).
     [WARNING] Found 3 unused class(es):
     [WARNING]   de.is24.deadcode4j.Foo
@@ -18,6 +18,9 @@ _The `-Dmaven.test.skip=true` part skips compiling & executing tests, as they ar
 
 ### `deadcode4j-maven-plugin:find-without-packaging`
 As an alternative, you can run `mvn de.is24.mavenplugins:deadcode4j-maven-plugin:find-without-packaging` which performs the same analysis, but without triggering the _package phase_.
+
+### `deadcode4j-maven-plugin:help`
+Lists the available goals & parameters.
 
 ## Features
 *deadcode4j* takes several approaches to analyze if a class is still in usage or not:
@@ -87,7 +90,7 @@ If you want to configure the plugin and make use of some of its features, list *
           <plugin>
             <groupId>de.is24.mavenplugins</groupId>
             <artifactId>deadcode4j-maven-plugin</artifactId>
-            <version>1.4</version>
+            <version>1.4.1</version>
             <configuration>
               <annotationsMarkingLiveCode>
                 <param>de.is24.deadcode4j.LiveCode</param>
@@ -104,9 +107,9 @@ If you want to configure the plugin and make use of some of its features, list *
 
 As *deadcode4j* uses [semantic versioning](http://semver.org/), you may safely define the version as `<version>[1.4,1.5)</version>` (if the Maven installation you are using supports version ranges) to benefit from bugfixes immediately.
 
-Now run `mvn de.is24.mavenplugins:deadcode4j-maven-plugin:find` again and you'll get
+Now run `mvn de.is24.mavenplugins:deadcode4j-maven-plugin:find-without-packaging` and you'll get
 
-    [INFO] --- deadcode4j-maven-plugin:1.4:find (default-cli) @ someProject ---
+    [INFO] --- deadcode4j-maven-plugin:1.4.1:find-without-packaging (default-cli) @ someProject ---
     [INFO] Analyzed 42 class(es).
     [INFO] Ignoring 1 class(es) which seem(s) to be unused.
     [WARNING] Found 1 unused class(es):
