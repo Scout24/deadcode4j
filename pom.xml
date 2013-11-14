@@ -66,6 +66,26 @@
                 <filtering>true</filtering>
             </testResource>
         </testResources>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-plugin-plugin</artifactId>
+                    <version>3.2</version>
+                    <configuration>
+                        <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>help-goal</id>
+                            <goals>
+                                <goal>helpmojo</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -125,21 +145,43 @@
                     <cloneClean>true</cloneClean>
                     <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
                     <debug>false</debug>
-                    <goals>
-                        <goal>${project.groupId}:${project.artifactId}:find</goal>
-                    </goals>
                     <localRepositoryPath>${project.build.directory}/it-repo</localRepositoryPath>
                     <postBuildHookScript>verify</postBuildHookScript>
                     <streamLogs>true</streamLogs>
                 </configuration>
                 <executions>
                     <execution>
-                        <id>integration-test</id>
+                        <id>test-find</id>
                         <goals>
                             <goal>install</goal>
                             <goal>integration-test</goal>
                             <goal>verify</goal>
                         </goals>
+                        <configuration>
+                            <goals>
+                                <goal>${project.groupId}:${project.artifactId}:find</goal>
+                            </goals>
+                            <pomExcludes>
+                                <exclude>help/pom.xml</exclude>
+                            </pomExcludes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>test-help</id>
+                        <goals>
+                            <goal>install</goal>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                        <configuration>
+                            <goals>
+                                <goal>${project.groupId}:${project.artifactId}:${project.version}:help</goal>
+                            </goals>
+                            <pom>help/pom.xml</pom>
+                            <properties>
+                                <detail>true</detail>
+                            </properties>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

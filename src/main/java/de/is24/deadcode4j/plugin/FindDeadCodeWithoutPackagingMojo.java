@@ -60,6 +60,7 @@ public class FindDeadCodeWithoutPackagingMojo extends AbstractMojo {
     private Set<String> classesToIgnore = emptySet();
     /**
      * Lists the custom XML analysis configurations to set up.
+     * Have a look at https://github.com/ImmobilienScout24/deadcode4j to learn how to configure a custom XML analyzer.
      *
      * @since 1.3
      */
@@ -93,6 +94,15 @@ public class FindDeadCodeWithoutPackagingMojo extends AbstractMojo {
      */
     @Parameter
     private Set<String> superClassesMarkingLiveCode = emptySet();
+    /**
+     * This parameter only exists to have a generated <code>help</code> goal. It is not used at all.
+     *
+     * @deprecated this value is ignored
+     * @since 1.4.1
+     */
+    @Deprecated
+    @Parameter(defaultValue = "fooBar")
+    private String workAroundForHelpMojo;
 
     public FindDeadCodeWithoutPackagingMojo() {
         packagingHandlers.put("pom", new PomPackagingHandler());

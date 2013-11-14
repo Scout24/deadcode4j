@@ -1,6 +1,6 @@
 # v.1.5-SNAPSHOT
 ## Features
-* ...
+* introduced new goal `help`
 
 ###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.4...master)
 
