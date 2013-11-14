@@ -2,6 +2,9 @@
 ## Features
 * introduced new goal `help`
 
+## Internal
+* explicitly list all dependencies
+
 ###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.4...master)
 
 # v.1.4 [&rarr;announcement](http://sebastiankirsch.blogspot.com/2013/11/deadcode4j-v14-released.html)
