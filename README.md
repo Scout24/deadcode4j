@@ -3,7 +3,7 @@
 
 ## Usage
 ### `deadcode4j-maven-plugin:find`
-Simply run `mvn de.is24.mavenplugins:deadcode4j-maven-plugin:find` in the project you want to analyze.
+Simply run `mvn de.is24.mavenplugins:deadcode4j-maven-plugin:find -Dmaven.test.skip=true` in the project you want to analyze.
 *deadcode4j* will trigger the _package phase_ to be executed for a project (and for all modules listed in a reactor project) before analyzing the output directories.
 The output will look something like this:
 
@@ -13,6 +13,8 @@ The output will look something like this:
     [WARNING]   de.is24.deadcode4j.Foo
     [WARNING]   de.is24.deadcode4j.Bar
     [WARNING]   de.is24.deadcode4j.SomeAnnotatedClass
+    
+_The `-Dmaven.test.skip=true` part skips compiling & executing tests, as they are not relevant for the analysis anyway._
 
 ### `deadcode4j-maven-plugin:find-without-packaging`
 As an alternative, you can run `mvn de.is24.mavenplugins:deadcode4j-maven-plugin:find-without-packaging` which performs the same analysis, but without triggering the _package phase_.
