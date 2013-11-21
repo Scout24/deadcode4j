@@ -1,5 +1,6 @@
 package de.is24.deadcode4j.plugin;
 
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 
 /**
@@ -14,5 +15,14 @@ import org.apache.maven.plugins.annotations.Mojo;
 @Mojo(name = "find-without-packaging", aggregator = true, threadSafe = true, requiresProject = true)
 @Deprecated
 public class FindDeadCodeWithoutPackagingMojo extends FindDeadCodeOnlyMojo {
+
+    @Override
+    public void execute() throws MojoExecutionException {
+        getLog().warn("##########################################################");
+        getLog().warn("This goal is deprecated and will be removed in the future!");
+        getLog().warn("  Instead, use the goal [find-only].");
+        getLog().warn("##########################################################");
+        super.execute();
+    }
 
 }
