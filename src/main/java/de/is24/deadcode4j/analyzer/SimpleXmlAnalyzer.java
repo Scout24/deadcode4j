@@ -110,7 +110,7 @@ public abstract class SimpleXmlAnalyzer extends XmlAnalyzer implements Analyzer 
 
         @Override
         public void endElement(String uri, String localName, String qName) {
-            if (buffer != null) {
+            if (buffer != null && buffer.length() > 0) {
                 codeContext.addDependencies(dependerId, buffer.toString());
                 buffer = null;
             }
