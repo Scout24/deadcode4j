@@ -124,6 +124,7 @@ public class FindDeadCodeWithoutPackagingMojo extends AbstractMojo {
 
     private DeadCode analyzeCode() throws MojoExecutionException {
         Set<Analyzer> analyzers = Sets.<Analyzer>newHashSet(
+                new AopXmlAnalyzer(),
                 new CastorClassesAnalyzer(),
                 new ClassDependencyAnalyzer(),
                 new HibernateAnnotationsAnalyzer(),

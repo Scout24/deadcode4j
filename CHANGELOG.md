@@ -1,6 +1,6 @@
 # v.1.5-SNAPSHOT
 ## Features
-* ...
+* Added analysis of `aop.xml` files: recognizing listed aspects as _live code_
 
 ## Internal
 * ...
