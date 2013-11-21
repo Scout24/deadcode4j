@@ -1,6 +1,6 @@
 # v.1.5-SNAPSHOT
 ## Features
-* Added analysis of `aop.xml` files: recognizing listed aspects as _live code_
+* Added analysis of `aop.xml` files: recognizing listed aspects as _live code_. Supports both [AspectJ](http://eclipse.org/aspectj/) and [AspectWerkz](http://aspectwerkz.codehaus.org/)
 * Added analysis of [`.wsdd`](http://axis.apache.org/axis/java/reference.html#Deployment_WSDD_Reference) files: recognizing listed Service classes as _live code_
 
 ## Internal
