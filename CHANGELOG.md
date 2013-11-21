@@ -2,6 +2,7 @@
 ## Features
 * Added analysis of `aop.xml` files: recognizing listed aspects as _live code_. Supports both [AspectJ](http://eclipse.org/aspectj/) and [AspectWerkz](http://aspectwerkz.codehaus.org/)
 * Added analysis of [`.wsdd`](http://axis.apache.org/axis/java/reference.html#Deployment_WSDD_Reference) files: recognizing listed Service classes as _live code_
+* Spring XML analysis now also recognized [CXF endpoint definitions](http://cxf.apache.org/schemas/jaxws.xsd) as _live code_. Supports the `implementor`/`implementorClass` attributes only; if you are using the `implementor` element: use the attribute instead.
 
 ## Internal
 * ...

@@ -13,7 +13,6 @@ Features
     * generate a report
 * Spring/Quartz XML bean definition (could be done using custom XML for the moment, but really is awkward)
 * Spring Web Flow XML (can be done using custom XML for the moment)
-* [CXF XML endpoint definitions](http://cxf.apache.org/schemas/jaxws.xsd) (can be done using custom XML for the moment)
 * JBoss XML files (can be done using custom XML for the moment)
 * JSP imports (with plain parsing, this means a huge effort; better look for a way to use [Jspc](http://mojo.codehaus.org/jspc-maven-plugin/) and parse the bytecode?
 * Class.forName (this would probably require to analyze the .java files; also, it is most likely that this is done in a dynamic matter)
