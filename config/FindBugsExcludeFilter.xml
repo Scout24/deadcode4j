@@ -1,0 +1,5 @@
+<FindBugsFilter>
+    <Match>
+        <Class name="de.is24.deadcode4j.plugin.HelpMojo"/>
+    </Match>
+</FindBugsFilter>

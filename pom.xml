@@ -84,6 +84,14 @@
                         </execution>
                     </executions>
                 </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>findbugs-maven-plugin</artifactId>
+                    <version>2.5.2</version>
+                    <configuration>
+                        <excludeFilterFile>config/FindBugsExcludeFilter.xml</excludeFilterFile>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
