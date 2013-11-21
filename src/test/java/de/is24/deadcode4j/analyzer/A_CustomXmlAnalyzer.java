@@ -5,9 +5,11 @@ import org.junit.Test;
 
 import java.util.Map;
 
+import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 
 public final class A_CustomXmlAnalyzer extends AnAnalyzer {
@@ -32,6 +34,19 @@ public final class A_CustomXmlAnalyzer extends AnAnalyzer {
     }
 
     @Test
+    public void selectsTheTextOfTheRestrictedNode() {
+        CustomXmlAnalyzer objectUnderTest = new CustomXmlAnalyzer("junit", ".xml", null);
+        objectUnderTest.registerXPath("restrictedElement[@locked='false']/text()");
+
+        CodeContext codeContext = new CodeContext();
+        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
+
+        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        assertThat("Should have analyzed the XML file!", codeDependencies.size(), is(1));
+        assertThat(concat(codeDependencies.values()), containsInAnyOrder("de.is24.deadcode4j.UnlockedClassInElement"));
+    }
+
+    @Test
     public void selectsTheAttributeOfTheSpecifiedNode() {
         CustomXmlAnalyzer objectUnderTest = new CustomXmlAnalyzer("junit", ".xml", null);
         objectUnderTest.registerXPath("element/@attributeWithClass");
@@ -42,6 +57,19 @@ public final class A_CustomXmlAnalyzer extends AnAnalyzer {
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
         assertThat("Should have analyzed the XML file!", codeDependencies.size(), is(1));
         assertThat(getOnlyElement(codeDependencies.values()), contains("de.is24.deadcode4j.ClassInAttribute"));
+    }
+
+    @Test
+    public void selectsTheAttributeOfTheRestrictedNode() {
+        CustomXmlAnalyzer objectUnderTest = new CustomXmlAnalyzer("junit", ".xml", null);
+        objectUnderTest.registerXPath("restrictedElement[@locked='false']/@attributeWithClass");
+
+        CodeContext codeContext = new CodeContext();
+        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
+
+        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        assertThat("Should have analyzed the XML file!", codeDependencies.size(), is(1));
+        assertThat(concat(codeDependencies.values()), containsInAnyOrder("de.is24.deadcode4j.UnlockedClassInAttribute"));
     }
 
 }

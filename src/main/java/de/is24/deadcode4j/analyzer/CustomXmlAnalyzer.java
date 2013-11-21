@@ -14,7 +14,8 @@ import java.util.regex.Pattern;
  */
 public class CustomXmlAnalyzer extends SimpleXmlAnalyzer implements Analyzer {
 
-    private static final Pattern XPATH_PATTERN = Pattern.compile("^([^/]+)/(?:@(.*)|text\\(\\))$");
+    //                                                              element       [@attribute='value']    /   @attribute|text()
+    private static final Pattern XPATH_PATTERN = Pattern.compile("^([^/\\[]+)(?:\\[@([^=]+)='([^']+)'\\])?/(?:@(.*)|text\\(\\))$");
 
     /**
      * Creates a new <code>CustomXmlAnalyzer</code>.
@@ -53,6 +54,8 @@ public class CustomXmlAnalyzer extends SimpleXmlAnalyzer implements Analyzer {
      * <li><i>element</i>/text()</li>
      * <li><i>element</i>/@<i>attribute</i></li>
      * </ul>
+     * An element may be further restricted by defining a predicate like
+     * <i>element</i>[@<i>attributeName</i>='<i>attributeValue</i>'].
      *
      * @throws IllegalArgumentException if <code>xPath</code> is not supported
      */
@@ -61,12 +64,16 @@ public class CustomXmlAnalyzer extends SimpleXmlAnalyzer implements Analyzer {
         if (!matcher.matches()) {
             throw new IllegalArgumentException("Although [" + xPath + "] may be a valid XPath expression, it is not supported!");
         }
-        String element = matcher.group(1);
-        String attribute = matcher.group(2);
+        String elementName = matcher.group(1);
+        String attribute = matcher.group(4);
+        Element element;
         if (attribute != null) {
-            registerClassAttribute(element, attribute);
+            element = registerClassAttribute(elementName, attribute);
         } else {
-            registerClassElement(element);
+            element = registerClassElement(elementName);
+        }
+        if (matcher.group(2) != null) {
+            element.withAttributeValue(matcher.group(2), matcher.group(3));
         }
     }
 

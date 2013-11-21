@@ -5,6 +5,7 @@
 * Spring XML analysis now also recognizes [CXF endpoint definitions](http://cxf.apache.org/schemas/jaxws.xsd) as _live code_. Supports the `implementor`/`implementorClass` attributes only; if you are using the `implementor` element: use the attribute instead.
 * Spring XML analysis now also recognizes classes executed by [Quartz jobs](http://docs.spring.io/spring/docs/3.0.x/reference/scheduling.html#scheduling-quartz-jobdetail) as _live code_.
 * Spring XML analysis now also recognizes view classes used by [view resolvers](http://docs.spring.io/spring/docs/3.0.x/reference/view.html#view-tiles-url) as _live code_.
+* The custom XML analyzer now allows to specify the predicate `[@attributeName='attributeValue']` in the XPath definition
 
 ## Internal
 * ...
