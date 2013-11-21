@@ -10,11 +10,11 @@ import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
  * <a href="http://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html">package</a> phase to be
  * executed.
  *
- * @see FindDeadCodeWithoutPackagingMojo
+ * @see FindDeadCodeOnlyMojo
  * @since 1.0.0
  */
 @Mojo(name = "find", aggregator = true, threadSafe = true, requiresProject = true)
 @Execute(phase = PACKAGE)
-public class FindDeadCodeMojo extends FindDeadCodeWithoutPackagingMojo {
+public class FindDeadCodeMojo extends FindDeadCodeOnlyMojo {
 
 }
