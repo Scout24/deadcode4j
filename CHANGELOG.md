@@ -1,6 +1,7 @@
 # v.1.5-SNAPSHOT
 ## Features
 * Added analysis of `aop.xml` files: recognizing listed aspects as _live code_
+* Added analysis of [`.wsdd`](http://axis.apache.org/axis/java/reference.html#Deployment_WSDD_Reference) files: recognizing listed Service classes as _live code_
 
 ## Internal
 * ...

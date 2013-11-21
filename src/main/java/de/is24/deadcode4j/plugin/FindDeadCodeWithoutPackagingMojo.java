@@ -134,7 +134,8 @@ public class FindDeadCodeWithoutPackagingMojo extends AbstractMojo {
                 new SpringWebXmlAnalyzer(),
                 new SpringXmlAnalyzer(),
                 new TldAnalyzer(),
-                new WebXmlAnalyzer());
+                new WebXmlAnalyzer(),
+                new WsddAnalyzer());
         addCustomAnnotationsAnalyzerIfConfigured(analyzers);
         addCustomInterfacesAnalyzerIfConfigured(analyzers);
         addCustomSuperClassesAnalyzerIfConfigured(analyzers);
