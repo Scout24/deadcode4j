@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import java.util.Map;
 
+import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -57,6 +58,22 @@ public final class A_SimpleXmlAnalyzer extends AnAnalyzer {
     }
 
     @Test
+    public void reportsTheClassFound_ForTheRegisteredElement_HavingASpecificAttributeValue() {
+        SimpleXmlAnalyzer objectUnderTest = new SimpleXmlAnalyzer("junit", ".xml", null) {
+            {
+                registerClassElement("restrictedElement").withAttributeValue("locked", "false");
+            }
+        };
+
+        CodeContext codeContext = new CodeContext();
+        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
+
+        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        assertThat("Should have analyzed the XML file!", codeDependencies.size(), is(1));
+        assertThat(concat(codeDependencies.values()), containsInAnyOrder("de.is24.deadcode4j.UnlockedClassInElement"));
+    }
+
+    @Test
     public void reportsTheClassFoundForTheRegisteredAttribute() {
         SimpleXmlAnalyzer objectUnderTest = new SimpleXmlAnalyzer("junit", ".xml", null) {
             {
@@ -70,6 +87,41 @@ public final class A_SimpleXmlAnalyzer extends AnAnalyzer {
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
         assertThat("Should have analyzed the XML file!", codeDependencies.size(), is(1));
         assertThat(getOnlyElement(codeDependencies.values()), contains("de.is24.deadcode4j.ClassInAttribute"));
+    }
+
+    @Test
+    public void reportsTheClassFound_ForTheRegisteredAttribute_HavingASpecificAttributeValue() {
+        SimpleXmlAnalyzer objectUnderTest = new SimpleXmlAnalyzer("junit", ".xml", null) {
+            {
+                registerClassAttribute("restrictedElement", "attributeWithClass").withAttributeValue("locked", "false");
+            }
+        };
+
+        CodeContext codeContext = new CodeContext();
+        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
+
+        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        assertThat("Should have analyzed the XML file!", codeDependencies.size(), is(1));
+        assertThat(concat(codeDependencies.values()), containsInAnyOrder("de.is24.deadcode4j.UnlockedClassInAttribute"));
+    }
+
+    @Test
+    public void reportsTheClassesFound_ForTheRegisteredElementAndForTheRegisteredAttribute_BothHavingASpecificAttributeValue() {
+        SimpleXmlAnalyzer objectUnderTest = new SimpleXmlAnalyzer("junit", ".xml", null) {
+            {
+                registerClassElement("restrictedElement").withAttributeValue("locked", "false");
+                registerClassAttribute("restrictedElement", "attributeWithClass").withAttributeValue("locked", "false");
+            }
+        };
+
+        CodeContext codeContext = new CodeContext();
+        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
+
+        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        assertThat("Should have analyzed the XML file!", codeDependencies.size(), is(1));
+        assertThat(concat(codeDependencies.values()), containsInAnyOrder(
+                "de.is24.deadcode4j.UnlockedClassInAttribute",
+                "de.is24.deadcode4j.UnlockedClassInElement"));
     }
 
     @Test

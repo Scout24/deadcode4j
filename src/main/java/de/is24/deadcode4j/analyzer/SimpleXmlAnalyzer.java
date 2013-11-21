@@ -8,8 +8,10 @@ import org.xml.sax.helpers.DefaultHandler;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
+import java.util.Set;
 
 import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 
 /**
  * Serves as simple base class with which to analyze XML files by defining which element nodes' text or attributes
@@ -18,13 +20,12 @@ import static com.google.common.collect.Maps.newHashMap;
  * @since 1.2.0
  */
 public abstract class SimpleXmlAnalyzer extends XmlAnalyzer implements Analyzer {
-    private static final String NO_ATTRIBUTE = "no attribute";
     private final String dependerId;
     private final String rootElement;
-    private final Map<String, String> relevantElements = newHashMap();
+    private final Set<Element> registeredElements = newHashSet();
 
     /**
-     * The constructor for an <code>SimpleXmlAnalyzer</code>.
+     * The constructor for a <code>SimpleXmlAnalyzer</code>.
      * Be sure to call {@link #registerClassElement(String)} and/or {@link #registerClassAttribute(String, String)} in the subclasses'
      * constructor.
      *
@@ -49,24 +50,32 @@ public abstract class SimpleXmlAnalyzer extends XmlAnalyzer implements Analyzer 
     }
 
     /**
-     * Registers an XML element containing a fully qualified class name.
+     * Registers an XML element containing a fully qualified class name. The returned <code>Element</code> can be
+     * {@link Element#withAttributeValue(String, String) restricted further}.
      *
      * @param elementName the name of the XML element to register
      * @since 1.2.0
      */
-    protected void registerClassElement(@Nonnull String elementName) {
-        this.relevantElements.put(elementName, NO_ATTRIBUTE);
+    protected Element registerClassElement(@Nonnull String elementName) {
+        Element element = new Element(elementName);
+        element.reportTextAsClass();
+        this.registeredElements.add(element);
+        return element;
     }
 
     /**
-     * Registers an XML element's attribute denoting a fully qualified class name.
+     * Registers an XML element's attribute denoting a fully qualified class name. The returned <code>Element</code> can
+     * be {@link Element#withAttributeValue(String, String) restricted further}.
      *
      * @param elementName   the name of the XML element the attribute may occur at
      * @param attributeName the name of the attribute to register
      * @since 1.2.0
      */
-    protected void registerClassAttribute(@Nonnull String elementName, @Nonnull String attributeName) {
-        this.relevantElements.put(elementName, attributeName);
+    protected Element registerClassAttribute(@Nonnull String elementName, @Nonnull String attributeName) {
+        Element element = new Element(elementName);
+        element.setAttributeToReportAsClass(attributeName);
+        this.registeredElements.add(element);
+        return element;
     }
 
     /**
@@ -88,17 +97,21 @@ public abstract class SimpleXmlAnalyzer extends XmlAnalyzer implements Analyzer 
             } else {
                 firstElement = false;
             }
-            String attributeName = relevantElements.get(localName);
-            if (attributeName != null) {
-                if (NO_ATTRIBUTE.equals(attributeName)) {
-                    buffer = new StringBuilder(128);
-                } else {
-                    String className = attributes.getValue(attributeName);
-                    if (className != null) {
-                        codeContext.addDependencies(dependerId, className.trim());
+            for (Element registeredElement : registeredElements) {
+                if (registeredElement.matches(localName, attributes)) {
+                    if (registeredElement.shouldReportTextAsClass()) {
+                        buffer = new StringBuilder(128);
+                    }
+                    String attributeToReportAsClass = registeredElement.getAttributeToReportAsClass();
+                    if (attributeToReportAsClass != null) {
+                        String className = attributes.getValue(attributeToReportAsClass);
+                        if (className != null) {
+                            codeContext.addDependencies(dependerId, className.trim());
+                        }
                     }
                 }
             }
+
         }
 
         @Override
@@ -114,6 +127,80 @@ public abstract class SimpleXmlAnalyzer extends XmlAnalyzer implements Analyzer 
                 codeContext.addDependencies(dependerId, buffer.toString());
                 buffer = null;
             }
+        }
+
+    }
+
+    /**
+     * Represents an XML element that is to be examined.
+     *
+     * @since 1.5
+     */
+    protected static class Element {
+
+        private final String name;
+        private final Map<String, String> requiredAttributeValues = newHashMap();
+        private boolean reportTextAsClass = false;
+        private String attributeToReportAsClass;
+
+        public Element(@Nonnull String name) {
+            if (name.trim().length() == 0) {
+                throw new IllegalArgumentException("The element's [name] must be set!");
+            }
+            this.name = name;
+        }
+
+        /**
+         * Restricts the element to only be examined if it has an attribute with the specified value.
+         *
+         * @since 1.5
+         */
+        public Element withAttributeValue(@Nonnull String attributeName, @Nonnull String requiredValue) {
+            if (attributeName.trim().length() == 0) {
+                throw new IllegalArgumentException("[attributeName] must be given!");
+            }
+            if (requiredValue.trim().length() == 0) {
+                throw new IllegalArgumentException("[requiredValue] must be given!");
+            }
+            this.requiredAttributeValues.put(attributeName, requiredValue);
+            return this;
+        }
+
+        void reportTextAsClass() {
+            this.reportTextAsClass = true;
+        }
+
+        boolean shouldReportTextAsClass() {
+            return this.reportTextAsClass;
+        }
+
+        void setAttributeToReportAsClass(@Nonnull String attributeName) {
+            if (attributeName.trim().length() == 0) {
+                throw new IllegalArgumentException("[attributeName] must be given!");
+            }
+            if (this.attributeToReportAsClass != null)
+                throw new IllegalStateException("Already registered [" + this.attributeToReportAsClass
+                        + "] as attribute to report as class!");
+            this.attributeToReportAsClass = attributeName;
+        }
+
+        String getAttributeToReportAsClass() {
+            return this.attributeToReportAsClass;
+        }
+
+        boolean matches(String localName, Attributes attributes) {
+            if (!name.equals(localName)) {
+                return false;
+            }
+            for (Map.Entry<String, String> entry : this.requiredAttributeValues.entrySet()) {
+                String expectedValue = entry.getValue();
+                String currentValue = attributes.getValue(entry.getKey());
+                if (!expectedValue.equals(currentValue)) {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
     }

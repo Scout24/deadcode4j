@@ -5,4 +5,8 @@
     <element attributeWithClass="de.is24.deadcode4j.ClassInAttribute" />
     <anotherElementWithClass>de.is24.deadcode4j.SecondClassInAnotherElement</anotherElementWithClass>
     <anotherElement attributeWithClass="de.is24.deadcode4j.ClassInAttributeOfOtherElement" />
+    <restrictedElement attributeWithClass="de.is24.deadcode4j.UnlockedClassInAttribute" locked="false" />
+    <restrictedElement attributeWithClass="de.is24.deadcode4j.LockedClassInAttribute" locked="true" />
+    <restrictedElement locked="false">de.is24.deadcode4j.UnlockedClassInElement</restrictedElement>
+    <restrictedElement locked="true">de.is24.deadcode4j.LockedClassInElement</restrictedElement>
 </root>

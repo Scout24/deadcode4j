@@ -102,6 +102,7 @@ public class FindDeadCodeWithoutPackagingMojo extends AbstractMojo {
      */
     @Deprecated
     @Parameter(defaultValue = "fooBar")
+    @SuppressWarnings("unused")
     private String workAroundForHelpMojo;
 
     public FindDeadCodeWithoutPackagingMojo() {
