@@ -11,7 +11,6 @@ Features
     * check if JSF stuff is really used
     * check if GenericGenerator is really used
     * generate a report
-* Spring/Quartz XML bean definition (could be done using custom XML for the moment, but really is awkward)
 * Spring Web Flow XML (can be done using custom XML for the moment)
 * JBoss XML files (can be done using custom XML for the moment)
 * JSP imports (with plain parsing, this means a huge effort; better look for a way to use [Jspc](http://mojo.codehaus.org/jspc-maven-plugin/) and parse the bytecode?
