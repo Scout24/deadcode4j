@@ -92,6 +92,16 @@
                         <excludeFilterFile>config/FindBugsExcludeFilter.xml</excludeFilterFile>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-pmd-plugin</artifactId>
+                    <version>3.0.1</version>
+                    <configuration>
+                        <excludeRoots>
+                            <excludeRoot>${project.build.directory}/generated-sources/plugin</excludeRoot>
+                        </excludeRoots>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
