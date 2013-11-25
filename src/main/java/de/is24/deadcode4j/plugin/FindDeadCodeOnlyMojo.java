@@ -97,8 +97,8 @@ public class FindDeadCodeOnlyMojo extends AbstractMojo {
     /**
      * This parameter only exists to have a generated <code>help</code> goal. It is not used at all.
      *
-     * @deprecated this value is ignored
      * @since 1.4.1
+     * @deprecated this value is ignored
      */
     @Deprecated
     @Parameter(defaultValue = "fooBar")
