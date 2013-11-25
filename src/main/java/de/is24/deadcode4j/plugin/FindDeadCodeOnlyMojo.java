@@ -132,6 +132,7 @@ public class FindDeadCodeOnlyMojo extends AbstractMojo {
                 new HibernateAnnotationsAnalyzer(),
                 new JeeAnnotationsAnalyzer(),
                 new SpringAnnotationsAnalyzer(),
+                new SpringWebFlowAnalyzer(),
                 new SpringWebXmlAnalyzer(),
                 new SpringXmlAnalyzer(),
                 new TldAnalyzer(),

@@ -11,7 +11,6 @@ Features
     * check if JSF stuff is really used
     * check if GenericGenerator is really used
     * generate a report
-* Spring Web Flow XML (can be done using custom XML for the moment)
 * JBoss XML files (can be done using custom XML for the moment)
 * JSP imports (with plain parsing, this means a huge effort; better look for a way to use [Jspc](http://mojo.codehaus.org/jspc-maven-plugin/) and parse the bytecode?
 * Class.forName (this would probably require to analyze the .java files; also, it is most likely that this is done in a dynamic matter)

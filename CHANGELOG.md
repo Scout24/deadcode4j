@@ -8,6 +8,7 @@
 * The custom XML analyzer now allows to specify the predicate `[@attributeName='attributeValue']` in the XPath definition
 * introduced goal `find-only` being the equivalent of `find-without-packaging`, except for having a better name
 * Added analysis of [`faces-config.xml`](http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_2.xsd) files: recognizing listed classes as _live code_.
+* Added analysis of [Spring Web Flow XML](http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd) files: recognizing listed classes & types as _live code_.
 
 ## Internal
 * ...
