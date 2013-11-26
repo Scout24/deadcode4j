@@ -11,7 +11,6 @@ import javassist.bytecode.annotation.*;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.annotation.ElementType;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -21,11 +20,31 @@ import static java.lang.annotation.ElementType.*;
 import static java.util.Arrays.asList;
 
 /**
- * Analyzes class files: looks for
- * <code>org.hibernate.annotations.TypeDef</code>/<code>org.hibernate.annotations.TypeDefs</code> and
- * <code>org.hibernate.annotations.Type</code> annotations and sets up a dependency between the class annotated with
- * <code>@Type</code> and the associated <code>@TypeDef</code> annotated class
- * (i.e. <code>Type.type</code> &rarr; <code>TypeDef.name</code>).
+ * Analyzes class files:
+ * <ul>
+ * <li>
+ * looks for <code>org.hibernate.annotations.TypeDef</code>(<code>s</code>) and
+ * <code>org.hibernate.annotations.Type</code> annotations and
+ * <ul>
+ * <li>sets up a dependency between the class annotated with <code>@Type</code> and the associated
+ * <code>@TypeDef</code> annotated class (i.e. <code>Type.type</code> &rarr; <code>TypeDef.name</code>)
+ * </li>
+ * <li>sets up a dependency between the class annotated with <code>@Type</code> and the class defined by the annotation
+ * (<code>Type.type</code>) if that class is part of the project scope </li>
+ * </ul>
+ * </li>
+ * <li>
+ * looks for <code>org.hibernate.annotations.GenericGenerator</code>(<code>s</code>) and
+ * <code>javax.persistence.GeneratedValue</code> annotations and
+ * <ul>
+ * <li>sets up a dependency between the class annotated with <code>@GeneratedValue</code> and the associated
+ * <code>@GenericGenerator</code> annotated class (i.e. <code>GeneratedValue.generator</code> &rarr;
+ * <code>GenericGenerator.name</code>)</li>
+ * <li>sets up a dependency between the class annotated with <code>@GenericGenerator</code> and the class defined by the
+ * annotation (<code>GenericGenerator.strategy</code>) if that class is part of the project scope </li>
+ * </ul>
+ * </li>
+ * </ul>
  *
  * @since 1.4
  */
@@ -33,7 +52,9 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
 
     private final Map<String, String> typeDefinitions = newHashMap();
     private final Map<String, Set<String>> typeUsages = newHashMap();
-    private final Map<String, Set<String>> generatorDefinitions = newHashMap();
+    private final Map<String, String> generatorDefinitions = newHashMap();
+    private final Map<String, Set<String>> generatorStrategies = newHashMap();
+    private final Map<String, Set<String>> generatorUsages = newHashMap();
 
     @Nonnull
     private static Iterable<Annotation> getAnnotations(@Nonnull CtClass clazz, @Nonnull final String typeName, ElementType... elementTypes) {
@@ -74,6 +95,7 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
         processTypeAnnotations(clazz);
         processGenericGenerator(clazz);
         processGenericGenerators(clazz);
+        processGeneratedValueAnnotations(clazz);
     }
 
     @Override
@@ -114,8 +136,11 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
     }
 
     private void processGenericGenerator(CtClass clazz, Annotation annotation) {
+        String clazzName = clazz.getName();
+        String generatorName = getStringFrom(annotation, "name");
+        this.generatorDefinitions.put(generatorName, clazzName);
         String generatorStrategy = getStringFrom(annotation, "strategy");
-        getOrAddMappedSet(this.generatorDefinitions, clazz.getName()).add(generatorStrategy);
+        getOrAddMappedSet(this.generatorStrategies, clazzName).add(generatorStrategy);
     }
 
     private void processGenericGenerators(CtClass clazz) {
@@ -126,16 +151,43 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
         }
     }
 
-    private void reportDependencies(@Nonnull CodeContext codeContext) {
-        final Collection<String> analyzedClasses = codeContext.getAnalyzedCode().getAnalyzedClasses();
+    private void processGeneratedValueAnnotations(CtClass clazz) {
+        for (Annotation annotation : getAnnotations(clazz, "javax.persistence.GeneratedValue", METHOD, FIELD)) {
+            String generatorName = getStringFrom(annotation, "generator");
+            getOrAddMappedSet(this.generatorUsages, generatorName).add(clazz.getName());
+        }
+    }
 
-        for (Map.Entry<String, Set<String>> generatorDefinition : this.generatorDefinitions.entrySet()) {
-            for (String generator : generatorDefinition.getValue()) {
-                if (analyzedClasses.contains(generator))
-                    codeContext.addDependencies(generatorDefinition.getKey(), generator);
+    private void reportDependencies(@Nonnull CodeContext codeContext) {
+        reportGeneratorStrategies(codeContext);
+        reportGeneratorUsage(codeContext);
+        reportTypeUsage(codeContext);
+    }
+
+    private void reportGeneratorStrategies(CodeContext codeContext) {
+        for (Map.Entry<String, Set<String>> generatorStrategies : this.generatorStrategies.entrySet()) {
+            String definingClass = generatorStrategies.getKey();
+            for (String strategy : generatorStrategies.getValue()) {
+                if (codeContext.getAnalyzedCode().getAnalyzedClasses().contains(strategy)) {
+                    codeContext.addDependencies(definingClass, strategy);
+                }
             }
         }
+    }
 
+    private void reportGeneratorUsage(CodeContext codeContext) {
+        for (Map.Entry<String, Set<String>> generatorUsage : this.generatorUsages.entrySet()) {
+            String generatorName = generatorUsage.getKey();
+            String classDefiningGenerator = this.generatorDefinitions.get(generatorName);
+            if (classDefiningGenerator != null) {
+                for (String classUsingGenerator : generatorUsage.getValue()) {
+                    codeContext.addDependencies(classUsingGenerator, classDefiningGenerator);
+                }
+            }
+        }
+    }
+
+    private void reportTypeUsage(CodeContext codeContext) {
         for (Map.Entry<String, Set<String>> typeUsage : this.typeUsages.entrySet()) {
             String typeName = typeUsage.getKey();
             String classDefiningType = this.typeDefinitions.get(typeName);
@@ -143,7 +195,7 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
             String dependee = null;
             if (classDefiningType != null) {
                 dependee = classDefiningType;
-            } else if (analyzedClasses.contains(typeName)) {
+            } else if (codeContext.getAnalyzedCode().getAnalyzedClasses().contains(typeName)) {
                 dependee = typeName;
             } // no matter what else, scope is outside of the analyzed project
             if (dependee != null) {
