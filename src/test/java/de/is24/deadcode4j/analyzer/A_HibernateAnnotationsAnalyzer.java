@@ -110,7 +110,7 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
     }
 
     @Test
-    public void reportsDependencyToDefinedStrategies() {
+    public void reportsDependencyFromPackageToDefinedStrategies() {
         CodeContext codeContext = new CodeContext();
 
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/package-info.class"));
@@ -123,6 +123,57 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
         assertThat(codeDependencies.keySet(), containsInAnyOrder(
                 "de.is24.deadcode4j.analyzer.hibernateannotations.package-info"));
         assertThat(concat(codeDependencies.values()), containsInAnyOrder("IndependentClass", "DependingClass"));
+    }
+
+    @Test
+    public void recognizesDependencyFromClassWithGeneratedValueAnnotatedFieldToGenericGeneratorAnnotatedClass() {
+        CodeContext codeContext = new CodeContext();
+        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassDefiningGenericGenerator.class"));
+        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassUsingGeneratedValueAtField.class"));
+        objectUnderTest.finishAnalysis(codeContext);
+
+
+        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        assertThat("Should have analyzed the class files!", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(2));
+        assertThat(codeDependencies.keySet(), containsInAnyOrder(
+                "de.is24.deadcode4j.analyzer.hibernateannotations.ClassUsingGeneratedValueAtField"));
+        assertThat(concat(codeDependencies.values()), containsInAnyOrder(
+                "de.is24.deadcode4j.analyzer.hibernateannotations.ClassDefiningGenericGenerator"));
+    }
+
+    @Test
+    public void recognizesDependencyFromClassWithGeneratedValueAnnotatedMethodToGenericGeneratorAnnotatedPackage() {
+        CodeContext codeContext = new CodeContext();
+        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassDefiningGenericGenerator.class"));
+        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassUsingGeneratedValueAtMethod.class"));
+        objectUnderTest.finishAnalysis(codeContext);
+
+
+        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        assertThat("Should have analyzed the class files!", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(2));
+        assertThat(codeDependencies.keySet(), containsInAnyOrder(
+                "de.is24.deadcode4j.analyzer.hibernateannotations.ClassUsingGeneratedValueAtMethod"));
+        assertThat(concat(codeDependencies.values()), containsInAnyOrder(
+                "de.is24.deadcode4j.analyzer.hibernateannotations.ClassDefiningGenericGenerator"));
+    }
+
+    @Test
+    public void recognizesDependencyFromGeneratedValueAnnotatedClassesToGenericGeneratorAnnotatedPackage() {
+        CodeContext codeContext = new CodeContext();
+        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/AnotherEntityWithGeneratedValue.class"));
+        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/EntityWithGeneratedValue.class"));
+        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/package-info.class"));
+        objectUnderTest.finishAnalysis(codeContext);
+
+
+        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        assertThat("Should have analyzed the class files!", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(3));
+        assertThat(codeDependencies.keySet(), containsInAnyOrder(
+                "de.is24.deadcode4j.analyzer.hibernateannotations.AnotherEntityWithGeneratedValue",
+                "de.is24.deadcode4j.analyzer.hibernateannotations.EntityWithGeneratedValue"));
+        assertThat(concat(codeDependencies.values()), containsInAnyOrder(
+                "de.is24.deadcode4j.analyzer.hibernateannotations.package-info",
+                "de.is24.deadcode4j.analyzer.hibernateannotations.package-info"));
     }
 
 }
