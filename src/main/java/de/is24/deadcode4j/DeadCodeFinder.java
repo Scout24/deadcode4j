@@ -1,6 +1,8 @@
 package de.is24.deadcode4j;
 
 import org.apache.commons.io.DirectoryWalker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -76,6 +78,7 @@ public class DeadCodeFinder {
 
         private final Iterable<? extends Analyzer> analyzers;
         private final CodeContext codeContext;
+        private Logger logger = LoggerFactory.getLogger(getClass());
 
         public CodeRepositoryAnalyzer(@Nonnull FileFilter fileFilter, @Nonnull Iterable<? extends Analyzer> analyzers, @Nonnull CodeContext codeContext) {
             super(fileFilter, -1);
@@ -89,6 +92,7 @@ public class DeadCodeFinder {
 
         @Override
         protected void handleFile(File file, int depth, Collection results) throws IOException {
+            logger.debug("Analyzing file [{}]...", file);
             for (Analyzer analyzer : this.analyzers)
                 analyzer.doAnalysis(this.codeContext, file);
         }
