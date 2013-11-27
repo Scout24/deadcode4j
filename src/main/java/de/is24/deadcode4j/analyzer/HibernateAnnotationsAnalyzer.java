@@ -2,7 +2,6 @@ package de.is24.deadcode4j.analyzer;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
 import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
 import javassist.CtClass;
@@ -14,10 +13,14 @@ import java.lang.annotation.ElementType;
 import java.util.Map;
 import java.util.Set;
 
+import static com.google.common.base.Predicates.notNull;
+import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Maps.newHashMap;
 import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
 import static java.lang.annotation.ElementType.*;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 
 /**
  * Analyzes class files:
@@ -58,7 +61,7 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
 
     @Nonnull
     private static Iterable<Annotation> getAnnotations(@Nonnull CtClass clazz, @Nonnull final String typeName, ElementType... elementTypes) {
-        return Iterables.filter(getAnnotations(clazz, elementTypes), new Predicate<Annotation>() {
+        return filter(getAnnotations(clazz, elementTypes), new Predicate<Annotation>() {
             @Override
             public boolean apply(@Nullable Annotation annotation) {
                 return annotation != null && typeName.equals(annotation.getTypeName());
@@ -69,6 +72,8 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
     @Nullable
     private static String getStringFrom(@Nonnull Annotation annotation, @Nonnull String memberName) {
         MemberValue memberValue = annotation.getMemberValue(memberName);
+        if (memberValue == null)
+            return null;
         if (!StringMemberValue.class.isInstance(memberValue))
             throw new IllegalArgumentException("The member [" + memberName + "] is no StringMemberValue!");
         return StringMemberValue.class.cast(memberValue).getValue();
@@ -77,14 +82,17 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
     @Nonnull
     private static Iterable<Annotation> getAnnotationsFrom(@Nonnull Annotation annotation, @Nonnull String memberName) {
         MemberValue memberValue = annotation.getMemberValue(memberName);
+        if (memberValue == null)
+            return emptyList();
         if (!ArrayMemberValue.class.isInstance(memberValue))
             throw new IllegalArgumentException("The member [" + memberName + "] is no ArrayMemberValue!");
-        return Iterables.transform(asList(ArrayMemberValue.class.cast(memberValue).getValue()), new Function<MemberValue, Annotation>() {
+        MemberValue[] nestedMembers = ArrayMemberValue.class.cast(memberValue).getValue();
+        return filter(transform(asList(nestedMembers), new Function<MemberValue, Annotation>() {
             @Override
             public Annotation apply(@Nullable MemberValue memberValue) {
                 return memberValue == null ? null : ((AnnotationMemberValue) memberValue).getValue();
             }
-        });
+        }), notNull());
     }
 
     @Override
@@ -154,7 +162,9 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
     private void processGeneratedValueAnnotations(CtClass clazz) {
         for (Annotation annotation : getAnnotations(clazz, "javax.persistence.GeneratedValue", METHOD, FIELD)) {
             String generatorName = getStringFrom(annotation, "generator");
-            getOrAddMappedSet(this.generatorUsages, generatorName).add(clazz.getName());
+            if (generatorName != null) {
+                getOrAddMappedSet(this.generatorUsages, generatorName).add(clazz.getName());
+            }
         }
     }
 
