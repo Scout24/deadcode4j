@@ -10,19 +10,19 @@ import org.apache.maven.plugins.annotations.Mojo;
  * @see FindDeadCodeMojo
  * @see FindDeadCodeOnlyMojo
  * @since 1.4
- * @deprecated use {@link FindDeadCodeOnlyMojo} instead
+ * @deprecated since 1.5; use {@link FindDeadCodeOnlyMojo} instead
  */
 @Mojo(name = "find-without-packaging", aggregator = true, threadSafe = true, requiresProject = true)
 @Deprecated
 public class FindDeadCodeWithoutPackagingMojo extends FindDeadCodeOnlyMojo {
 
     @Override
-    public void execute() throws MojoExecutionException {
+    public void doExecute() throws MojoExecutionException {
         getLog().warn("##########################################################");
         getLog().warn("This goal is deprecated and will be removed in the future!");
         getLog().warn("  Instead, use the goal [find-only].");
         getLog().warn("##########################################################");
-        super.execute();
+        super.doExecute();
     }
 
 }

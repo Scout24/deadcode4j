@@ -2,8 +2,14 @@ package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
+import org.codehaus.plexus.util.ReflectionUtils;
+import org.hamcrest.Matcher;
+import org.hamcrest.collection.IsArrayContaining;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
+import org.mockito.internal.matchers.VarargMatcher;
+import org.slf4j.Logger;
 
 import java.util.Map;
 
@@ -11,6 +17,9 @@ import static com.google.common.collect.Iterables.concat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
 
@@ -174,6 +183,31 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
         assertThat(concat(codeDependencies.values()), containsInAnyOrder(
                 "de.is24.deadcode4j.analyzer.hibernateannotations.package-info",
                 "de.is24.deadcode4j.analyzer.hibernateannotations.package-info"));
+    }
+
+    @Test
+    public void issuesWarningForDuplicatedTypeDef() throws IllegalAccessException {
+        Logger loggerMock = mock(Logger.class);
+        ReflectionUtils.setVariableValueInObject(objectUnderTest, "logger", loggerMock);
+
+        CodeContext codeContext = new CodeContext();
+        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassWithTypeDef.class"));
+        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassWithDuplicatedTypeDef.class"));
+        objectUnderTest.finishAnalysis(codeContext);
+
+        verify(loggerMock).warn(
+                Matchers.contains("@TypeDef"),
+                argThat(hasVarArgItem(equalTo("aRandomType"))));
+    }
+
+    private static <T> Matcher<T[]> hasVarArgItem(Matcher<? super T> elementMatcher) {
+        return new MyVarArgsMatcher<T>(elementMatcher);
+    }
+
+    private static class MyVarArgsMatcher<T> extends IsArrayContaining<T> implements VarargMatcher {
+        public MyVarArgsMatcher(Matcher<? super T> elementMatcher) {
+            super(elementMatcher);
+        }
     }
 
 }

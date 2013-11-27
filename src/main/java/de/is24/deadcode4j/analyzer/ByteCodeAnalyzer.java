@@ -10,6 +10,7 @@ import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.AttributeInfo;
 import javassist.bytecode.annotation.Annotation;
 import org.apache.commons.io.IOUtils;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -69,6 +70,8 @@ public abstract class ByteCodeAnalyzer extends AnalyzerAdapter implements Analyz
         return annotations;
     }
 
+    protected final org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
+
     @Override
     public final void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull File file) {
         if (file.getName().endsWith(".class")) {
@@ -94,6 +97,9 @@ public abstract class ByteCodeAnalyzer extends AnalyzerAdapter implements Analyz
             throw new RuntimeException("Could not analyze [" + clazz + "]!", e);
         } finally {
             IOUtils.closeQuietly(in);
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug("Analyzing class [{}]...", ctClass.getName());
         }
         analyzeClass(codeContext, ctClass);
     }

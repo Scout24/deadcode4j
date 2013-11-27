@@ -6,9 +6,9 @@ import de.is24.deadcode4j.CodeRepository;
 import de.is24.deadcode4j.DeadCode;
 import de.is24.deadcode4j.DeadCodeFinder;
 import de.is24.deadcode4j.analyzer.*;
+import de.is24.maven.slf4j.AbstractSlf4jMojo;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.maven.model.Plugin;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
@@ -40,7 +40,7 @@ import static org.apache.maven.plugin.MojoExecution.Source.CLI;
  */
 @Mojo(name = "find-only", aggregator = true, threadSafe = true, requiresProject = true)
 @SuppressWarnings("PMD.TooManyStaticImports")
-public class FindDeadCodeOnlyMojo extends AbstractMojo {
+public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
 
     private final Map<String, PackagingHandler> packagingHandlers = newHashMap();
     private final PackagingHandler defaultPackagingHandler = new DefaultPackagingHandler();
@@ -110,7 +110,7 @@ public class FindDeadCodeOnlyMojo extends AbstractMojo {
         packagingHandlers.put("war", new WarPackagingHandler());
     }
 
-    public void execute() throws MojoExecutionException {
+    public void doExecute() throws MojoExecutionException {
         logWelcome();
         DeadCode deadCode = analyzeCode();
         log(deadCode);

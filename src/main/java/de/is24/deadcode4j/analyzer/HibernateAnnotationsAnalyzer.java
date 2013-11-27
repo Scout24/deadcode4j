@@ -118,8 +118,12 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
     }
 
     private void processTypeDefinition(@Nonnull CtClass clazz, @Nonnull Annotation annotation) {
+        String className = clazz.getName();
         String typeName = getStringFrom(annotation, "name");
-        this.typeDefinitions.put(typeName, clazz.getName());
+        String previousEntry = this.typeDefinitions.put(typeName, className);
+        if (previousEntry != null) {
+            logger.warn("The @TypeDef named [{}] is defined both by {} and {}.", typeName, previousEntry, className);
+        }
     }
 
     private void processTypeDefsAnnotation(@Nonnull CtClass clazz) {

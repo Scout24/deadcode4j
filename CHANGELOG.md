@@ -13,7 +13,7 @@
 * Mark classes being annotated with the JAXB annotation `javax.xml.bind.annotation.XmlRegistry` as _live code_.
 
 ## Internal
-* ...
+* integrated logging in _tooling_ classes via [SLF4J](http://www.slf4j.org/)
 
 ###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.4.1...master)
 
