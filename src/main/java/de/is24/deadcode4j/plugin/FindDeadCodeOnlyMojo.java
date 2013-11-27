@@ -111,10 +111,16 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     }
 
     public void doExecute() throws MojoExecutionException {
-        logWelcome();
-        DeadCode deadCode = analyzeCode();
-        log(deadCode);
-        logGoodbye();
+        try {
+            logWelcome();
+            DeadCode deadCode = analyzeCode();
+            log(deadCode);
+            logGoodbye();
+        } catch (RuntimeException rE) {
+            getLog().error("An unexpected exception occurred." +
+                    "Please consider reporting an issue at https://github.com/ImmobilienScout24/deadcode4j/issues", rE);
+            throw rE;
+        }
     }
 
     private void logWelcome() {
