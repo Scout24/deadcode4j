@@ -17,6 +17,7 @@ import de.is24.deadcode4j.Analyzer;
  * <li>javax.faces.view.facelets.FaceletsResourceResolver</li>
  * <li>javax.inject.Named</li>
  * <li>javax.persistence.metamodel.StaticMetamodel</li>
+ * <li>javax.xml.bind.annotation.XmlRegistry</li>
  * <li>javax.xml.bind.annotation.XmlSchema</li>
  * </ul>
  *
@@ -38,6 +39,7 @@ public final class JeeAnnotationsAnalyzer extends AnnotationsAnalyzer implements
                 "javax.faces.view.facelets.FaceletsResourceResolver",
                 "javax.inject.Named",
                 "javax.persistence.metamodel.StaticMetamodel",
+                "javax.xml.bind.annotation.XmlRegistry",
                 "javax.xml.bind.annotation.XmlSchema");
     }
 
