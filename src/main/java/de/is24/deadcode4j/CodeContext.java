@@ -1,5 +1,7 @@
 package de.is24.deadcode4j;
 
+import org.slf4j.LoggerFactory;
+
 import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.Map;
@@ -22,7 +24,7 @@ import static java.util.Arrays.asList;
  */
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class CodeContext {
-
+    private final org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
     private final Set<String> analyzedClasses = newHashSet();
     private final Map<String, Set<String>> dependencyMap = newHashMap();
 
@@ -39,6 +41,9 @@ public class CodeContext {
         dependees = filter(dependees, not(equalTo(depender))); // this would be cheating
         Set<String> existingDependees = getOrAddMappedSet(this.dependencyMap, depender);
         existingDependees.addAll(dependees);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Added dependencies from [{}] to {}.", depender, dependees);
+        }
     }
 
     /**
