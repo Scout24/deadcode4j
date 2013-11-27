@@ -95,9 +95,7 @@ public abstract class ByteCodeAnalyzer extends AnalyzerAdapter implements Analyz
         } finally {
             IOUtils.closeQuietly(in);
         }
-        if (logger.isDebugEnabled()) {
-            logger.debug("Analyzing class [{}]...", ctClass.getName());
-        }
+        logger.debug("Analyzing class [{}]...", ctClass.getName());
         analyzeClass(codeContext, ctClass);
     }
 

@@ -41,9 +41,7 @@ public class CodeContext {
         dependees = filter(dependees, not(equalTo(depender))); // this would be cheating
         Set<String> existingDependees = getOrAddMappedSet(this.dependencyMap, depender);
         existingDependees.addAll(dependees);
-        if (logger.isDebugEnabled()) {
-            logger.debug("Added dependencies from [{}] to {}.", depender, dependees);
-        }
+        logger.debug("Added dependencies from [{}] to {}.", depender, dependees);
     }
 
     /**

@@ -47,9 +47,7 @@ public abstract class XmlAnalyzer extends AnalyzerAdapter implements Analyzer {
     @Override
     public final void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull File file) {
         if (file.getName().endsWith(endOfFileName)) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Analyzing XML file [{}]...", file);
-            }
+            logger.debug("Analyzing XML file [{}]...", file);
             analyzeXmlFile(codeContext, file);
         }
     }
