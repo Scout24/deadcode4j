@@ -148,11 +148,15 @@ public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements An
     }
 
     private void processGenericGenerator(CtClass clazz, Annotation annotation) {
-        String clazzName = clazz.getName();
-        String generatorName = getStringFrom(annotation, "name");
-        this.generatorDefinitions.put(generatorName, clazzName);
+        String className = clazz.getName();
         String generatorStrategy = getStringFrom(annotation, "strategy");
-        getOrAddMappedSet(this.generatorStrategies, clazzName).add(generatorStrategy);
+        getOrAddMappedSet(this.generatorStrategies, className).add(generatorStrategy);
+        String generatorName = getStringFrom(annotation, "name");
+        String previousEntry = this.generatorDefinitions.put(generatorName, className);
+        if (previousEntry != null) {
+            logger.warn("The @GenericGenerator named [{}] is defined both by {} and {}.",
+                    generatorName, previousEntry, className);
+        }
     }
 
     private void processGenericGenerators(CtClass clazz) {
