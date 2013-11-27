@@ -91,14 +91,20 @@ public class DeadCodeFinder {
         }
 
         @Override
-        protected void handleFile(File file, int depth, Collection results) throws IOException {
+        protected void handleFile(File file, int depth, Collection results) {
             logger.debug("Analyzing file [{}]...", file);
-            for (Analyzer analyzer : this.analyzers)
-                analyzer.doAnalysis(this.codeContext, file);
+            for (Analyzer analyzer : this.analyzers) {
+                try {
+                    analyzer.doAnalysis(this.codeContext, file);
+                } catch (RuntimeException rE) {
+                    logger.warn("Analyzer [{}] failed to analyze file [{}]!", analyzer, file, rE);
+                    throw rE;
+                }
+            }
         }
 
         @Override
-        protected void handleEnd(Collection<Void> results) throws IOException {
+        protected void handleEnd(Collection<Void> results) {
             for (Analyzer analyzer : this.analyzers)
                 analyzer.finishAnalysis(this.codeContext);
         }
