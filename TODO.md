@@ -1,5 +1,6 @@
 Features
 --------
+* parse [Apache Tiles configuration](http://tiles.apache.org/dtds/tiles-config_2_1.dtd)
 * recognize cyclic dependencies
     * actually, better to report which parts of the code are really used
     * "really used" means either marked as such manually or because the application breaks if the class (and its minions) is removed, i.e. the class is listed in sth. like web.xml
