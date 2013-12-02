@@ -11,6 +11,7 @@
 * Added analysis of [Spring Web Flow XML](http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd) files: recognizing listed classes & types as _live code_.
 * Hibernate annotations: classes annotated with a [`org.hibernate.annotations.GenericGenerator`](http://docs.jboss.org/hibernate/orm/4.2/manual/en-US/html/ch05.html#mapping-declaration-id-generator) that are referred by a class annotated with `javax.persistence.GeneratedValue` are recognized as live code.
 * Mark classes being annotated with the JAXB annotation `javax.xml.bind.annotation.XmlRegistry` as _live code_.
+* Added analysis of [Apache Tiles](http://tiles.apache.org) XML definition files: recognizing listed classes as _live code_.
 
 ## Internal
 * integrated logging in _tooling_ classes via [SLF4J](http://www.slf4j.org/)
