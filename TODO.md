@@ -1,5 +1,6 @@
 Features
 --------
+* recognize [custom Spring Data repositories](http://docs.spring.io/spring-data/data-commons/docs/1.6.x/reference/html/repositories.html#repositories.custom-implementations)
 * recognize cyclic dependencies
     * actually, better to report which parts of the code are really used
     * "really used" means either marked as such manually or because the application breaks if the class (and its minions) is removed, i.e. the class is listed in sth. like web.xml
