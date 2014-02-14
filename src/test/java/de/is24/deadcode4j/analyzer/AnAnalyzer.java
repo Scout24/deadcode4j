@@ -1,8 +1,14 @@
 package de.is24.deadcode4j.analyzer;
 
+import de.is24.deadcode4j.junit.LoggingRule;
+import org.junit.Rule;
+
 import java.io.File;
 
-abstract class AnAnalyzer {
+public abstract class AnAnalyzer {
+
+    @Rule
+    public final LoggingRule enableLogging = new LoggingRule();
 
     protected File getFile(String fileName) {
         String classFile = getClass().getSimpleName() + ".class";
