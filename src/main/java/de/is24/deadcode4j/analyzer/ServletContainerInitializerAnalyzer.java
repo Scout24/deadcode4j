@@ -12,6 +12,13 @@ import java.io.File;
 
 import static com.google.common.collect.Iterables.concat;
 
+/**
+ * Analyzes both <code>web.xml</code> and class files: looks for implementations of
+ * {@link javax.servlet.ServletContainerInitializer} if the <code>metadata-complete</code> attribute of the
+ * <code>web-app</code> element is missing or set to "false".
+ *
+ * @since 1.5
+ */
 public class ServletContainerInitializerAnalyzer implements Analyzer {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final ServletContainerInitializerCodeContext context = new ServletContainerInitializerCodeContext();
