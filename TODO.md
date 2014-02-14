@@ -1,5 +1,6 @@
 Features
 --------
+* recognize `javax.servlet.ServletContainerInitializer`s and `org.springframework.web.WebApplicationInitializer`s as live code (in case of a war artifact?)
 * recognize [custom Spring Data repositories](http://docs.spring.io/spring-data/data-commons/docs/1.6.x/reference/html/repositories.html#repositories.custom-implementations)
 * recognize cyclic dependencies
     * actually, better to report which parts of the code are really used
