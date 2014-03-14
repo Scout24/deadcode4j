@@ -7,7 +7,7 @@ import javax.annotation.Nonnull;
  *
  * @since 1.4
  */
-public class CustomInterfacesAnalyzer extends InterfacesAnalyzer {
+public final class CustomInterfacesAnalyzer extends InterfacesAnalyzer {
 
     /**
      * Creates a new <code>CustomInterfacesAnalyzer</code>.

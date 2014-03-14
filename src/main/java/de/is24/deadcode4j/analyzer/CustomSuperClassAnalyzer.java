@@ -7,7 +7,7 @@ import javax.annotation.Nonnull;
  *
  * @since 1.4
  */
-public class CustomSuperClassAnalyzer extends SuperClassAnalyzer {
+public final class CustomSuperClassAnalyzer extends SuperClassAnalyzer {
 
     /**
      * Creates a new <code>CustomAnnotationsAnalyzer</code>.

@@ -9,7 +9,7 @@ import de.is24.deadcode4j.Analyzer;
  *
  * @since 1.5
  */
-public class AopXmlAnalyzer extends SimpleXmlAnalyzer implements Analyzer {
+public final class AopXmlAnalyzer extends SimpleXmlAnalyzer implements Analyzer {
 
     public AopXmlAnalyzer() {
         super("_AOP-XML_", "aop.xml", null);

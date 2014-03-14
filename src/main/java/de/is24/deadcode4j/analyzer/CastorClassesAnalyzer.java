@@ -6,7 +6,7 @@ package de.is24.deadcode4j.analyzer;
  *
  * @since 1.4
  */
-public class CastorClassesAnalyzer extends SuperClassAnalyzer {
+public final class CastorClassesAnalyzer extends SuperClassAnalyzer {
 
     public CastorClassesAnalyzer() {
         super("_Castor-GeneratedClass_", "org.exolab.castor.xml.util.XMLClassDescriptorImpl");

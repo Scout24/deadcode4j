@@ -8,7 +8,7 @@ import de.is24.deadcode4j.Analyzer;
  *
  * @since 1.5
  */
-public class WsddAnalyzer extends SimpleXmlAnalyzer implements Analyzer {
+public final class WsddAnalyzer extends SimpleXmlAnalyzer implements Analyzer {
 
     public WsddAnalyzer() {
         super("_Axis-WSSD_", ".wsdd", "deployment");

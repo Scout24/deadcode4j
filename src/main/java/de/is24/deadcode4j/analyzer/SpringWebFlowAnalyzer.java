@@ -15,7 +15,7 @@ import de.is24.deadcode4j.Analyzer;
  *
  * @since 1.5
  */
-public class SpringWebFlowAnalyzer extends SimpleXmlAnalyzer implements Analyzer {
+public final class SpringWebFlowAnalyzer extends SimpleXmlAnalyzer implements Analyzer {
 
     public SpringWebFlowAnalyzer() {
         super("_SpringWebFlow-XML_", ".xml", "flow");

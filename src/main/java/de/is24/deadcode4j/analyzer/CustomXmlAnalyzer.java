@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
  *
  * @since 1.3
  */
-public class CustomXmlAnalyzer extends SimpleXmlAnalyzer implements Analyzer {
+public final class CustomXmlAnalyzer extends SimpleXmlAnalyzer implements Analyzer {
 
     //                                                              element       [@attribute='value']    /   @attribute|text()
     private static final Pattern XPATH_PATTERN = Pattern.compile("^([^/\\[]+)(?:\\[@([^=]+)='([^']+)'\\])?/(?:@(.*)|text\\(\\))$");

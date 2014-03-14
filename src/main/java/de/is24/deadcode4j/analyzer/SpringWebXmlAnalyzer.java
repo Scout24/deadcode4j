@@ -24,7 +24,7 @@ import static java.util.Arrays.asList;
  *
  * @since 1.4
  */
-public class SpringWebXmlAnalyzer extends XmlAnalyzer implements Analyzer {
+public final class SpringWebXmlAnalyzer extends XmlAnalyzer implements Analyzer {
     private static final Collection<String> CONTEXT_PARAM_PATH = asList("web-app", "context-param");
     private static final Collection<String> SERVLET_INIT_PARAM_PATH = asList("web-app", "servlet", "init-param");
 

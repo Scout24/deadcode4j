@@ -51,7 +51,7 @@ import static java.util.Collections.emptyList;
  *
  * @since 1.4
  */
-public class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements Analyzer {
+public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements Analyzer {
 
     private final Map<String, String> typeDefinitions = newHashMap();
     private final Map<String, Set<String>> typeUsages = newHashMap();

@@ -8,7 +8,7 @@ import de.is24.deadcode4j.Analyzer;
  *
  * @since 1.5
  */
-public class ApacheTilesAnalyzer extends SimpleXmlAnalyzer implements Analyzer {
+public final class ApacheTilesAnalyzer extends SimpleXmlAnalyzer implements Analyzer {
 
     public ApacheTilesAnalyzer() {
         super("_ApacheTilesXml_", ".xml", "tiles-definitions");
