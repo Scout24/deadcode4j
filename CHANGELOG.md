@@ -13,6 +13,7 @@
 * Mark classes being annotated with the JAXB annotation `javax.xml.bind.annotation.XmlRegistry` as _live code_.
 * Added analysis of [Apache Tiles](http://tiles.apache.org) XML definition files: recognizing listed classes as _live code_.
 * Added analysis of a JEE6 feature: recognizing implementations of [`javax.servlet.ServletContainerInitializer`](http://docs.oracle.com/javaee/6/api/javax/servlet/ServletContainerInitializer.html) as _live code_.
+** support Spring variant of this concept: recognizing implementations of [`org.springframework.web.WebApplicationInitializer`](http://docs.spring.io/spring/docs/3.1.x/javadoc-api/org/springframework/web/WebApplicationInitializer.html) as live code
 
 ## Internal
 * integrated logging in _tooling_ classes via [SLF4J](http://www.slf4j.org/)
