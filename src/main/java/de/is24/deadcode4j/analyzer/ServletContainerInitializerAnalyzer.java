@@ -30,12 +30,12 @@ public class ServletContainerInitializerAnalyzer implements Analyzer {
      *
      * @param dependerId                 a description of the <i>depending entity</i> with which to
      *                                   call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, Iterable)}
-     * @param fqdnOfInitializerInterface the fqdn of the interface whose implementations represent a
+     * @param fqcnOfInitializerInterface the fqcn of the interface whose implementations represent a
      *                                   <code>ServletContainerInitializer</code> or something comparable
      */
-    protected ServletContainerInitializerAnalyzer(String dependerId, String fqdnOfInitializerInterface) {
+    protected ServletContainerInitializerAnalyzer(String dependerId, String fqcnOfInitializerInterface) {
         this.depender = dependerId;
-        this.classFinder = new InterfacesAnalyzer("ServletContainerInitializer-implementation", fqdnOfInitializerInterface) {
+        this.classFinder = new InterfacesAnalyzer("ServletContainerInitializer-implementation", fqcnOfInitializerInterface) {
         };
     }
 
