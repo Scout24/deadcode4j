@@ -22,9 +22,27 @@ import static com.google.common.collect.Iterables.concat;
 public class ServletContainerInitializerAnalyzer implements Analyzer {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final ServletContainerInitializerCodeContext context = new ServletContainerInitializerCodeContext();
-    private final Analyzer classFinder = new InterfacesAnalyzer("ServletContainerInitializer-implementation",
-            "javax.servlet.ServletContainerInitializer") {
-    };
+    private final Analyzer classFinder;
+    private final String depender;
+
+    /**
+     * Creates a new instance of <code>ServletContainerInitializerAnalyzer</code>.
+     *
+     * @param dependerId                 a description of the <i>depending entity</i> with which to
+     *                                   call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, Iterable)}
+     * @param fqdnOfInitializerInterface the fqdn of the interface whose implementations represent a
+     *                                   <code>ServletContainerInitializer</code> or something comparable
+     */
+    protected ServletContainerInitializerAnalyzer(String dependerId, String fqdnOfInitializerInterface) {
+        this.depender = dependerId;
+        this.classFinder = new InterfacesAnalyzer("ServletContainerInitializer-implementation", fqdnOfInitializerInterface) {
+        };
+    }
+
+    public ServletContainerInitializerAnalyzer() {
+        this("JEE-ServletContainerInitializer", "javax.servlet.ServletContainerInitializer");
+    }
+
     private final Analyzer webXmlAnalyzer = new XmlAnalyzer("web.xml") {
         @Nonnull
         @Override
@@ -58,7 +76,7 @@ public class ServletContainerInitializerAnalyzer implements Analyzer {
         }
         Iterable<String> initializerClasses = concat(this.context.getAnalyzedCode().getCodeDependencies().values());
         if (initializerClasses != null) {
-            codeContext.addDependencies("JEE-ServletContainerInitializer", initializerClasses);
+            codeContext.addDependencies(depender, initializerClasses);
         }
     }
 
