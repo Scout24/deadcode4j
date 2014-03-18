@@ -218,7 +218,7 @@
                         <configuration>
                             <tasks>
                                 <copy toDir="${testScenarios.directory}">
-                                    <fileset dir="${project.build.testOutputDirectory}" includes="*">
+                                    <fileset dir="${project.build.testOutputDirectory}" includes="*,META-INF/**">
                                         <type type="file"/>
                                     </fileset>
                                 </copy>

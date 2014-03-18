@@ -9,6 +9,7 @@
 * introduced goal `find-only` being the equivalent of `find-without-packaging`, except for having a better name
 * Added analysis of [`faces-config.xml`](http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_2.xsd) files: recognizing listed classes as _live code_.
 * Added analysis of [Spring Web Flow XML](http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd) files: recognizing listed classes & types as _live code_.
+* Added analysis of [Spring XML NamespaceHandlers](http://docs.spring.io/spring/docs/3.2.x/spring-framework-reference/html/extensible-xml.html): recognizing listed namespace handlers as _live code_.
 * Hibernate annotations: classes annotated with a [`org.hibernate.annotations.GenericGenerator`](http://docs.jboss.org/hibernate/orm/4.2/manual/en-US/html/ch05.html#mapping-declaration-id-generator) that are referred by a class annotated with `javax.persistence.GeneratedValue` are recognized as live code.
 * Mark classes being annotated with the JAXB annotation `javax.xml.bind.annotation.XmlRegistry` as _live code_.
 * Added analysis of [Apache Tiles](http://tiles.apache.org) XML definition files: recognizing listed classes as _live code_.
