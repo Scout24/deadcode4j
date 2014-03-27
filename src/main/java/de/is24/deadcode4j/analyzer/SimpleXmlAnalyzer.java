@@ -146,7 +146,7 @@ public abstract class SimpleXmlAnalyzer extends XmlAnalyzer implements Analyzer 
         private String attributeToReportAsClass;
 
         public Element(@Nonnull String name) {
-            checkArgument(name.trim().length() == 0, "The element's [name] must be set!");
+            checkArgument(name.trim().length() > 0, "The element's [name] must be set!");
             this.name = name;
         }
 
@@ -156,8 +156,8 @@ public abstract class SimpleXmlAnalyzer extends XmlAnalyzer implements Analyzer 
          * @since 1.5
          */
         public Element withAttributeValue(@Nonnull String attributeName, @Nonnull String requiredValue) {
-            checkArgument(attributeName.trim().length() == 0, "[attributeName] must be given!");
-            checkArgument(requiredValue.trim().length() == 0, "[requiredValue] must be given!");
+            checkArgument(attributeName.trim().length() > 0, "[attributeName] must be given!");
+            checkArgument(requiredValue.trim().length() > 0, "[requiredValue] must be given!");
             this.requiredAttributeValues.put(attributeName, requiredValue);
             return this;
         }
@@ -171,8 +171,8 @@ public abstract class SimpleXmlAnalyzer extends XmlAnalyzer implements Analyzer 
         }
 
         void setAttributeToReportAsClass(@Nonnull String attributeName) {
-            checkArgument(attributeName.trim().length() == 0, "[attributeName] must be given!");
-            checkState(this.attributeToReportAsClass != null,
+            checkArgument(attributeName.trim().length() > 0, "[attributeName] must be given!");
+            checkState(this.attributeToReportAsClass == null,
                     "Already registered [" + this.attributeToReportAsClass + "] as attribute to report as class!");
             this.attributeToReportAsClass = attributeName;
         }
