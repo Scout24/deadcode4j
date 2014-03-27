@@ -7,6 +7,7 @@ import javassist.bytecode.annotation.Annotation;
 import javax.annotation.Nonnull;
 import java.util.Collection;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.annotation.ElementType.PACKAGE;
 import static java.lang.annotation.ElementType.TYPE;
@@ -24,9 +25,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
     private AnnotationsAnalyzer(@Nonnull String dependerId, @Nonnull Collection<String> annotations) {
         this.dependerId = dependerId;
         this.annotations = annotations;
-        if (this.annotations.isEmpty()) {
-            throw new IllegalArgumentException("annotations cannot by empty!");
-        }
+        checkArgument(!this.annotations.isEmpty(), "annotations cannot by empty!");
     }
 
     /**

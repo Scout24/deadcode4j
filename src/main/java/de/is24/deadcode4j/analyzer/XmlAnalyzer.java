@@ -13,6 +13,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 /**
  * Serves as a base class with which to analyze XML files.
  *
@@ -38,9 +40,7 @@ public abstract class XmlAnalyzer extends AnalyzerAdapter implements Analyzer {
         } catch (Exception e) {
             throw new RuntimeException("Failed to set up XML parser!", e);
         }
-        if (endOfFileName.trim().length() == 0) {
-            throw new IllegalArgumentException("[endOfFileName] must be set!");
-        }
+        checkArgument(endOfFileName.trim().length() > 0, "[endOfFileName] must be set!");
         this.endOfFileName = endOfFileName;
     }
 

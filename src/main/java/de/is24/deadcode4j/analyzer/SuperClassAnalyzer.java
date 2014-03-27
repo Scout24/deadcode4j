@@ -8,6 +8,8 @@ import javassist.CtClass;
 import javax.annotation.Nonnull;
 import java.util.Collection;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 /**
  * Serves as a base class with which to mark classes as being in use if they are a direct subclass of one of the
  * specified classes.
@@ -22,9 +24,7 @@ public abstract class SuperClassAnalyzer extends ByteCodeAnalyzer implements Ana
     private SuperClassAnalyzer(@Nonnull String dependerId, @Nonnull Collection<String> classNames) {
         this.dependerId = dependerId;
         this.superClasses = classNames;
-        if (this.superClasses.isEmpty()) {
-            throw new IllegalArgumentException("classNames cannot by empty!");
-        }
+        checkArgument(!this.superClasses.isEmpty(), "classNames cannot by empty!");
     }
 
     /**

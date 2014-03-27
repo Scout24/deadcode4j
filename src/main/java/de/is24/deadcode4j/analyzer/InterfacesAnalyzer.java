@@ -7,6 +7,7 @@ import javassist.CtClass;
 import javax.annotation.Nonnull;
 import java.util.Set;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
 import static java.util.Collections.disjoint;
@@ -25,9 +26,7 @@ public abstract class InterfacesAnalyzer extends ByteCodeAnalyzer implements Ana
     private InterfacesAnalyzer(@Nonnull String dependerId, @Nonnull Set<String> interfaceNames) {
         this.dependerId = dependerId;
         this.interfaceClasses = interfaceNames;
-        if (this.interfaceClasses.isEmpty()) {
-            throw new IllegalArgumentException("interfaceNames cannot by empty!");
-        }
+        checkArgument(!this.interfaceClasses.isEmpty(), "interfaceNames cannot by empty!");
     }
 
     /**

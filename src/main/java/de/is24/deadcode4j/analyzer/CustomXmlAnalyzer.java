@@ -7,6 +7,8 @@ import javax.annotation.Nullable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 /**
  * Analyzes XML files: lists the registered elements' text or attribute values as being referenced classes.
  *
@@ -61,9 +63,8 @@ public final class CustomXmlAnalyzer extends SimpleXmlAnalyzer implements Analyz
      */
     public void registerXPath(String xPath) throws IllegalArgumentException {
         Matcher matcher = XPATH_PATTERN.matcher(xPath);
-        if (!matcher.matches()) {
-            throw new IllegalArgumentException("Although [" + xPath + "] may be a valid XPath expression, it is not supported!");
-        }
+        checkArgument(matcher.matches(),
+                "Although [" + xPath + "] may be a valid XPath expression, it is not supported!");
         String elementName = matcher.group(1);
         String attribute = matcher.group(4);
         Element element;

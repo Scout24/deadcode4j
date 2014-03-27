@@ -13,6 +13,7 @@ import java.lang.annotation.ElementType;
 import java.util.Map;
 import java.util.Set;
 
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.notNull;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
@@ -74,8 +75,8 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer impleme
         MemberValue memberValue = annotation.getMemberValue(memberName);
         if (memberValue == null)
             return null;
-        if (!StringMemberValue.class.isInstance(memberValue))
-            throw new IllegalArgumentException("The member [" + memberName + "] is no StringMemberValue!");
+        checkState(StringMemberValue.class.isInstance(memberValue),
+                "The member [" + memberName + "] is no StringMemberValue!");
         return StringMemberValue.class.cast(memberValue).getValue();
     }
 
@@ -84,8 +85,8 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer impleme
         MemberValue memberValue = annotation.getMemberValue(memberName);
         if (memberValue == null)
             return emptyList();
-        if (!ArrayMemberValue.class.isInstance(memberValue))
-            throw new IllegalArgumentException("The member [" + memberName + "] is no ArrayMemberValue!");
+        checkState(ArrayMemberValue.class.isInstance(memberValue),
+                "The member [" + memberName + "] is no ArrayMemberValue!");
         MemberValue[] nestedMembers = ArrayMemberValue.class.cast(memberValue).getValue();
         return filter(transform(asList(nestedMembers), new Function<MemberValue, Annotation>() {
             @Override
