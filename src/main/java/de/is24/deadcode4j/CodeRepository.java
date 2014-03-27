@@ -18,7 +18,7 @@ public class CodeRepository {
     private final FileFilter fileFilter;
 
     public CodeRepository(@Nonnull File directory, @Nonnull FileFilter fileFilter) {
-        checkArgument(!directory.isDirectory(), "No valid directory: " + directory);
+        checkArgument(directory.isDirectory(), "No valid directory: " + directory);
         this.directory = directory;
         this.fileFilter = fileFilter;
     }
