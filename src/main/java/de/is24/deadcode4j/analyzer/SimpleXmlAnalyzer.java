@@ -30,7 +30,7 @@ public abstract class SimpleXmlAnalyzer extends XmlAnalyzer implements Analyzer 
      * constructor.
      *
      * @param dependerId    a description of the <i>depending entity</i> with which to
-     *                      call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, java.util.Collection)}
+     *                      call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, Iterable)}
      * @param endOfFileName the file suffix used to determine if a file should be analyzed; this can be a mere file
      *                      extension like <tt>.xml</tt> or a partial path like <tt>WEB-INF/web.xml</tt>
      * @param rootElement   the expected XML root element or <code>null</code> if such an element does not exist;

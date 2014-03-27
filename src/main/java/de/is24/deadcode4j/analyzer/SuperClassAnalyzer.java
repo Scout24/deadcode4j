@@ -31,7 +31,7 @@ public abstract class SuperClassAnalyzer extends ByteCodeAnalyzer implements Ana
      * Creates a new <code>SuperClassAnalyzer</code>.
      *
      * @param dependerId a description of the <i>depending entity</i> with which to
-     *                   call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, java.util.Collection)}
+     *                   call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, Iterable)}
      * @param classNames a list of fully qualified class names indicating that the extending class is still in use
      * @since 1.4
      */
@@ -43,7 +43,7 @@ public abstract class SuperClassAnalyzer extends ByteCodeAnalyzer implements Ana
      * Creates a new <code>SuperClassAnalyzer</code>.
      *
      * @param dependerId a description of the <i>depending entity</i> with which to
-     *                   call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, java.util.Collection)}
+     *                   call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, Iterable)}
      * @param classNames a list of fully qualified class names indicating that the extending class is still in use
      * @since 1.4
      */

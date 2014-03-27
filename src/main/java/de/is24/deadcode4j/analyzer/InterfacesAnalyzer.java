@@ -33,7 +33,7 @@ public abstract class InterfacesAnalyzer extends ByteCodeAnalyzer implements Ana
      * Creates a new <code>InterfacesAnalyzer</code>.
      *
      * @param dependerId     a description of the <i>depending entity</i> with which to
-     *                       call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, java.util.Collection)}
+     *                       call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, Iterable)}
      * @param interfaceNames a list of fully qualified interface names indicating that the implementing class is still
      *                       in use
      * @since 1.4
@@ -46,7 +46,7 @@ public abstract class InterfacesAnalyzer extends ByteCodeAnalyzer implements Ana
      * Creates a new <code>InterfacesAnalyzer</code>.
      *
      * @param dependerId     a description of the <i>depending entity</i> with which to
-     *                       call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, java.util.Collection)}
+     *                       call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, Iterable)}
      * @param interfaceNames a list of fully qualified interface names indicating that the implementing class is still
      *                       in use
      * @since 1.4

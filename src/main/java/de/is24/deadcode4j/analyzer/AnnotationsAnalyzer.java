@@ -32,7 +32,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
      * Creates a new <code>AnnotationsAnalyzer</code>.
      *
      * @param dependerId  a description of the <i>depending entity</i> with which to
-     *                    call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, java.util.Collection)}
+     *                    call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, Iterable)}
      * @param annotations a list of fully qualified (annotation) class names indicating a class is still in use
      * @since 1.3
      */
@@ -44,7 +44,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
      * Creates a new <code>AnnotationsAnalyzer</code>.
      *
      * @param dependerId  a description of the <i>depending entity</i> with which to
-     *                    call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, java.util.Collection)}
+     *                    call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, Iterable)}
      * @param annotations a list of fully qualified (annotation) class names indicating a class is still in use
      * @since 1.4
      */
