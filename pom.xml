@@ -51,13 +51,17 @@
         <url>https://travis-ci.org/ImmobilienScout24/deadcode4j</url>
     </ciManagement>
 
+    <prerequisites>
+        <maven>2.2.1</maven>
+    </prerequisites>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <testScenarios.directory>${java.io.tmpdir}/deadcode4j</testScenarios.directory>
 
-        <version.findbugs>2.0.2</version.findbugs>
+        <version.findbugs>2.0.3</version.findbugs>
         <version.maven>3.0.5</version.maven>
     </properties>
 
@@ -89,7 +93,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>findbugs-maven-plugin</artifactId>
-                    <version>2.5.2</version>
+                    <version>2.5.3</version>
                     <configuration>
                         <excludeFilterFile>config/FindBugsExcludeFilter.xml</excludeFilterFile>
                     </configuration>
@@ -97,7 +101,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-pmd-plugin</artifactId>
-                    <version>3.0.1</version>
+                    <version>3.1</version>
                     <configuration>
                         <excludeRoots>
                             <excludeRoot>${project.build.directory}/generated-sources/plugin</excludeRoot>
@@ -136,7 +140,7 @@
 
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.16</version>
+                <version>2.17</version>
                 <configuration>
                     <includes>
                         <include>**/A_*.java</include>
@@ -147,7 +151,7 @@
 
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>2.16</version>
+                <version>2.17</version>
                 <executions>
                     <execution>
                         <goals>
@@ -280,18 +284,18 @@
         <dependency>
             <groupId>org.codehaus.plexus</groupId>
             <artifactId>plexus-utils</artifactId>
-            <version>3.0.10</version>
+            <version>3.0.17</version>
         </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.5</version>
+            <version>1.7.7</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>15.0</version>
+            <version>17.0-rc2</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -301,7 +305,7 @@
         <dependency>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
-            <version>3.18.0-GA</version>
+            <version>3.18.1-GA</version>
         </dependency>
 
         <dependency>
@@ -345,7 +349,7 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <version>3.0.1</version>
+            <version>3.1.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
