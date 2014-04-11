@@ -23,10 +23,10 @@ As an alternative, you can run `mvn de.is24.mavenplugins:deadcode4j-maven-plugin
 Lists the available goals & parameters.
 
 ### ~~`deadcode4j-maven-plugin:find-without-packaging`~~
-This goal is deprecated. It is replaced by `de.is24.mavenplugins:deadcode4j-maven-plugin:find-only` which has a shorter name.
+_This goal is deprecated. It is replaced by `de.is24.mavenplugins:deadcode4j-maven-plugin:find-only` which has a shorter name._
 
 ## Features
-*deadcode4j* takes several approaches to analyze if a class is still in usage or not:
+*deadcode4j* takes several approaches to analyze if a class is still in use or not:
 
 - statical code analysis using [Javassist](http://www.jboss.org/javassist/), recognizing class dependencies
 - parsing [Spring XML files](http://projects.spring.io/spring-framework/): files ending with `.xml` are examined
@@ -48,7 +48,7 @@ This goal is deprecated. It is replaced by `de.is24.mavenplugins:deadcode4j-mave
     - if the `metadata-complete` attribute isn't explicitly set to `false`:
         - implementations of [`javax.servlet.ServletContainerInitializer`](http://docs.oracle.com/javaee/6/api/javax/servlet/ServletContainerInitializer.html) are treated as _live code_
         - implementations of [`org.springframework.web.WebApplicationInitializer`](http://docs.spring.io/spring/docs/3.1.x/javadoc-api/org/springframework/web/WebApplicationInitializer.html) are treated as _live code_
-- parsing [`*tld`](http://docs.oracle.com/javaee/5/tutorial/doc/bnamu.html) files: recognizing custom tags, tag extra infos, listeners, tag library validators & EL functions
+- parsing [`*.tld`](http://docs.oracle.com/javaee/5/tutorial/doc/bnamu.html) files: recognizing custom tags, tag extra infos, listeners, tag library validators & EL functions
 - parsing [`faces-config.xml`](http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_2.xsd) files: recognizing those element classes as _live code_: `action-listener`, `application-factory`, `attribute-class`, `base-name`, `behavior-class`, `client-behavior-renderer-class`, `component-class`, `converter-class`, `converter-for-class`, `el-resolver`, `exception-handler-factory`, `external-context-factory`, `facelet-cache-factory`, `faces-config-value-classType`, `faces-context-factory`, `flash-factory`, `flow-handler-factory`, `key-class`, `lifecycle-factory`, `managed-bean-class`, `navigation-handler`, `partial-view-context-factory`, `phase-listener`, `property-class`, `property-resolver`, `referenced-bean-class`, `render-kit-class`, `render-kit-factory`, `renderer-class`, `resource-handler`, `source-class`, `state-manager`, `system-event-class`, `system-event-listener-class`, `tag-handler-delegate-factory`, `validator-class`, `value-class`, `variable-resolver`, `view-declaration-language-factory`, `view-handler`, `visit-context-factory`
 - recognizing classes annotated with JEE annotations as _live code_:
     - [`javax.annotation.ManagedBean`](http://docs.oracle.com/javaee/6/api/javax/annotation/ManagedBean.html)
@@ -91,7 +91,7 @@ This goal is deprecated. It is replaced by `de.is24.mavenplugins:deadcode4j-mave
     - recognizing classes annotated with custom specified annotations as _live code_
     - recognizing classes *directly*<sup>1</sup> implementing custom specified interfaces as _live code_
     - recognizing classes *directly*<sup>2</sup> extending custom specified classes as _live code_
-    - custom XML file parsing: treating classes referenced in elements(which may be configured to have a specific attribute value)' text or attributes as _live code_
+    - custom XML file parsing: treating classes referenced in elements' text or attributes as _live code_
 
 After performing the usage analysis, *deadcode4j* reports which classes are presumably dead.
 
@@ -105,9 +105,12 @@ After performing the usage analysis, *deadcode4j* reports which classes are pres
 - *deadcode4j* does not consider test code, so classes used in tests only are deemed to be dead (this is a hint to move such classes to the test src)
 - [Java reflection](http://docs.oracle.com/javase/tutorial/reflect/). There's no cure for that.
 - As the Java compiler inlines constant expressions, class references may not exist in bytecode; this can be circumvented as outlined at [stackoverflow](http://stackoverflow.com/questions/1833581/when-to-use-intern-on-string-literals)
+- The Java compiler also does something called [type erasure](http://docs.oracle.com/javase/tutorial/java/generics/erasure.html), thus a class defining a field `private List<Foo> = new List<>();` does not depend on the class `Foo` on bytecode level - which is the basis of *deadcode4j*'s dependency analysis
 - Finally, if the analyzed project isn't closed but represents more of a public API or library, expect *deadcode4j* to report many classes which are indeed used by other projects
 
 If you know of any other false positives, please report an [issue](https://github.com/ImmobilienScout24/deadcode4j/issues/new).
+
+In general, I recommend using [ack](http://beyondgrep.com/) to manually double-check if a class is really dead.
 
 ## Configuration
 
