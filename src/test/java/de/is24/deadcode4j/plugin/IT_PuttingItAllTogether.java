@@ -1,38 +1,41 @@
 package de.is24.deadcode4j.plugin;
 
-import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.plugin.testing.AbstractMojoTestCase;
-import org.codehaus.plexus.util.ReflectionUtils;
+import org.apache.maven.plugin.testing.MojoRule;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 
 import java.io.File;
-import java.lang.reflect.Field;
+import java.net.URL;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-public class IT_PuttingItAllTogether extends AbstractMojoTestCase {
+public class IT_PuttingItAllTogether {
+    @Rule
+    public final MojoRule mojoSetUp = new MojoRule();
 
     private Log logMock;
     private FindDeadCodeMojo findDeadCodeMojo;
 
-    @Override
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
-        File pom = getTestFile("target/test-classes/de/is24/deadcode4j/plugin/projects/pom.xml");
-        assertNotNull(pom);
+        URL pomUrl = getClass().getClassLoader().getResource("de/is24/deadcode4j/plugin/projects/pom.xml");
+        assertNotNull(pomUrl);
+        File pom = new File(pomUrl.toURI());
         assertTrue(pom.exists());
 
-        findDeadCodeMojo = (FindDeadCodeMojo) lookupMojo("find", pom);
+        findDeadCodeMojo = (FindDeadCodeMojo) mojoSetUp.lookupMojo("find", pom);
         assertNotNull(findDeadCodeMojo);
 
         logMock = mock(Log.class);
         findDeadCodeMojo.setLog(logMock);
-        Field mojoExecution = ReflectionUtils.getFieldByNameIncludingSuperclasses("mojoExecution", FindDeadCodeMojo.class);
-        mojoExecution.setAccessible(true);
-        mojoExecution.set(findDeadCodeMojo, mock(MojoExecution.class));
     }
 
+    @Test
     public void test() throws Exception {
         findDeadCodeMojo.execute();
 

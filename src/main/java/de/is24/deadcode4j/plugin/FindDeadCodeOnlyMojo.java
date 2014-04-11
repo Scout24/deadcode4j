@@ -125,7 +125,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     }
 
     private void logWelcome() {
-        if (CLI.equals(mojoExecution.getSource())) {
+        if (mojoExecution != null && CLI.equals(mojoExecution.getSource())) {
             getLog().info("Thanks for calling me! Let's see what I can do for you...");
         }
     }
@@ -239,7 +239,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     }
 
     private void logGoodbye() {
-        if (CLI.equals(mojoExecution.getSource())) {
+        if (mojoExecution != null && CLI.equals(mojoExecution.getSource())) {
             getLog().info("Expected something different? Don't like the results? " +
                     "Hop on over to https://github.com/ImmobilienScout24/deadcode4j to learn more!");
         }

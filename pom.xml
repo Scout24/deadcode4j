@@ -62,7 +62,7 @@
         <testScenarios.directory>${java.io.tmpdir}/deadcode4j</testScenarios.directory>
 
         <version.findbugs>2.0.3</version.findbugs>
-        <version.maven>3.0.5</version.maven>
+        <version.maven>3.2.1</version.maven>
     </properties>
 
     <build>
@@ -272,6 +272,13 @@
             <version>${version.maven}</version>
         </dependency>
         <dependency>
+            <!-- This is needed to fix a compatibility issue between maven-plugin-api and guava -->
+            <groupId>org.sonatype.sisu</groupId>
+            <artifactId>sisu-guice</artifactId>
+            <classifier>no_aop</classifier>
+            <version>3.2.0</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-core</artifactId>
             <version>${version.maven}</version>
@@ -335,7 +342,7 @@
         <dependency>
             <groupId>org.apache.maven.plugin-testing</groupId>
             <artifactId>maven-plugin-testing-harness</artifactId>
-            <version>2.1</version>
+            <version>3.1.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
