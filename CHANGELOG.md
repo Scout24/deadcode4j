@@ -14,14 +14,19 @@
 * Added analysis of [`faces-config.xml`](http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_2.xsd) files: recognizing listed classes as _live code_.
 * Added analysis of [Spring Web Flow XML](http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd) files: recognizing listed classes & types as _live code_.
 * Added analysis of [Spring XML NamespaceHandlers](http://docs.spring.io/spring/docs/3.2.x/spring-framework-reference/html/extensible-xml.html): recognizing listed namespace handlers as _live code_.
-* Hibernate annotations: classes annotated with a [`org.hibernate.annotations.GenericGenerator`](http://docs.jboss.org/hibernate/orm/4.2/manual/en-US/html/ch05.html#mapping-declaration-id-generator) that are referred by a class annotated with `javax.persistence.GeneratedValue` are recognized as live code.
+* Hibernate annotations
+   * classes annotated with a [`org.hibernate.annotations.GenericGenerator`](http://docs.jboss.org/hibernate/orm/4.2/manual/en-US/html/ch05.html#mapping-declaration-id-generator) that are referred by a class annotated with `javax.persistence.GeneratedValue` are recognized as live code.
+   * a warning is issued if a `@TypeDef` is defined more than once with the same name
+   * a warning is issued if a `@GenericGenerator` is defined more than once with the same name
 * Mark classes being annotated with the JAXB annotation `javax.xml.bind.annotation.XmlRegistry` as _live code_.
 * Added analysis of [Apache Tiles](http://tiles.apache.org) XML definition files: recognizing listed classes as _live code_.
 * Added analysis of a JEE6 feature: recognizing implementations of [`javax.servlet.ServletContainerInitializer`](http://docs.oracle.com/javaee/6/api/javax/servlet/ServletContainerInitializer.html) as _live code_.
-** support Spring variant of this concept: recognizing implementations of [`org.springframework.web.WebApplicationInitializer`](http://docs.spring.io/spring/docs/3.1.x/javadoc-api/org/springframework/web/WebApplicationInitializer.html) as live code
+   * support Spring variant of this concept: recognizing implementations of [`org.springframework.web.WebApplicationInitializer`](http://docs.spring.io/spring/docs/3.1.x/javadoc-api/org/springframework/web/WebApplicationInitializer.html) as live code
 
 ## Internal
 * integrated logging in _tooling_ classes via [SLF4J](http://www.slf4j.org/)
+* updated versions of all plugins & dependencies to the most recent version as of 2014/04/11
+* use guava'a `Preconditions` for argument checking
 
 ###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.4.1...deadcode4j-maven-plugin-1.5)
 
