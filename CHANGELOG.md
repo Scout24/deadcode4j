@@ -1,3 +1,7 @@
+# v.1.6-SNAPSHOT
+
+###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.5...master)
+
 # v.1.5-SNAPSHOT
 ## Features
 * Added analysis of `aop.xml` files: recognizing listed aspects as _live code_. Supports both [AspectJ](http://eclipse.org/aspectj/) and [AspectWerkz](http://aspectwerkz.codehaus.org/)
@@ -19,7 +23,7 @@
 ## Internal
 * integrated logging in _tooling_ classes via [SLF4J](http://www.slf4j.org/)
 
-###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.4.1...master)
+###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.4.1...deadcode4j-maven-plugin-1.5)
 
 # v.1.4.1
 ## Features
