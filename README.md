@@ -56,16 +56,7 @@ _This goal is deprecated. It is replaced by `de.is24.mavenplugins:deadcode4j-mav
     - [`javax.persistence.metamodel.StaticMetamodel`](http://docs.oracle.com/javaee/6/api/javax/persistence/metamodel/StaticMetamodel.html)
     - JAXB annotation [`javax.xml.bind.annotation.XmlRegistry`](http://docs.oracle.com/javaee/6/api/javax/xml/bind/annotation/XmlRegistry.html)
     - JAXB annotation [`javax.xml.bind.annotation.XmlSchema`](http://docs.oracle.com/javaee/6/api/javax/xml/bind/annotation/XmlSchema.html)
-    - [JSF](https://javaserverfaces.java.net/) annotations
-        - `javax.faces.component.behavior.FacesBehavior`
-        - `javax.faces.convert.FacesConverter`
-        - `javax.faces.event.ListenerFor`
-        - `javax.faces.event.ListenersFor`
-        - `javax.faces.event.NamedEvent`
-        - `javax.faces.render.FacesBehaviorRenderer`
-        - `javax.faces.render.FacesRenderer`
-        - `javax.faces.validator.FacesValidator`
-        - `javax.faces.view.facelets.FaceletsResourceResolver`
+    - [JSF](https://javaserverfaces.java.net/) annotations `javax.faces.component.behavior.FacesBehavior`, `javax.faces.convert.FacesConverter`, `javax.faces.event.ListenerFor`, `javax.faces.event.ListenersFor`, `javax.faces.event.NamedEvent`, `javax.faces.render.FacesBehaviorRenderer`, `javax.faces.render.FacesRenderer`, `javax.faces.validator.FacesValidator`, `javax.faces.view.facelets.FaceletsResourceResolver`
 - parsing [Spring Web Flow XML](http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd): files ending with `.xml` are examined
     - each `attribute` element's `type` attribute is treated as _live code_
     - each `evaluate` element's `result-type` attribute is treated as _live code_
