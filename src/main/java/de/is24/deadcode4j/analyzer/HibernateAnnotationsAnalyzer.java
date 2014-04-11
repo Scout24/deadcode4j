@@ -92,7 +92,7 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer impleme
         return filter(transform(asList(nestedMembers), new Function<MemberValue, Annotation>() {
             @Override
             public Annotation apply(@Nullable MemberValue memberValue) {
-                return memberValue == null ? null : ((AnnotationMemberValue) memberValue).getValue();
+                return memberValue == null ? null : AnnotationMemberValue.class.cast(memberValue).getValue();
             }
         }), notNull());
     }
