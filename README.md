@@ -7,30 +7,34 @@ Simply run `mvn de.is24.mavenplugins:deadcode4j-maven-plugin:find -Dmaven.test.s
 *deadcode4j* will trigger the _package phase_ to be executed for a project (and for all modules listed in a reactor project) before analyzing the output directories.
 The output will look something like this:
 
-    [INFO] --- deadcode4j-maven-plugin:1.4.1:find (default-cli) @ someProject ---
+    [INFO] --- deadcode4j-maven-plugin:1.5:find (default-cli) @ someProject ---
     [INFO] Analyzed 42 class(es).
     [WARNING] Found 3 unused class(es):
     [WARNING]   de.is24.deadcode4j.Foo
     [WARNING]   de.is24.deadcode4j.Bar
     [WARNING]   de.is24.deadcode4j.SomeAnnotatedClass
     
-_The `-Dmaven.test.skip=true` part skips compiling & executing tests, as they are not relevant for the analysis anyway._
+_The `-Dmaven.test.skip=true` part skips compiling & executing tests, as they are not relevant for the analysis._
 
-### `deadcode4j-maven-plugin:find-without-packaging`
-As an alternative, you can run `mvn de.is24.mavenplugins:deadcode4j-maven-plugin:find-without-packaging` which performs the same analysis, but without triggering the _package phase_.
+### `deadcode4j-maven-plugin:find-only`
+As an alternative, you can run `mvn de.is24.mavenplugins:deadcode4j-maven-plugin:find-only` which performs the same analysis, but without triggering the _package phase_.
 
 ### `deadcode4j-maven-plugin:help`
 Lists the available goals & parameters.
+
+### ~~`deadcode4j-maven-plugin:find-without-packaging`~~
+This goal is deprecated. It is replaced by `de.is24.mavenplugins:deadcode4j-maven-plugin:find-only` which has a shorter name.
 
 ## Features
 *deadcode4j* takes several approaches to analyze if a class is still in usage or not:
 
 - statical code analysis using [Javassist](http://www.jboss.org/javassist/), recognizing class dependencies
-- parsing [Spring XML files](http://projects.spring.io/spring-framework/): files ending with `.xml` are examined, each `bean` element's `class` attribute is treated as _live code_
-- parsing `web.xml`
-    - recognizing listed listeners, filters & servlets (according to the [XSD](http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd) files)
-    - look for the parameters defined by Spring's [ContextLoader](http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/context/ContextLoader.html) and [FrameworkServlet](http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/servlet/FrameworkServlet.html): `contextClass` & `contextInitializerClasses`, treating the configured classes as _live code_
-- parsing [`*tld`](http://docs.oracle.com/javaee/5/tutorial/doc/bnamu.html) files: recognizing custom tags, tag extra infos, listeners, tag library validators & EL functions
+- parsing [Spring XML files](http://projects.spring.io/spring-framework/): files ending with `.xml` are examined
+    - each `bean` element's `class` attribute is treated as _live code_
+    - [CXF endpoint definitions](http://cxf.apache.org/schemas/jaxws.xsd): each `endpoint` element's `implementor`/`implementorClass` attribute is treated as _live code_
+    - [Quartz job definitions](http://docs.spring.io/spring/docs/3.0.x/reference/scheduling.html#scheduling-quartz-jobdetail): each `property` element's `class` attribute is treated as _live code_ if it has an `name` attribute of `jobClass`
+    - [Spring View resolvers](http://docs.spring.io/spring/docs/3.0.x/reference/view.html#view-tiles-url): each `property` element's `class` attribute is treated as _live code_ if it has an `name` attribute of `viewClass`
+    - recognizes [Spring XML NamespaceHandlers](http://docs.spring.io/spring/docs/3.2.x/spring-framework-reference/html/extensible-xml.html) as _live code_
 - recognizing classes annotated with those [Spring annotations](http://docs.spring.io/spring/docs/3.2.4.RELEASE/spring-framework-reference/html/beans.html#beans-stereotype-annotations) as _live code_:
     - `org.springframework.context.annotation.Configuration`
     - `org.springframework.jmx.export.annotation.ManagedResource`
@@ -38,10 +42,19 @@ Lists the available goals & parameters.
     - `org.springframework.stereotype.Controller`
     - `org.springframework.stereotype.Service`
     - `org.springframework.stereotype.Repository`
+- parsing `web.xml`
+    - recognizing listed listeners, filters & servlets (according to the [XSD](http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd) files)
+    - look for the parameters defined by Spring's [ContextLoader](http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/context/ContextLoader.html) and [FrameworkServlet](http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/servlet/FrameworkServlet.html): `contextClass` & `contextInitializerClasses`, treating the configured classes as _live code_
+    - if the `metadata-complete` attribute isn't explicitly set to `false`:
+        - implementations of [`javax.servlet.ServletContainerInitializer`](http://docs.oracle.com/javaee/6/api/javax/servlet/ServletContainerInitializer.html) are treated as _live code_
+        - implementations of [`org.springframework.web.WebApplicationInitializer`](http://docs.spring.io/spring/docs/3.1.x/javadoc-api/org/springframework/web/WebApplicationInitializer.html) are treated as _live code_
+- parsing [`*tld`](http://docs.oracle.com/javaee/5/tutorial/doc/bnamu.html) files: recognizing custom tags, tag extra infos, listeners, tag library validators & EL functions
+- parsing [`faces-config.xml`](http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_2.xsd) files: recognizing those element classes as _live code_: `action-listener`, `application-factory`, `attribute-class`, `base-name`, `behavior-class`, `client-behavior-renderer-class`, `component-class`, `converter-class`, `converter-for-class`, `el-resolver`, `exception-handler-factory`, `external-context-factory`, `facelet-cache-factory`, `faces-config-value-classType`, `faces-context-factory`, `flash-factory`, `flow-handler-factory`, `key-class`, `lifecycle-factory`, `managed-bean-class`, `navigation-handler`, `partial-view-context-factory`, `phase-listener`, `property-class`, `property-resolver`, `referenced-bean-class`, `render-kit-class`, `render-kit-factory`, `renderer-class`, `resource-handler`, `source-class`, `state-manager`, `system-event-class`, `system-event-listener-class`, `tag-handler-delegate-factory`, `validator-class`, `value-class`, `variable-resolver`, `view-declaration-language-factory`, `view-handler`, `visit-context-factory`
 - recognizing classes annotated with JEE annotations as _live code_:
     - [`javax.annotation.ManagedBean`](http://docs.oracle.com/javaee/6/api/javax/annotation/ManagedBean.html)
     - [`javax.inject.Named`](http://docs.oracle.com/javaee/6/api/javax/inject/Named.html)
     - [`javax.persistence.metamodel.StaticMetamodel`](http://docs.oracle.com/javaee/6/api/javax/persistence/metamodel/StaticMetamodel.html)
+    - JAXB annotation [`javax.xml.bind.annotation.XmlRegistry`](http://docs.oracle.com/javaee/6/api/javax/xml/bind/annotation/XmlRegistry.html)
     - JAXB annotation [`javax.xml.bind.annotation.XmlSchema`](http://docs.oracle.com/javaee/6/api/javax/xml/bind/annotation/XmlSchema.html)
     - [JSF](https://javaserverfaces.java.net/) annotations
         - `javax.faces.component.behavior.FacesBehavior`
@@ -53,16 +66,32 @@ Lists the available goals & parameters.
         - `javax.faces.render.FacesRenderer`
         - `javax.faces.validator.FacesValidator`
         - `javax.faces.view.facelets.FaceletsResourceResolver`
+- parsing [Spring Web Flow XML](http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd): files ending with `.xml` are examined
+    - each `attribute` element's `type` attribute is treated as _live code_
+    - each `evaluate` element's `result-type` attribute is treated as _live code_
+    - each `input` element's `type` attribute is treated as _live code_
+    - each `output` element's `type` attribute is treated as _live code_
+    - each `set` element's `type` attribute is treated as _live code_
+    - each `var` element's `class` attribute is treated as _live code_
+- parsing [Apache Tiles](http://tiles.apache.org) XML definition files: files ending with `.xml` are examined
+    - each `definition` element's `preparer` attribute is treated as _live code_
+    - each `bean` element's `classtype` attribute is treated as _live code_
+    - each `item` element's `classtype` attribute is treated as _live code_
 - processing [Hibernate Annotations](http://docs.jboss.org/hibernate/annotations/3.5/reference/en/html/)
     - recognizing the `strategy` value of the [`org.hibernate.annotations.GenericGenerator`](http://docs.jboss.org/hibernate/annotations/3.5/api/org/hibernate/annotations/GenericGenerator.html) annotation as _live code_
+        - issue a warning if a `@GenericGenerator` is defined more than once with the same `name`
+    - recognizing classes annotated with [`org.hibernate.annotations.GenericGenerator`](http://docs.jboss.org/hibernate/orm/4.2/manual/en-US/html/ch05.html#mapping-declaration-id-generator) that are referenced by another class via [`javax.persistence.GeneratedValue`](http://docs.oracle.com/javaee/6/api/javax/persistence/GeneratedValue.html) annotation's `generator` value as _live code_
     - recognizing the `type` value of the [`org.hibernate.annotations.Type`](http://docs.jboss.org/hibernate/annotations/3.5/api/org/hibernate/annotations/Type.html) annotation as _live code_
-    - recognizing classes annotated with a [`org.hibernate.annotations.TypeDef`](http://docs.jboss.org/hibernate/annotations/3.5/api/org/hibernate/annotations/TypeDef.html) that is referenced by another class in the project as _live code_
+    - recognizing classes annotated with a [`org.hibernate.annotations.TypeDef`](http://docs.jboss.org/hibernate/annotations/3.5/api/org/hibernate/annotations/TypeDef.html) that are referenced by another class in the project as _live code_
+        - issue a warning if a `@TypeDef` is defined more than once with the same `name`
 - recognizing `*Descriptor` classes being generated by [Castor](http://castor.codehaus.org/) as _live code_
+- recognizing service classes defined within [Axis `.wsdd` files](http://axis.apache.org/axis/java/reference.html#Deployment_WSDD_Reference) as _live code_
+- recognizing aspects defined within `aop.xml` as _live code_; supports both [AspectJ](http://eclipse.org/aspectj/) and [AspectWerkz](http://aspectwerkz.codehaus.org/)
 - Customization
     - recognizing classes annotated with custom specified annotations as _live code_
     - recognizing classes *directly*<sup>1</sup> implementing custom specified interfaces as _live code_
     - recognizing classes *directly*<sup>2</sup> extending custom specified classes as _live code_
-    - custom XML file parsing: treating classes referenced in elements' text or attributes as _live code_
+    - custom XML file parsing: treating classes referenced in elements(which may be configured to have a specific attribute value)' text or attributes as _live code_
 
 After performing the usage analysis, *deadcode4j* reports which classes are presumably dead.
 
@@ -90,7 +119,7 @@ If you want to configure the plugin and make use of some of its features, list *
           <plugin>
             <groupId>de.is24.mavenplugins</groupId>
             <artifactId>deadcode4j-maven-plugin</artifactId>
-            <version>1.4.1</version>
+            <version>1.5</version>
             <configuration>
               <annotationsMarkingLiveCode>
                 <param>de.is24.deadcode4j.LiveCode</param>
@@ -109,7 +138,7 @@ As *deadcode4j* uses [semantic versioning](http://semver.org/)<sup>3</sup>, you 
 
 Now run `mvn de.is24.mavenplugins:deadcode4j-maven-plugin:find-without-packaging` and you'll get
 
-    [INFO] --- deadcode4j-maven-plugin:1.4.1:find-without-packaging (default-cli) @ someProject ---
+    [INFO] --- deadcode4j-maven-plugin:1.5:find-without-packaging (default-cli) @ someProject ---
     [INFO] Analyzed 42 class(es).
     [INFO] Ignoring 1 class(es) which seem(s) to be unused.
     [WARNING] Found 1 unused class(es):
@@ -125,7 +154,7 @@ That said, if you simply use *deadcode4j* as a Maven Plugin, you could even defi
 
 - **annotationsMarkingLiveCode**
 
-    A list of fully qualified annotation classes which, if applied, mark classes as being  _live code_
+    A list of fully qualified annotation classes which, if applied, mark classes as being _live code_
 
 - **classesToIgnore**
 
@@ -141,7 +170,7 @@ That said, if you simply use *deadcode4j* as a Maven Plugin, you could even defi
             <rootElement>root</rootElement>
             <xPaths>
               <param>element/text()</param>
-              <param>anotherElement/text()</param>
+              <param>anotherElement[@attributeValue='mandatory']/text()</param>
               <param>thirdElement/@attribute</param>
             </xPaths>
           </customXml>
@@ -154,16 +183,16 @@ That said, if you simply use *deadcode4j* as a Maven Plugin, you could even defi
 
     -   **rootElement**
 
-        The name of the root element that needs to be matched in order to analyze an XML file
+        The name of the root element that needs to be matched in order to analyze an XML file; specifying a root element speeds up the analysis
 
-    -   **xPaths**
+    -   **xPaths** _(mandatory)_
 
         A list of XPath definitions identifying an XML node which is to be recognized as a class being in use.
-        Supported expressions are: `element/text()` and `element/@attribute`
+        Supported expressions are: `element/text()` and `element/@attribute`; an `element` can be restricted to have a specific attribute value by defining `element[@requiredAttribute='requiredValue']`
 
 - **interfacesMarkingLiveCode**
 
-    A list of fully qualified interface names which, if implemented, mark classes as being  _live code_  
+    A list of fully qualified interface names which, if implemented, mark classes as being _live code_
     _see limitations mentioned in the **Features** section_
 
 - **modulesToSkip**
@@ -172,7 +201,7 @@ That said, if you simply use *deadcode4j* as a Maven Plugin, you could even defi
 
 - **superClassesMarkingLiveCode**
 
-    A list of fully qualified class names which, if extended, mark classes as being  _live code_  
+    A list of fully qualified class names which, if extended, mark classes as being _live code_
     _see limitations mentioned in the **Features** section_
 
 ## In closing
