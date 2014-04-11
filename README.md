@@ -17,7 +17,7 @@ The output will look something like this:
 _The `-Dmaven.test.skip=true` part skips compiling & executing tests, as they are not relevant for the analysis._
 
 ### `deadcode4j-maven-plugin:find-only`
-As an alternative, you can run `mvn de.is24.mavenplugins:deadcode4j-maven-plugin:find-only` which performs the same analysis, but without triggering the _package phase_.
+As an alternative, you can run `mvn de.is24.mavenplugins:deadcode4j-maven-plugin:find-only` which performs the same analysis, but without triggering the _package phase_. This is intended for repeated analysis (e.g. after updating the configuration) or if your project is already packaged.
 
 ### `deadcode4j-maven-plugin:help`
 Lists the available goals & parameters.
