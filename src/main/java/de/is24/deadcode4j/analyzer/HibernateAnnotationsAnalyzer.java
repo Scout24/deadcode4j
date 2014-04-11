@@ -51,6 +51,7 @@ import static java.util.Collections.emptyList;
  *
  * @since 1.4
  */
+@SuppressWarnings("PMD.TooManyStaticImports")
 public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements Analyzer {
 
     private final Map<String, String> typeDefinitions = newHashMap();
@@ -96,7 +97,7 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer impleme
     }
 
     @Override
-    protected final void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
+    protected void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
         codeContext.addAnalyzedClass(clazz.getName());
         processTypeDefAnnotation(clazz);
         processTypeDefsAnnotation(clazz);
