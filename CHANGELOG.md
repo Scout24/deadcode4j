@@ -2,7 +2,7 @@
 
 ###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.5...master)
 
-# v.1.5-SNAPSHOT
+# v.1.5
 ## Features
 * Added analysis of `aop.xml` files: recognizing listed aspects as _live code_. Supports both [AspectJ](http://eclipse.org/aspectj/) and [AspectWerkz](http://aspectwerkz.codehaus.org/)
 * Added analysis of [`.wsdd`](http://axis.apache.org/axis/java/reference.html#Deployment_WSDD_Reference) files: recognizing listed Service classes as _live code_
