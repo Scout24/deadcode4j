@@ -7,6 +7,7 @@ import javassist.CtClass;
 import javax.annotation.Nonnull;
 import java.util.Set;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
 import static java.util.Collections.disjoint;
@@ -25,16 +26,14 @@ public abstract class InterfacesAnalyzer extends ByteCodeAnalyzer implements Ana
     private InterfacesAnalyzer(@Nonnull String dependerId, @Nonnull Set<String> interfaceNames) {
         this.dependerId = dependerId;
         this.interfaceClasses = interfaceNames;
-        if (this.interfaceClasses.isEmpty()) {
-            throw new IllegalArgumentException("interfaceNames cannot by empty!");
-        }
+        checkArgument(!this.interfaceClasses.isEmpty(), "interfaceNames cannot by empty!");
     }
 
     /**
      * Creates a new <code>InterfacesAnalyzer</code>.
      *
      * @param dependerId     a description of the <i>depending entity</i> with which to
-     *                       call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, java.util.Collection)}
+     *                       call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, Iterable)}
      * @param interfaceNames a list of fully qualified interface names indicating that the implementing class is still
      *                       in use
      * @since 1.4
@@ -47,7 +46,7 @@ public abstract class InterfacesAnalyzer extends ByteCodeAnalyzer implements Ana
      * Creates a new <code>InterfacesAnalyzer</code>.
      *
      * @param dependerId     a description of the <i>depending entity</i> with which to
-     *                       call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, java.util.Collection)}
+     *                       call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, Iterable)}
      * @param interfaceNames a list of fully qualified interface names indicating that the implementing class is still
      *                       in use
      * @since 1.4

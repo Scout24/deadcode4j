@@ -10,6 +10,8 @@ import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Set;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -30,7 +32,7 @@ public abstract class SimpleXmlAnalyzer extends XmlAnalyzer implements Analyzer 
      * constructor.
      *
      * @param dependerId    a description of the <i>depending entity</i> with which to
-     *                      call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, java.util.Collection)}
+     *                      call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, Iterable)}
      * @param endOfFileName the file suffix used to determine if a file should be analyzed; this can be a mere file
      *                      extension like <tt>.xml</tt> or a partial path like <tt>WEB-INF/web.xml</tt>
      * @param rootElement   the expected XML root element or <code>null</code> if such an element does not exist;
@@ -144,9 +146,7 @@ public abstract class SimpleXmlAnalyzer extends XmlAnalyzer implements Analyzer 
         private String attributeToReportAsClass;
 
         public Element(@Nonnull String name) {
-            if (name.trim().length() == 0) {
-                throw new IllegalArgumentException("The element's [name] must be set!");
-            }
+            checkArgument(name.trim().length() > 0, "The element's [name] must be set!");
             this.name = name;
         }
 
@@ -156,12 +156,8 @@ public abstract class SimpleXmlAnalyzer extends XmlAnalyzer implements Analyzer 
          * @since 1.5
          */
         public Element withAttributeValue(@Nonnull String attributeName, @Nonnull String requiredValue) {
-            if (attributeName.trim().length() == 0) {
-                throw new IllegalArgumentException("[attributeName] must be given!");
-            }
-            if (requiredValue.trim().length() == 0) {
-                throw new IllegalArgumentException("[requiredValue] must be given!");
-            }
+            checkArgument(attributeName.trim().length() > 0, "[attributeName] must be given!");
+            checkArgument(requiredValue.trim().length() > 0, "[requiredValue] must be given!");
             this.requiredAttributeValues.put(attributeName, requiredValue);
             return this;
         }
@@ -175,12 +171,9 @@ public abstract class SimpleXmlAnalyzer extends XmlAnalyzer implements Analyzer 
         }
 
         void setAttributeToReportAsClass(@Nonnull String attributeName) {
-            if (attributeName.trim().length() == 0) {
-                throw new IllegalArgumentException("[attributeName] must be given!");
-            }
-            if (this.attributeToReportAsClass != null)
-                throw new IllegalStateException("Already registered [" + this.attributeToReportAsClass
-                        + "] as attribute to report as class!");
+            checkArgument(attributeName.trim().length() > 0, "[attributeName] must be given!");
+            checkState(this.attributeToReportAsClass == null,
+                    "Already registered [" + this.attributeToReportAsClass + "] as attribute to report as class!");
             this.attributeToReportAsClass = attributeName;
         }
 

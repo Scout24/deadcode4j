@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.FileFilter;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.apache.commons.io.filefilter.TrueFileFilter.TRUE;
 
 /**
@@ -17,9 +18,7 @@ public class CodeRepository {
     private final FileFilter fileFilter;
 
     public CodeRepository(@Nonnull File directory, @Nonnull FileFilter fileFilter) {
-        if (!directory.isDirectory()) {
-            throw new IllegalArgumentException("No valid directory: " + directory);
-        }
+        checkArgument(directory.isDirectory(), "No valid directory: " + directory);
         this.directory = directory;
         this.fileFilter = fileFilter;
     }

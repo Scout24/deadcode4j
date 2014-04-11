@@ -22,6 +22,7 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.util.*;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.transform;
 import static com.google.common.collect.Maps.newHashMap;
@@ -182,9 +183,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
             return;
         for (CustomXml customXml : customXmls) {
             CustomXmlAnalyzer customXmlAnalyzer = new CustomXmlAnalyzer(customXml.getEndOfFileName(), customXml.getRootElement());
-            if (customXml.getXPaths().isEmpty()) {
-                throw new IllegalArgumentException("At least one entry for [xPaths] must be set!");
-            }
+            checkArgument(!customXml.getXPaths().isEmpty(), "At least one entry for [xPaths] must be set!");
             for (String xPath : customXml.getXPaths()) {
                 customXmlAnalyzer.registerXPath(xPath);
                 getLog().info("Treating classes found at [/" + customXml.getRootElement() + "//" + xPath + "] as live code.");
