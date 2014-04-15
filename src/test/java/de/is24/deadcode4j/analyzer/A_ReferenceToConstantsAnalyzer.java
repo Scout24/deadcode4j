@@ -62,4 +62,20 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
         objectUnderTest.doAnalysis(codeContext, getFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingStaticImportForConstantWithSameLocalName.java"));
     }
 
+    @Test
+    public void recognizesDependencyToConstantReferencedViaStaticImportInExpression() {
+        Analyzer objectUnderTest = new ReferenceToConstantsAnalyzer();
+
+        CodeContext codeContext = new CodeContext();
+        objectUnderTest.doAnalysis(codeContext, getFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingFQConstantInExpression.java"));
+    }
+
+    @Test
+    public void recognizesDependencyToInnerClassInsteadOfPackageClass() {
+        Analyzer objectUnderTest = new ReferenceToConstantsAnalyzer();
+
+        CodeContext codeContext = new CodeContext();
+        objectUnderTest.doAnalysis(codeContext, getFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassWithInnerClassNamedLikePotentialTarget.java"));
+    }
+
 }

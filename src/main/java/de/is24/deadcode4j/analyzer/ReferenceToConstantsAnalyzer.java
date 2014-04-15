@@ -307,7 +307,10 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
             @Override
             public void visit(MethodCallExpr n, Void arg) {
-                print(n, null);
+                print(n, n.getName());
+                depth++;
+                super.visit(n, arg);
+                depth--;
             }
 
             @Override
@@ -395,7 +398,10 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
             @Override
             public void visit(StringLiteralExpr n, Void arg) {
-                print(n, null);
+                print(n, n.getValue());
+                depth++;
+                super.visit(n, arg);
+                depth--;
             }
 
             @Override
