@@ -95,6 +95,7 @@ After performing the usage analysis, *deadcode4j* reports which classes are pres
 
 - *deadcode4j* does not consider test code, so classes used in tests only are deemed to be dead (this is a hint to move such classes to the test src)
 - [Java reflection](http://docs.oracle.com/javase/tutorial/reflect/). There's no cure for that.
+- Classes with `main` method are not recognized as _dead code_ - the reason being that legacy code tends to have test routines defined in the the `main` method. You may ignore those, have a look at the configuration section below.
 - As the Java compiler inlines constant expressions, class references may not exist in bytecode; this can be circumvented as outlined at [stackoverflow](http://stackoverflow.com/questions/1833581/when-to-use-intern-on-string-literals)
 - The Java compiler also does something called [type erasure](http://docs.oracle.com/javase/tutorial/java/generics/erasure.html), thus a class defining a field `private List<Foo> = new List<>();` does not depend on the class `Foo` on bytecode level - which is the basis of *deadcode4j*'s dependency analysis
 - Finally, if the analyzed project isn't closed but represents more of a public API or library, expect *deadcode4j* to report many classes which are indeed used by other projects
