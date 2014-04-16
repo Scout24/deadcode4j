@@ -40,8 +40,17 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
     }
 
     @Test
+    public void recognizesDependencyToConstantOfOtherPackageInField() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/subpackage/ClassUsingConstantOfOtherPackageInField.java");
+
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.subpackage.ClassUsingConstantOfOtherPackageInField", "de.is24.deadcode4j.analyzer.constants.Constants");
+    }
+
+    @Test
     public void recognizesDependencyToConstantOfOtherPackageInMethod() {
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/subpackage/ClassUsingConstantOfOtherPackageInMethod.java");
+
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.subpackage.ClassUsingConstantOfOtherPackageInMethod", "de.is24.deadcode4j.analyzer.constants.Constants");
     }
 
     @Test

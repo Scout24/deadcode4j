@@ -14,7 +14,9 @@ import japa.parser.ast.visitor.VoidVisitorAdapter;
 
 import javax.annotation.Nonnull;
 import java.io.File;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 
 public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
@@ -41,6 +43,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             private int depth = 0;
             private String packageName;
             public Queue<String> typeNames = new LinkedList<String>();
+            public Map<String, String> imports = new HashMap<String, String>();
 
             @Override
             public void visit(AnnotationDeclaration n, Void arg) {
@@ -219,6 +222,12 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
                 print(n, n.getScope() + "." + n.getField() + "/" + n.getFieldExpr() + "/" +  n.getTypeArgs());
                 if (FieldAccessExpr.class.isInstance(n.getScope())) {
                     codeContext.addDependencies(buildTypeName(), n.getScope().toString());
+                } else if (NameExpr.class.isInstance(n.getScope())) {
+                    String typeName = NameExpr.class.cast(n.getScope()).getName();
+                    String referencedType = this.imports.get(typeName);
+                    if (referencedType != null) {
+                        codeContext.addDependencies(buildTypeName(), referencedType);
+                    }
                 } else {
                     depth++;
                     super.visit(n, arg);
@@ -252,9 +261,13 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             @Override
             public void visit(ImportDeclaration n, Void arg) {
                 print(n, n.getName() + "/static: " + n.isStatic() + "/asterisk: " + n.isAsterisk());
-                depth++;
-                super.visit(n, arg);
-                depth--;
+                if (!n.isStatic()) {
+                    this.imports.put(n.getName().getName(), n.getName().toString());
+                } else {
+                    depth++;
+                    super.visit(n, arg);
+                    depth--;
+                }
             }
 
             @Override
