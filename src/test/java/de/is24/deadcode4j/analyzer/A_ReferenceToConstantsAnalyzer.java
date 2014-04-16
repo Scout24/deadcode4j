@@ -33,6 +33,16 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
     }
 
     @Test
+    public void recognizesDependencyToConstantViaStaticImportInField() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingConstantViaStaticImportInField.java");
+    }
+
+    @Test
+    public void recognizesDependencyToConstantViaAsteriskStaticImportInField() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingConstantViaAsteriskStaticImportInField.java");
+    }
+
+    @Test
     public void recognizesDependencyToFullyQualifiedConstantInField() {
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingFQConstantInField.java");
 
@@ -44,6 +54,16 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/subpackage/ClassUsingConstantOfOtherPackageInField.java");
 
         assertDependencyExists("de.is24.deadcode4j.analyzer.constants.subpackage.ClassUsingConstantOfOtherPackageInField", "de.is24.deadcode4j.analyzer.constants.Constants");
+    }
+
+    @Test
+    public void recognizesDependencyToConstantOfOtherPackageViaAsteriskStaticImportInField() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/subpackage/ClassUsingConstantOfOtherPackageViaAsteriskStaticImportInField.java");
+    }
+
+    @Test
+    public void recognizesDependencyToConstantOfOtherPackageViaStaticImportInField() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/subpackage/ClassUsingConstantOfOtherPackageViaStaticImportInField.java");
     }
 
     @Test
