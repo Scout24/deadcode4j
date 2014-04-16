@@ -2,9 +2,23 @@ package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
+import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Map;
+
+import static com.google.common.collect.Iterables.concat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+
 public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
+
+    private CodeContext codeContext;
+
+    @Before
+    public void setUp() throws Exception {
+        codeContext = new CodeContext();
+    }
 
     @Test
     public void recognizesDependencyToConstantInMethod() {
@@ -26,8 +40,17 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
     public void recognizesDependencyToFullyQualifiedConstantInField() {
         Analyzer objectUnderTest = new ReferenceToConstantsAnalyzer();
 
-        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingFQConstantInField.java"));
+
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.ClassUsingFQConstantInField", "de.is24.deadcode4j.analyzer.constants.Constants");
+    }
+
+    private void assertDependencyExists(String depender, String dependee) {
+        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        assertThat(codeDependencies.keySet(), containsInAnyOrder(depender));
+
+        Iterable<String> allReportedClasses = concat(codeDependencies.values());
+        assertThat(allReportedClasses, containsInAnyOrder(dependee));
     }
 
     @Test

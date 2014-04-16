@@ -14,6 +14,8 @@ import japa.parser.ast.visitor.VoidVisitorAdapter;
 
 import javax.annotation.Nonnull;
 import java.io.File;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
@@ -25,7 +27,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         }
     }
 
-    private void analyzeJavaFile(CodeContext codeContext, File file) {
+    private void analyzeJavaFile(final CodeContext codeContext, File file) {
         CompilationUnit compilationUnit;
         try {
             compilationUnit = JavaParser.parse(file, null, false);
@@ -36,7 +38,9 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         System.out.println(compilationUnit);
         compilationUnit.accept(new VoidVisitorAdapter<Void>() {
 
-            int depth = 0;
+            private int depth = 0;
+            private String packageName;
+            public Queue<String> typeNames = new LinkedList<String>();
 
             @Override
             public void visit(AnnotationDeclaration n, Void arg) {
@@ -119,9 +123,11 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             @Override
             public void visit(ClassOrInterfaceDeclaration n, Void arg) {
                 print(n, n.getName());
+                this.typeNames.add(n.getName());
                 depth++;
                 super.visit(n, arg);
                 depth--;
+                this.typeNames.remove(n.getName());
             }
 
             @Override
@@ -211,9 +217,13 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             @Override
             public void visit(FieldAccessExpr n, Void arg) {
                 print(n, n.getScope() + "." + n.getField() + "/" + n.getFieldExpr() + "/" +  n.getTypeArgs());
-                depth++;
-                super.visit(n, arg);
-                depth--;
+                if (FieldAccessExpr.class.isInstance(n.getScope())) {
+                    codeContext.addDependencies(buildTypeName(), n.getScope().toString());
+                } else {
+                    depth++;
+                    super.visit(n, arg);
+                    depth--;
+                }
             }
 
             @Override
@@ -347,9 +357,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             @Override
             public void visit(PackageDeclaration n, Void arg) {
                 print(n, n.getName() + "/" + n.getAnnotations());
-                depth++;
-                super.visit(n, arg);
-                depth--;
+                this.packageName = n.getName().toString();
             }
 
             @Override
@@ -496,6 +504,22 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             @Override
             public void visit(AssignExpr n, Void arg) {
                 print(n, n.getValue());
+            }
+
+            private String buildTypeName() {
+                StringBuilder buffy = new StringBuilder(this.packageName);
+                boolean rootType = true;
+                for (String typeName : this.typeNames) {
+                    if (rootType) {
+                        buffy.append(".");
+                        rootType = false;
+                    } else {
+                        buffy.append("$");
+                    }
+                    buffy.append(typeName);
+                }
+
+                return buffy.toString();
             }
 
             private void print(Node node, Object content) {
