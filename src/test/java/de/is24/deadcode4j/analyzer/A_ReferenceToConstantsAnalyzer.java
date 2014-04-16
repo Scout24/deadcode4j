@@ -23,13 +23,39 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
     }
 
     @Test
-    public void recognizesDependencyToConstantInMethod() {
-        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingConstantInMethod.java");
+    public void recognizesDependencyToConstantInExpression() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingConstantInExpression.java");
     }
 
     @Test
     public void recognizesDependencyToConstantInField() {
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingConstantInField.java");
+    }
+
+    @Test
+    public void recognizesDependencyToConstantInMethod() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingConstantInMethod.java");
+    }
+
+    @Test
+    public void recognizesDependencyToFullyQualifiedConstantInExpression() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingFQConstantInExpression.java");
+
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.ClassUsingFQConstantInExpression", "de.is24.deadcode4j.analyzer.constants.Constants");
+    }
+
+    @Test
+    public void recognizesDependencyToFullyQualifiedConstantInField() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingFQConstantInField.java");
+
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.ClassUsingFQConstantInField", "de.is24.deadcode4j.analyzer.constants.Constants");
+    }
+
+    @Test
+    public void recognizesDependencyToFullyQualifiedConstantInMethod() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingFQConstantInMethod.java");
+
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.ClassUsingFQConstantInMethod", "de.is24.deadcode4j.analyzer.constants.Constants");
     }
 
     @Test
@@ -43,10 +69,20 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
     }
 
     @Test
-    public void recognizesDependencyToFullyQualifiedConstantInField() {
-        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingFQConstantInField.java");
+    public void recognizesOverwrittenConstantOfOtherPackageReferencedViaStaticImportInMethod() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingStaticImportForConstantWithSameLocalName.java");
+    }
 
-        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.ClassUsingFQConstantInField", "de.is24.deadcode4j.analyzer.constants.Constants");
+    @Test
+    public void recognizesDependencyToInnerClassInsteadOfPackageClass() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassWithInnerClassNamedLikePotentialTarget.java");
+    }
+
+    @Test
+    public void recognizesDependencyToConstantOfOtherPackageInExpression() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/subpackage/ClassUsingConstantOfOtherPackageInExpression.java");
+
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.subpackage.ClassUsingConstantOfOtherPackageInExpression", "de.is24.deadcode4j.analyzer.constants.Constants");
     }
 
     @Test
@@ -57,25 +93,24 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
     }
 
     @Test
-    public void recognizesDependencyToConstantOfOtherPackageViaAsteriskStaticImportInField() {
-        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/subpackage/ClassUsingConstantOfOtherPackageViaAsteriskStaticImportInField.java");
-    }
-
-    @Test
-    public void recognizesDependencyToConstantOfOtherPackageViaStaticImportInField() {
-        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/subpackage/ClassUsingConstantOfOtherPackageViaStaticImportInField.java");
-    }
-
-    @Test
-    public void recognizesDependencyToConstantOfOtherPackageViaAsteriskImportInField() {
-        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/subpackage/ClassUsingConstantOfOtherPackageViaAsteriskImportInField.java");
-    }
-
-    @Test
     public void recognizesDependencyToConstantOfOtherPackageInMethod() {
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/subpackage/ClassUsingConstantOfOtherPackageInMethod.java");
 
         assertDependencyExists("de.is24.deadcode4j.analyzer.constants.subpackage.ClassUsingConstantOfOtherPackageInMethod", "de.is24.deadcode4j.analyzer.constants.Constants");
+    }
+
+    @Test
+    public void recognizesDependencyToFullyQualifiedConstantOfOtherPackageInExpression() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/subpackage/ClassUsingFQConstantOfOtherPackageInExpression.java");
+
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.subpackage.ClassUsingFQConstantOfOtherPackageInExpression", "de.is24.deadcode4j.analyzer.constants.Constants");
+    }
+
+    @Test
+    public void recognizesDependencyToFullyQualifiedConstantOfOtherPackageInField() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/subpackage/ClassUsingFQConstantOfOtherPackageInField.java");
+
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.subpackage.ClassUsingFQConstantOfOtherPackageInField", "de.is24.deadcode4j.analyzer.constants.Constants");
     }
 
     @Test
@@ -86,20 +121,18 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
     }
 
     @Test
-    public void recognizesOverwrittenConstantOfOtherPackageReferencedViaStaticImportInMethod() {
-        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingStaticImportForConstantWithSameLocalName.java");
+    public void recognizesDependencyToConstantOfOtherPackageViaAsteriskImportInField() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/subpackage/ClassUsingConstantOfOtherPackageViaAsteriskImportInField.java");
     }
 
     @Test
-    public void recognizesDependencyToFullyQualifiedConstantInExpression() {
-        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingFQConstantInExpression.java");
-
-        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.ClassUsingFQConstantInExpression", "de.is24.deadcode4j.analyzer.constants.Constants");
+    public void recognizesDependencyToConstantOfOtherPackageViaStaticImportInField() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/subpackage/ClassUsingConstantOfOtherPackageViaStaticImportInField.java");
     }
 
     @Test
-    public void recognizesDependencyToInnerClassInsteadOfPackageClass() {
-        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassWithInnerClassNamedLikePotentialTarget.java");
+    public void recognizesDependencyToConstantOfOtherPackageViaAsteriskStaticImportInField() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/subpackage/ClassUsingConstantOfOtherPackageViaAsteriskStaticImportInField.java");
     }
 
     private void analyzeFile(String fileName) {
