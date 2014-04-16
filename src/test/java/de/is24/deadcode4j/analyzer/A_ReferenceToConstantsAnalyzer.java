@@ -86,11 +86,6 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
     }
 
     @Test
-    public void recognizesDependencyToConstantOfOtherPackageReferencedViaStaticImportInMethod() {
-        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/subpackage/ClassUsingStaticImportForConstantOfOtherPackageInMethod.java");
-    }
-
-    @Test
     public void recognizesOverwrittenConstantOfOtherPackageReferencedViaStaticImportInMethod() {
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingStaticImportForConstantWithSameLocalName.java");
     }
