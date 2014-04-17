@@ -39,9 +39,19 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         Collection<String> analyzedClasses = codeContext.getAnalyzedCode().getAnalyzedClasses();
         for (Analysis analysis : resultsNeedingPostProcessing) {
             for (Map.Entry<String, String> referenceToPackageType : analysis.referencesToPackageType.entrySet()) {
+                String depender = referenceToPackageType.getKey();
                 String dependee = referenceToPackageType.getValue();
+                // package wins over asterisk import
                 if (analyzedClasses.contains(dependee)) {
-                    codeContext.addDependencies(referenceToPackageType.getKey(), dependee);
+                    codeContext.addDependencies(depender, dependee);
+                } else {
+                    String className = dependee.substring(dependee.lastIndexOf('.'));
+                    for (String asteriskImport : analysis.asteriskImports) {
+                        dependee = asteriskImport + className;
+                        if (analyzedClasses.contains(dependee)) {
+                            codeContext.addDependencies(depender, dependee);
+                        }
+                    }
                 }
             }
         }
@@ -74,6 +84,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         private String typeName;
         private String packageName;
         private int depth = 0;
+        private Set<String> asteriskImports = newHashSet();
 
         public CompilationUnitVisitor(CodeContext codeContext) {
             this.codeContext = codeContext;
@@ -248,7 +259,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             super.visit(n, arg);
             depth--;
             resolveInnerTypeReferences();
-            return new Analysis(this.packageName, this.referenceToInnerOrPackageType);
+            return new Analysis(this.packageName, this.asteriskImports, this.referenceToInnerOrPackageType);
         }
 
         @Override
@@ -437,7 +448,11 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
                     depth--;
                 }
             } else {
-                this.imports.put(n.getName().getName(), n.getName().toString());
+                if (n.isAsterisk()) {
+                    this.asteriskImports.add(n.getName().toString());
+                } else {
+                    this.imports.put(n.getName().getName(), n.getName().toString());
+                }
             }
             return null;
         }
@@ -882,9 +897,11 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
     private static class Analysis {
 
+        public final Set<String> asteriskImports;
         public final Map<String, String> referencesToPackageType;
 
-        public Analysis(String packageName, Map<String, String> referencesToNamedType) {
+        public Analysis(String packageName, Set<String> asteriskImports, Map<String, String> referencesToNamedType) {
+            this.asteriskImports = asteriskImports;
             this.referencesToPackageType = newHashMap();
             for (Map.Entry<String, String> referenceToPackageType : referencesToNamedType.entrySet()) {
                 this.referencesToPackageType.put(referenceToPackageType.getKey(),
