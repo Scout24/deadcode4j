@@ -18,7 +18,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
-
+    private static final String FQ_CONSTANTS = "de.is24.deadcode4j.analyzer.constants.Constants";
     private Analyzer objectUnderTest;
     private CodeContext codeContext;
     private Set<String> dependers = newHashSet();
@@ -28,6 +28,7 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
     public void setUp() throws Exception {
         objectUnderTest = new ReferenceToConstantsAnalyzer();
         codeContext = new CodeContext();
+        codeContext.addAnalyzedClass(FQ_CONSTANTS); // make this class known to the context
 
         dependers.clear();
         dependees.clear();
@@ -45,16 +46,25 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
     @Test
     public void recognizesDependencyToConstantInExpression() {
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingConstantInExpression.java");
+        triggerFinishAnalysisEvent();
+
+        assertDependencyToConstantsExists("de.is24.deadcode4j.analyzer.constants.ClassUsingConstantInExpression");
     }
 
     @Test
     public void recognizesDependencyToConstantInField() {
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingConstantInField.java");
+        triggerFinishAnalysisEvent();
+
+        assertDependencyToConstantsExists("de.is24.deadcode4j.analyzer.constants.ClassUsingConstantInField");
     }
 
     @Test
     public void recognizesDependencyToConstantInMethod() {
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingConstantInMethod.java");
+        triggerFinishAnalysisEvent();
+
+        assertDependencyToConstantsExists("de.is24.deadcode4j.analyzer.constants.ClassUsingConstantInMethod");
     }
 
     @Test
@@ -104,7 +114,7 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
         assertDependencyExists("de.is24.deadcode4j.analyzer.constants.ClassWithInnerClassNamedLikePotentialTarget",
                 "de.is24.deadcode4j.analyzer.constants.ClassWithInnerClassNamedLikePotentialTarget$Constants");
         assertDependencyExists("de.is24.deadcode4j.analyzer.constants.ClassWithInnerClassNamedLikePotentialTarget$AnotherInnerClass",
-                "de.is24.deadcode4j.analyzer.constants.Constants");
+                FQ_CONSTANTS);
         assertDependencyExists("de.is24.deadcode4j.analyzer.constants.ClassWithInnerClassNamedLikePotentialTarget$InnerClass",
                 "de.is24.deadcode4j.analyzer.constants.ClassWithInnerClassNamedLikePotentialTarget$Constants");
     }
@@ -170,6 +180,10 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
         objectUnderTest.doAnalysis(codeContext, getFile(fileName));
     }
 
+    private void triggerFinishAnalysisEvent() {
+        objectUnderTest.finishAnalysis(codeContext);
+    }
+
     private void assertDependencyExists(String depender, String dependee) {
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
         assertThat(codeDependencies.keySet(), hasItem(depender));
@@ -181,7 +195,7 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
     }
 
     private void assertDependencyToConstantsExists(String depender) {
-        assertDependencyExists(depender, "de.is24.deadcode4j.analyzer.constants.Constants");
+        assertDependencyExists(depender, FQ_CONSTANTS);
     }
 
 }
