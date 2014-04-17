@@ -6,30 +6,29 @@ import de.is24.deadcode4j.CodeRepository;
 import de.is24.deadcode4j.DeadCode;
 import de.is24.deadcode4j.DeadCodeFinder;
 import de.is24.deadcode4j.analyzer.*;
-import de.is24.deadcode4j.plugin.packaginghandler.PackagingHandler;
+import de.is24.deadcode4j.plugin.packaginghandler.DefaultPackagingHandler;
+import de.is24.deadcode4j.plugin.packaginghandler.PomPackagingHandler;
+import de.is24.deadcode4j.plugin.packaginghandler.WarPackagingHandler;
 import de.is24.maven.slf4j.AbstractSlf4jMojo;
-import org.apache.commons.io.filefilter.IOFileFilter;
-import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import javax.annotation.Nonnull;
-import java.io.File;
 import java.util.*;
+import java.util.concurrent.Callable;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.transform;
 import static com.google.common.collect.Maps.newHashMap;
 import static de.is24.deadcode4j.Utils.*;
-import static java.util.Collections.*;
-import static org.apache.commons.io.filefilter.FileFilterUtils.asFileFilter;
-import static org.apache.commons.io.filefilter.FileFilterUtils.notFileFilter;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static org.apache.maven.plugin.MojoExecution.Source.CLI;
 
 /**
@@ -42,8 +41,14 @@ import static org.apache.maven.plugin.MojoExecution.Source.CLI;
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
 
-    private final Map<String, PackagingHandler> packagingHandlers = newHashMap();
-    private final PackagingHandler defaultPackagingHandler = new DefaultPackagingHandler();
+    private final Callable<Log> logAccessor = new Callable<Log>() {
+        @Override
+        public Log call() {
+            return getLog();
+        }
+    };
+    private final de.is24.deadcode4j.plugin.packaginghandler.PackagingHandler defaultPackagingHandler = new DefaultPackagingHandler(logAccessor);
+    private final Map<String, de.is24.deadcode4j.plugin.packaginghandler.PackagingHandler> packagingHandlers = newHashMap();
     /**
      * Lists the fqcn of the annotations marking a class as being "live code".
      *
@@ -106,8 +111,8 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     private String workAroundForHelpMojo;
 
     public FindDeadCodeOnlyMojo() {
-        packagingHandlers.put("pom", new PomPackagingHandler());
-        packagingHandlers.put("war", new WarPackagingHandler());
+        packagingHandlers.put("pom", new PomPackagingHandler(logAccessor));
+        packagingHandlers.put("war", new WarPackagingHandler(logAccessor));
     }
 
     public void doExecute() throws MojoExecutionException {
