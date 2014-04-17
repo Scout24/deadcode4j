@@ -6,6 +6,7 @@ import de.is24.deadcode4j.CodeRepository;
 import de.is24.deadcode4j.DeadCode;
 import de.is24.deadcode4j.DeadCodeFinder;
 import de.is24.deadcode4j.analyzer.*;
+import de.is24.deadcode4j.plugin.packaginghandler.PackagingHandler;
 import de.is24.maven.slf4j.AbstractSlf4jMojo;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.maven.model.Plugin;
@@ -41,8 +42,8 @@ import static org.apache.maven.plugin.MojoExecution.Source.CLI;
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
 
-    private final Map<String, PackagingHandler> packagingHandlers = newHashMap();
-    private final PackagingHandler defaultPackagingHandler = new DefaultPackagingHandler();
+    private final Map<String, de.is24.deadcode4j.plugin.packaginghandler.PackagingHandler> packagingHandlers = newHashMap();
+    private final de.is24.deadcode4j.plugin.packaginghandler.PackagingHandler defaultPackagingHandler = new DefaultPackagingHandler();
     /**
      * Lists the fqcn of the annotations marking a class as being "live code".
      *
@@ -227,9 +228,9 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
 
     @Nonnull
     private Collection<CodeRepository> getCodeRepositoryFor(@Nonnull MavenProject project) throws MojoExecutionException {
-        PackagingHandler packagingHandler =
+        de.is24.deadcode4j.plugin.packaginghandler.PackagingHandler packagingHandler =
                 getValueOrDefault(this.packagingHandlers, project.getPackaging(), this.defaultPackagingHandler);
-        return packagingHandler.getCodeRepositoryFor(project);
+        return packagingHandler.getCodeRepositoriesFor(project);
     }
 
     private void log(DeadCode deadCode) {
@@ -243,15 +244,10 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
         }
     }
 
-    private interface PackagingHandler {
-        @Nonnull
-        Collection<CodeRepository> getCodeRepositoryFor(@Nonnull MavenProject project) throws MojoExecutionException;
-    }
-
-    private class PomPackagingHandler implements PackagingHandler {
+    private class PomPackagingHandler extends PackagingHandler {
         @Override
         @Nonnull
-        public Collection<CodeRepository> getCodeRepositoryFor(@Nonnull MavenProject project) {
+        public Collection<CodeRepository> getCodeRepositoriesFor(@Nonnull MavenProject project) {
             if (getLog().isDebugEnabled()) {
                 getLog().debug("Project " + getKeyFor(project) + " has pom packaging, so it is skipped.");
             }
@@ -259,10 +255,10 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
         }
     }
 
-    private class WarPackagingHandler implements PackagingHandler {
+    private class WarPackagingHandler extends PackagingHandler {
         @Override
         @Nonnull
-        public Collection<CodeRepository> getCodeRepositoryFor(@Nonnull MavenProject project) throws MojoExecutionException {
+        public Collection<CodeRepository> getCodeRepositoriesFor(@Nonnull MavenProject project) throws MojoExecutionException {
             if (getLog().isDebugEnabled()) {
                 getLog().debug("Project " + getKeyFor(project) + " has war packaging, looking for webapp directory...");
             }
@@ -291,10 +287,10 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
         }
     }
 
-    private class DefaultPackagingHandler implements PackagingHandler {
+    private class DefaultPackagingHandler extends PackagingHandler {
         @Override
         @Nonnull
-        public Collection<CodeRepository> getCodeRepositoryFor(@Nonnull MavenProject project) {
+        public Collection<CodeRepository> getCodeRepositoriesFor(@Nonnull MavenProject project) {
             File outputDirectory = new File(project.getBuild().getOutputDirectory());
             if (!outputDirectory.exists()) {
                 getLog().warn("The output directory of " + getKeyFor(project) +
