@@ -3,25 +3,43 @@ package de.is24.deadcode4j.analyzer;
 import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
 import de.is24.deadcode4j.analyzer.constants.ClassWithInnerClassNamedLikePotentialTarget;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static com.google.common.collect.Iterables.concat;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newHashSet;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 
 public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
 
     private Analyzer objectUnderTest;
     private CodeContext codeContext;
+    private Set<String> dependers = newHashSet();
+    private List<String> dependees = newArrayList();
 
     @Before
     public void setUp() throws Exception {
         objectUnderTest = new ReferenceToConstantsAnalyzer();
         codeContext = new CodeContext();
+
+        dependers.clear();
+        dependees.clear();
+    }
+
+    @After
+    public void assertNoOtherDependenciesExist() throws Exception {
+        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        assertThat(codeDependencies.keySet(), equalTo(this.dependers));
+
+        List<String> allReportedClasses = newArrayList(concat(codeDependencies.values()));
+        assertThat(allReportedClasses, containsInAnyOrder(this.dependees.toArray()));
     }
 
     @Test
@@ -83,15 +101,12 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
 
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassWithInnerClassNamedLikePotentialTarget.java");
 
-
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat(codeDependencies.keySet(), containsInAnyOrder(
-                "de.is24.deadcode4j.analyzer.constants.ClassWithInnerClassNamedLikePotentialTarget",
-                "de.is24.deadcode4j.analyzer.constants.ClassWithInnerClassNamedLikePotentialTarget$InnerClass"));
-
-        Iterable<String> allReportedClasses = concat(codeDependencies.values());
-        assertThat(allReportedClasses, containsInAnyOrder("de.is24.deadcode4j.analyzer.constants.ClassWithInnerClassNamedLikePotentialTarget$Constants",
-                "de.is24.deadcode4j.analyzer.constants.ClassWithInnerClassNamedLikePotentialTarget$Constants"));
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.ClassWithInnerClassNamedLikePotentialTarget",
+                "de.is24.deadcode4j.analyzer.constants.ClassWithInnerClassNamedLikePotentialTarget$Constants");
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.ClassWithInnerClassNamedLikePotentialTarget$AnotherInnerClass",
+                "de.is24.deadcode4j.analyzer.constants.Constants");
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.ClassWithInnerClassNamedLikePotentialTarget$InnerClass",
+                "de.is24.deadcode4j.analyzer.constants.ClassWithInnerClassNamedLikePotentialTarget$Constants");
     }
 
     @Test
@@ -157,10 +172,12 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
 
     private void assertDependencyExists(String depender, String dependee) {
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat(codeDependencies.keySet(), containsInAnyOrder(depender));
+        assertThat(codeDependencies.keySet(), hasItem(depender));
 
         Iterable<String> allReportedClasses = concat(codeDependencies.values());
-        assertThat(allReportedClasses, containsInAnyOrder(dependee));
+        assertThat(allReportedClasses, hasItem(dependee));
+        this.dependers.add(depender);
+        this.dependees.add(dependee);
     }
 
     private void assertDependencyToConstantsExists(String depender) {

@@ -8,4 +8,7 @@ public class ClassWithInnerClassNamedLikePotentialTarget {
     public static class InnerClass {
         public final String foo = Constants.FOO;
     }
+    public static class AnotherInnerClass {
+        public final String foo = de.is24.deadcode4j.analyzer.constants.Constants.FOO;
+    }
 }
