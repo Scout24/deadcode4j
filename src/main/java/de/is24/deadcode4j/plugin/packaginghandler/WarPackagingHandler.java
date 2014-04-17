@@ -14,8 +14,8 @@ import java.io.File;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static de.is24.deadcode4j.Utils.getKeyFor;
-import static java.util.Collections.singleton;
 import static org.apache.commons.io.filefilter.FileFilterUtils.asFileFilter;
 import static org.apache.commons.io.filefilter.FileFilterUtils.notFileFilter;
 
@@ -34,6 +34,13 @@ public class WarPackagingHandler extends PackagingHandler {
     @Override
     @Nonnull
     public Collection<CodeRepository> getCodeRepositoriesFor(@Nonnull MavenProject project) throws MojoExecutionException {
+        Collection<CodeRepository> repositories = newArrayList();
+        repositories.add(getWebappDirectory(project));
+        addJavaFilesOfSourceDirectories(repositories, project);
+        return repositories;
+    }
+
+    private CodeRepository getWebappDirectory(MavenProject project) throws MojoExecutionException {
         if (getLog().isDebugEnabled()) {
             getLog().debug("Project " + getKeyFor(project) + " has war packaging, looking for webapp directory...");
         }
@@ -58,6 +65,7 @@ public class WarPackagingHandler extends PackagingHandler {
         }
         final File directory = new File(webappDirectory, "WEB-INF");
         IOFileFilter fileFilter = notFileFilter(asFileFilter(new SubDirectoryFilter(directory, "lib")));
-        return singleton(new CodeRepository(directory, fileFilter));
+        return new CodeRepository(directory, fileFilter);
     }
+
 }

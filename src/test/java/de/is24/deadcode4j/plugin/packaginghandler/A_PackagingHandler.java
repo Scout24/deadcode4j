@@ -82,6 +82,15 @@ public class A_PackagingHandler {
         assertThat(results, hasItem(getClass().getSimpleName() + ".java"));
     }
 
+    @Test
+    public void addsCompileSourceRootsOnlyIfTheyExist() throws MojoExecutionException, IOException {
+        MavenProject mavenProject = new MavenProject();
+        mavenProject.getCompileSourceRoots().add("thisDirectory/is/so/never/gone/exist");
+        Collection<CodeRepository> codeRepositories = objectUnderTest.getCodeRepositoriesFor(mavenProject);
+
+        assertThat(codeRepositories, is(empty()));
+    }
+
     private String directoryThisClassIsLocated() {
         return FileLoader.getFile("../../src/test/java/de/is24/deadcode4j/plugin/packaginghandler").getAbsolutePath();
     }

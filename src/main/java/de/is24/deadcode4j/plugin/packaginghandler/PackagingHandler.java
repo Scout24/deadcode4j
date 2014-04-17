@@ -83,7 +83,11 @@ public abstract class PackagingHandler {
 
                 Collection<CodeRepository> codeRepositories = newArrayList();
                 for (String compileSourceRoot : compileSourceRoots) {
-                    codeRepositories.add(new CodeRepository(new File(compileSourceRoot),
+                    File compileSourceDirectory = new File(compileSourceRoot);
+                    if (!compileSourceDirectory.exists()) {
+                        continue;
+                    }
+                    codeRepositories.add(new CodeRepository(compileSourceDirectory,
                             new OrFileFilter(DIRECTORY, new RegexFileFilter(".*\\.java$", IOCase.INSENSITIVE))));
                     if (getLog().isDebugEnabled()) {
                         getLog().debug("Going to analyze Java files of source directory [" + compileSourceRoot + "].");
