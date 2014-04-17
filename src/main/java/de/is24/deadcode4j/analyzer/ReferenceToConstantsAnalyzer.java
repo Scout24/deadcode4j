@@ -1,5 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
+import com.google.common.collect.Sets;
 import de.is24.deadcode4j.CodeContext;
 import japa.parser.JavaParser;
 import japa.parser.ast.*;
@@ -17,7 +18,9 @@ import java.io.File;
 import java.util.*;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 
 public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
@@ -62,9 +65,11 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
     private static class CompilationUnitVisitor extends GenericVisitorAdapter<Analysis, Void> {
 
         private final CodeContext codeContext;
-        private final Map<String, String> imports = new HashMap<String, String>();
-        private final Queue<String> typeNames = new LinkedList<String>();
-        private final Set<String> innerTypes = new HashSet<String>();
+        private final Map<String, String> imports = newHashMap();
+        private final Map<String, String> staticImports = newHashMap();
+        private final Queue<String> typeNames = newLinkedList();
+        private final Queue<Set<String>> localVariables = newLinkedList();
+        private final Set<String> innerTypes = newHashSet();
         private final Map<String, String> referenceToInnerOrPackageType = new HashMap<String, String>();
         private String typeName;
         private String packageName;
@@ -77,54 +82,6 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         @Override
         public Analysis visit(AnnotationDeclaration n, Void arg) {
             print(n, null);
-            return null;
-        }
-
-        @Override
-        public Analysis visit(AnnotationMemberDeclaration n, Void arg) {
-            print(n, null);
-            return null;
-        }
-
-        @Override
-        public Analysis visit(ArrayAccessExpr n, Void arg) {
-            print(n, null);
-            return null;
-        }
-
-        @Override
-        public Analysis visit(ArrayCreationExpr n, Void arg) {
-            print(n, null);
-            return null;
-        }
-
-        @Override
-        public Analysis visit(ArrayInitializerExpr n, Void arg) {
-            print(n, null);
-            return null;
-        }
-
-        @Override
-        public Analysis visit(AssertStmt n, Void arg) {
-            print(n, null);
-            return null;
-        }
-
-        @Override
-        public Analysis visit(BinaryExpr n, Void arg) {
-            print(n, null);
-            return null;
-        }
-
-        @Override
-        public Analysis visit(BlockComment n, Void arg) {
-            print(n, null);
-            return null;
-        }
-
-        @Override
-        public Analysis visit(BlockStmt n, Void arg) {
-            print(n, n.getStmts());
             depth++;
             super.visit(n, arg);
             depth--;
@@ -132,38 +89,130 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         }
 
         @Override
+        public Analysis visit(AnnotationMemberDeclaration n, Void arg) {
+            print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
+            return null;
+        }
+
+        @Override
+        public Analysis visit(ArrayAccessExpr n, Void arg) {
+            print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
+            return null;
+        }
+
+        @Override
+        public Analysis visit(ArrayCreationExpr n, Void arg) {
+            print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
+            return null;
+        }
+
+        @Override
+        public Analysis visit(ArrayInitializerExpr n, Void arg) {
+            print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
+            return null;
+        }
+
+        @Override
+        public Analysis visit(AssertStmt n, Void arg) {
+            print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
+            return null;
+        }
+
+        @Override
+        public Analysis visit(BinaryExpr n, Void arg) {
+            print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
+            return null;
+        }
+
+        @Override
+        public Analysis visit(BlockComment n, Void arg) {
+            print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
+            return null;
+        }
+
+        @Override
+        public Analysis visit(BlockStmt n, Void arg) {
+            print(n, n.getStmts());
+            this.localVariables.add(Sets.<String>newHashSet());
+            depth++;
+            super.visit(n, arg);
+            depth--;
+            this.localVariables.remove();
+            return null;
+        }
+
+        @Override
         public Analysis visit(BooleanLiteralExpr n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(BreakStmt n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(CastExpr n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(CatchClause n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(CharLiteralExpr n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(ClassExpr n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
@@ -205,72 +254,108 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         @Override
         public Analysis visit(ConditionalExpr n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(ConstructorDeclaration n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(ContinueStmt n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(DoStmt n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(DoubleLiteralExpr n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(EmptyMemberDeclaration n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(EmptyStmt n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(EmptyTypeDeclaration n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(EnclosedExpr n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(EnumConstantDeclaration n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(EnumDeclaration n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(ExplicitConstructorInvocationStmt n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
@@ -316,30 +401,43 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         @Override
         public Analysis visit(ForeachStmt n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(ForStmt n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(IfStmt n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(ImportDeclaration n, Void arg) {
             print(n, n.getName() + "/static: " + n.isStatic() + "/asterisk: " + n.isAsterisk());
-            if (!n.isStatic()) {
-                this.imports.put(n.getName().getName(), n.getName().toString());
+            if (n.isStatic()) {
+                if (!n.isAsterisk()) {
+                    this.staticImports.put(n.getName().getName(), ((QualifiedNameExpr) n.getName()).getQualifier().toString());
+                } else {
+                    depth++;
+                    super.visit(n, arg);
+                    depth--;
+                }
             } else {
-                depth++;
-                super.visit(n, arg);
-                depth--;
+                this.imports.put(n.getName().getName(), n.getName().toString());
             }
             return null;
         }
@@ -347,54 +445,81 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         @Override
         public Analysis visit(InitializerDeclaration n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(InstanceOfExpr n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(IntegerLiteralExpr n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(IntegerLiteralMinValueExpr n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(JavadocComment n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(LabeledStmt n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(LineComment n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(LongLiteralExpr n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(LongLiteralMinValueExpr n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
@@ -410,6 +535,9 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         @Override
         public Analysis visit(MemberValuePair n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
@@ -433,7 +561,16 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
         @Override
         public Analysis visit(NameExpr n, Void arg) {
-            print(n, n.getName());
+            String namedReference = n.getName();
+            Set<String> blockVariables = this.localVariables.peek();
+            if (blockVariables == null || !blockVariables.contains(namedReference)) {
+                String referencedType = this.staticImports.get(namedReference);
+                if (referencedType != null) {
+                    this.codeContext.addDependencies(buildTypeName(), referencedType);
+                    return null;
+                }
+            }
+            print(n, namedReference);
             depth++;
             super.visit(n, arg);
             depth--;
@@ -443,18 +580,27 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         @Override
         public Analysis visit(NormalAnnotationExpr n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(NullLiteralExpr n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(ObjectCreationExpr n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
@@ -468,18 +614,27 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         @Override
         public Analysis visit(Parameter n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(MultiTypeParameter n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(PrimitiveType n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
@@ -513,6 +668,9 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         @Override
         public Analysis visit(SingleMemberAnnotationExpr n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
@@ -528,66 +686,100 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         @Override
         public Analysis visit(SuperExpr n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(SwitchEntryStmt n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(SwitchStmt n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(SynchronizedStmt n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(ThisExpr n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(ThrowStmt n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(TryStmt n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(TypeDeclarationStmt n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(TypeParameter n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(UnaryExpr n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(VariableDeclarationExpr n, Void arg) {
             print(n, n.getVars() + ":" + n.getType());
+            Set<String> blockVariables = this.localVariables.element();
+            for (VariableDeclarator variableDeclarator : n.getVars()) {
+                blockVariables.add(variableDeclarator.getId().getName());
+            }
             depth++;
             super.visit(n, arg);
             depth--;
@@ -615,24 +807,36 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         @Override
         public Analysis visit(VoidType n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(WhileStmt n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(WildcardType n, Void arg) {
             print(n, null);
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
         @Override
         public Analysis visit(AssignExpr n, Void arg) {
             print(n, n.getValue());
+            depth++;
+            super.visit(n, arg);
+            depth--;
             return null;
         }
 
@@ -656,9 +860,10 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             Iterator<Map.Entry<String, String>> namedReferences = this.referenceToInnerOrPackageType.entrySet().iterator();
             while (namedReferences.hasNext()) {
                 Map.Entry<String, String> referenceToInnerOrPackageType = namedReferences.next();
-                if (this.innerTypes.contains(referenceToInnerOrPackageType.getValue())) {
+                String namedReference = referenceToInnerOrPackageType.getValue();
+                if (this.innerTypes.contains(namedReference)) {
                     codeContext.addDependencies(referenceToInnerOrPackageType.getKey(),
-                            this.packageName + "." + this.typeName + "$" + referenceToInnerOrPackageType.getValue());
+                            this.packageName + "." + this.typeName + "$" + namedReference);
                     namedReferences.remove();
                 }
             }
