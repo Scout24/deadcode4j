@@ -1,10 +1,11 @@
 package de.is24.deadcode4j.analyzer.constants;
-
 @SuppressWarnings("UnusedDeclaration")
 public class ClassWithInnerClassNamedLikePotentialTarget {
     public final String foo = Constants.FOO;
-
-    private class Constants {
-        public static final String FOO = "foo";
+    private static interface Constants {
+        public static final String FOO = "bar";
+    }
+    public static class InnerClass {
+        public final String foo = Constants.FOO;
     }
 }

@@ -14,10 +14,7 @@ import japa.parser.ast.visitor.VoidVisitorAdapter;
 
 import javax.annotation.Nonnull;
 import java.io.File;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 
 public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
@@ -40,10 +37,13 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         System.out.println(compilationUnit);
         compilationUnit.accept(new VoidVisitorAdapter<Void>() {
 
-            private int depth = 0;
-            private String packageName;
             public Queue<String> typeNames = new LinkedList<String>();
             public Map<String, String> imports = new HashMap<String, String>();
+            public Set<String> innerTypes = new HashSet<String>();
+            public Map<String, String> referenceToInnerOrPackageType = new HashMap<String, String>();
+            public String typeName;
+            private int depth = 0;
+            private String packageName;
 
             @Override
             public void visit(AnnotationDeclaration n, Void arg) {
@@ -127,6 +127,11 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             public void visit(ClassOrInterfaceDeclaration n, Void arg) {
                 print(n, n.getName());
                 this.typeNames.add(n.getName());
+                if (this.typeNames.size() == 1) {
+                    this.typeName = n.getName();
+                } else {
+                    this.innerTypes.add(n.getName());
+                }
                 depth++;
                 super.visit(n, arg);
                 depth--;
@@ -147,6 +152,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
                 depth++;
                 super.visit(n, arg);
                 depth--;
+                resolveInnerTypeReferences();
             }
 
             @Override
@@ -219,7 +225,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
             @Override
             public void visit(FieldAccessExpr n, Void arg) {
-                print(n, n.getScope() + "." + n.getField() + "/" + n.getFieldExpr() + "/" +  n.getTypeArgs());
+                print(n, n.getScope() + "." + n.getField() + "/" + n.getFieldExpr() + "/" + n.getTypeArgs());
                 if (FieldAccessExpr.class.isInstance(n.getScope())) {
                     codeContext.addDependencies(buildTypeName(), n.getScope().toString());
                 } else if (NameExpr.class.isInstance(n.getScope())) {
@@ -227,6 +233,8 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
                     String referencedType = this.imports.get(typeName);
                     if (referencedType != null) {
                         codeContext.addDependencies(buildTypeName(), referencedType);
+                    } else {
+                        this.referenceToInnerOrPackageType.put(buildTypeName(), typeName);
                     }
                 } else {
                     depth++;
@@ -390,7 +398,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
             @Override
             public void visit(QualifiedNameExpr n, Void arg) {
-                print(n,  n.getQualifier() + "/" + n.getName() );
+                print(n, n.getQualifier() + "/" + n.getName());
                 depth++;
                 super.visit(n, arg);
                 depth--;
@@ -535,14 +543,24 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
                 return buffy.toString();
             }
 
+            private void resolveInnerTypeReferences() {
+                for (Map.Entry<String, String> referenceToInnerOrPackageType : this.referenceToInnerOrPackageType.entrySet()) {
+                    if (this.innerTypes.contains(referenceToInnerOrPackageType.getValue())) {
+                        codeContext.addDependencies(referenceToInnerOrPackageType.getKey(),
+                                this.packageName + "." + this.typeName + "$" + referenceToInnerOrPackageType.getValue());
+                    }
+                }
+            }
+
             private void print(Node node, Object content) {
                 StringBuilder buffy = new StringBuilder(16);
-                for (int blanks = depth * 2; blanks-- > 0;) {
+                for (int blanks = depth * 2; blanks-- > 0; ) {
                     buffy.append(" ");
                 }
                 System.out.println(buffy + node.getClass().getSimpleName() + " [" + content + "]@"
                         + node.getBeginLine() + "." + node.getBeginColumn() + ": " + node.getData());
             }
+
         }, null);
     }
 
