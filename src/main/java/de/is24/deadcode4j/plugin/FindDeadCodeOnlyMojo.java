@@ -18,7 +18,6 @@ import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.File;
 import java.util.*;
 
@@ -27,8 +26,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.transform;
 import static com.google.common.collect.Maps.newHashMap;
 import static de.is24.deadcode4j.Utils.*;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptySet;
+import static java.util.Collections.*;
 import static org.apache.commons.io.filefilter.FileFilterUtils.asFileFilter;
 import static org.apache.commons.io.filefilter.FileFilterUtils.notFileFilter;
 import static org.apache.maven.plugin.MojoExecution.Source.CLI;
@@ -195,7 +193,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     private Iterable<CodeRepository> gatherCodeRepositories() throws MojoExecutionException {
         List<CodeRepository> codeRepositories = newArrayList();
         for (MavenProject project : getProjectsToAnalyze()) {
-            addIfNonNull(codeRepositories, getCodeRepositoryFor(project));
+            codeRepositories.addAll(getCodeRepositoryFor(project));
         }
         return codeRepositories;
     }
@@ -227,8 +225,8 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
         return mavenProjects;
     }
 
-    @Nullable
-    private CodeRepository getCodeRepositoryFor(@Nonnull MavenProject project) throws MojoExecutionException {
+    @Nonnull
+    private Collection<CodeRepository> getCodeRepositoryFor(@Nonnull MavenProject project) throws MojoExecutionException {
         PackagingHandler packagingHandler =
                 getValueOrDefault(this.packagingHandlers, project.getPackaging(), this.defaultPackagingHandler);
         return packagingHandler.getCodeRepositoryFor(project);
@@ -246,25 +244,25 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     }
 
     private interface PackagingHandler {
-        @Nullable
-        CodeRepository getCodeRepositoryFor(@Nonnull MavenProject project) throws MojoExecutionException;
+        @Nonnull
+        Collection<CodeRepository> getCodeRepositoryFor(@Nonnull MavenProject project) throws MojoExecutionException;
     }
 
     private class PomPackagingHandler implements PackagingHandler {
         @Override
-        @Nullable
-        public CodeRepository getCodeRepositoryFor(@Nonnull MavenProject project) {
+        @Nonnull
+        public Collection<CodeRepository> getCodeRepositoryFor(@Nonnull MavenProject project) {
             if (getLog().isDebugEnabled()) {
                 getLog().debug("Project " + getKeyFor(project) + " has pom packaging, so it is skipped.");
             }
-            return null;
+            return emptyList();
         }
     }
 
     private class WarPackagingHandler implements PackagingHandler {
         @Override
-        @Nullable
-        public CodeRepository getCodeRepositoryFor(@Nonnull MavenProject project) throws MojoExecutionException {
+        @Nonnull
+        public Collection<CodeRepository> getCodeRepositoryFor(@Nonnull MavenProject project) throws MojoExecutionException {
             if (getLog().isDebugEnabled()) {
                 getLog().debug("Project " + getKeyFor(project) + " has war packaging, looking for webapp directory...");
             }
@@ -289,24 +287,24 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
             }
             final File directory = new File(webappDirectory, "WEB-INF");
             IOFileFilter fileFilter = notFileFilter(asFileFilter(new SubDirectoryFilter(directory, "lib")));
-            return new CodeRepository(directory, fileFilter);
+            return singleton(new CodeRepository(directory, fileFilter));
         }
     }
 
     private class DefaultPackagingHandler implements PackagingHandler {
         @Override
-        @Nullable
-        public CodeRepository getCodeRepositoryFor(@Nonnull MavenProject project) {
+        @Nonnull
+        public Collection<CodeRepository> getCodeRepositoryFor(@Nonnull MavenProject project) {
             File outputDirectory = new File(project.getBuild().getOutputDirectory());
             if (!outputDirectory.exists()) {
                 getLog().warn("The output directory of " + getKeyFor(project) +
                         " does not exist - assuming the project simply has nothing to provide!");
-                return null;
+                return emptyList();
             }
             if (getLog().isDebugEnabled()) {
                 getLog().debug("Going to analyze output directory [" + outputDirectory + "].");
             }
-            return new CodeRepository(outputDirectory);
+            return singleton(new CodeRepository(outputDirectory));
         }
     }
 
