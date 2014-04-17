@@ -65,7 +65,6 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             throw new RuntimeException("Failed to parse [" + file + "]!", e);
         }
 
-        System.out.println(compilationUnit);
         Analysis result = compilationUnit.accept(new CompilationUnitVisitor(codeContext), null);
         if (result.needsPostProcessing()) {
             this.resultsNeedingPostProcessing.add(result);
@@ -82,7 +81,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         private final Set<String> innerTypes = newHashSet();
         private final Map<String, String> referenceToInnerOrPackageType = new HashMap<String, String>();
         private String typeName;
-        private String packageName;
+        private String packageName = "";
         private int depth = 0;
         private Set<String> asteriskImports = newHashSet();
 
