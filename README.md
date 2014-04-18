@@ -90,7 +90,7 @@ After performing the usage analysis, *deadcode4j* reports which classes are pres
 > <sup>2</sup> When examining `class C extends B extends A`, only `B` is recognized as subclass of `A`; no circumvention here - create an issue if you think this is absolutely required!
 
 ### Limitations
-- Inner classes are always recognized as being referenced by the outer class and vice versa (even static inner classes).
+- Inner classes are always recognized as being referenced by the outer class and vice versa (even static inner classes). _This is not only true for the currently used Javassist, but also for BCEL. This suggests that this is an aspect of the JVM spec._
 
 ### False positives
 
