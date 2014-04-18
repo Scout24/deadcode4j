@@ -91,10 +91,13 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
         @Override
         public Analysis visit(AnnotationDeclaration n, Void arg) {
+            String name = n.getName();
             print(n, null);
+            registerType(name);
             depth++;
             super.visit(n, arg);
             depth--;
+            unregisterType(name);
             return null;
         }
 
@@ -228,17 +231,13 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
         @Override
         public Analysis visit(ClassOrInterfaceDeclaration n, Void arg) {
-            print(n, n.getName());
-            this.typeNames.add(n.getName());
-            if (this.typeNames.size() == 1) {
-                this.typeName = n.getName();
-            } else {
-                this.innerTypes.add(n.getName());
-            }
+            String typeName = n.getName();
+            print(n, typeName);
+            registerType(typeName);
             depth++;
             super.visit(n, arg);
             depth--;
-            this.typeNames.remove(n.getName());
+            unregisterType(typeName);
             return null;
         }
 
@@ -353,10 +352,13 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
         @Override
         public Analysis visit(EnumDeclaration n, Void arg) {
-            print(n, null);
+            String name = n.getName();
+            print(n, name);
+            registerType(name);
             depth++;
             super.visit(n, arg);
             depth--;
+            unregisterType(name);
             return null;
         }
 
@@ -890,6 +892,19 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             }
             System.out.println(buffy + node.getClass().getSimpleName() + " [" + content + "]@"
                     + node.getBeginLine() + "." + node.getBeginColumn() + ": " + node.getData());
+        }
+
+        private void registerType(String typeName) {
+            this.typeNames.add(typeName);
+            if (this.typeNames.size() == 1) {
+                this.typeName = typeName;
+            } else {
+                this.innerTypes.add(typeName);
+            }
+        }
+
+        private void unregisterType(String typeName) {
+            this.typeNames.remove(typeName);
         }
 
     }

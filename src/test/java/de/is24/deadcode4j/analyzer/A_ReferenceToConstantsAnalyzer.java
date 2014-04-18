@@ -148,8 +148,7 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
 
         assertDependencyExists("de.is24.deadcode4j.analyzer.constants.ClassWithInnerClassNamedLikePotentialTarget",
                 "de.is24.deadcode4j.analyzer.constants.ClassWithInnerClassNamedLikePotentialTarget$Constants");
-        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.ClassWithInnerClassNamedLikePotentialTarget$AnotherInnerClass",
-                FQ_CONSTANTS);
+        assertDependencyToConstantsExists("de.is24.deadcode4j.analyzer.constants.ClassWithInnerClassNamedLikePotentialTarget$AnotherInnerClass");
         assertDependencyExists("de.is24.deadcode4j.analyzer.constants.ClassWithInnerClassNamedLikePotentialTarget$InnerClass",
                 "de.is24.deadcode4j.analyzer.constants.ClassWithInnerClassNamedLikePotentialTarget$Constants");
     }
@@ -254,6 +253,24 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
     public void recognizesDependencyToConstantOfOtherPackageViaAsteriskStaticImportInField() {
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/subpackage/ClassUsingConstantOfOtherPackageViaAsteriskStaticImportInField.java");
         triggerFinishAnalysisEvent();
+    }
+
+    @Test
+    public void recognizesEnumsDependencyToConstantInField() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/EnumUsingConstantInField.java");
+        triggerFinishAnalysisEvent();
+
+        assertDependencyToConstantsExists("de.is24.deadcode4j.analyzer.constants.EnumUsingConstantInField");
+    }
+
+    @Test
+    public void recognizesAnnotationsDependencyToConstantAsDefault() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/AnnotationUsingConstantAsDefault.java");
+        triggerFinishAnalysisEvent();
+
+        assertDependencyToConstantsExists("de.is24.deadcode4j.analyzer.constants.AnnotationUsingConstantAsDefault");
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.AnnotationUsingConstantAsDefault",
+                "java.lang.annotation.ElementType");
     }
 
     private void analyzeFile(String fileName) {
