@@ -5,6 +5,7 @@ import de.is24.deadcode4j.CodeContext;
 import de.is24.deadcode4j.analyzer.constants.ClassWithInnerClassNamedLikePotentialTarget;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -261,6 +262,33 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
         triggerFinishAnalysisEvent();
 
         assertDependencyToConstantsExists("de.is24.deadcode4j.analyzer.constants.EnumUsingConstantInField");
+    }
+
+    @Test
+    public void recognizesDependencyToConstantForInnerClassesInField() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingInnerClassOfConstantInField.java");
+        triggerFinishAnalysisEvent();
+
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.ClassUsingInnerClassOfConstantInField",
+                FQ_CONSTANTS + ".More");
+    }
+
+    @Test
+    public void recognizesDependencyToConstantOfOtherPackageForInnerClassesInField() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/subpackage/ClassUsingInnerClassOfConstantOfOtherPackageInField.java");
+        triggerFinishAnalysisEvent();
+
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.subpackage.ClassUsingInnerClassOfConstantOfOtherPackageInField",
+                FQ_CONSTANTS + ".More");
+    }
+
+    @Ignore("not sure if Constants.A_STRING.intern() is actually inlined by the compiler")
+    @Test
+    public void recognizesDependencyToConstantOfOtherPackageForInnerClassesInMethodCall() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/subpackage/ClassUsingInnerClassOfConstantOfOtherPackageInMethodCall.java");
+        triggerFinishAnalysisEvent();
+
+        assertDependencyToConstantsExists("de.is24.deadcode4j.analyzer.constants.subpackage.ClassUsingInnerClassOfConstantOfOtherPackageInMethodCall");
     }
 
     @Test
