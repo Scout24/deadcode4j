@@ -383,6 +383,10 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         @Override
         public Analysis visit(FieldAccessExpr n, Void arg) {
             print(n, n.getScope() + "." + n.getField() + "/" + n.getFieldExpr() + "/" + n.getTypeArgs());
+            if (MethodCallExpr.class.isInstance(n.getParentNode())) {
+                if (n == MethodCallExpr.class.cast(n.getParentNode()).getScope())
+                    return null;
+            }
             if (FieldAccessExpr.class.isInstance(n.getScope())) {
                 codeContext.addDependencies(buildTypeName(), n.getScope().toString());
             } else if (NameExpr.class.isInstance(n.getScope())) {

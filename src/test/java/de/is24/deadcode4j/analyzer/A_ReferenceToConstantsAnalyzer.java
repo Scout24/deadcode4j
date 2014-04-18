@@ -273,6 +273,12 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
                 "java.lang.annotation.ElementType");
     }
 
+    @Test
+    public void ignoresReferencesToStaticMethods() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingStaticMethodInStaticField.java");
+        triggerFinishAnalysisEvent();
+    }
+
     private void analyzeFile(String fileName) {
         objectUnderTest.doAnalysis(codeContext, getFile(fileName));
     }
