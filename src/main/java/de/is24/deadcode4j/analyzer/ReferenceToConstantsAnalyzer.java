@@ -24,6 +24,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.Math.max;
 import static java.util.Map.Entry;
 
+// TODO visit everything, resolve references later on
 public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
     private final Collection<Analysis> resultsNeedingPostProcessing = newArrayList();

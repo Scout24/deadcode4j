@@ -124,11 +124,40 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
     }
 
     @Test
-    public void recognizesOverwrittenConstantOfOtherPackageReferencedViaStaticImportInMethod() {
+    public void recognizesReferenceToConstantOfOtherPackageViaStaticImportIsOverwrittenByLocalVariable() {
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingStaticImportForConstantWithSameLocalNameInMethod.java");
         triggerFinishAnalysisEvent();
 
         assertDependencyToConstantsExists("de.is24.deadcode4j.analyzer.constants.ClassUsingStaticImportForConstantWithSameLocalNameInMethod$InnerClass");
+    }
+
+    @Test
+    public void recognizesReferenceToConstantOfOtherPackageViaStaticImportIsOverwrittenByLocalVariableInSuperiorBlock() {
+    }
+
+    @Test
+    public void recognizesReferenceToConstantOfOtherPackageViaStaticImportIsOverwrittenByInstanceField() {
+        // not allowed by JVM: prefers field all the time; however, the import may be defined
+    }
+
+    @Test
+    public void recognizesReferenceToConstantOfOtherPackageViaStaticImportIsOverwrittenByStaticField() {
+        // not allowed by JVM: prefers field all the time; however, the import may be defined
+    }
+
+    @Test
+    public void recognizesReferenceToConstantIsOverwrittenByInstanceField() {
+        // no one says you cannot name a variable like an imported class :(
+    }
+
+    @Test
+    public void recognizesReferenceToConstantIsOverwrittenByLocalVariable() {
+        // not allowed by JVM: prefers field all the time; however, the import may be defined
+    }
+
+    @Test
+    public void recognizesReferenceToConstantIsOverwrittenByStaticVariable() {
+        // not allowed by JVM: prefers field all the time; however, the import may be defined
     }
 
     @Test
@@ -281,6 +310,10 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
 
         assertDependencyExists("de.is24.deadcode4j.analyzer.constants.ClassUsingInnerClassOfConstantViaStaticImportInField",
                 FQ_CONSTANTS + ".More");
+    }
+
+    @Test
+    public void recognizesDependencyToConstantForInnerClassViaAsteriskStaticImportInField() {
     }
 
     @Test
