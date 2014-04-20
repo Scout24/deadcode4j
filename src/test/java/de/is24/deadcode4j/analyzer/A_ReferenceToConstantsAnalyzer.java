@@ -30,6 +30,7 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
         objectUnderTest = new ReferenceToConstantsAnalyzer();
         codeContext = new CodeContext();
         codeContext.addAnalyzedClass(FQ_CONSTANTS); // make this class known to the context
+        codeContext.addAnalyzedClass(FQ_CONSTANTS + ".More");
 
         dependers.clear();
         dependees.clear();
@@ -270,6 +271,15 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
         triggerFinishAnalysisEvent();
 
         assertDependencyExists("de.is24.deadcode4j.analyzer.constants.ClassUsingInnerClassOfConstantInField",
+                FQ_CONSTANTS + ".More");
+    }
+
+    @Test
+    public void recognizesDependencyToConstantForInnerClassViaStaticImportInField() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingInnerClassOfConstantViaStaticImportInField.java");
+        triggerFinishAnalysisEvent();
+
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.ClassUsingInnerClassOfConstantViaStaticImportInField",
                 FQ_CONSTANTS + ".More");
     }
 

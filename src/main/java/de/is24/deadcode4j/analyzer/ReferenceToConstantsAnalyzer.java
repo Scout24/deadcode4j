@@ -427,9 +427,14 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
                 String referencedType = this.imports.get(typeName);
                 if (referencedType != null) {
                     codeContext.addDependencies(buildTypeName(), referencedType);
-                } else {
-                    this.referenceToInnerOrPackageType.put(buildTypeName(), typeName);
+                    return null;
                 }
+                referencedType = this.staticImports.get(typeName);
+                if (referencedType != null) {
+                    codeContext.addDependencies(buildTypeName(), referencedType + "." + typeName);
+                    return null;
+                }
+                this.referenceToInnerOrPackageType.put(buildTypeName(), typeName);
             } else {
                 depth++;
                 super.visit(n, arg);
