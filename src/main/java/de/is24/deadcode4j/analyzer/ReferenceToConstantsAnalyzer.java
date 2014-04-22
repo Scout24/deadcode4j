@@ -39,7 +39,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             return NameExpr.class.cast(scope).getName();
         }
         if (FieldAccessExpr.class.isInstance(scope)) {
-            getFirstElement(FieldAccessExpr.class.cast(scope));
+            return getFirstElement(FieldAccessExpr.class.cast(scope));
         }
         return null;
     }
