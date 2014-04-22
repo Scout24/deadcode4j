@@ -122,7 +122,6 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         private final Map<String, String> referenceToInnerOrPackageType = newHashMap();
         private final Map<FieldAccessExpr, String> fieldAccesses = newHashMap();
         private String typeName;
-        private String packageName = "";
         private Set<String> asteriskImports = newHashSet();
         private Set<String> staticAsteriskImports = newHashSet();
         private List<Reference> nameReferences = newArrayList();
@@ -161,10 +160,11 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
         @Override
         public Analysis visit(CompilationUnit n, Analysis arg) {
-            super.visit(n, new Analysis());
-            resolveInnerTypeReferences();
-            Map<FieldAccessExpr, String> fullyQualifiedOrPackageAccesses = resolveFieldAccesses();
-            return new Analysis(this.packageName, this.asteriskImports, this.referenceToInnerOrPackageType, fullyQualifiedOrPackageAccesses);
+            Analysis rootAnalysis = new Analysis(n.getPackage());
+            super.visit(n, rootAnalysis);
+            resolveInnerTypeReferences(rootAnalysis);
+            Map<FieldAccessExpr, String> fullyQualifiedOrPackageAccesses = resolveFieldAccesses(rootAnalysis);
+            return new Analysis(rootAnalysis.packageName, this.asteriskImports, this.referenceToInnerOrPackageType, fullyQualifiedOrPackageAccesses);
         }
 
         @Override
@@ -272,12 +272,6 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         }
 
         @Override
-        public Analysis visit(PackageDeclaration n, Analysis arg) {
-            this.packageName = n.getName().toString();
-            return null;
-        }
-
-        @Override
         public Analysis visit(VariableDeclarationExpr n, Analysis arg) {
             Set<String> blockVariables = this.localVariables.getLast();
             for (VariableDeclarator variableDeclarator : n.getVars()) {
@@ -288,13 +282,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         }
 
         private String buildTypeName(Analysis analysis) {
-            StringBuilder buffy = new StringBuilder(this.packageName).append(".");
-            String typeName = analysis.getTypeName();
-            if (typeName != null) {
-                buffy.append(typeName);
-            }
-
-            return buffy.toString();
+            return analysis.getTypeName();
         }
 
         private void resolveNameReferences(Analysis analysis) {
@@ -316,20 +304,20 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             }
         }
 
-        private void resolveInnerTypeReferences() {
+        private void resolveInnerTypeReferences(Analysis analysis) {
             Iterator<Entry<String, String>> namedReferences = this.referenceToInnerOrPackageType.entrySet().iterator();
             while (namedReferences.hasNext()) {
                 Entry<String, String> referenceToInnerOrPackageType = namedReferences.next();
                 String namedReference = referenceToInnerOrPackageType.getValue();
                 if (this.innerTypes.contains(namedReference)) {
                     codeContext.addDependencies(referenceToInnerOrPackageType.getKey(),
-                            this.packageName + "." + this.typeName + "$" + namedReference);
+                            analysis.packageName + "." + this.typeName + "$" + namedReference);
                     namedReferences.remove();
                 }
             }
         }
 
-        private Map<FieldAccessExpr, String> resolveFieldAccesses() {
+        private Map<FieldAccessExpr, String> resolveFieldAccesses(Analysis analysis) {
             Map<FieldAccessExpr, String> fullyQualifiedOrPackageAccesses = newHashMap();
             for (Entry<FieldAccessExpr, String> fieldAccess : fieldAccesses.entrySet()) {
                 String rootName = getFirstElement(fieldAccess.getKey());
@@ -338,7 +326,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
                 }
                 if (this.innerTypes.contains(rootName)) {
                     codeContext.addDependencies(fieldAccess.getValue(),
-                            this.packageName + "." + this.typeName + "$" + fieldAccess.getKey().toString());
+                            analysis.packageName + "." + this.typeName + "$" + fieldAccess.getKey().toString());
                     continue;
                 }
                 String referencedType = this.imports.get(rootName);
@@ -376,6 +364,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         public Analysis(String packageName, Set<String> asteriskImports, Map<String, String> referencesToNamedType, Map<FieldAccessExpr, String> fullyQualifiedOrPackageAccesses) {
             this.parent = null;
             this.typeName = null;
+
             this.packageName = packageName;
             this.asteriskImports = asteriskImports;
             this.fullyQualifiedOrPackageAccesses = fullyQualifiedOrPackageAccesses;
@@ -389,14 +378,21 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         public Analysis(Analysis arg, String typeName) {
             this.parent = arg;
             this.typeName = typeName;
-            this.packageName = null;
+            this.packageName = arg.packageName;
+
             this.asteriskImports = null;
             this.fullyQualifiedOrPackageAccesses = null;
             this.referencesToPackageType = null;
         }
 
-        public Analysis() {
-            this(null, null);
+        public Analysis(PackageDeclaration packageName) {
+            this.packageName = packageName == null ? null : packageName.getName().toString();
+            this.parent = null;
+            this.typeName = null;
+
+            this.asteriskImports = null;
+            this.fullyQualifiedOrPackageAccesses = null;
+            this.referencesToPackageType = null;
         }
 
         public boolean needsPostProcessing() {
@@ -428,6 +424,8 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             if (this.typeName != null) {
                 if (isNested) {
                     buffy.append("$");
+                } else {
+                    buffy.append(this.packageName).append('.');
                 }
                 buffy.append(this.typeName);
             }
