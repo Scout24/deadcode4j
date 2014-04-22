@@ -138,20 +138,21 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         }
 
         @Override
+        public Analysis visit(CompilationUnit n, Analysis arg) {
+            Analysis rootAnalysis = new Analysis(n.getPackage(), n.getImports());
+            super.visit(n, rootAnalysis);
+            resolveInnerTypeReferences(rootAnalysis);
+            Map<FieldAccessExpr, String> fullyQualifiedOrPackageAccesses = resolveFieldAccesses(rootAnalysis);
+            return new Analysis(rootAnalysis, this.referenceToInnerOrPackageType, fullyQualifiedOrPackageAccesses);
+        }
+
+        @Override
         public Analysis visit(AnnotationDeclaration n, Analysis arg) {
             String name = n.getName();
             registerType(name);
             Analysis nestedAnalysis = new Analysis(arg, name);
             super.visit(n, nestedAnalysis);
             resolveNameReferences(nestedAnalysis);
-            return null;
-        }
-
-        @Override
-        public Analysis visit(BlockStmt n, Analysis arg) {
-            this.localVariables.addLast(Sets.<String>newHashSet());
-            super.visit(n, arg);
-            this.localVariables.removeLast();
             return null;
         }
 
@@ -166,21 +167,68 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         }
 
         @Override
-        public Analysis visit(CompilationUnit n, Analysis arg) {
-            Analysis rootAnalysis = new Analysis(n.getPackage(), n.getImports());
-            super.visit(n, rootAnalysis);
-            resolveInnerTypeReferences(rootAnalysis);
-            Map<FieldAccessExpr, String> fullyQualifiedOrPackageAccesses = resolveFieldAccesses(rootAnalysis);
-            return new Analysis(rootAnalysis, this.referenceToInnerOrPackageType, fullyQualifiedOrPackageAccesses);
-        }
-
-        @Override
         public Analysis visit(EnumDeclaration n, Analysis arg) {
             String name = n.getName();
             registerType(name);
             Analysis nestedAnalysis = new Analysis(arg, name);
             super.visit(n, nestedAnalysis);
             resolveNameReferences(nestedAnalysis);
+            return null;
+        }
+
+        @Override
+        public Analysis visit(FieldDeclaration n, Analysis arg) {
+            for (VariableDeclarator variableDeclarator : n.getVariables()) {
+                arg.addFieldName(variableDeclarator.getId().getName());
+            }
+            super.visit(n, arg);
+            return null;
+        }
+
+        @Override
+        public Analysis visit(BlockStmt n, Analysis arg) {
+            this.localVariables.addLast(Sets.<String>newHashSet());
+            try {
+                super.visit(n, arg);
+            } finally {
+                this.localVariables.removeLast();
+            }
+            return null;
+        }
+
+        @Override
+        public Analysis visit(ForeachStmt n, Analysis arg) {
+            HashSet<String> blockVariables = newHashSet();
+            this.localVariables.addLast(blockVariables);
+            try {
+                for (VariableDeclarator variableDeclarator : n.getVariable().getVars()) {
+                    blockVariables.add(variableDeclarator.getId().getName());
+                }
+                super.visit(n, arg);
+            } finally {
+                this.localVariables.removeLast();
+            }
+            return null;
+        }
+
+        @Override
+        public Analysis visit(ForStmt n, Analysis arg) {
+            this.localVariables.addLast(Sets.<String>newHashSet());
+            try {
+                super.visit(n, arg);
+            } finally {
+                this.localVariables.removeLast();
+            }
+            return null;
+        }
+
+        @Override
+        public Analysis visit(VariableDeclarationExpr n, Analysis arg) {
+            Set<String> blockVariables = this.localVariables.getLast();
+            for (VariableDeclarator variableDeclarator : n.getVars()) {
+                blockVariables.add(variableDeclarator.getId().getName());
+            }
+            super.visit(n, arg);
             return null;
         }
 
@@ -212,35 +260,6 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         }
 
         @Override
-        public Analysis visit(FieldDeclaration n, Analysis arg) {
-            for (VariableDeclarator variableDeclarator : n.getVariables()) {
-                arg.addFieldName(variableDeclarator.getId().getName());
-            }
-            super.visit(n, arg);
-            return null;
-        }
-
-        @Override
-        public Analysis visit(ForeachStmt n, Analysis arg) {
-            HashSet<String> blockVariables = newHashSet();
-            this.localVariables.addLast(blockVariables);
-            for (VariableDeclarator variableDeclarator : n.getVariable().getVars()) {
-                blockVariables.add(variableDeclarator.getId().getName());
-            }
-            super.visit(n, arg);
-            this.localVariables.removeLast();
-            return null;
-        }
-
-        @Override
-        public Analysis visit(ForStmt n, Analysis arg) {
-            this.localVariables.addLast(Sets.<String>newHashSet());
-            super.visit(n, arg);
-            this.localVariables.removeLast();
-            return null;
-        }
-
-        @Override
         public Analysis visit(NameExpr n, Analysis arg) {
             if (SwitchEntryStmt.class.isInstance(n.getParentNode())) {
                 return null;
@@ -258,16 +277,6 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
         private boolean aLocalVariableExists(String name) {
             return contains(concat(this.localVariables), name);
-        }
-
-        @Override
-        public Analysis visit(VariableDeclarationExpr n, Analysis arg) {
-            Set<String> blockVariables = this.localVariables.getLast();
-            for (VariableDeclarator variableDeclarator : n.getVars()) {
-                blockVariables.add(variableDeclarator.getId().getName());
-            }
-            super.visit(n, arg);
-            return null;
         }
 
         private void resolveNameReferences(Analysis analysis) {
