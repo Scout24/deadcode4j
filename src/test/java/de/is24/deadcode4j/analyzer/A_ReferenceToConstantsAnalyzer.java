@@ -150,11 +150,12 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
     }
 
     @Test
-    public void recognizesReferenceToConstantOfOtherPackageViaStaticImportIsOverwrittenByInstanceField() {
-        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingStaticImportForConstantWithSameFieldNameInMethod.java");
+    public void recognizesReferenceToConstantOfOtherPackageViaStaticImportExistsAlthoughInnerClassDefinesInstanceFieldWithSameName() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingStaticImportForConstantWithSameFieldNameDefinedByInnerClassInMethod.java");
         triggerFinishAnalysisEvent();
 
-        assertNoOtherDependenciesExist();
+        assertDependencyToConstantsExists("de.is24.deadcode4j.analyzer.constants.ClassUsingStaticImportForConstantWithSameFieldNameDefinedByInnerClassInMethod");
+        triggerFinishAnalysisEvent();
     }
 
     @Test
