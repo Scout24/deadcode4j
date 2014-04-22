@@ -2,7 +2,6 @@ package de.is24.deadcode4j.analyzer;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import de.is24.deadcode4j.CodeContext;
 import japa.parser.JavaParser;
@@ -24,9 +23,7 @@ import java.util.*;
 
 import static com.google.common.base.Predicates.and;
 import static com.google.common.base.Predicates.not;
-import static com.google.common.collect.Iterables.concat;
-import static com.google.common.collect.Iterables.contains;
-import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Iterables.*;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Maps.newHashMap;
@@ -384,12 +381,9 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
         public final String packageName;
         private final List<ImportDeclaration> imports;
-
         private final Analysis parent;
         private final String typeName;
-
         private final Set<String> fieldNames = newHashSet();
-
         public Map<FieldAccessExpr, String> fullyQualifiedOrPackageAccesses;
         public Map<String, String> referencesToPackageType;
 
@@ -421,6 +415,49 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             this.imports = imports != null ? imports : Collections.<ImportDeclaration>emptyList();
             this.parent = null;
             this.typeName = null;
+        }
+
+        private static Predicate<? super ImportDeclaration> isAsterisk() {
+            return new Predicate<ImportDeclaration>() {
+                @Override
+                public boolean apply(@Nullable ImportDeclaration input) {
+                    return input != null && input.isAsterisk();
+                }
+            };
+        }
+
+        private static Predicate<? super ImportDeclaration> isStatic() {
+            return new Predicate<ImportDeclaration>() {
+                @Override
+                public boolean apply(@Nullable ImportDeclaration input) {
+                    return input != null && input.isStatic();
+                }
+            };
+        }
+
+        private static Predicate<? super ImportDeclaration> refersTo(final String name) {
+            return new Predicate<ImportDeclaration>() {
+                @Override
+                public boolean apply(@Nullable ImportDeclaration input) {
+                    return input != null && input.getName().getName().equals(name);
+                }
+            };
+        }
+
+        private static Function<? super ImportDeclaration, ? extends String> toImportedType() {
+            return new Function<ImportDeclaration, String>() {
+                @Nullable
+                @Override
+                public String apply(@Nullable ImportDeclaration input) {
+                    if (input == null)
+                        return null;
+                    NameExpr name = input.getName();
+                    if (input.isStatic()) {
+                        name = QualifiedNameExpr.class.cast(name).getQualifier();
+                    }
+                    return name.toString();
+                }
+            };
         }
 
         public boolean needsPostProcessing() {
@@ -461,61 +498,20 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             return buffy.length() > 0 ? buffy.toString() : null;
         }
 
+        @SuppressWarnings("unchecked")
         public String getImport(String typeName) {
-            for (ImportDeclaration anImport : this.imports) {
-                if (anImport.isStatic())
-                    continue;
-                if (anImport.isAsterisk())
-                    continue;
-                if (anImport.getName().getName().equals(typeName))
-                    return anImport.getName().toString();
-            }
-            return null;
+            return getOnlyElement(transform(filter(this.imports, and(refersTo(typeName), not(isAsterisk()), not(isStatic()))), toImportedType()), null);
         }
 
+        @SuppressWarnings("unchecked")
         public String getStaticImport(String referenceName) {
-            for (ImportDeclaration anImport : this.imports) {
-                if (!anImport.isStatic())
-                    continue;
-                if (anImport.isAsterisk())
-                    continue;
-                if (anImport.getName().getName().equals(referenceName))
-                    return ((QualifiedNameExpr) anImport.getName()).getQualifier().toString();
-            }
-            return null;
+            return getOnlyElement(transform(filter(this.imports, and(refersTo(referenceName), not(isAsterisk()), isStatic())), toImportedType()), null);
         }
 
         public Iterable<String> getAsteriskImports() {
-            return Iterables.transform(filter(this.imports, and(isAsterisk(), not(isStatic()))), toImportedType());
+            return transform(filter(this.imports, and(isAsterisk(), not(isStatic()))), toImportedType());
         }
 
-        private static Predicate<? super ImportDeclaration> isAsterisk() {
-            return new Predicate<ImportDeclaration>() {
-                @Override
-                public boolean apply(@Nullable ImportDeclaration input) {
-                    return input != null && input.isAsterisk();
-                }
-            };
-        }
-
-        private Predicate<? super ImportDeclaration> isStatic() {
-            return new Predicate<ImportDeclaration>() {
-                @Override
-                public boolean apply(@Nullable ImportDeclaration input) {
-                    return input != null && input.isStatic();
-                }
-            };
-        }
-
-        private static Function<? super ImportDeclaration, ? extends String> toImportedType() {
-            return new Function<ImportDeclaration, String>() {
-                @Nullable
-                @Override
-                public String apply(@Nullable ImportDeclaration input) {
-                    return input == null ? null : input.getName().toString();
-                }
-            };
-        }
     }
 
     static class Reference {
