@@ -184,21 +184,21 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
                     return null;
             }
             if (FieldAccessExpr.class.isInstance(n.getScope())) {
-                this.fieldAccesses.put(FieldAccessExpr.class.cast(n.getScope()), buildTypeName(arg));
+                this.fieldAccesses.put(FieldAccessExpr.class.cast(n.getScope()), arg.getTypeName());
             } else if (NameExpr.class.isInstance(n.getScope())) {
                 String typeName = NameExpr.class.cast(n.getScope()).getName();
                 if (!arg.isFieldDefined(typeName) && !contains(concat(this.localVariables), typeName)) {
                     String referencedType = this.imports.get(typeName);
                     if (referencedType != null) {
-                        codeContext.addDependencies(buildTypeName(arg), referencedType);
+                        codeContext.addDependencies(arg.getTypeName(), referencedType);
                         return null;
                     }
                     referencedType = this.staticImports.get(typeName);
                     if (referencedType != null) {
-                        codeContext.addDependencies(buildTypeName(arg), referencedType + "." + typeName);
+                        codeContext.addDependencies(arg.getTypeName(), referencedType + "." + typeName);
                         return null;
                     }
-                    this.referenceToInnerOrPackageType.put(buildTypeName(arg), typeName);
+                    this.referenceToInnerOrPackageType.put(arg.getTypeName(), typeName);
                 }
             }
             return null;
@@ -263,7 +263,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             if (aLocalVariableExists(namedReference)) {
                 return null;
             }
-            this.nameReferences.add(referenceTo(namedReference).by(buildTypeName(arg)));
+            this.nameReferences.add(referenceTo(namedReference).by(arg.getTypeName()));
             return null;
         }
 
@@ -279,10 +279,6 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             }
             super.visit(n, arg);
             return null;
-        }
-
-        private String buildTypeName(Analysis analysis) {
-            return analysis.getTypeName();
         }
 
         private void resolveNameReferences(Analysis analysis) {
