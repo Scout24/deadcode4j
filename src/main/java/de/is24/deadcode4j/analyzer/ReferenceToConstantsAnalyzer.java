@@ -27,7 +27,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
-import static de.is24.deadcode4j.analyzer.ReferenceToConstantsAnalyzer.Reference.referenceTo;
 import static java.lang.Math.max;
 import static java.util.Map.Entry;
 
@@ -130,7 +129,6 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
          */
         @Deprecated
         private String typeName;
-        private List<Reference> nameReferences = newArrayList();
 
         public CompilationUnitVisitor(CodeContext codeContext) {
             this.codeContext = codeContext;
@@ -255,7 +253,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         }
 
         @Override
-        public Analysis visit(NameExpr n, Analysis arg) {
+        public Analysis visit(NameExpr n, Analysis analysis) {
             if (isTargetOfAnAssignment(n)) {
                 return null;
             }
@@ -263,7 +261,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             if (aLocalVariableExists(namedReference)) {
                 return null;
             }
-            this.nameReferences.add(referenceTo(namedReference).by(arg.getTypeName()));
+            analysis.addNameReference(namedReference);
             return null;
         }
 
@@ -276,8 +274,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         }
 
         private void resolveNameReferences(Analysis analysis) {
-            for (Reference reference : this.nameReferences) {
-                String referenceName = reference.to;
+            for (String referenceName : analysis.getNameReferences()) {
                 if (analysis.isFieldDefined(referenceName)) {
                     continue;
                 }
@@ -288,7 +285,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 //                }
                 String staticImport = analysis.getStaticImport(referenceName);
                 if (staticImport != null) {
-                    codeContext.addDependencies(reference.by, staticImport);
+                    codeContext.addDependencies(analysis.getTypeName(), staticImport);
                 }
                 // TODO handle asterisk static imports
             }
@@ -350,6 +347,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         private final Analysis parent;
         private final String typeName;
         private final Set<String> fieldNames = newHashSet();
+        private final Set<String> nameReferences = newHashSet(); // reduce duplicate calls to one
         public Map<FieldAccessExpr, String> fullyQualifiedOrPackageAccesses;
         public Map<String, String> referencesToPackageType;
 
@@ -438,8 +436,12 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             return this.fieldNames.contains(referenceName) || hasParent() && this.parent.isFieldDefined(referenceName);
         }
 
-        private boolean hasParent() {
-            return this.parent != null;
+        public void addNameReference(String namedReference) {
+            this.nameReferences.add(namedReference);
+        }
+
+        public Iterable<String> getNameReferences() {
+            return this.nameReferences;
         }
 
         public String getTypeName() {
@@ -478,34 +480,9 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             return transform(filter(this.imports, and(isAsterisk(), not(isStatic()))), toImportedType());
         }
 
-    }
-
-    static class Reference {
-
-        public final String to;
-        public final String by;
-
-        private Reference(String to, String by) {
-            this.to = to;
-            this.by = by;
+        private boolean hasParent() {
+            return this.parent != null;
         }
-
-        public static ReferenceBuilder referenceTo(String name) {
-            return new ReferenceBuilder(name);
-        }
-
-        private static class ReferenceBuilder {
-            private final String name;
-
-            public ReferenceBuilder(String name) {
-                this.name = name;
-            }
-
-            public Reference by(String referrer) {
-                return new Reference(this.name, referrer);
-            }
-        }
-
     }
 
 }
