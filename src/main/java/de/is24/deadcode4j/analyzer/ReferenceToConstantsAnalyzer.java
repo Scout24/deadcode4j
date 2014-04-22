@@ -117,7 +117,6 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         private final CodeContext codeContext;
         private final Map<String, String> imports = newHashMap();
         private final Map<String, String> staticImports = newHashMap();
-        private final List<String> typeNames = newLinkedList();
         private final Deque<Set<String>> localVariables = newLinkedList();
         private final Set<String> innerTypes = newHashSet();
         private final Map<String, String> referenceToInnerOrPackageType = newHashMap();
@@ -136,10 +135,9 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         public Analysis visit(AnnotationDeclaration n, Analysis arg) {
             String name = n.getName();
             registerType(name);
-            Analysis nestedAnalysis = new Analysis(arg);
+            Analysis nestedAnalysis = new Analysis(arg, name);
             super.visit(n, nestedAnalysis);
             resolveNameReferences(nestedAnalysis);
-            unregisterType(name);
             return null;
         }
 
@@ -153,12 +151,11 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
         @Override
         public Analysis visit(ClassOrInterfaceDeclaration n, Analysis arg) {
-            String typeName = n.getName();
-            registerType(typeName);
-            Analysis nestedAnalysis = new Analysis(arg);
+            String name = n.getName();
+            registerType(name);
+            Analysis nestedAnalysis = new Analysis(arg, name);
             super.visit(n, nestedAnalysis);
             resolveNameReferences(nestedAnalysis);
-            unregisterType(typeName);
             return null;
         }
 
@@ -174,10 +171,9 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         public Analysis visit(EnumDeclaration n, Analysis arg) {
             String name = n.getName();
             registerType(name);
-            Analysis nestedAnalysis = new Analysis(arg);
+            Analysis nestedAnalysis = new Analysis(arg, name);
             super.visit(n, nestedAnalysis);
             resolveNameReferences(nestedAnalysis);
-            unregisterType(name);
             return null;
         }
 
@@ -188,21 +184,21 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
                     return null;
             }
             if (FieldAccessExpr.class.isInstance(n.getScope())) {
-                this.fieldAccesses.put(FieldAccessExpr.class.cast(n.getScope()), buildTypeName());
+                this.fieldAccesses.put(FieldAccessExpr.class.cast(n.getScope()), buildTypeName(arg));
             } else if (NameExpr.class.isInstance(n.getScope())) {
                 String typeName = NameExpr.class.cast(n.getScope()).getName();
                 if (!arg.isFieldDefined(typeName) && !contains(concat(this.localVariables), typeName)) {
                     String referencedType = this.imports.get(typeName);
                     if (referencedType != null) {
-                        codeContext.addDependencies(buildTypeName(), referencedType);
+                        codeContext.addDependencies(buildTypeName(arg), referencedType);
                         return null;
                     }
                     referencedType = this.staticImports.get(typeName);
                     if (referencedType != null) {
-                        codeContext.addDependencies(buildTypeName(), referencedType + "." + typeName);
+                        codeContext.addDependencies(buildTypeName(arg), referencedType + "." + typeName);
                         return null;
                     }
-                    this.referenceToInnerOrPackageType.put(buildTypeName(), typeName);
+                    this.referenceToInnerOrPackageType.put(buildTypeName(arg), typeName);
                 }
             }
             return null;
@@ -267,7 +263,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             if (aLocalVariableExists(namedReference)) {
                 return null;
             }
-            this.nameReferences.add(referenceTo(namedReference).by(buildTypeName()));
+            this.nameReferences.add(referenceTo(namedReference).by(buildTypeName(arg)));
             return null;
         }
 
@@ -291,16 +287,10 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             return null;
         }
 
-        private String buildTypeName() {
-            StringBuilder buffy = new StringBuilder(this.packageName);
-            boolean rootType = true;
-            for (String typeName : this.typeNames) {
-                if (rootType) {
-                    buffy.append(".");
-                    rootType = false;
-                } else {
-                    buffy.append("$");
-                }
+        private String buildTypeName(Analysis analysis) {
+            StringBuilder buffy = new StringBuilder(this.packageName).append(".");
+            String typeName = analysis.getTypeName();
+            if (typeName != null) {
                 buffy.append(typeName);
             }
 
@@ -363,16 +353,11 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         }
 
         private void registerType(String typeName) {
-            this.typeNames.add(typeName);
-            if (this.typeNames.size() == 1) {
+            if (this.typeName == null) {
                 this.typeName = typeName;
             } else {
                 this.innerTypes.add(typeName);
             }
-        }
-
-        private void unregisterType(String typeName) {
-            this.typeNames.remove(typeName);
         }
 
     }
@@ -385,10 +370,12 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         public final Map<String, String> referencesToPackageType;
 
         private final Analysis parent;
+        private final String typeName;
         private final Set<String> fieldNames = newHashSet();
 
         public Analysis(String packageName, Set<String> asteriskImports, Map<String, String> referencesToNamedType, Map<FieldAccessExpr, String> fullyQualifiedOrPackageAccesses) {
             this.parent = null;
+            this.typeName = null;
             this.packageName = packageName;
             this.asteriskImports = asteriskImports;
             this.fullyQualifiedOrPackageAccesses = fullyQualifiedOrPackageAccesses;
@@ -399,8 +386,9 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             }
         }
 
-        public Analysis(Analysis arg) {
+        public Analysis(Analysis arg, String typeName) {
             this.parent = arg;
+            this.typeName = typeName;
             this.packageName = null;
             this.asteriskImports = null;
             this.fullyQualifiedOrPackageAccesses = null;
@@ -408,7 +396,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         }
 
         public Analysis() {
-            this(null);
+            this(null, null);
         }
 
         public boolean needsPostProcessing() {
@@ -425,6 +413,26 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
         private boolean hasParent() {
             return this.parent != null;
+        }
+
+        public String getTypeName() {
+            boolean isNested = false;
+            StringBuilder buffy = new StringBuilder();
+            if (hasParent()) {
+                String parentTypeName = parent.getTypeName();
+                if (parentTypeName != null) {
+                    buffy.append(parentTypeName);
+                    isNested = true;
+                }
+            }
+            if (this.typeName != null) {
+                if (isNested) {
+                    buffy.append("$");
+                }
+                buffy.append(this.typeName);
+            }
+
+            return buffy.length() > 0 ? buffy.toString() : null;
         }
     }
 
