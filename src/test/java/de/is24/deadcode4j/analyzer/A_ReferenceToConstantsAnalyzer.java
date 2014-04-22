@@ -8,7 +8,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -379,13 +378,6 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
     @Test
     public void ignoresReferencesToStaticMethods() {
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingStaticMethodInStaticField.java");
-        triggerFinishAnalysisEvent();
-    }
-
-    @Test
-    public void debug() {
-        objectUnderTest.doAnalysis(codeContext, new File(
-                "/data/home/skirsch/teams/legacy/web/core/src/main/java/de/is24/util/regionNameCaches/similarity/RegionSimilaritySearchCache.java"));
         triggerFinishAnalysisEvent();
     }
 
