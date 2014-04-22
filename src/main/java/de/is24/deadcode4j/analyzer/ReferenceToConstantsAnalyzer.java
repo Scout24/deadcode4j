@@ -256,7 +256,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
         @Override
         public Analysis visit(NameExpr n, Analysis arg) {
-            if (AssignExpr.class.isInstance(n.getParentNode()) && n == AssignExpr.class.cast(n.getParentNode()).getTarget()) {
+            if (isTargetOfAnAssignment(n)) {
                 return null;
             }
             String namedReference = n.getName();
@@ -265,6 +265,10 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             }
             this.nameReferences.add(referenceTo(namedReference).by(arg.getTypeName()));
             return null;
+        }
+
+        private boolean isTargetOfAnAssignment(Expression n) {
+            return AssignExpr.class.isInstance(n.getParentNode()) && n == AssignExpr.class.cast(n.getParentNode()).getTarget();
         }
 
         private boolean aLocalVariableExists(String name) {
