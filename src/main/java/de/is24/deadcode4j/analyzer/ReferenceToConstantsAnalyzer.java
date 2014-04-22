@@ -194,7 +194,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
                 this.fieldAccesses.put(FieldAccessExpr.class.cast(n.getScope()), arg.getTypeName());
             } else if (NameExpr.class.isInstance(n.getScope())) {
                 String typeName = NameExpr.class.cast(n.getScope()).getName();
-                if (!arg.isFieldDefined(typeName) && !contains(concat(this.localVariables), typeName)) {
+                if (!arg.isFieldDefined(typeName) && !aLocalVariableExists(typeName)) {
                     String referencedType = arg.getImport(typeName);
                     if (referencedType != null) {
                         codeContext.addDependencies(arg.getTypeName(), referencedType);
