@@ -119,6 +119,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         private String packageName = "";
         private int depth = 0;
         private Set<String> asteriskImports = newHashSet();
+        private Set<String> fieldNames = newHashSet();
 
         public CompilationUnitVisitor(CodeContext codeContext) {
             this.codeContext = codeContext;
@@ -449,6 +450,9 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         @Override
         public Analysis visit(FieldDeclaration n, Void arg) {
             print(n, n.getType() + "/" + n.getVariables());
+            for (VariableDeclarator variableDeclarator : n.getVariables()) {
+                this.fieldNames.add(variableDeclarator.getId().getName());
+            }
             depth++;
             super.visit(n, arg);
             depth--;
@@ -623,7 +627,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         @Override
         public Analysis visit(NameExpr n, Void arg) {
             String namedReference = n.getName();
-            if (!contains(concat(this.localVariables), namedReference)) {
+            if (!this.fieldNames.contains(namedReference) && !contains(concat(this.localVariables), namedReference)) {
                 String referencedType = this.staticImports.get(namedReference);
                 if (referencedType != null) {
                     this.codeContext.addDependencies(buildTypeName(), referencedType);

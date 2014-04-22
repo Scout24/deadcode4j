@@ -140,12 +140,32 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
     }
 
     @Test
+    public void recognizesReferenceToConstantOfOtherPackageViaStaticImportIsOverwrittenByLocalVariableInStaticInitializer() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingStaticImportForConstantWithSameLocalNameInStaticInitializer.java");
+        triggerFinishAnalysisEvent();
+
+        assertDependencyToConstantsExists("de.is24.deadcode4j.analyzer.constants.ClassUsingStaticImportForConstantWithSameLocalNameInStaticInitializer$InnerClass");
+    }
+
+    @Test
     public void recognizesReferenceToConstantOfOtherPackageViaStaticImportIsOverwrittenByInstanceField() {
-        // not allowed by JVM: prefers field all the time; however, the import may be defined
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingStaticImportForConstantWithSameFieldNameInMethod.java");
+        triggerFinishAnalysisEvent();
+    }
+
+    @Test
+    public void recognizesReferenceToConstantOfOtherPackageViaStaticImportIsOverwrittenByInstanceFieldBeingDeclaredAfterItIsReferenced() {
+        // this forbids the sequential approach pursued right now
     }
 
     @Test
     public void recognizesReferenceToConstantOfOtherPackageViaStaticImportIsOverwrittenByStaticField() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingStaticImportForConstantWithSameStaticFieldNameInMethod.java");
+        triggerFinishAnalysisEvent();
+    }
+
+    @Test
+    public void recognizesReferenceToConstantIsOverwrittenByLocalVariable() {
         // not allowed by JVM: prefers field all the time; however, the import may be defined
     }
 
@@ -155,21 +175,8 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
     }
 
     @Test
-    public void recognizesReferenceToConstantIsOverwrittenByLocalVariable() {
-        // not allowed by JVM: prefers field all the time; however, the import may be defined
-    }
-
-    @Test
     public void recognizesReferenceToConstantIsOverwrittenByStaticVariable() {
         // not allowed by JVM: prefers field all the time; however, the import may be defined
-    }
-
-    @Test
-    public void recognizesOverwrittenConstantOfOtherPackageReferencedViaStaticImportInStaticInitializer() {
-        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingStaticImportForConstantWithSameLocalNameInStaticInitializer.java");
-        triggerFinishAnalysisEvent();
-
-        assertDependencyToConstantsExists("de.is24.deadcode4j.analyzer.constants.ClassUsingStaticImportForConstantWithSameLocalNameInStaticInitializer$InnerClass");
     }
 
     @Test
