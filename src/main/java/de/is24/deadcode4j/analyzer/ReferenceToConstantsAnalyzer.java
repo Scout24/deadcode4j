@@ -198,12 +198,8 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
         @Override
         public Analysis visit(ForeachStmt n, Analysis arg) {
-            HashSet<String> blockVariables = newHashSet();
-            this.localVariables.addLast(blockVariables);
+            this.localVariables.addLast(Sets.<String>newHashSet());
             try {
-                for (VariableDeclarator variableDeclarator : n.getVariable().getVars()) {
-                    blockVariables.add(variableDeclarator.getId().getName());
-                }
                 super.visit(n, arg);
             } finally {
                 this.localVariables.removeLast();
