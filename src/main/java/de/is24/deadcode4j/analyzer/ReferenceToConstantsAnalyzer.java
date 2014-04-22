@@ -118,9 +118,13 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         private final Map<String, String> imports = newHashMap();
         private final Map<String, String> staticImports = newHashMap();
         private final Deque<Set<String>> localVariables = newLinkedList();
+        /** @deprecated should go away */
+        @Deprecated
         private final Set<String> innerTypes = newHashSet();
         private final Map<String, String> referenceToInnerOrPackageType = newHashMap();
         private final Map<FieldAccessExpr, String> fieldAccesses = newHashMap();
+        /** @deprecated should go away */
+        @Deprecated
         private String typeName;
         private Set<String> asteriskImports = newHashSet();
         private Set<String> staticAsteriskImports = newHashSet();
@@ -300,6 +304,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             }
         }
 
+        @SuppressWarnings("deprecation")
         private void resolveInnerTypeReferences(Analysis analysis) {
             Iterator<Entry<String, String>> namedReferences = this.referenceToInnerOrPackageType.entrySet().iterator();
             while (namedReferences.hasNext()) {
@@ -313,6 +318,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             }
         }
 
+        @SuppressWarnings("deprecation")
         private Map<FieldAccessExpr, String> resolveFieldAccesses(Analysis analysis) {
             Map<FieldAccessExpr, String> fullyQualifiedOrPackageAccesses = newHashMap();
             for (Entry<FieldAccessExpr, String> fieldAccess : fieldAccesses.entrySet()) {
@@ -336,6 +342,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             return fullyQualifiedOrPackageAccesses;
         }
 
+        @SuppressWarnings("deprecation")
         private void registerType(String typeName) {
             if (this.typeName == null) {
                 this.typeName = typeName;
