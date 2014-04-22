@@ -159,7 +159,10 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
 
     @Test
     public void recognizesReferenceToConstantOfOtherPackageViaStaticImportIsOverwrittenByInstanceFieldBeingDeclaredAfterItIsReferenced() {
-        // this forbids the sequential approach pursued right now
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingStaticImportForConstantWithSameFieldNameBeingDeclaredAfterItIsReferencedInMethod.java");
+        triggerFinishAnalysisEvent();
+
+        assertNoOtherDependenciesExist();
     }
 
     @Test
