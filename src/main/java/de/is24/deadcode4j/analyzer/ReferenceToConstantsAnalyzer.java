@@ -14,6 +14,7 @@ import japa.parser.ast.type.*;
 import japa.parser.ast.visitor.GenericVisitorAdapter;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.util.*;
 
@@ -31,12 +32,16 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
     private final Collection<Analysis> resultsNeedingPostProcessing = newArrayList();
 
-    private static String getFirstElement(FieldAccessExpr fieldAccessExpr) {
+    @Nullable
+    private static String getFirstElement(@Nonnull FieldAccessExpr fieldAccessExpr) {
         Expression scope = fieldAccessExpr.getScope();
         if (NameExpr.class.isInstance(scope)) {
             return NameExpr.class.cast(scope).getName();
         }
-        return getFirstElement(FieldAccessExpr.class.cast(scope));
+        if (FieldAccessExpr.class.isInstance(scope)) {
+            getFirstElement(FieldAccessExpr.class.cast(scope));
+        }
+        return null;
     }
 
     @Override
@@ -939,6 +944,9 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             Map<FieldAccessExpr, String> fullyQualifiedOrPackageAccesses = newHashMap();
             for (Entry<FieldAccessExpr, String> fieldAccess : fieldAccesses.entrySet()) {
                 String rootName = getFirstElement(fieldAccess.getKey());
+                if (rootName == null) {
+                    continue;
+                }
                 if (this.innerTypes.contains(rootName)) {
                     codeContext.addDependencies(fieldAccess.getValue(),
                             this.packageName + "." + this.typeName + "$" + fieldAccess.getKey().toString());
