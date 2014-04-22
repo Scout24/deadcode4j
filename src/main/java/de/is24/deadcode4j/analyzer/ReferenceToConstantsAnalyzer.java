@@ -428,17 +428,19 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
                 this.fieldAccesses.put(FieldAccessExpr.class.cast(n.getScope()), buildTypeName());
             } else if (NameExpr.class.isInstance(n.getScope())) {
                 String typeName = NameExpr.class.cast(n.getScope()).getName();
-                String referencedType = this.imports.get(typeName);
-                if (referencedType != null) {
-                    codeContext.addDependencies(buildTypeName(), referencedType);
-                    return null;
+                if (!this.fieldNames.contains(typeName) && !contains(concat(this.localVariables), typeName)) {
+                    String referencedType = this.imports.get(typeName);
+                    if (referencedType != null) {
+                        codeContext.addDependencies(buildTypeName(), referencedType);
+                        return null;
+                    }
+                    referencedType = this.staticImports.get(typeName);
+                    if (referencedType != null) {
+                        codeContext.addDependencies(buildTypeName(), referencedType + "." + typeName);
+                        return null;
+                    }
+                    this.referenceToInnerOrPackageType.put(buildTypeName(), typeName);
                 }
-                referencedType = this.staticImports.get(typeName);
-                if (referencedType != null) {
-                    codeContext.addDependencies(buildTypeName(), referencedType + "." + typeName);
-                    return null;
-                }
-                this.referenceToInnerOrPackageType.put(buildTypeName(), typeName);
             } else {
                 depth++;
                 super.visit(n, arg);
