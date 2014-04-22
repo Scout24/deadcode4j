@@ -133,6 +133,10 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
 
     @Test
     public void recognizesReferenceToConstantOfOtherPackageViaStaticImportIsOverwrittenByLocalVariableInSuperiorBlock() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingStaticImportForConstantWithSameLocalNameInSuperiorBlocksMethod.java");
+        triggerFinishAnalysisEvent();
+
+        assertDependencyToConstantsExists("de.is24.deadcode4j.analyzer.constants.ClassUsingStaticImportForConstantWithSameLocalNameInSuperiorBlocksMethod$InnerClass");
     }
 
     @Test

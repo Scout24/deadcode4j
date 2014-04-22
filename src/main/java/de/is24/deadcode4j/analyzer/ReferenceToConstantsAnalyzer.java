@@ -17,6 +17,8 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.*;
 
+import static com.google.common.collect.Iterables.concat;
+import static com.google.common.collect.Iterables.contains;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Maps.newHashMap;
@@ -109,7 +111,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         private final Map<String, String> imports = newHashMap();
         private final Map<String, String> staticImports = newHashMap();
         private final Queue<String> typeNames = newLinkedList();
-        private final Queue<Set<String>> localVariables = newLinkedList();
+        private final Deque<Set<String>> localVariables = newLinkedList();
         private final Set<String> innerTypes = newHashSet();
         private final Map<String, String> referenceToInnerOrPackageType = newHashMap();
         private final Map<FieldAccessExpr, String> fieldAccesses = newHashMap();
@@ -200,11 +202,11 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         @Override
         public Analysis visit(BlockStmt n, Void arg) {
             print(n, n.getStmts());
-            this.localVariables.add(Sets.<String>newHashSet());
+            this.localVariables.addLast(Sets.<String>newHashSet());
             depth++;
             super.visit(n, arg);
             depth--;
-            this.localVariables.remove();
+            this.localVariables.removeLast();
             return null;
         }
 
@@ -621,8 +623,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         @Override
         public Analysis visit(NameExpr n, Void arg) {
             String namedReference = n.getName();
-            Set<String> blockVariables = this.localVariables.peek();
-            if (blockVariables == null || !blockVariables.contains(namedReference)) {
+            if (!contains(concat(this.localVariables), namedReference)) {
                 String referencedType = this.staticImports.get(namedReference);
                 if (referencedType != null) {
                     this.codeContext.addDependencies(buildTypeName(), referencedType);
@@ -835,7 +836,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         @Override
         public Analysis visit(VariableDeclarationExpr n, Void arg) {
             print(n, n.getVars() + ":" + n.getType());
-            Set<String> blockVariables = this.localVariables.element();
+            Set<String> blockVariables = this.localVariables.getLast();
             for (VariableDeclarator variableDeclarator : n.getVars()) {
                 blockVariables.add(variableDeclarator.getId().getName());
             }
