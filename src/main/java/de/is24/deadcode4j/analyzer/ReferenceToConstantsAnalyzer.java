@@ -118,14 +118,6 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
     private static class CompilationUnitVisitor extends GenericVisitorAdapter<Analysis, Analysis> {
 
         private final CodeContext codeContext;
-        /**
-         * @deprecated should go away
-         */
-        private final Map<String, String> imports = newHashMap();
-        /**
-         * @deprecated should go away
-         */
-        private final Map<String, String> staticImports = newHashMap();
         private final Deque<Set<String>> localVariables = newLinkedList();
         /**
          * @deprecated should go away
@@ -139,14 +131,6 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
          */
         @Deprecated
         private String typeName;
-        /**
-         * @deprecated should go away
-         */
-        private Set<String> asteriskImports = newHashSet();
-        /**
-         * @deprecated should go away
-         */
-        private Set<String> staticAsteriskImports = newHashSet();
         private List<Reference> nameReferences = newArrayList();
 
         public CompilationUnitVisitor(CodeContext codeContext) {
@@ -256,29 +240,6 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             return null;
         }
 
-        /**
-         * @deprecated should go away
-         */
-        @SuppressWarnings("deprecation")
-        @Deprecated
-        @Override
-        public Analysis visit(ImportDeclaration n, Analysis arg) {
-            if (n.isStatic()) {
-                if (!n.isAsterisk()) {
-                    this.staticImports.put(n.getName().getName(), ((QualifiedNameExpr) n.getName()).getQualifier().toString());
-                } else {
-                    this.staticAsteriskImports.add(n.getName().toString());
-                }
-            } else {
-                if (n.isAsterisk()) {
-                    this.asteriskImports.add(n.getName().toString());
-                } else {
-                    this.imports.put(n.getName().getName(), n.getName().toString());
-                }
-            }
-            return null;
-        }
-
         @Override
         public Analysis visit(NameExpr n, Analysis arg) {
             if (SwitchEntryStmt.class.isInstance(n.getParentNode())) {
@@ -355,7 +316,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
                             analysis.packageName + "." + this.typeName + "$" + fieldAccess.getKey().toString());
                     continue;
                 }
-                String referencedType = this.imports.get(rootName);
+                String referencedType = analysis.getImport(rootName);
                 if (referencedType != null) {
                     codeContext.addDependencies(fieldAccess.getValue(),
                             referencedType.substring(0, max(0, referencedType.lastIndexOf('.') + 1)) + fieldAccess.getKey().toString());
