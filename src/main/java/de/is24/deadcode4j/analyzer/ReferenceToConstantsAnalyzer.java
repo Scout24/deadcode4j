@@ -13,7 +13,6 @@ import japa.parser.ast.expr.*;
 import japa.parser.ast.stmt.BlockStmt;
 import japa.parser.ast.stmt.ForStmt;
 import japa.parser.ast.stmt.ForeachStmt;
-import japa.parser.ast.stmt.SwitchEntryStmt;
 import japa.parser.ast.visitor.GenericVisitorAdapter;
 
 import javax.annotation.Nonnull;
@@ -257,9 +256,6 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
         @Override
         public Analysis visit(NameExpr n, Analysis arg) {
-            if (SwitchEntryStmt.class.isInstance(n.getParentNode())) {
-                return null;
-            }
             if (AssignExpr.class.isInstance(n.getParentNode()) && n == AssignExpr.class.cast(n.getParentNode()).getTarget()) {
                 return null;
             }
