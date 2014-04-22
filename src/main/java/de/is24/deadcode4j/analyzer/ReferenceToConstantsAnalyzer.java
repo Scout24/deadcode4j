@@ -1,5 +1,8 @@
 package de.is24.deadcode4j.analyzer;
 
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import de.is24.deadcode4j.CodeContext;
 import japa.parser.JavaParser;
@@ -19,8 +22,11 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.util.*;
 
+import static com.google.common.base.Predicates.and;
+import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Iterables.contains;
+import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Maps.newHashMap;
@@ -66,7 +72,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
                     codeContext.addDependencies(depender, dependee);
                 } else {
                     String className = dependee.substring(dependee.lastIndexOf('.'));
-                    for (String asteriskImport : analysis.asteriskImports) {
+                    for (String asteriskImport : analysis.getAsteriskImports()) {
                         dependee = asteriskImport + className;
                         if (analyzedClasses.contains(dependee)) {
                             codeContext.addDependencies(depender, dependee);
@@ -86,7 +92,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
                     //noinspection UnnecessaryLabelOnContinueStatement
                     continue withNextFieldAccess;
                 }
-                for (String asteriskImport : analysis.asteriskImports) {
+                for (String asteriskImport : analysis.getAsteriskImports()) {
                     className = asteriskImport + "." + rootName;
                     if (analyzedClasses.contains(className)) {
                         codeContext.addDependencies(depender, asteriskImport + "." + dependee);
@@ -115,18 +121,34 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
     private static class CompilationUnitVisitor extends GenericVisitorAdapter<Analysis, Analysis> {
 
         private final CodeContext codeContext;
+        /**
+         * @deprecated should go away
+         */
         private final Map<String, String> imports = newHashMap();
+        /**
+         * @deprecated should go away
+         */
         private final Map<String, String> staticImports = newHashMap();
         private final Deque<Set<String>> localVariables = newLinkedList();
-        /** @deprecated should go away */
+        /**
+         * @deprecated should go away
+         */
         @Deprecated
         private final Set<String> innerTypes = newHashSet();
         private final Map<String, String> referenceToInnerOrPackageType = newHashMap();
         private final Map<FieldAccessExpr, String> fieldAccesses = newHashMap();
-        /** @deprecated should go away */
+        /**
+         * @deprecated should go away
+         */
         @Deprecated
         private String typeName;
+        /**
+         * @deprecated should go away
+         */
         private Set<String> asteriskImports = newHashSet();
+        /**
+         * @deprecated should go away
+         */
         private Set<String> staticAsteriskImports = newHashSet();
         private List<Reference> nameReferences = newArrayList();
 
@@ -164,11 +186,11 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
         @Override
         public Analysis visit(CompilationUnit n, Analysis arg) {
-            Analysis rootAnalysis = new Analysis(n.getPackage());
+            Analysis rootAnalysis = new Analysis(n.getPackage(), n.getImports());
             super.visit(n, rootAnalysis);
             resolveInnerTypeReferences(rootAnalysis);
             Map<FieldAccessExpr, String> fullyQualifiedOrPackageAccesses = resolveFieldAccesses(rootAnalysis);
-            return new Analysis(rootAnalysis.packageName, this.asteriskImports, this.referenceToInnerOrPackageType, fullyQualifiedOrPackageAccesses);
+            return new Analysis(rootAnalysis, this.referenceToInnerOrPackageType, fullyQualifiedOrPackageAccesses);
         }
 
         @Override
@@ -192,12 +214,12 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             } else if (NameExpr.class.isInstance(n.getScope())) {
                 String typeName = NameExpr.class.cast(n.getScope()).getName();
                 if (!arg.isFieldDefined(typeName) && !contains(concat(this.localVariables), typeName)) {
-                    String referencedType = this.imports.get(typeName);
+                    String referencedType = arg.getImport(typeName);
                     if (referencedType != null) {
                         codeContext.addDependencies(arg.getTypeName(), referencedType);
                         return null;
                     }
-                    referencedType = this.staticImports.get(typeName);
+                    referencedType = arg.getStaticImport(typeName);
                     if (referencedType != null) {
                         codeContext.addDependencies(arg.getTypeName(), referencedType + "." + typeName);
                         return null;
@@ -237,6 +259,11 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             return null;
         }
 
+        /**
+         * @deprecated should go away
+         */
+        @SuppressWarnings("deprecation")
+        @Deprecated
         @Override
         public Analysis visit(ImportDeclaration n, Analysis arg) {
             if (n.isStatic()) {
@@ -296,7 +323,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 //                            this.packageName + "." + this.typeName + "$" + referenceName);
 //                    continue;
 //                }
-                String staticImport = this.staticImports.get(referenceName);
+                String staticImport = analysis.getStaticImport(referenceName);
                 if (staticImport != null) {
                     codeContext.addDependencies(reference.by, staticImport);
                 }
@@ -356,20 +383,24 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
     private static class Analysis {
 
         public final String packageName;
-        public final Set<String> asteriskImports;
-        public final Map<FieldAccessExpr, String> fullyQualifiedOrPackageAccesses;
-        public final Map<String, String> referencesToPackageType;
+        private final List<ImportDeclaration> imports;
 
         private final Analysis parent;
         private final String typeName;
+
         private final Set<String> fieldNames = newHashSet();
 
-        public Analysis(String packageName, Set<String> asteriskImports, Map<String, String> referencesToNamedType, Map<FieldAccessExpr, String> fullyQualifiedOrPackageAccesses) {
+        public Map<FieldAccessExpr, String> fullyQualifiedOrPackageAccesses;
+        public Map<String, String> referencesToPackageType;
+
+        @SuppressWarnings("deprecation")
+        @Deprecated
+        public Analysis(Analysis parent, Map<String, String> referencesToNamedType, Map<FieldAccessExpr, String> fullyQualifiedOrPackageAccesses) {
             this.parent = null;
             this.typeName = null;
 
-            this.packageName = packageName;
-            this.asteriskImports = asteriskImports;
+            this.imports = parent.imports;
+            this.packageName = parent.packageName;
             this.fullyQualifiedOrPackageAccesses = fullyQualifiedOrPackageAccesses;
             this.referencesToPackageType = newHashMap();
             for (Entry<String, String> referenceToPackageType : referencesToNamedType.entrySet()) {
@@ -382,20 +413,14 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             this.parent = arg;
             this.typeName = typeName;
             this.packageName = arg.packageName;
-
-            this.asteriskImports = null;
-            this.fullyQualifiedOrPackageAccesses = null;
-            this.referencesToPackageType = null;
+            this.imports = arg.imports;
         }
 
-        public Analysis(PackageDeclaration packageName) {
+        public Analysis(PackageDeclaration packageName, List<ImportDeclaration> imports) {
             this.packageName = packageName == null ? null : packageName.getName().toString();
+            this.imports = imports != null ? imports : Collections.<ImportDeclaration>emptyList();
             this.parent = null;
             this.typeName = null;
-
-            this.asteriskImports = null;
-            this.fullyQualifiedOrPackageAccesses = null;
-            this.referencesToPackageType = null;
         }
 
         public boolean needsPostProcessing() {
@@ -434,6 +459,62 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             }
 
             return buffy.length() > 0 ? buffy.toString() : null;
+        }
+
+        public String getImport(String typeName) {
+            for (ImportDeclaration anImport : this.imports) {
+                if (anImport.isStatic())
+                    continue;
+                if (anImport.isAsterisk())
+                    continue;
+                if (anImport.getName().getName().equals(typeName))
+                    return anImport.getName().toString();
+            }
+            return null;
+        }
+
+        public String getStaticImport(String referenceName) {
+            for (ImportDeclaration anImport : this.imports) {
+                if (!anImport.isStatic())
+                    continue;
+                if (anImport.isAsterisk())
+                    continue;
+                if (anImport.getName().getName().equals(referenceName))
+                    return ((QualifiedNameExpr) anImport.getName()).getQualifier().toString();
+            }
+            return null;
+        }
+
+        public Iterable<String> getAsteriskImports() {
+            return Iterables.transform(filter(this.imports, and(isAsterisk(), not(isStatic()))), toImportedType());
+        }
+
+        private static Predicate<? super ImportDeclaration> isAsterisk() {
+            return new Predicate<ImportDeclaration>() {
+                @Override
+                public boolean apply(@Nullable ImportDeclaration input) {
+                    return input != null && input.isAsterisk();
+                }
+            };
+        }
+
+        private Predicate<? super ImportDeclaration> isStatic() {
+            return new Predicate<ImportDeclaration>() {
+                @Override
+                public boolean apply(@Nullable ImportDeclaration input) {
+                    return input != null && input.isStatic();
+                }
+            };
+        }
+
+        private static Function<? super ImportDeclaration, ? extends String> toImportedType() {
+            return new Function<ImportDeclaration, String>() {
+                @Nullable
+                @Override
+                public String apply(@Nullable ImportDeclaration input) {
+                    return input == null ? null : input.getName().toString();
+                }
+            };
         }
     }
 
