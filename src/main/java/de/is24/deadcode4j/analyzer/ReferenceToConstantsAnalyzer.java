@@ -110,7 +110,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         private final CodeContext codeContext;
         private final Map<String, String> imports = newHashMap();
         private final Map<String, String> staticImports = newHashMap();
-        private final Queue<String> typeNames = newLinkedList();
+        private final List<String> typeNames = newLinkedList();
         private final Deque<Set<String>> localVariables = newLinkedList();
         private final Set<String> innerTypes = newHashSet();
         private final Map<String, String> referenceToInnerOrPackageType = newHashMap();
