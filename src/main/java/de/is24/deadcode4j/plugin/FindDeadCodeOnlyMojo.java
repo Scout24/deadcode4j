@@ -235,6 +235,11 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
         }
     }
 
+    /**
+     * "Calculates" the <code>CodeRepository</code> instances to analyze for a given <code>MavenPorject</code>.
+     *
+     * @since 1.6
+     */
     private static class CodeRepositoryGenerator {
 
         private final de.is24.deadcode4j.plugin.packaginghandler.PackagingHandler defaultPackagingHandler;
