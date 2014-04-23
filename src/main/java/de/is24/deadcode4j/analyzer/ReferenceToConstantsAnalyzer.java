@@ -230,6 +230,10 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             if (isScopeOfAMethodCall(n)) {
                     return null;
             }
+            // FQ beats all
+            // then local variables & fields
+            // now imports
+            // finally package access
             if (FieldAccessExpr.class.isInstance(n.getScope())) {
                 this.fieldAccesses.put(FieldAccessExpr.class.cast(n.getScope()), arg.getTypeName());
             } else if (NameExpr.class.isInstance(n.getScope())) {
