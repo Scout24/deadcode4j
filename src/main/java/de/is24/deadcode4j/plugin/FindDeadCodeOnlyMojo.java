@@ -42,8 +42,8 @@ import static org.apache.maven.plugin.MojoExecution.Source.CLI;
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
 
-    private final Map<String, de.is24.deadcode4j.plugin.packaginghandler.PackagingHandler> packagingHandlers = newHashMap();
-    private final de.is24.deadcode4j.plugin.packaginghandler.PackagingHandler defaultPackagingHandler = new DefaultPackagingHandler();
+    private final Map<String, PackagingHandler> packagingHandlers = newHashMap();
+    private final PackagingHandler defaultPackagingHandler = new DefaultPackagingHandler();
     /**
      * Lists the fqcn of the annotations marking a class as being "live code".
      *
@@ -194,7 +194,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     private Iterable<CodeRepository> gatherCodeRepositories() throws MojoExecutionException {
         List<CodeRepository> codeRepositories = newArrayList();
         for (MavenProject project : getProjectsToAnalyze()) {
-            addIfNonNull(codeRepositories, getCodeRepositoryFor(project));
+            codeRepositories.addAll(getCodeRepositoryFor(project));
         }
         return codeRepositories;
     }
