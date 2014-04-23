@@ -227,8 +227,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
         @Override
         public Analysis visit(FieldAccessExpr n, Analysis arg) {
-            if (MethodCallExpr.class.isInstance(n.getParentNode())) {
-                if (n == MethodCallExpr.class.cast(n.getParentNode()).getScope())
+            if (isScopeOfAMethodCall(n)) {
                     return null;
             }
             if (FieldAccessExpr.class.isInstance(n.getScope())) {
@@ -250,6 +249,15 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
                 }
             }
             return null;
+        }
+
+        /**
+         * This is not entirely correct: while we want to filter calls like
+         * <code>org.slf4j.LoggerFactory.getLogger("foo")</code>, we want to analyze
+         * <code>foo.bar.FOO.substring(1)</code>.
+         */
+        private boolean isScopeOfAMethodCall(FieldAccessExpr n) {
+            return MethodCallExpr.class.isInstance(n.getParentNode()) && n == MethodCallExpr.class.cast(n.getParentNode()).getScope();
         }
 
         @Override
