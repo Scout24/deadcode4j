@@ -1,6 +1,5 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.CodeContext;
 import org.junit.Test;
 
 import java.util.Map;
@@ -16,7 +15,6 @@ public final class A_TldAnalyzer extends AnAnalyzer {
     public void shouldParseTldFiles() {
         TldAnalyzer objectUnderTest = new TldAnalyzer();
 
-        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("taglib.tld"));
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();

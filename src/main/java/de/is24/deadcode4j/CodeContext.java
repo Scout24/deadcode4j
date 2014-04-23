@@ -4,7 +4,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.File;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,17 +38,6 @@ public class CodeContext {
      */
     public CodeContext(@Nonnull Iterable<File> classPath) {
         this.classPath = classPath;
-    }
-
-    /**
-     * Creates a new instance of <code>CodeContext</code>.
-     *
-     * @since 1.1.0
-     * @deprecated use {@link #CodeContext(Iterable)} instead
-     */
-    @Deprecated
-    public CodeContext() {
-        this(Collections.<File>emptyList());
     }
 
     /**

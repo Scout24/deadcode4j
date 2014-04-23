@@ -1,6 +1,5 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.CodeContext;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -15,12 +14,10 @@ import static org.junit.Assume.assumeThat;
 public final class A_ClassDependencyAnalyzer extends AnAnalyzer {
 
     private ClassDependencyAnalyzer objectUnderTest;
-    private CodeContext codeContext;
 
     @Before
     public void setUp() throws Exception {
         objectUnderTest = new ClassDependencyAnalyzer();
-        codeContext = new CodeContext();
     }
 
     @Test

@@ -26,7 +26,7 @@ public class An_XmlAnalyzer extends AnAnalyzer {
             }
         };
 
-        objectUnderTest.doAnalysis(new CodeContext(), getFile("de/is24/deadcode4j/analyzer/empty.xml"));
+        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/empty.xml"));
 
         assertThat("Should have analyzed the XML file!", fileIsParsed.get(), is(true));
     }
@@ -42,7 +42,7 @@ public class An_XmlAnalyzer extends AnAnalyzer {
             }
         };
 
-        objectUnderTest.doAnalysis(new CodeContext(), getFile("de/is24/deadcode4j/analyzer/empty.xml"));
+        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/empty.xml"));
     }
 
 }
