@@ -9,6 +9,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import javax.annotation.Nonnull;
 import java.io.File;
+import java.util.Collections;
 
 import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Iterables.isEmpty;
@@ -84,6 +85,10 @@ public class ServletContainerInitializerAnalyzer implements Analyzer {
 
         private CodeContext originalContext;
         private boolean metadataComplete = false;
+
+        private ServletContainerInitializerCodeContext() {
+            super(Collections.<File>emptyList());
+        }
 
         @Override
         public void addAnalyzedClass(@Nonnull String clazz) {

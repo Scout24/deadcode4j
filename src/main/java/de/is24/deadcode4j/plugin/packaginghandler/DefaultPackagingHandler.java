@@ -7,6 +7,7 @@ import org.apache.maven.project.MavenProject;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.Callable;
 
 import static de.is24.deadcode4j.Utils.getKeyFor;
@@ -36,6 +37,6 @@ public class DefaultPackagingHandler extends PackagingHandler {
         if (getLog().isDebugEnabled()) {
             getLog().debug("Going to analyze output directory [" + outputDirectory + "].");
         }
-        return singleton(new CodeRepository(outputDirectory));
+        return singleton(new CodeRepository(Collections.<File>emptyList(), outputDirectory));
     }
 }

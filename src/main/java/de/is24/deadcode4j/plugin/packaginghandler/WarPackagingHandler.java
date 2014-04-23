@@ -12,6 +12,7 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.Callable;
 
 import static de.is24.deadcode4j.Utils.getKeyFor;
@@ -58,6 +59,6 @@ public class WarPackagingHandler extends PackagingHandler {
         }
         final File directory = new File(webappDirectory, "WEB-INF");
         IOFileFilter fileFilter = notFileFilter(asFileFilter(new SubDirectoryFilter(directory, "lib")));
-        return singleton(new CodeRepository(directory, fileFilter));
+        return singleton(new CodeRepository(Collections.<File>emptyList(), directory, fileFilter));
     }
 }
