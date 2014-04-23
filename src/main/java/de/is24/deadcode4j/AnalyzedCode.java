@@ -1,8 +1,8 @@
 package de.is24.deadcode4j;
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * <code>AnalyzedCode</code> comprises the classes being analyzed as well as the code dependencies.
@@ -10,16 +10,16 @@ import java.util.Map;
  * @since 1.0.0
  */
 public class AnalyzedCode {
-    private final Collection<String> analyzedClasses;
-    private final Map<String, ? extends Iterable<String>> codeDependencies;
+    private final Set<String> analyzedClasses;
+    private final Map<String, Set<String>> codeDependencies;
 
-    public AnalyzedCode(@Nonnull Collection<String> analyzedClasses, @Nonnull Map<String, ? extends Iterable<String>> codeDependencies) {
+    public AnalyzedCode(@Nonnull Set<String> analyzedClasses, @Nonnull Map<String, Set<String>> codeDependencies) {
         this.analyzedClasses = analyzedClasses;
         this.codeDependencies = codeDependencies;
     }
 
     @Nonnull
-    public Collection<String> getAnalyzedClasses() {
+    public Set<String> getAnalyzedClasses() {
         return analyzedClasses;
     }
 
@@ -27,7 +27,7 @@ public class AnalyzedCode {
      * Returns a map consisting of code artifacts (typically classes) pointing to their dependencies.
      */
     @Nonnull
-    public Map<String, ? extends Iterable<String>> getCodeDependencies() {
+    public Map<String, Set<String>> getCodeDependencies() {
         return codeDependencies;
     }
 
