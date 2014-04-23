@@ -197,7 +197,7 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
 
         verify(loggerMock).warn(
                 Matchers.contains("@TypeDef"),
-                (Object) argThat( hasVarArgItem(equalTo("aRandomType"))));
+                (Object[]) argThat( hasVarArgItem(equalTo("aRandomType"))));
     }
 
     private static <T> Matcher<T[]> hasVarArgItem(Matcher<? super T> elementMatcher) {
