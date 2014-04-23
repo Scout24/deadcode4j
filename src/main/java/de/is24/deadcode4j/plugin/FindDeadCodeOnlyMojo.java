@@ -236,7 +236,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     }
 
     /**
-     * "Calculates" the <code>CodeRepository</code> instances to analyze for a given <code>MavenPorject</code>.
+     * "Calculates" the <code>CodeRepository</code> instances to analyze for a given <code>MavenProject</code>.
      *
      * @since 1.6
      */
