@@ -1,5 +1,6 @@
 Features
 --------
+* @dcsobral: possibility to ignore all classes with main method
 * set up all Maven dependencies to allow analysis of indirectly extended super classes and implemented interfaces (currently, only the immediate super class and explicitly implemented interfaces are recognized)
 * recognize [custom Spring Data repositories](http://docs.spring.io/spring-data/data-commons/docs/1.6.x/reference/html/repositories.html#repositories.custom-implementations)
     * this requires to know if a class implements `Repository`, even recursively - which in turn means it is required to set up all dependencies

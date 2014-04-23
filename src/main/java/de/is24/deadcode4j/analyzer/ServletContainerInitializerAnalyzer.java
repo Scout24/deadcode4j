@@ -11,6 +11,7 @@ import javax.annotation.Nonnull;
 import java.io.File;
 
 import static com.google.common.collect.Iterables.concat;
+import static com.google.common.collect.Iterables.isEmpty;
 
 /**
  * Analyzes both <code>web.xml</code> and class files: looks for implementations of
@@ -24,6 +25,22 @@ public class ServletContainerInitializerAnalyzer implements Analyzer {
     private final ServletContainerInitializerCodeContext context = new ServletContainerInitializerCodeContext();
     private final Analyzer classFinder;
     private final String depender;
+    private final Analyzer webXmlAnalyzer = new XmlAnalyzer("web.xml") {
+        @Nonnull
+        @Override
+        protected DefaultHandler createHandlerFor(@Nonnull final CodeContext codeContext) {
+            return new DefaultHandler() {
+                @Override
+                public void startElement(String uri, String localName, String qName, Attributes attributes)
+                        throws StopParsing {
+                    if ("web-app".equals(localName) && "true".equals(attributes.getValue("metadata-complete"))) {
+                        ((ServletContainerInitializerCodeContext) codeContext).setMetadataComplete();
+                    }
+                    throw new StopParsing();
+                }
+            };
+        }
+    };
 
     /**
      * Creates a new instance of <code>ServletContainerInitializerAnalyzer</code>.
@@ -43,23 +60,6 @@ public class ServletContainerInitializerAnalyzer implements Analyzer {
         this("JEE-ServletContainerInitializer", "javax.servlet.ServletContainerInitializer");
     }
 
-    private final Analyzer webXmlAnalyzer = new XmlAnalyzer("web.xml") {
-        @Nonnull
-        @Override
-        protected DefaultHandler createHandlerFor(@Nonnull final CodeContext codeContext) {
-            return new DefaultHandler() {
-                @Override
-                public void startElement(String uri, String localName, String qName, Attributes attributes)
-                        throws StopParsing {
-                    if ("web-app".equals(localName) && "true".equals(attributes.getValue("metadata-complete"))) {
-                        ((ServletContainerInitializerCodeContext) codeContext).setMetadataComplete();
-                    }
-                    throw new StopParsing();
-                }
-            };
-        }
-    };
-
     @Override
     public void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull File fileName) {
         this.context.setOriginalContext(codeContext);
@@ -75,7 +75,7 @@ public class ServletContainerInitializerAnalyzer implements Analyzer {
             return;
         }
         Iterable<String> initializerClasses = concat(this.context.getAnalyzedCode().getCodeDependencies().values());
-        if (initializerClasses != null) {
+        if (!isEmpty(initializerClasses)) {
             codeContext.addDependencies(depender, initializerClasses);
         }
     }

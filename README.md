@@ -89,6 +89,9 @@ After performing the usage analysis, *deadcode4j* reports which classes are pres
 > <sup>1</sup> When examining `class C extends B implements A`, only `B` is recognized as implementing `A`; you can circumvent this by defining `C extends B implements A`  
 > <sup>2</sup> When examining `class C extends B extends A`, only `B` is recognized as subclass of `A`; no circumvention here - create an issue if you think this is absolutely required!
 
+### Limitations
+- Inner classes are always recognized as being referenced by the outer class and vice versa (even static inner classes). _This is not only true for the currently used Javassist, but also for BCEL. This suggests that this is an aspect of the JVM spec._
+
 ### False positives
 
 *deadcode4j* knows not everything. Given the approaches listed above, classes reported as being dead may not necessarily be dead. So, don't delete blindly, but double-check the results. Known caveats are:
