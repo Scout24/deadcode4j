@@ -41,14 +41,6 @@ import static org.apache.maven.plugin.MojoExecution.Source.CLI;
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
 
-    private final Callable<Log> logAccessor = new Callable<Log>() {
-        @Override
-        public Log call() {
-            return getLog();
-        }
-    };
-    private final de.is24.deadcode4j.plugin.packaginghandler.PackagingHandler defaultPackagingHandler = new DefaultPackagingHandler(logAccessor);
-    private final Map<String, de.is24.deadcode4j.plugin.packaginghandler.PackagingHandler> packagingHandlers = newHashMap();
     /**
      * Lists the fqcn of the annotations marking a class as being "live code".
      *
@@ -109,11 +101,6 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     @Parameter(defaultValue = "fooBar")
     @SuppressWarnings("unused")
     private String workAroundForHelpMojo;
-
-    public FindDeadCodeOnlyMojo() {
-        packagingHandlers.put("pom", new PomPackagingHandler(logAccessor));
-        packagingHandlers.put("war", new WarPackagingHandler(logAccessor));
-    }
 
     public void doExecute() throws MojoExecutionException {
         try {
@@ -197,9 +184,15 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     }
 
     private Iterable<CodeRepository> gatherCodeRepositories() throws MojoExecutionException {
+        CodeRepositoryGenerator codeRepositoryGenerator = new CodeRepositoryGenerator(new Callable<Log>() {
+            @Override
+            public Log call() {
+                return getLog();
+            }
+        });
         List<CodeRepository> codeRepositories = newArrayList();
         for (MavenProject project : getProjectsToAnalyze()) {
-            codeRepositories.addAll(getCodeRepositoryFor(project));
+            codeRepositories.addAll(codeRepositoryGenerator.getCodeRepositoryFor(project));
         }
         return codeRepositories;
     }
@@ -231,13 +224,6 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
         return mavenProjects;
     }
 
-    @Nonnull
-    private Collection<CodeRepository> getCodeRepositoryFor(@Nonnull MavenProject project) throws MojoExecutionException {
-        de.is24.deadcode4j.plugin.packaginghandler.PackagingHandler packagingHandler =
-                getValueOrDefault(this.packagingHandlers, project.getPackaging(), this.defaultPackagingHandler);
-        return packagingHandler.getCodeRepositoriesFor(project);
-    }
-
     private void log(DeadCode deadCode) {
         new DeadCodeLogger(getLog()).log(deadCode, this.classesToIgnore);
     }
@@ -247,6 +233,26 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
             getLog().info("Expected something different? Don't like the results? " +
                     "Hop on over to https://github.com/ImmobilienScout24/deadcode4j to learn more!");
         }
+    }
+
+    private static class CodeRepositoryGenerator {
+
+        private final de.is24.deadcode4j.plugin.packaginghandler.PackagingHandler defaultPackagingHandler;
+        private final Map<String, de.is24.deadcode4j.plugin.packaginghandler.PackagingHandler> packagingHandlers = newHashMap();
+
+        private CodeRepositoryGenerator(Callable<Log> logAccessor) {
+            this.defaultPackagingHandler = new DefaultPackagingHandler(logAccessor);
+            packagingHandlers.put("pom", new PomPackagingHandler(logAccessor));
+            packagingHandlers.put("war", new WarPackagingHandler(logAccessor));
+        }
+
+        @Nonnull
+        public Collection<CodeRepository> getCodeRepositoryFor(@Nonnull MavenProject project) throws MojoExecutionException {
+            de.is24.deadcode4j.plugin.packaginghandler.PackagingHandler packagingHandler =
+                    getValueOrDefault(this.packagingHandlers, project.getPackaging(), this.defaultPackagingHandler);
+            return packagingHandler.getCodeRepositoriesFor(project);
+        }
+
     }
 
 }
