@@ -1,6 +1,6 @@
 package de.is24.deadcode4j.plugin;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.util.List;
 
@@ -14,10 +14,10 @@ import static com.google.common.collect.Lists.newArrayList;
 public class CustomXml {
 
     @java.lang.SuppressWarnings("UnusedDeclaration")
-    @SuppressWarnings(value = "UWF_UNWRITTEN_FIELD", justification = "Set by Plexus when configuring the plugin")
+    @SuppressFBWarnings(value = "UWF_UNWRITTEN_FIELD", justification = "Set by Plexus when configuring the plugin")
     private String endOfFileName;
     @java.lang.SuppressWarnings("UnusedDeclaration")
-    @SuppressWarnings(value = "UWF_UNWRITTEN_FIELD", justification = "Set by Plexus when configuring the plugin")
+    @SuppressFBWarnings(value = "UWF_UNWRITTEN_FIELD", justification = "Set by Plexus when configuring the plugin")
     private String rootElement;
     private List<String> xPaths = newArrayList();
 
