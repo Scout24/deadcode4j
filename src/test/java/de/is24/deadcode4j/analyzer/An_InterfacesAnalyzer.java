@@ -10,6 +10,7 @@ import static com.google.common.collect.Iterables.concat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assume.assumeThat;
 
 public final class An_InterfacesAnalyzer extends AnAnalyzer {
 
@@ -52,6 +53,19 @@ public final class An_InterfacesAnalyzer extends AnAnalyzer {
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
         assertThat("Should have reported some dependencies!", codeDependencies.size(), is(1));
         assertThat(concat(codeDependencies.values()), containsInAnyOrder("ClassImplementingCloneable"));
+    }
+
+    @Test
+    public void reportsSubClassImplementingClassAsBeingUsed() {
+        Analyzer objectUnderTest = new InterfacesAnalyzer("junit", "java.lang.Runnable") {
+        };
+        CodeContext codeContext = new CodeContext();
+
+        objectUnderTest.doAnalysis(codeContext, getFile("SubClassThatShouldBeLive.class"));
+
+        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        assumeThat("Should have reported some dependencies!", codeDependencies.size(), is(1));
+        assumeThat(concat(codeDependencies.values()), containsInAnyOrder("SubClassThatShouldBeLive"));
     }
 
 }
