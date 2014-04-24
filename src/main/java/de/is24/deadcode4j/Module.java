@@ -45,7 +45,7 @@ public class Module {
         if (this.outputRepository == null) {
             buffy.append("without output repository");
         } else {
-            buffy.append("@").append(this.outputRepository);
+            buffy.append("with output ").append(this.outputRepository);
         }
         if (this.allRepositories.size() > 1) {
             buffy.append(" and ").append(this.allRepositories.size() - 1).append(" additional repositories");
