@@ -1,6 +1,6 @@
 package de.is24.deadcode4j.plugin.packaginghandler;
 
-import de.is24.deadcode4j.CodeRepository;
+import de.is24.deadcode4j.Repository;
 import de.is24.deadcode4j.plugin.SubDirectoryFilter;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.maven.model.Plugin;

@@ -8,12 +8,12 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
+import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
 
 /**
  * The <code>DeadCodeFinder</code> ties everything together in order to ultimately find dead code.
@@ -36,14 +36,15 @@ public class DeadCodeFinder {
 
     @Nonnull
     private AnalyzedCode analyzeCode(@Nonnull Iterable<Module> modules) {
-        CodeContext codeContext = new CodeContext();
+        List<AnalyzedCode> analyzedCode = newArrayList();
         for (Module module : modules) {
             for (Repository repository : module.getAllRepositories()) {
+                CodeContext codeContext = new CodeContext(Collections.<File>emptyList());
                 analyzeRepository(codeContext, repository);
+                analyzedCode.add(codeContext.getAnalyzedCode());
             }
         }
-
-        return codeContext.getAnalyzedCode();
+        return merge(analyzedCode);
     }
 
     @Nonnull
@@ -76,8 +77,20 @@ public class DeadCodeFinder {
         return deadClasses;
     }
 
-    private static class RepositoryAnalyzer extends DirectoryWalker<Void> {
+    private AnalyzedCode merge(List<AnalyzedCode> analyzedCode) {
+        Set<String> analyzedClasses = newHashSet();
+        Map<String, Set<String>> dependencies = newHashMap();
+        for (AnalyzedCode code : analyzedCode) {
+            analyzedClasses.addAll(code.getAnalyzedClasses());
+            for (Map.Entry<String, Set<String>> dependencyEntry : code.getCodeDependencies().entrySet()) {
+                Set<String> knownDependencies = getOrAddMappedSet(dependencies, dependencyEntry.getKey());
+                knownDependencies.addAll(dependencyEntry.getValue());
+            }
+        }
+        return new AnalyzedCode(analyzedClasses, dependencies);
+    }
 
+    private static class RepositoryAnalyzer extends DirectoryWalker<Void> {
         private final Iterable<? extends Analyzer> analyzers;
         private final CodeContext codeContext;
         private Logger logger = LoggerFactory.getLogger(getClass());
