@@ -3,7 +3,6 @@ package de.is24.deadcode4j;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import java.io.File;
 import java.util.Map;
 import java.util.Set;
 
@@ -27,17 +26,24 @@ public class CodeContext {
     private final org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
     private final Set<String> analyzedClasses = newHashSet();
     private final Map<String, Set<String>> dependencyMap = newHashMap();
-    private final Iterable<File> classPath;
-
+    private final Module module;
 
     /**
-     * Creates a new instance of <code>CodeContext</code> along with the specified class path elements.
+     * Creates a new instance of <code>CodeContext</code> for the specified module.
      *
-     * @param classPath an <code>Iterable</code> containing jar files or directories
      * @since 1.6
      */
-    public CodeContext(@Nonnull Iterable<File> classPath) {
-        this.classPath = classPath;
+    public CodeContext(Module module) {
+        this.module = module;
+    }
+
+    /**
+     * Returns the associated <code>Module</code>.
+     *
+     * @since 1.6
+     */
+    public Module getModule() {
+        return module;
     }
 
     /**
@@ -89,16 +95,6 @@ public class CodeContext {
     @Nonnull
     public AnalyzedCode getAnalyzedCode() {
         return new AnalyzedCode(this.analyzedClasses, this.dependencyMap);
-    }
-
-    /**
-     * Returns the class path elements to be considered for this code context.
-     *
-     * @since 1.6
-     */
-    @Nonnull
-    public Iterable<File> getClassPath() {
-        return classPath;
     }
 
 }

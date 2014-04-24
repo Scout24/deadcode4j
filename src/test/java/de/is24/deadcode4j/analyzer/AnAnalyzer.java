@@ -1,6 +1,8 @@
 package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.Module;
+import de.is24.deadcode4j.Repository;
 import de.is24.deadcode4j.junit.LoggingRule;
 import org.junit.Before;
 import org.junit.Rule;
@@ -16,7 +18,8 @@ public abstract class AnAnalyzer {
 
     @Before
     public final void initCodeContext() {
-        codeContext = new CodeContext(Collections.<File>emptyList());
+        Module dummyModule = new Module(null, Collections.<File>emptyList(), Collections.<Repository>emptyList());
+        codeContext = new CodeContext(dummyModule);
     }
 
     protected File getFile(String fileName) {

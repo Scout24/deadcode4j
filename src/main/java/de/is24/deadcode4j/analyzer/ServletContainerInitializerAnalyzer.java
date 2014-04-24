@@ -2,6 +2,7 @@ package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.Module;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
@@ -9,7 +10,6 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import javax.annotation.Nonnull;
 import java.io.File;
-import java.util.Collections;
 
 import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Iterables.isEmpty;
@@ -23,9 +23,8 @@ import static com.google.common.collect.Iterables.isEmpty;
  */
 public class ServletContainerInitializerAnalyzer implements Analyzer {
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final ServletContainerInitializerCodeContext context = new ServletContainerInitializerCodeContext();
-    private final Analyzer classFinder;
     private final String depender;
+    private final Analyzer classFinder;
     private final Analyzer webXmlAnalyzer = new XmlAnalyzer("web.xml") {
         @Nonnull
         @Override
@@ -42,6 +41,7 @@ public class ServletContainerInitializerAnalyzer implements Analyzer {
             };
         }
     };
+    private ServletContainerInitializerCodeContext context;
 
     /**
      * Creates a new instance of <code>ServletContainerInitializerAnalyzer</code>.
@@ -63,19 +63,24 @@ public class ServletContainerInitializerAnalyzer implements Analyzer {
 
     @Override
     public void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull File fileName) {
-        this.context.setOriginalContext(codeContext);
+        if (this.context == null) {
+            this.context = new ServletContainerInitializerCodeContext(codeContext.getModule());
+            this.context.setOriginalContext(codeContext);
+        }
         this.webXmlAnalyzer.doAnalysis(this.context, fileName);
         this.classFinder.doAnalysis(this.context, fileName);
     }
 
     @Override
     public void finishAnalysis(@Nonnull CodeContext codeContext) {
-        if (this.context.isMetadataComplete()) {
+        ServletContainerInitializerCodeContext localContext = this.context;
+        this.context = null;
+        if (localContext.isMetadataComplete()) {
             logger.debug("Found web.xml with completed metadata; " +
                     "ServletContainerInitializer implementations are treated as dead code");
             return;
         }
-        Iterable<String> initializerClasses = concat(this.context.getAnalyzedCode().getCodeDependencies().values());
+        Iterable<String> initializerClasses = concat(localContext.getAnalyzedCode().getCodeDependencies().values());
         if (!isEmpty(initializerClasses)) {
             codeContext.addDependencies(depender, initializerClasses);
         }
@@ -86,8 +91,8 @@ public class ServletContainerInitializerAnalyzer implements Analyzer {
         private CodeContext originalContext;
         private boolean metadataComplete = false;
 
-        private ServletContainerInitializerCodeContext() {
-            super(Collections.<File>emptyList());
+        private ServletContainerInitializerCodeContext(Module module) {
+            super(module);
         }
 
         @Override

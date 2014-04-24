@@ -41,7 +41,7 @@ public class DeadCodeFinder {
     private AnalyzedCode analyzeCode(@Nonnull Iterable<Module> modules) {
         List<AnalyzedCode> analyzedCode = newArrayList();
         for (Module module : modules) {
-            CodeContext codeContext = new CodeContext(module.getClassPath());
+            CodeContext codeContext = new CodeContext(module);
             for (Repository repository : module.getAllRepositories()) {
                 analyzeRepository(codeContext, repository);
             }
