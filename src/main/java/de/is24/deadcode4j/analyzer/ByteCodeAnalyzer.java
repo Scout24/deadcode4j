@@ -82,6 +82,20 @@ public abstract class ByteCodeAnalyzer extends AnalyzerAdapter implements Analyz
      */
     protected abstract void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz);
 
+    /**
+     * Returns the class hierarchy for the specified class.
+     *
+     * @since 1.6
+     */
+    protected final List<String> getClassHierarchy(CtClass clazz) throws NotFoundException {
+        List<String> classes = newArrayList();
+        do {
+            classes.add(clazz.getClassFile2().getSuperclass());
+            clazz = clazz.getSuperclass();
+        } while (clazz != null);
+        return classes;
+    }
+
     private void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull File clazz) {
         final CtClass ctClass;
         FileInputStream in = null;

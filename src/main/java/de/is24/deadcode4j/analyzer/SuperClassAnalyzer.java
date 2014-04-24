@@ -12,7 +12,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.collect.Lists.newArrayList;
 
 /**
  * Serves as a base class with which to mark classes as being in use if they are a direct subclass of one of the
@@ -59,23 +58,16 @@ public abstract class SuperClassAnalyzer extends ByteCodeAnalyzer implements Ana
     protected final void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
         String clazzName = clazz.getName();
         codeContext.addAnalyzedClass(clazzName);
-        if (!Collections.disjoint(this.superClasses, getClassHierarchy(clazz))) {
+        final List<String> classHierarchy;
+        try {
+            classHierarchy = getClassHierarchy(clazz);
+        } catch (NotFoundException e) {
+            logger.warn("The class path is not correctly set up! Skipping superclass check for {}.", clazzName, e);
+            return;
+        }
+        if (!Collections.disjoint(this.superClasses, classHierarchy)) {
             codeContext.addDependencies(this.dependerId, clazzName);
         }
-    }
-
-    private List<String> getClassHierarchy(final CtClass clazz) {
-        List<String> classes = newArrayList();
-        CtClass loopClass = clazz;
-        do {
-            classes.add(loopClass.getClassFile2().getSuperclass());
-            try {
-                loopClass = loopClass.getSuperclass();
-            } catch (NotFoundException e) {
-                logger.warn("The ClassPath is not correctly set up! Skipping superclass check for {}.", clazz.getName(), e);
-            }
-        } while (loopClass != null);
-        return classes;
     }
 
 }
