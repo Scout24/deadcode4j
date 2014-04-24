@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collection;
 
 import static java.util.Collections.emptyList;
 
@@ -34,7 +33,7 @@ public abstract class PackagingHandler {
      * @since 1.6
      */
     @Nonnull
-    public Collection<Repository> getAdditionalRepositoriesFor(@Nonnull MavenProject project) throws MojoExecutionException {
+    public Iterable<Repository> getAdditionalRepositoriesFor(@Nonnull MavenProject project) throws MojoExecutionException {
         return emptyList();
     }
 

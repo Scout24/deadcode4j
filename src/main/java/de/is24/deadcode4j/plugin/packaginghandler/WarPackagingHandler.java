@@ -11,7 +11,6 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
-import java.util.Collection;
 
 import static de.is24.deadcode4j.Utils.getKeyFor;
 import static java.util.Collections.singleton;
@@ -34,7 +33,7 @@ public class WarPackagingHandler extends PackagingHandler {
 
     @Override
     @Nonnull
-    public Collection<Repository> getAdditionalRepositoriesFor(@Nonnull MavenProject project) throws MojoExecutionException {
+    public Iterable<Repository> getAdditionalRepositoriesFor(@Nonnull MavenProject project) throws MojoExecutionException {
         final File webappDirectory = calculateWebAppDirectory(project, false);
         final File directory = new File(webappDirectory, "WEB-INF");
         IOFileFilter fileFilter = notFileFilter(or(

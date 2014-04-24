@@ -8,7 +8,10 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
@@ -38,11 +41,11 @@ public class DeadCodeFinder {
     private AnalyzedCode analyzeCode(@Nonnull Iterable<Module> modules) {
         List<AnalyzedCode> analyzedCode = newArrayList();
         for (Module module : modules) {
+            CodeContext codeContext = new CodeContext(module.getClassPath());
             for (Repository repository : module.getAllRepositories()) {
-                CodeContext codeContext = new CodeContext(Collections.<File>emptyList());
                 analyzeRepository(codeContext, repository);
-                analyzedCode.add(codeContext.getAnalyzedCode());
             }
+            analyzedCode.add(codeContext.getAnalyzedCode());
         }
         return merge(analyzedCode);
     }

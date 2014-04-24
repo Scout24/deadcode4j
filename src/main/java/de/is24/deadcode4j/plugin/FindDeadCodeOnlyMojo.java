@@ -8,18 +8,26 @@ import de.is24.deadcode4j.plugin.packaginghandler.PackagingHandler;
 import de.is24.deadcode4j.plugin.packaginghandler.PomPackagingHandler;
 import de.is24.deadcode4j.plugin.packaginghandler.WarPackagingHandler;
 import de.is24.maven.slf4j.AbstractSlf4jMojo;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
+import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
+import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.repository.RepositorySystem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.io.File;
 import java.util.*;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Iterables.size;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.transform;
 import static com.google.common.collect.Maps.newHashMap;
@@ -27,6 +35,7 @@ import static de.is24.deadcode4j.Utils.*;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static org.apache.maven.plugin.MojoExecution.Source.CLI;
+import static org.apache.maven.plugins.annotations.ResolutionScope.COMPILE;
 
 /**
  * Finds dead (i.e. unused) code. In contrast to <code>find</code>, no phase is executed.
@@ -34,7 +43,11 @@ import static org.apache.maven.plugin.MojoExecution.Source.CLI;
  * @see FindDeadCodeMojo
  * @since 1.5
  */
-@Mojo(name = "find-only", aggregator = true, threadSafe = true, requiresProject = true)
+@Mojo(name = "find-only",
+        aggregator = true,
+        requiresProject = true,
+        requiresDependencyCollection = COMPILE,
+        threadSafe = true)
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
 
@@ -81,6 +94,8 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     @Parameter(property = "reactorProjects", readonly = true)
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private List<MavenProject> reactorProjects;
+    @Component
+    private RepositorySystem repositorySystem;
     /**
      * Lists the fqcn of the classes marking a direct subclass as being "live code".
      *
@@ -181,12 +196,8 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     }
 
     private Iterable<Module> gatherModules() throws MojoExecutionException {
-        ModuleGenerator moduleGenerator = new ModuleGenerator();
-        List<Module> modules = newArrayList();
-        for (MavenProject project : getProjectsToAnalyze()) {
-            modules.add(moduleGenerator.getModuleFor(project));
-        }
-        return modules;
+        ModuleGenerator moduleGenerator = new ModuleGenerator(this.repositorySystem);
+        return moduleGenerator.getModulesFor(getProjectsToAnalyze());
     }
 
     private Collection<MavenProject> getProjectsToAnalyze() {
@@ -233,23 +244,84 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
      * @since 1.6
      */
     private static class ModuleGenerator {
+        private final Logger logger = LoggerFactory.getLogger(getClass());
         private final PackagingHandler defaultPackagingHandler = new DefaultPackagingHandler();
         private final Map<String, PackagingHandler> packagingHandlers = newHashMap();
+        private final RepositorySystem repositorySystem;
 
-        private ModuleGenerator() {
+        private ModuleGenerator(@Nonnull RepositorySystem repositorySystem) {
+            this.repositorySystem = repositorySystem;
             packagingHandlers.put("pom", new PomPackagingHandler());
             packagingHandlers.put("war", new WarPackagingHandler());
         }
 
-        @Nullable
-        public Module getModuleFor(@Nonnull MavenProject project) throws MojoExecutionException {
+
+        @Nonnull
+        public Iterable<Module> getModulesFor(@Nonnull Iterable<MavenProject> projects) throws MojoExecutionException {
+            List<Module> modules = newArrayList();
+            Map<String, Module> knownModules = newHashMap();
+            for (MavenProject project : projects) {
+                Module module = getModuleFor(project, knownModules);
+                knownModules.put(getKeyFor(project.getArtifact()), module);
+                if (size(module.getAllRepositories()) > 0) {
+                    modules.add(module);
+                    logger.debug("Added {} for {}.", module, project);
+                } else {
+                    logger.debug("No repositories available for {}.", project);
+                }
+            }
+            return modules;
+        }
+
+        @Nonnull
+        private Module getModuleFor(@Nonnull MavenProject project, Map<String, Module> knownModules) throws MojoExecutionException {
             PackagingHandler packagingHandler =
                     getValueOrDefault(this.packagingHandlers, project.getPackaging(), this.defaultPackagingHandler);
-            List<Repository> repositories = newArrayList();
             Repository outputRepository = packagingHandler.getOutputRepositoryFor(project);
-            addIfNonNull(repositories, outputRepository);
-            repositories.addAll(packagingHandler.getAdditionalRepositoriesFor(project));
-            return new Module(repositories);
+            Iterable<Repository> additionalRepositories = packagingHandler.getAdditionalRepositoriesFor(project);
+            Iterable<File> classPath = computeClassPath(project, knownModules);
+            return new Module(outputRepository, classPath, additionalRepositories);
+        }
+
+        protected Iterable<File> computeClassPath(MavenProject project, Map<String, Module> knownModules) {
+            String projectKey = getKeyFor(project);
+            logger.debug("Computing class path for project {}:", projectKey);
+            ArrayList<File> files = newArrayList();
+            ScopeArtifactFilter artifactFilter = new ScopeArtifactFilter(Artifact.SCOPE_COMPILE);
+            for (Artifact dependency : project.getArtifacts()) {
+                if (!artifactFilter.include(dependency)) {
+                    continue;
+                }
+                String dependencyKey = getKeyFor(dependency);
+                Module knownModule = knownModules.get(dependencyKey);
+                if (knownModule != null) {
+                    Repository outputRepository = knownModule.getOutputRepository();
+                    if (outputRepository == null) {
+                        logger.debug("No output available for {}; nothing added to the class path.", dependencyKey);
+                    } else {
+                        files.add(outputRepository.getDirectory());
+                        logger.debug("Added project: {}", outputRepository.getDirectory());
+                    }
+                    continue;
+                }
+                if (!dependency.isResolved()) {
+                    ArtifactResolutionRequest request = new ArtifactResolutionRequest();
+                    request.setArtifact(dependency);
+                    ArtifactResolutionResult artifactResolutionResult = repositorySystem.resolve(request);
+                    if (!artifactResolutionResult.isSuccess()) {
+                        logger.warn("Failed to resolve [" + dependency + "]; some analyzers may not work properly.");
+                        continue;
+                    }
+                }
+                File classPathElement = dependency.getFile();
+                if (classPathElement == null) {
+                    logger.warn("No valid path to [" + dependency + "] found; some analyzers may not work properly.");
+                    continue;
+                }
+                files.add(classPathElement);
+                logger.debug("Added artifact: {}", classPathElement);
+            }
+            return files;
         }
 
     }
