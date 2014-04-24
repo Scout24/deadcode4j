@@ -75,6 +75,9 @@ public class ServletContainerInitializerAnalyzer implements Analyzer {
     public void finishAnalysis(@Nonnull CodeContext codeContext) {
         ServletContainerInitializerCodeContext localContext = this.context;
         this.context = null;
+        if (localContext == null) {
+            return;
+        }
         if (localContext.isMetadataComplete()) {
             logger.debug("Found web.xml with completed metadata; " +
                     "ServletContainerInitializer implementations are treated as dead code");
