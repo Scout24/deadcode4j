@@ -1,14 +1,13 @@
 package de.is24.deadcode4j.plugin.packaginghandler;
 
-import com.google.common.base.Preconditions;
 import de.is24.deadcode4j.Repository;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
-import java.util.concurrent.Callable;
 
 /**
  * A <code>PackagingHandler</code> determines which code repositories exist for a specific packaging (like "jar", "war", etc.).
@@ -16,13 +15,7 @@ import java.util.concurrent.Callable;
  * @since 1.2.0
  */
 public abstract class PackagingHandler {
-
-    private final Callable<Log> logAccessor;
-
-    protected PackagingHandler(Callable<Log> logAccessor) {
-        Preconditions.checkNotNull(logAccessor);
-        this.logAccessor = logAccessor;
-    }
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
      * Returns the code repositories to analyze for this packaging.
@@ -31,18 +24,5 @@ public abstract class PackagingHandler {
      */
     @Nonnull
     public abstract Collection<Repository> getRepositoriesFor(@Nonnull MavenProject project) throws MojoExecutionException;
-
-    /**
-     * Returns the {@link org.apache.maven.plugin.logging.Log} to use.
-     *
-     * @since 1.6
-     */
-    protected final Log getLog() {
-        try {
-            return logAccessor.call();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
 
 }

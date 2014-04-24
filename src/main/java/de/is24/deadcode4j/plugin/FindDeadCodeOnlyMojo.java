@@ -10,7 +10,6 @@ import de.is24.deadcode4j.plugin.packaginghandler.WarPackagingHandler;
 import de.is24.maven.slf4j.AbstractSlf4jMojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -19,7 +18,6 @@ import org.apache.maven.project.MavenProject;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.concurrent.Callable;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Lists.newArrayList;
@@ -183,12 +181,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     }
 
     private Iterable<Module> gatherModules() throws MojoExecutionException {
-        ModuleGenerator moduleGenerator = new ModuleGenerator(new Callable<Log>() {
-            @Override
-            public Log call() {
-                return getLog();
-            }
-        });
+        ModuleGenerator moduleGenerator = new ModuleGenerator();
         List<Module> modules = newArrayList();
         for (MavenProject project : getProjectsToAnalyze()) {
             modules.add(moduleGenerator.getModuleFor(project));
@@ -240,13 +233,12 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
      * @since 1.6
      */
     private static class ModuleGenerator {
-        private final PackagingHandler defaultPackagingHandler;
+        private final PackagingHandler defaultPackagingHandler = new DefaultPackagingHandler();
         private final Map<String, PackagingHandler> packagingHandlers = newHashMap();
 
-        private ModuleGenerator(Callable<Log> logAccessor) {
-            this.defaultPackagingHandler = new DefaultPackagingHandler(logAccessor);
-            packagingHandlers.put("pom", new PomPackagingHandler(logAccessor));
-            packagingHandlers.put("war", new WarPackagingHandler(logAccessor));
+        private ModuleGenerator() {
+            packagingHandlers.put("pom", new PomPackagingHandler());
+            packagingHandlers.put("war", new WarPackagingHandler());
         }
 
         @Nullable
