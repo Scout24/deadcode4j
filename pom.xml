@@ -180,6 +180,8 @@
                             <goal>verify</goal>
                         </goals>
                         <configuration>
+                            <cloneClean>true</cloneClean>
+                            <cloneProjectsTo>${project.build.directory}/it-projects</cloneProjectsTo>
                             <goals>
                                 <goal>${project.groupId}:${project.artifactId}:find</goal>
                             </goals>
