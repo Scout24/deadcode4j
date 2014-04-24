@@ -1,4 +1,11 @@
 # v.1.6-SNAPSHOT
+## Features
+* ByteCodeAnalyzers know have access to the full class path
+    * `InterfacesAnalyzer` now determines implementation even if by a superclass or inherited by other interface
+    * `SuperClassAnalyzer` now analyzes the whole class hierarchy
+
+## Internal
+* calculate class path for each project & pass along to analyzers
 
 ###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.5...master)
 
