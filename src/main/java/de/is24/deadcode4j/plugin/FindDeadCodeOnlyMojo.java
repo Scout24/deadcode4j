@@ -214,7 +214,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
                 mavenProjects.remove(mavenProject);
                 List<MavenProject> collectedProjects = mavenProject.getCollectedProjects();
                 if (collectedProjects.size() > 0) {
-                    getLog().info("  Aggregated Projects " + transform(collectedProjects, toKey()) + " will be skipped.");
+                    getLog().info("    Aggregated Projects " + transform(collectedProjects, toKey()) + " will be skipped.");
                     mavenProjects.removeAll(collectedProjects);
                 }
             }
