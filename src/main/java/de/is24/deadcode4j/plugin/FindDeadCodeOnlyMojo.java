@@ -1,12 +1,10 @@
 package de.is24.deadcode4j.plugin;
 
 import com.google.common.collect.Sets;
-import de.is24.deadcode4j.Analyzer;
-import de.is24.deadcode4j.CodeRepository;
-import de.is24.deadcode4j.DeadCode;
-import de.is24.deadcode4j.DeadCodeFinder;
+import de.is24.deadcode4j.*;
 import de.is24.deadcode4j.analyzer.*;
 import de.is24.deadcode4j.plugin.packaginghandler.DefaultPackagingHandler;
+import de.is24.deadcode4j.plugin.packaginghandler.PackagingHandler;
 import de.is24.deadcode4j.plugin.packaginghandler.PomPackagingHandler;
 import de.is24.deadcode4j.plugin.packaginghandler.WarPackagingHandler;
 import de.is24.maven.slf4j.AbstractSlf4jMojo;
@@ -19,6 +17,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.Callable;
 
@@ -145,7 +144,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
         addCustomSuperClassesAnalyzerIfConfigured(analyzers);
         addCustomXmlAnalyzerIfConfigured(analyzers);
         DeadCodeFinder deadCodeFinder = new DeadCodeFinder(analyzers);
-        return deadCodeFinder.findDeadCode(gatherCodeRepositories());
+        return deadCodeFinder.findDeadCode(gatherModules());
     }
 
     private void addCustomAnnotationsAnalyzerIfConfigured(Set<Analyzer> analyzers) {
@@ -183,18 +182,18 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
         }
     }
 
-    private Iterable<CodeRepository> gatherCodeRepositories() throws MojoExecutionException {
-        CodeRepositoryGenerator codeRepositoryGenerator = new CodeRepositoryGenerator(new Callable<Log>() {
+    private Iterable<Module> gatherModules() throws MojoExecutionException {
+        ModuleGenerator moduleGenerator = new ModuleGenerator(new Callable<Log>() {
             @Override
             public Log call() {
                 return getLog();
             }
         });
-        List<CodeRepository> codeRepositories = newArrayList();
+        List<Module> modules = newArrayList();
         for (MavenProject project : getProjectsToAnalyze()) {
-            codeRepositories.addAll(codeRepositoryGenerator.getCodeRepositoryFor(project));
+            modules.add(moduleGenerator.getModuleFor(project));
         }
-        return codeRepositories;
+        return modules;
     }
 
     private Collection<MavenProject> getProjectsToAnalyze() {
@@ -236,26 +235,26 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     }
 
     /**
-     * "Calculates" the <code>CodeRepository</code> instances to analyze for a given <code>MavenProject</code>.
+     * Calculates the module for a given maven project.
      *
      * @since 1.6
      */
-    private static class CodeRepositoryGenerator {
+    private static class ModuleGenerator {
+        private final PackagingHandler defaultPackagingHandler;
+        private final Map<String, PackagingHandler> packagingHandlers = newHashMap();
 
-        private final de.is24.deadcode4j.plugin.packaginghandler.PackagingHandler defaultPackagingHandler;
-        private final Map<String, de.is24.deadcode4j.plugin.packaginghandler.PackagingHandler> packagingHandlers = newHashMap();
-
-        private CodeRepositoryGenerator(Callable<Log> logAccessor) {
+        private ModuleGenerator(Callable<Log> logAccessor) {
             this.defaultPackagingHandler = new DefaultPackagingHandler(logAccessor);
             packagingHandlers.put("pom", new PomPackagingHandler(logAccessor));
             packagingHandlers.put("war", new WarPackagingHandler(logAccessor));
         }
 
-        @Nonnull
-        public Collection<CodeRepository> getCodeRepositoryFor(@Nonnull MavenProject project) throws MojoExecutionException {
-            de.is24.deadcode4j.plugin.packaginghandler.PackagingHandler packagingHandler =
+        @Nullable
+        public Module getModuleFor(@Nonnull MavenProject project) throws MojoExecutionException {
+            PackagingHandler packagingHandler =
                     getValueOrDefault(this.packagingHandlers, project.getPackaging(), this.defaultPackagingHandler);
-            return packagingHandler.getCodeRepositoriesFor(project);
+            Collection<CodeRepository> codeRepositories = packagingHandler.getCodeRepositoriesFor(project);
+            return new Module(codeRepositories);
         }
 
     }

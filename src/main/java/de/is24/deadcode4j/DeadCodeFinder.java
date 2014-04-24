@@ -29,16 +29,18 @@ public class DeadCodeFinder {
     }
 
     @Nonnull
-    public DeadCode findDeadCode(@Nonnull Iterable<CodeRepository> codeRepositories) {
-        AnalyzedCode analyzedCode = analyzeCode(codeRepositories);
+    public DeadCode findDeadCode(@Nonnull Iterable<Module> modules) {
+        AnalyzedCode analyzedCode = analyzeCode(modules);
         return computeDeadCode(analyzedCode);
     }
 
     @Nonnull
-    private AnalyzedCode analyzeCode(@Nonnull Iterable<CodeRepository> codeRepositories) {
+    private AnalyzedCode analyzeCode(@Nonnull Iterable<Module> modules) {
         CodeContext codeContext = new CodeContext();
-        for (CodeRepository codeRepository : codeRepositories) {
-            analyzeRepository(codeContext, codeRepository);
+        for (Module module : modules) {
+            for (CodeRepository codeRepository : module.getAllRepositories()) {
+                analyzeRepository(codeContext, codeRepository);
+            }
         }
 
         return codeContext.getAnalyzedCode();
