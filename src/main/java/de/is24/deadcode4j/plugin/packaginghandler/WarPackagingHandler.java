@@ -9,13 +9,13 @@ import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.util.Collection;
 
 import static de.is24.deadcode4j.Utils.getKeyFor;
 import static java.util.Collections.singleton;
-import static org.apache.commons.io.filefilter.FileFilterUtils.asFileFilter;
-import static org.apache.commons.io.filefilter.FileFilterUtils.notFileFilter;
+import static org.apache.commons.io.filefilter.FileFilterUtils.*;
 
 /**
  * The <code>WarPackagingHandler</code> returns the configured <tt>webappDirectory</tt> or the default directory where
@@ -25,28 +25,49 @@ import static org.apache.commons.io.filefilter.FileFilterUtils.notFileFilter;
  */
 public class WarPackagingHandler extends PackagingHandler {
 
+    @Nullable
+    @Override
+    public Repository getOutputRepositoryFor(@Nonnull MavenProject project) throws MojoExecutionException {
+        final File webappDirectory = calculateWebAppDirectory(project, true);
+        return new Repository(new File(webappDirectory, "WEB-INF/classes"));
+    }
+
     @Override
     @Nonnull
-    public Collection<Repository> getRepositoriesFor(@Nonnull MavenProject project) throws MojoExecutionException {
-        logger.debug("Project {} has war packaging, looking for webapp directory...", getKeyFor(project));
+    public Collection<Repository> getAdditionalRepositoriesFor(@Nonnull MavenProject project) throws MojoExecutionException {
+        final File webappDirectory = calculateWebAppDirectory(project, false);
+        final File directory = new File(webappDirectory, "WEB-INF");
+        IOFileFilter fileFilter = notFileFilter(or(
+                        asFileFilter(new SubDirectoryFilter(directory, "lib")),
+                        asFileFilter(new SubDirectoryFilter(directory, "classes")))
+        );
+        return singleton(new Repository(directory, fileFilter));
+    }
+
+    private File calculateWebAppDirectory(MavenProject project, boolean log) throws MojoExecutionException {
+        if (log) {
+            logger.debug("Project {} has war packaging, looking for webapp directory...", getKeyFor(project));
+        }
         Plugin plugin = project.getPlugin("org.apache.maven.plugins:maven-war-plugin");
         Xpp3Dom configuration = (Xpp3Dom) plugin.getConfiguration();
         Xpp3Dom webappDirectoryConfig = configuration == null ? null : configuration.getChild("webappDirectory");
         final File webappDirectory;
         if (webappDirectoryConfig != null) {
             webappDirectory = new File(webappDirectoryConfig.getValue());
-            logger.debug("Found custom webapp directory [{}].", webappDirectory);
+            if (log) {
+                logger.debug("Found custom webapp directory [{}].", webappDirectory);
+            }
         } else {
             webappDirectory = new File(project.getBuild().getDirectory() + "/" + project.getBuild().getFinalName());
-            logger.debug("Using default webapp directory [{}].", webappDirectory);
+            if (log) {
+                logger.debug("Using default webapp directory [{}].", webappDirectory);
+            }
         }
         if (!webappDirectory.exists()) {
             throw new MojoExecutionException("The webapp directory of " + getKeyFor(project) +
                     " does not exist - please make sure the project is packaged!");
         }
-        final File directory = new File(webappDirectory, "WEB-INF");
-        IOFileFilter fileFilter = notFileFilter(asFileFilter(new SubDirectoryFilter(directory, "lib")));
-        return singleton(new Repository(directory, fileFilter));
+        return webappDirectory;
     }
 
 }

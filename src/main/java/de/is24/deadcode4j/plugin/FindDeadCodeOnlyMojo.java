@@ -245,7 +245,10 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
         public Module getModuleFor(@Nonnull MavenProject project) throws MojoExecutionException {
             PackagingHandler packagingHandler =
                     getValueOrDefault(this.packagingHandlers, project.getPackaging(), this.defaultPackagingHandler);
-            Collection<Repository> repositories = packagingHandler.getRepositoriesFor(project);
+            List<Repository> repositories = newArrayList();
+            Repository outputRepository = packagingHandler.getOutputRepositoryFor(project);
+            addIfNonNull(repositories, outputRepository);
+            repositories.addAll(packagingHandler.getAdditionalRepositoriesFor(project));
             return new Module(repositories);
         }
 
