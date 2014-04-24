@@ -38,6 +38,18 @@ public final class A_SuperClassAnalyzer extends AnAnalyzer {
     }
 
     @Test
+    public void reportsASubClassOfASubClassAsLiveCode() {
+        Analyzer objectUnderTest = new SuperClassAnalyzer("junit", "java.lang.Thread") {
+        };
+
+        objectUnderTest.doAnalysis(codeContext, getFile("SubClassOfSubClassThatShouldBeLive.class"));
+
+        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        assertThat("Should have reported some dependencies!", codeDependencies.size(), is(1));
+        assertThat(concat(codeDependencies.values()), containsInAnyOrder("SubClassOfSubClassThatShouldBeLive"));
+    }
+
+    @Test
     public void doesNotReportASubClassWithIrrelevantSuperClass() {
         Analyzer objectUnderTest = new SuperClassAnalyzer("junit", "java.lang.Thread") {
         };

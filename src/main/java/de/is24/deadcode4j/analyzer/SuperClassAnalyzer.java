@@ -4,11 +4,15 @@ import com.google.common.collect.Sets;
 import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
 import javassist.CtClass;
+import javassist.NotFoundException;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Lists.newArrayList;
 
 /**
  * Serves as a base class with which to mark classes as being in use if they are a direct subclass of one of the
@@ -55,9 +59,23 @@ public abstract class SuperClassAnalyzer extends ByteCodeAnalyzer implements Ana
     protected final void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
         String clazzName = clazz.getName();
         codeContext.addAnalyzedClass(clazzName);
-        if (this.superClasses.contains(clazz.getClassFile2().getSuperclass())) {
+        if (!Collections.disjoint(this.superClasses, getClassHierarchy(clazz))) {
             codeContext.addDependencies(this.dependerId, clazzName);
         }
+    }
+
+    private List<String> getClassHierarchy(final CtClass clazz) {
+        List<String> classes = newArrayList();
+        CtClass loopClass = clazz;
+        do {
+            classes.add(loopClass.getClassFile2().getSuperclass());
+            try {
+                loopClass = loopClass.getSuperclass();
+            } catch (NotFoundException e) {
+                logger.warn("The ClassPath is not correctly set up! Skipping superclass check for {}.", clazz.getName(), e);
+            }
+        } while (loopClass != null);
+        return classes;
     }
 
 }
