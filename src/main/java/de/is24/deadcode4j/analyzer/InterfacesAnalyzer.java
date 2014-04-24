@@ -3,13 +3,13 @@ package de.is24.deadcode4j.analyzer;
 import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
 import javassist.CtClass;
+import javassist.NotFoundException;
 
 import javax.annotation.Nonnull;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Sets.newHashSet;
-import static java.util.Arrays.asList;
 import static java.util.Collections.disjoint;
 
 /**
@@ -60,9 +60,30 @@ public abstract class InterfacesAnalyzer extends ByteCodeAnalyzer implements Ana
         String clazzName = clazz.getName();
         codeContext.addAnalyzedClass(clazzName);
 
-        if (!disjoint(this.interfaceClasses, asList(clazz.getClassFile2().getInterfaces()))) {
+        final Set<String> allImplementedInterfaces;
+        try {
+            allImplementedInterfaces = getAllImplementedInterfaces(clazz);
+        } catch (NotFoundException e) {
+            logger.warn("The class path is not correctly set up! Skipping interfaces check for {}.", clazz.getName(), e);
+            return;
+        }
+        if (!disjoint(this.interfaceClasses, allImplementedInterfaces)) {
             codeContext.addDependencies(this.dependerId, clazzName);
         }
+    }
+
+    private Set<String> getAllImplementedInterfaces(final CtClass clazz) throws NotFoundException {
+        Set<String> interfaces = newHashSet();
+        CtClass loopClass = clazz;
+        do {
+            for (CtClass anInterface : loopClass.getInterfaces()) {
+                interfaces.add(anInterface.getName());
+                interfaces.addAll(getAllImplementedInterfaces(anInterface));
+            }
+            loopClass = loopClass.getSuperclass();
+        } while (loopClass != null);
+        interfaces.remove("java.lang.Object");
+        return interfaces;
     }
 
 }

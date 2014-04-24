@@ -8,18 +8,18 @@ import java.io.IOException;
 import static java.io.File.createTempFile;
 
 @SuppressWarnings("ConstantConditions")
-public class A_CodeRepository {
+public class A_Repository {
 
     @Test(expected = NullPointerException.class)
     public void throwsAnExceptionIfTheRepositoryIsNull() throws IOException {
-        new CodeRepository(null);
+        new Repository(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void throwsAnExceptionIfTheRepositoryIsNoDirectory() throws IOException {
         File tmpFile = createTempFile("JUnit", ".tmp");
         tmpFile.deleteOnExit();
-        new CodeRepository(tmpFile);
+        new Repository(tmpFile);
     }
 
 }

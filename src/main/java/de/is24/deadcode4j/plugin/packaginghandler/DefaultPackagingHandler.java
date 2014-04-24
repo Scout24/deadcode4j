@@ -1,17 +1,14 @@
 package de.is24.deadcode4j.plugin.packaginghandler;
 
-import de.is24.deadcode4j.CodeRepository;
-import org.apache.maven.plugin.logging.Log;
+import de.is24.deadcode4j.Repository;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
-import java.util.Collection;
-import java.util.concurrent.Callable;
 
 import static de.is24.deadcode4j.Utils.getKeyFor;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singleton;
 
 /**
  * The <code>DefaultPackagingHandler</code> returns the default output directory if it exists.
@@ -20,22 +17,18 @@ import static java.util.Collections.singleton;
  */
 public class DefaultPackagingHandler extends PackagingHandler {
 
-    public DefaultPackagingHandler(Callable<Log> logAccessor) {
-        super(logAccessor);
-    }
-
+    @Nullable
     @Override
-    @Nonnull
-    public Collection<CodeRepository> getCodeRepositoriesFor(@Nonnull MavenProject project) {
+    public Repository getOutputRepositoryFor(@Nonnull MavenProject project) throws MojoExecutionException {
+        logger.debug("Project {} has {} packaging, looking for output directory...", getKeyFor(project), project.getPackaging());
         File outputDirectory = new File(project.getBuild().getOutputDirectory());
         if (!outputDirectory.exists()) {
-            getLog().warn("The output directory of " + getKeyFor(project) +
+            logger.warn("The output directory of " + getKeyFor(project) +
                     " does not exist - assuming the project simply has nothing to provide!");
-            return emptyList();
+            return null;
         }
-        if (getLog().isDebugEnabled()) {
-            getLog().debug("Going to analyze output directory [" + outputDirectory + "].");
-        }
-        return singleton(new CodeRepository(outputDirectory));
+        logger.debug("Going to analyze output directory [{}].", outputDirectory);
+        return new Repository(outputDirectory);
     }
+
 }

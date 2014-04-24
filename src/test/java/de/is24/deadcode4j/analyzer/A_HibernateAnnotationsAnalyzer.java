@@ -1,7 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.Analyzer;
-import de.is24.deadcode4j.CodeContext;
 import org.codehaus.plexus.util.ReflectionUtils;
 import org.hamcrest.Matcher;
 import org.hamcrest.collection.IsArrayContaining;
@@ -25,6 +24,10 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
 
     private Analyzer objectUnderTest;
 
+    private static <T> Matcher<T[]> hasVarArgItem(Matcher<? super T> elementMatcher) {
+        return new MyVarArgsMatcher<T>(elementMatcher);
+    }
+
     @Before
     public void setUp() throws Exception {
         objectUnderTest = new HibernateAnnotationsAnalyzer();
@@ -32,7 +35,6 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
 
     @Test
     public void recognizesDependencyFromClassWithTypeAnnotatedFieldToTypeDefAnnotatedClass() {
-        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassWithTypeDef.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassUsingTypeAtField.class"));
         objectUnderTest.finishAnalysis(codeContext);
@@ -46,7 +48,6 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
 
     @Test
     public void recognizesDependencyFromClassWithTypeAnnotatedMethodToTypeDefAnnotatedClass() {
-        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassWithTypeDef.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassUsingTypeAtMethod.class"));
         objectUnderTest.finishAnalysis(codeContext);
@@ -60,7 +61,6 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
 
     @Test
     public void recognizesDependencyFromTypeAnnotatedClassesToTypeDefsAnnotatedPackage() {
-        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/Entity.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/package-info.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/AnotherEntity.class"));
@@ -79,7 +79,6 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
 
     @Test
     public void recognizesDependencyFromClassWithTypeAnnotatedMethodToReferencedClass() {
-        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassUsingTypeWithoutTypeDef.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("IndependentClass.class"));
         objectUnderTest.finishAnalysis(codeContext);
@@ -93,8 +92,6 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
 
     @Test
     public void reportsDependencyToDefinedStrategyIfStrategyIsPartOfTheAnalysis() {
-        CodeContext codeContext = new CodeContext();
-
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassDefiningGenericGenerator.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("IndependentClass.class"));
         objectUnderTest.finishAnalysis(codeContext);
@@ -108,8 +105,6 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
 
     @Test
     public void doesNotReportDependencyToDefinedStrategyIfStrategyIsNoPartOfTheAnalysis() {
-        CodeContext codeContext = new CodeContext();
-
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassDefiningGenericGenerator.class"));
         objectUnderTest.finishAnalysis(codeContext);
 
@@ -120,8 +115,6 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
 
     @Test
     public void reportsDependencyFromPackageToDefinedStrategies() {
-        CodeContext codeContext = new CodeContext();
-
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/package-info.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("IndependentClass.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("DependingClass.class"));
@@ -136,7 +129,6 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
 
     @Test
     public void recognizesDependencyFromClassWithGeneratedValueAnnotatedFieldToGenericGeneratorAnnotatedClass() {
-        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassDefiningGenericGenerator.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassUsingGeneratedValueAtField.class"));
         objectUnderTest.finishAnalysis(codeContext);
@@ -152,7 +144,6 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
 
     @Test
     public void recognizesDependencyFromClassWithGeneratedValueAnnotatedMethodToGenericGeneratorAnnotatedPackage() {
-        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassDefiningGenericGenerator.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassUsingGeneratedValueAtMethod.class"));
         objectUnderTest.finishAnalysis(codeContext);
@@ -168,7 +159,6 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
 
     @Test
     public void recognizesDependencyFromGeneratedValueAnnotatedClassesToGenericGeneratorAnnotatedPackage() {
-        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/AnotherEntityWithGeneratedValue.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/EntityWithGeneratedValue.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/package-info.class"));
@@ -190,18 +180,13 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
         Logger loggerMock = mock(Logger.class);
         ReflectionUtils.setVariableValueInObject(objectUnderTest, "logger", loggerMock);
 
-        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassWithTypeDef.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassWithDuplicatedTypeDef.class"));
         objectUnderTest.finishAnalysis(codeContext);
 
         verify(loggerMock).warn(
                 Matchers.contains("@TypeDef"),
-                (Object[]) argThat( hasVarArgItem(equalTo("aRandomType"))));
-    }
-
-    private static <T> Matcher<T[]> hasVarArgItem(Matcher<? super T> elementMatcher) {
-        return new MyVarArgsMatcher<T>(elementMatcher);
+                (Object[]) argThat(hasVarArgItem(equalTo("aRandomType"))));
     }
 
     private static class MyVarArgsMatcher<T> extends IsArrayContaining<T> implements VarargMatcher {

@@ -1,14 +1,15 @@
 package de.is24.deadcode4j.plugin.packaginghandler;
 
-import com.google.common.base.Preconditions;
-import de.is24.deadcode4j.CodeRepository;
+import de.is24.deadcode4j.Repository;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
-import java.util.concurrent.Callable;
+import javax.annotation.Nullable;
+
+import static java.util.Collections.emptyList;
 
 /**
  * A <code>PackagingHandler</code> determines which code repositories exist for a specific packaging (like "jar", "war", etc.).
@@ -16,33 +17,24 @@ import java.util.concurrent.Callable;
  * @since 1.2.0
  */
 public abstract class PackagingHandler {
-
-    private final Callable<Log> logAccessor;
-
-    protected PackagingHandler(Callable<Log> logAccessor) {
-        Preconditions.checkNotNull(logAccessor);
-        this.logAccessor = logAccessor;
-    }
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
-     * Returns the code repositories to analyze for this packaging.
+     * Returns the "output" repository - i.e. the directory where compiled classes can be found - for the given project.
      *
-     * @since 1.2.0
+     * @since 1.2
      */
-    @Nonnull
-    public abstract Collection<CodeRepository> getCodeRepositoriesFor(@Nonnull MavenProject project) throws MojoExecutionException;
+    @Nullable
+    public abstract Repository getOutputRepositoryFor(@Nonnull MavenProject project) throws MojoExecutionException;
 
     /**
-     * Returns the {@link org.apache.maven.plugin.logging.Log} to use.
+     * Returns additional repositories (configuration, JSPs, raw java files) to analyze for the given project.
      *
      * @since 1.6
      */
-    protected final Log getLog() {
-        try {
-            return logAccessor.call();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    @Nonnull
+    public Iterable<Repository> getAdditionalRepositoriesFor(@Nonnull MavenProject project) throws MojoExecutionException {
+        return emptyList();
     }
 
 }

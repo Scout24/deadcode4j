@@ -1,6 +1,5 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.CodeContext;
 import org.junit.Test;
 
 import java.util.Map;
@@ -8,9 +7,7 @@ import java.util.Map;
 import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 
 public final class A_CustomXmlAnalyzer extends AnAnalyzer {
 
@@ -25,7 +22,6 @@ public final class A_CustomXmlAnalyzer extends AnAnalyzer {
         CustomXmlAnalyzer objectUnderTest = new CustomXmlAnalyzer("junit", ".xml", null);
         objectUnderTest.registerXPath("elementWithClass/text()");
 
-        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
@@ -38,7 +34,6 @@ public final class A_CustomXmlAnalyzer extends AnAnalyzer {
         CustomXmlAnalyzer objectUnderTest = new CustomXmlAnalyzer("junit", ".xml", null);
         objectUnderTest.registerXPath("restrictedElement[@locked='false']/text()");
 
-        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
@@ -51,7 +46,6 @@ public final class A_CustomXmlAnalyzer extends AnAnalyzer {
         CustomXmlAnalyzer objectUnderTest = new CustomXmlAnalyzer("junit", ".xml", null);
         objectUnderTest.registerXPath("element/@attributeWithClass");
 
-        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
@@ -64,7 +58,6 @@ public final class A_CustomXmlAnalyzer extends AnAnalyzer {
         CustomXmlAnalyzer objectUnderTest = new CustomXmlAnalyzer("junit", ".xml", null);
         objectUnderTest.registerXPath("restrictedElement[@locked='false']/@attributeWithClass");
 
-        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();

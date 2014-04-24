@@ -26,6 +26,35 @@ public class CodeContext {
     private final org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
     private final Set<String> analyzedClasses = newHashSet();
     private final Map<String, Set<String>> dependencyMap = newHashMap();
+    private final Map<Object, Object> cache = newHashMap();
+    private final Module module;
+
+    /**
+     * Creates a new instance of <code>CodeContext</code> for the specified module.
+     *
+     * @since 1.6
+     */
+    public CodeContext(Module module) {
+        this.module = module;
+    }
+
+    /**
+     * Returns the associated <code>Module</code>.
+     *
+     * @since 1.6
+     */
+    public Module getModule() {
+        return module;
+    }
+
+    /**
+     * Returns a <code>Map</code> that can be used to cache things or pass along between analyzers.
+     *
+     * @return a simple {@link java.util.Map}
+     */
+    public Map<Object, Object> getCache() {
+        return cache;
+    }
 
     /**
      * Report code dependencies.
@@ -77,5 +106,4 @@ public class CodeContext {
     public AnalyzedCode getAnalyzedCode() {
         return new AnalyzedCode(this.analyzedClasses, this.dependencyMap);
     }
-
 }

@@ -1,7 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.Analyzer;
-import de.is24.deadcode4j.CodeContext;
 import org.junit.Test;
 
 import java.util.Map;
@@ -16,7 +15,6 @@ public final class A_SpringNamespaceHandlerAnalyzer extends AnAnalyzer {
     public void shouldRecognizeDefinedNamespaceHandlers() {
         Analyzer objectUnderTest = new SpringNamespaceHandlerAnalyzer();
 
-        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("META-INF/spring.handlers"));
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();

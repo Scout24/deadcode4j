@@ -1,6 +1,7 @@
 package de.is24.deadcode4j;
 
 import com.google.common.base.Function;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 
 import javax.annotation.Nonnull;
@@ -17,6 +18,20 @@ import static com.google.common.collect.Sets.newHashSet;
  * @since 1.2.0
  */
 public final class Utils {
+
+    private Utils() {
+        super();
+    }
+
+    /**
+     * Returns <i>groupId:artifactId:version</i> for the specified artifact.
+     *
+     * @since 1.6
+     */
+    @Nonnull
+    public static String getKeyFor(@Nonnull Artifact artifact) {
+        return artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getVersion();
+    }
 
     /**
      * Returns <i>groupId:artifactId</i> for the specified project.
@@ -63,11 +78,6 @@ public final class Utils {
         V value = map.get(key);
         return value != null ? value : defaultValue;
     }
-
-    private Utils() {
-        super();
-    }
-
 
     /**
      * Retrieves an existing <code>Set</code> being mapped by the specified key or puts a new one into the map.

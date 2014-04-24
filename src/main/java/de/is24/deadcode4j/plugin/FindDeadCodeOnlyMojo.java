@@ -1,28 +1,33 @@
 package de.is24.deadcode4j.plugin;
 
 import com.google.common.collect.Sets;
-import de.is24.deadcode4j.Analyzer;
-import de.is24.deadcode4j.CodeRepository;
-import de.is24.deadcode4j.DeadCode;
-import de.is24.deadcode4j.DeadCodeFinder;
+import de.is24.deadcode4j.*;
 import de.is24.deadcode4j.analyzer.*;
 import de.is24.deadcode4j.plugin.packaginghandler.DefaultPackagingHandler;
+import de.is24.deadcode4j.plugin.packaginghandler.PackagingHandler;
 import de.is24.deadcode4j.plugin.packaginghandler.PomPackagingHandler;
 import de.is24.deadcode4j.plugin.packaginghandler.WarPackagingHandler;
 import de.is24.maven.slf4j.AbstractSlf4jMojo;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
+import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
+import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.repository.RepositorySystem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import java.io.File;
 import java.util.*;
-import java.util.concurrent.Callable;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Iterables.size;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.transform;
 import static com.google.common.collect.Maps.newHashMap;
@@ -30,6 +35,7 @@ import static de.is24.deadcode4j.Utils.*;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static org.apache.maven.plugin.MojoExecution.Source.CLI;
+import static org.apache.maven.plugins.annotations.ResolutionScope.COMPILE;
 
 /**
  * Finds dead (i.e. unused) code. In contrast to <code>find</code>, no phase is executed.
@@ -37,7 +43,11 @@ import static org.apache.maven.plugin.MojoExecution.Source.CLI;
  * @see FindDeadCodeMojo
  * @since 1.5
  */
-@Mojo(name = "find-only", aggregator = true, threadSafe = true, requiresProject = true)
+@Mojo(name = "find-only",
+        aggregator = true,
+        requiresProject = true,
+        requiresDependencyCollection = COMPILE,
+        threadSafe = true)
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
 
@@ -84,6 +94,8 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     @Parameter(property = "reactorProjects", readonly = true)
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private List<MavenProject> reactorProjects;
+    @Component
+    private RepositorySystem repositorySystem;
     /**
      * Lists the fqcn of the classes marking a direct subclass as being "live code".
      *
@@ -145,7 +157,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
         addCustomSuperClassesAnalyzerIfConfigured(analyzers);
         addCustomXmlAnalyzerIfConfigured(analyzers);
         DeadCodeFinder deadCodeFinder = new DeadCodeFinder(analyzers);
-        return deadCodeFinder.findDeadCode(gatherCodeRepositories());
+        return deadCodeFinder.findDeadCode(gatherModules());
     }
 
     private void addCustomAnnotationsAnalyzerIfConfigured(Set<Analyzer> analyzers) {
@@ -183,18 +195,9 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
         }
     }
 
-    private Iterable<CodeRepository> gatherCodeRepositories() throws MojoExecutionException {
-        CodeRepositoryGenerator codeRepositoryGenerator = new CodeRepositoryGenerator(new Callable<Log>() {
-            @Override
-            public Log call() {
-                return getLog();
-            }
-        });
-        List<CodeRepository> codeRepositories = newArrayList();
-        for (MavenProject project : getProjectsToAnalyze()) {
-            codeRepositories.addAll(codeRepositoryGenerator.getCodeRepositoryFor(project));
-        }
-        return codeRepositories;
+    private Iterable<Module> gatherModules() throws MojoExecutionException {
+        ModuleGenerator moduleGenerator = new ModuleGenerator(this.repositorySystem);
+        return moduleGenerator.getModulesFor(getProjectsToAnalyze());
     }
 
     private Collection<MavenProject> getProjectsToAnalyze() {
@@ -215,7 +218,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
                 mavenProjects.remove(mavenProject);
                 List<MavenProject> collectedProjects = mavenProject.getCollectedProjects();
                 if (collectedProjects.size() > 0) {
-                    getLog().info("  Aggregated Projects " + transform(collectedProjects, toKey()) + " will be skipped.");
+                    getLog().info("    Aggregated Projects " + transform(collectedProjects, toKey()) + " will be skipped.");
                     mavenProjects.removeAll(collectedProjects);
                 }
             }
@@ -236,26 +239,89 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     }
 
     /**
-     * "Calculates" the <code>CodeRepository</code> instances to analyze for a given <code>MavenProject</code>.
+     * Calculates the module for a given maven project.
      *
      * @since 1.6
      */
-    private static class CodeRepositoryGenerator {
+    private static class ModuleGenerator {
+        private final Logger logger = LoggerFactory.getLogger(getClass());
+        private final PackagingHandler defaultPackagingHandler = new DefaultPackagingHandler();
+        private final Map<String, PackagingHandler> packagingHandlers = newHashMap();
+        private final RepositorySystem repositorySystem;
 
-        private final de.is24.deadcode4j.plugin.packaginghandler.PackagingHandler defaultPackagingHandler;
-        private final Map<String, de.is24.deadcode4j.plugin.packaginghandler.PackagingHandler> packagingHandlers = newHashMap();
+        private ModuleGenerator(@Nonnull RepositorySystem repositorySystem) {
+            this.repositorySystem = repositorySystem;
+            packagingHandlers.put("pom", new PomPackagingHandler());
+            packagingHandlers.put("war", new WarPackagingHandler());
+        }
 
-        private CodeRepositoryGenerator(Callable<Log> logAccessor) {
-            this.defaultPackagingHandler = new DefaultPackagingHandler(logAccessor);
-            packagingHandlers.put("pom", new PomPackagingHandler(logAccessor));
-            packagingHandlers.put("war", new WarPackagingHandler(logAccessor));
+
+        @Nonnull
+        public Iterable<Module> getModulesFor(@Nonnull Iterable<MavenProject> projects) throws MojoExecutionException {
+            List<Module> modules = newArrayList();
+            Map<String, Module> knownModules = newHashMap();
+            for (MavenProject project : projects) {
+                Module module = getModuleFor(project, knownModules);
+                knownModules.put(getKeyFor(project.getArtifact()), module);
+                if (size(module.getAllRepositories()) > 0) {
+                    modules.add(module);
+                    logger.debug("Added {} for {}.", module, project);
+                } else {
+                    logger.debug("No repositories available for {}.", project);
+                }
+            }
+            return modules;
         }
 
         @Nonnull
-        public Collection<CodeRepository> getCodeRepositoryFor(@Nonnull MavenProject project) throws MojoExecutionException {
-            de.is24.deadcode4j.plugin.packaginghandler.PackagingHandler packagingHandler =
+        private Module getModuleFor(@Nonnull MavenProject project, Map<String, Module> knownModules) throws MojoExecutionException {
+            PackagingHandler packagingHandler =
                     getValueOrDefault(this.packagingHandlers, project.getPackaging(), this.defaultPackagingHandler);
-            return packagingHandler.getCodeRepositoriesFor(project);
+            Repository outputRepository = packagingHandler.getOutputRepositoryFor(project);
+            Iterable<Repository> additionalRepositories = packagingHandler.getAdditionalRepositoriesFor(project);
+            Iterable<File> classPath = computeClassPath(project, knownModules);
+            return new Module(outputRepository, classPath, additionalRepositories);
+        }
+
+        protected Iterable<File> computeClassPath(MavenProject project, Map<String, Module> knownModules) {
+            String projectKey = getKeyFor(project);
+            logger.debug("Computing class path for project {}:", projectKey);
+            ArrayList<File> files = newArrayList();
+            ScopeArtifactFilter artifactFilter = new ScopeArtifactFilter(Artifact.SCOPE_COMPILE);
+            for (Artifact dependency : project.getArtifacts()) {
+                if (!artifactFilter.include(dependency)) {
+                    continue;
+                }
+                String dependencyKey = getKeyFor(dependency);
+                Module knownModule = knownModules.get(dependencyKey);
+                if (knownModule != null) {
+                    Repository outputRepository = knownModule.getOutputRepository();
+                    if (outputRepository == null) {
+                        logger.debug("No output available for {}; nothing added to the class path.", dependencyKey);
+                    } else {
+                        files.add(outputRepository.getDirectory());
+                        logger.debug("Added project: {}", outputRepository.getDirectory());
+                    }
+                    continue;
+                }
+                if (!dependency.isResolved()) {
+                    ArtifactResolutionRequest request = new ArtifactResolutionRequest();
+                    request.setArtifact(dependency);
+                    ArtifactResolutionResult artifactResolutionResult = repositorySystem.resolve(request);
+                    if (!artifactResolutionResult.isSuccess()) {
+                        logger.warn("Failed to resolve [" + dependency + "]; some analyzers may not work properly.");
+                        continue;
+                    }
+                }
+                File classPathElement = dependency.getFile();
+                if (classPathElement == null) {
+                    logger.warn("No valid path to [" + dependency + "] found; some analyzers may not work properly.");
+                    continue;
+                }
+                files.add(classPathElement);
+                logger.debug("Added artifact: {}", classPathElement);
+            }
+            return files;
         }
 
     }
