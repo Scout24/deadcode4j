@@ -1,6 +1,5 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.CodeContext;
 import org.junit.Test;
 
 import java.util.Map;
@@ -16,7 +15,6 @@ public final class A_SpringXmlAnalyzer extends AnAnalyzer {
     public void shouldParseSpringFiles() {
         SpringXmlAnalyzer objectUnderTest = new SpringXmlAnalyzer();
 
-        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("spring.xml"));
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();

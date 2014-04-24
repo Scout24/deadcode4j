@@ -7,7 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
+import javax.annotation.Nullable;
+
+import static java.util.Collections.emptyList;
 
 /**
  * A <code>PackagingHandler</code> determines which code repositories exist for a specific packaging (like "jar", "war", etc.).
@@ -18,11 +20,21 @@ public abstract class PackagingHandler {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
-     * Returns the code repositories to analyze for this packaging.
+     * Returns the "output" repository - i.e. the directory where compiled classes can be found - for the given project.
      *
-     * @since 1.2.0
+     * @since 1.2
+     */
+    @Nullable
+    public abstract Repository getOutputRepositoryFor(@Nonnull MavenProject project) throws MojoExecutionException;
+
+    /**
+     * Returns additional repositories (configuration, JSPs, raw java files) to analyze for the given project.
+     *
+     * @since 1.6
      */
     @Nonnull
-    public abstract Collection<Repository> getRepositoriesFor(@Nonnull MavenProject project) throws MojoExecutionException;
+    public Iterable<Repository> getAdditionalRepositoriesFor(@Nonnull MavenProject project) throws MojoExecutionException {
+        return emptyList();
+    }
 
 }

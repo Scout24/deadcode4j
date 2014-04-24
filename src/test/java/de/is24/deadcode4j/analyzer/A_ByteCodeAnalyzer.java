@@ -27,8 +27,6 @@ public final class A_ByteCodeAnalyzer extends AnAnalyzer {
 
     @Test
     public void analyzesAClassFile() {
-        CodeContext codeContext = new CodeContext();
-
         objectUnderTest.doAnalysis(codeContext, getFile("SingleClass.class"));
 
         assertThat("Should analyze one class", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(1));
@@ -37,8 +35,6 @@ public final class A_ByteCodeAnalyzer extends AnAnalyzer {
 
     @Test
     public void doesNotAnalyzeNonClassFile() {
-        CodeContext codeContext = new CodeContext();
-
         objectUnderTest.doAnalysis(codeContext, getFile("spring.xml"));
 
         assertThat("Should analyze no class", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(0));

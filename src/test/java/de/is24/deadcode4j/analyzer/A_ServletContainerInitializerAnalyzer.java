@@ -1,7 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.Analyzer;
-import de.is24.deadcode4j.CodeContext;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -23,7 +22,6 @@ public class A_ServletContainerInitializerAnalyzer extends AnAnalyzer {
 
     @Test
     public void shouldRecognizeServletContainerInitializerClasses() {
-        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/v3-metadata-missing.web.xml"));
         objectUnderTest.doAnalysis(codeContext, getFile("SomeServletInitializer.class"));
         objectUnderTest.finishAnalysis(codeContext);
@@ -35,7 +33,6 @@ public class A_ServletContainerInitializerAnalyzer extends AnAnalyzer {
 
     @Test
     public void shouldRecognizeServletContainerInitializerClassesIfMetadataCompleteAttributeIsFalse() {
-        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/v3-metadata-incomplete.web.xml"));
         objectUnderTest.doAnalysis(codeContext, getFile("SomeServletInitializer.class"));
         objectUnderTest.finishAnalysis(codeContext);
@@ -47,7 +44,6 @@ public class A_ServletContainerInitializerAnalyzer extends AnAnalyzer {
 
     @Test
     public void shouldRecognizeMetadataCompleteAttribute() {
-        CodeContext codeContext = new CodeContext();
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/v3-metadata-complete.web.xml"));
         objectUnderTest.doAnalysis(codeContext, getFile("SomeServletInitializer.class"));
         objectUnderTest.finishAnalysis(codeContext);

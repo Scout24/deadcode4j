@@ -1,7 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.Analyzer;
-import de.is24.deadcode4j.CodeContext;
 import org.junit.Test;
 
 import java.util.Map;
@@ -17,7 +16,6 @@ public final class A_SuperClassAnalyzer extends AnAnalyzer {
     public void reportsExistenceOfClasses() {
         Analyzer objectUnderTest = new SuperClassAnalyzer("junit", "java.lang.Thread") {
         };
-        CodeContext codeContext = new CodeContext();
 
         objectUnderTest.doAnalysis(codeContext, getFile("A.class"));
         assertThat(codeContext.getAnalyzedCode().getAnalyzedClasses(), containsInAnyOrder("A"));
@@ -30,7 +28,6 @@ public final class A_SuperClassAnalyzer extends AnAnalyzer {
     public void reportsASubClassAsLiveCode() {
         Analyzer objectUnderTest = new SuperClassAnalyzer("junit", "javax.servlet.http.HttpServlet", "java.lang.Thread") {
         };
-        CodeContext codeContext = new CodeContext();
 
         objectUnderTest.doAnalysis(codeContext, getFile("DeadServlet.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("SubClassThatShouldBeLive.class"));
@@ -41,10 +38,21 @@ public final class A_SuperClassAnalyzer extends AnAnalyzer {
     }
 
     @Test
+    public void reportsASubClassOfASubClassAsLiveCode() {
+        Analyzer objectUnderTest = new SuperClassAnalyzer("junit", "java.lang.Thread") {
+        };
+
+        objectUnderTest.doAnalysis(codeContext, getFile("SubClassOfSubClassThatShouldBeLive.class"));
+
+        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        assertThat("Should have reported some dependencies!", codeDependencies.size(), is(1));
+        assertThat(concat(codeDependencies.values()), containsInAnyOrder("SubClassOfSubClassThatShouldBeLive"));
+    }
+
+    @Test
     public void doesNotReportASubClassWithIrrelevantSuperClass() {
         Analyzer objectUnderTest = new SuperClassAnalyzer("junit", "java.lang.Thread") {
         };
-        CodeContext codeContext = new CodeContext();
 
         objectUnderTest.doAnalysis(codeContext, getFile("DeadServlet.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("SubClassThatShouldBeLive.class"));

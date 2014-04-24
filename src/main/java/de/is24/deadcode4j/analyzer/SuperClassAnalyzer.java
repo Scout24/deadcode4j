@@ -4,9 +4,12 @@ import com.google.common.collect.Sets;
 import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
 import javassist.CtClass;
+import javassist.NotFoundException;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -55,7 +58,14 @@ public abstract class SuperClassAnalyzer extends ByteCodeAnalyzer implements Ana
     protected final void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
         String clazzName = clazz.getName();
         codeContext.addAnalyzedClass(clazzName);
-        if (this.superClasses.contains(clazz.getClassFile2().getSuperclass())) {
+        final List<String> classHierarchy;
+        try {
+            classHierarchy = getClassHierarchy(clazz);
+        } catch (NotFoundException e) {
+            logger.warn("The class path is not correctly set up! Skipping superclass check for {}.", clazzName, e);
+            return;
+        }
+        if (!Collections.disjoint(this.superClasses, classHierarchy)) {
             codeContext.addDependencies(this.dependerId, clazzName);
         }
     }
