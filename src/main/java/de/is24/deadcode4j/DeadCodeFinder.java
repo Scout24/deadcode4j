@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -57,10 +56,9 @@ public class DeadCodeFinder {
     }
 
     private void analyzeRepository(@Nonnull CodeContext codeContext, @Nonnull Repository repository) {
-        RepositoryAnalyzer repositoryAnalyzer =
-                new RepositoryAnalyzer(repository.getFileFilter(), this.analyzers, codeContext);
+        RepositoryAnalyzer repositoryAnalyzer = new RepositoryAnalyzer(codeContext, repository, this.analyzers);
         try {
-            repositoryAnalyzer.analyze(repository.getDirectory());
+            repositoryAnalyzer.analyze();
         } catch (IOException e) {
             throw new RuntimeException("Failed to parse files of " + repository + "!", e);
         }
@@ -94,18 +92,22 @@ public class DeadCodeFinder {
     }
 
     private static class RepositoryAnalyzer extends DirectoryWalker<Void> {
-        private final Iterable<? extends Analyzer> analyzers;
-        private final CodeContext codeContext;
-        private Logger logger = LoggerFactory.getLogger(getClass());
 
-        public RepositoryAnalyzer(@Nonnull FileFilter fileFilter, @Nonnull Iterable<? extends Analyzer> analyzers, @Nonnull CodeContext codeContext) {
-            super(fileFilter, -1);
-            this.analyzers = analyzers;
+        private final Logger logger = LoggerFactory.getLogger(getClass());
+        private final CodeContext codeContext;
+        private final Repository repository;
+        private final Iterable<? extends Analyzer> analyzers;
+
+        public RepositoryAnalyzer(@Nonnull CodeContext codeContext, @Nonnull Repository repository, @Nonnull Iterable<? extends Analyzer> analyzers) {
+            super(repository.getFileFilter(), -1);
+            this.repository = repository;
             this.codeContext = codeContext;
+            this.analyzers = analyzers;
         }
 
-        public void analyze(File codeRepository) throws IOException {
-            super.walk(codeRepository, null);
+        public void analyze() throws IOException {
+            logger.debug("Starting analysis of [{}]...", this.repository);
+            super.walk(this.repository.getDirectory(), null);
         }
 
         @Override
@@ -123,8 +125,10 @@ public class DeadCodeFinder {
 
         @Override
         protected void handleEnd(Collection<Void> results) {
+            logger.debug("Finishing analysis of [{}]...", this.repository);
             for (Analyzer analyzer : this.analyzers)
                 analyzer.finishAnalysis(this.codeContext);
+            logger.debug("Finished analysis of [{}].", this.repository);
         }
 
     }
