@@ -38,8 +38,8 @@ public class DeadCodeFinder {
     private AnalyzedCode analyzeCode(@Nonnull Iterable<Module> modules) {
         CodeContext codeContext = new CodeContext();
         for (Module module : modules) {
-            for (CodeRepository codeRepository : module.getAllRepositories()) {
-                analyzeRepository(codeContext, codeRepository);
+            for (Repository repository : module.getAllRepositories()) {
+                analyzeRepository(codeContext, repository);
             }
         }
 
@@ -52,13 +52,13 @@ public class DeadCodeFinder {
         return new DeadCode(analyzedCode.getAnalyzedClasses(), deadClasses);
     }
 
-    private void analyzeRepository(@Nonnull CodeContext codeContext, @Nonnull CodeRepository codeRepository) {
-        CodeRepositoryAnalyzer codeRepositoryAnalyzer =
-                new CodeRepositoryAnalyzer(codeRepository.getFileFilter(), this.analyzers, codeContext);
+    private void analyzeRepository(@Nonnull CodeContext codeContext, @Nonnull Repository repository) {
+        RepositoryAnalyzer repositoryAnalyzer =
+                new RepositoryAnalyzer(repository.getFileFilter(), this.analyzers, codeContext);
         try {
-            codeRepositoryAnalyzer.analyze(codeRepository.getDirectory());
+            repositoryAnalyzer.analyze(repository.getDirectory());
         } catch (IOException e) {
-            throw new RuntimeException("Failed to parse files of " + codeRepository + "!", e);
+            throw new RuntimeException("Failed to parse files of " + repository + "!", e);
         }
     }
 
@@ -76,13 +76,13 @@ public class DeadCodeFinder {
         return deadClasses;
     }
 
-    private static class CodeRepositoryAnalyzer extends DirectoryWalker<Void> {
+    private static class RepositoryAnalyzer extends DirectoryWalker<Void> {
 
         private final Iterable<? extends Analyzer> analyzers;
         private final CodeContext codeContext;
         private Logger logger = LoggerFactory.getLogger(getClass());
 
-        public CodeRepositoryAnalyzer(@Nonnull FileFilter fileFilter, @Nonnull Iterable<? extends Analyzer> analyzers, @Nonnull CodeContext codeContext) {
+        public RepositoryAnalyzer(@Nonnull FileFilter fileFilter, @Nonnull Iterable<? extends Analyzer> analyzers, @Nonnull CodeContext codeContext) {
             super(fileFilter, -1);
             this.analyzers = analyzers;
             this.codeContext = codeContext;

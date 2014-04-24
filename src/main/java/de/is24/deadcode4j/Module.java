@@ -13,16 +13,16 @@ import static com.google.common.collect.Lists.newArrayList;
  */
 public class Module {
 
-    private final List<CodeRepository> codeRepositories;
+    private final List<Repository> codeRepositories;
 
     /**
      * Creates a new <code>Module</code>.
      *
-     * @param codeRepositories  a <code>Collection</code> containing the module's repositories to analyze
+     * @param repositories a <code>Collection</code> containing the module's repositories to analyze
      * @since 1.6
      */
-    public Module(@Nonnull Collection<CodeRepository> codeRepositories) {
-        this.codeRepositories = newArrayList(codeRepositories);
+    public Module(@Nonnull Collection<Repository> repositories) {
+        this.codeRepositories = newArrayList(repositories);
     }
 
     /**
@@ -31,7 +31,7 @@ public class Module {
      * @since 1.6
      */
     @Nonnull
-    public Iterable<CodeRepository> getAllRepositories() {
+    public Iterable<Repository> getAllRepositories() {
         return this.codeRepositories;
     }
 

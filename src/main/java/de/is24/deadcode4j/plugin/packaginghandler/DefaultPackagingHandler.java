@@ -1,6 +1,6 @@
 package de.is24.deadcode4j.plugin.packaginghandler;
 
-import de.is24.deadcode4j.CodeRepository;
+import de.is24.deadcode4j.Repository;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
@@ -26,7 +26,7 @@ public class DefaultPackagingHandler extends PackagingHandler {
 
     @Override
     @Nonnull
-    public Collection<CodeRepository> getCodeRepositoriesFor(@Nonnull MavenProject project) {
+    public Collection<Repository> getRepositoriesFor(@Nonnull MavenProject project) {
         File outputDirectory = new File(project.getBuild().getOutputDirectory());
         if (!outputDirectory.exists()) {
             getLog().warn("The output directory of " + getKeyFor(project) +
@@ -36,6 +36,6 @@ public class DefaultPackagingHandler extends PackagingHandler {
         if (getLog().isDebugEnabled()) {
             getLog().debug("Going to analyze output directory [" + outputDirectory + "].");
         }
-        return singleton(new CodeRepository(outputDirectory));
+        return singleton(new Repository(outputDirectory));
     }
 }

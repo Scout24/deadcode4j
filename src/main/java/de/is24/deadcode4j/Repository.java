@@ -8,28 +8,29 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.apache.commons.io.filefilter.TrueFileFilter.TRUE;
 
 /**
- * A <code>CodeRepository</code> represents a directory containing code along with an optional file filter.
+ * A <code>Repository</code> represents a directory containing code, resources, configuration, etc.
+ * along with an optional file filter.
  *
  * @since 1.2.0
  */
-public class CodeRepository {
+public class Repository {
 
     private final File directory;
     private final FileFilter fileFilter;
 
-    public CodeRepository(@Nonnull File directory, @Nonnull FileFilter fileFilter) {
+    public Repository(@Nonnull File directory, @Nonnull FileFilter fileFilter) {
         checkArgument(directory.isDirectory(), "No valid directory: " + directory);
         this.directory = directory;
         this.fileFilter = fileFilter;
     }
 
-    public CodeRepository(@Nonnull File directory) {
+    public Repository(@Nonnull File directory) {
         this(directory, TRUE);
     }
 
     @Override
     public String toString() {
-        return "CodeRepository @" + this.directory;
+        return "Repository @" + this.directory;
     }
 
     public File getDirectory() {

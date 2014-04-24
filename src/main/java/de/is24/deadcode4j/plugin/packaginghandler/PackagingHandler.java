@@ -1,7 +1,7 @@
 package de.is24.deadcode4j.plugin.packaginghandler;
 
 import com.google.common.base.Preconditions;
-import de.is24.deadcode4j.CodeRepository;
+import de.is24.deadcode4j.Repository;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
@@ -30,7 +30,7 @@ public abstract class PackagingHandler {
      * @since 1.2.0
      */
     @Nonnull
-    public abstract Collection<CodeRepository> getCodeRepositoriesFor(@Nonnull MavenProject project) throws MojoExecutionException;
+    public abstract Collection<Repository> getRepositoriesFor(@Nonnull MavenProject project) throws MojoExecutionException;
 
     /**
      * Returns the {@link org.apache.maven.plugin.logging.Log} to use.

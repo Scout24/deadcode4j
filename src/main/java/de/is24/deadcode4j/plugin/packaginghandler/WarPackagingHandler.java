@@ -1,6 +1,6 @@
 package de.is24.deadcode4j.plugin.packaginghandler;
 
-import de.is24.deadcode4j.CodeRepository;
+import de.is24.deadcode4j.Repository;
 import de.is24.deadcode4j.plugin.SubDirectoryFilter;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.maven.model.Plugin;
@@ -33,7 +33,7 @@ public class WarPackagingHandler extends PackagingHandler {
 
     @Override
     @Nonnull
-    public Collection<CodeRepository> getCodeRepositoriesFor(@Nonnull MavenProject project) throws MojoExecutionException {
+    public Collection<Repository> getRepositoriesFor(@Nonnull MavenProject project) throws MojoExecutionException {
         if (getLog().isDebugEnabled()) {
             getLog().debug("Project " + getKeyFor(project) + " has war packaging, looking for webapp directory...");
         }
@@ -58,6 +58,6 @@ public class WarPackagingHandler extends PackagingHandler {
         }
         final File directory = new File(webappDirectory, "WEB-INF");
         IOFileFilter fileFilter = notFileFilter(asFileFilter(new SubDirectoryFilter(directory, "lib")));
-        return singleton(new CodeRepository(directory, fileFilter));
+        return singleton(new Repository(directory, fileFilter));
     }
 }
