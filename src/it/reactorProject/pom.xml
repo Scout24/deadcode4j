@@ -25,6 +25,7 @@
     </build>
 
     <modules>
+        <module>emptyProject</module>
         <module>javaProject</module>
         <module>webAppProject</module>
         <module>secondWebAppProject</module>

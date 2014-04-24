@@ -10,14 +10,10 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
-import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
-import static java.util.Map.Entry;
 
 /**
  * The <code>DeadCodeFinder</code> ties everything together in order to ultimately find dead code.
@@ -33,21 +29,21 @@ public class DeadCodeFinder {
     }
 
     @Nonnull
-    public DeadCode findDeadCode(@Nonnull Iterable<CodeRepository> codeRepositories) {
-        AnalyzedCode analyzedCode = analyzeCode(codeRepositories);
+    public DeadCode findDeadCode(@Nonnull Iterable<Module> modules) {
+        AnalyzedCode analyzedCode = analyzeCode(modules);
         return computeDeadCode(analyzedCode);
     }
 
     @Nonnull
-    private AnalyzedCode analyzeCode(@Nonnull Iterable<CodeRepository> codeRepositories) {
-        List<AnalyzedCode> analyzedCode = newArrayList();
-        for (CodeRepository codeRepository : codeRepositories) {
-            CodeContext codeContext = new CodeContext(codeRepository.getClassPath());
-            analyzeRepository(codeContext, codeRepository);
-            analyzedCode.add(codeContext.getAnalyzedCode());
+    private AnalyzedCode analyzeCode(@Nonnull Iterable<Module> modules) {
+        CodeContext codeContext = new CodeContext();
+        for (Module module : modules) {
+            for (Repository repository : module.getAllRepositories()) {
+                analyzeRepository(codeContext, repository);
+            }
         }
 
-        return merge(analyzedCode);
+        return codeContext.getAnalyzedCode();
     }
 
     @Nonnull
@@ -56,13 +52,13 @@ public class DeadCodeFinder {
         return new DeadCode(analyzedCode.getAnalyzedClasses(), deadClasses);
     }
 
-    private void analyzeRepository(@Nonnull CodeContext codeContext, @Nonnull CodeRepository codeRepository) {
-        CodeRepositoryAnalyzer codeRepositoryAnalyzer =
-                new CodeRepositoryAnalyzer(codeRepository.getFileFilter(), this.analyzers, codeContext);
+    private void analyzeRepository(@Nonnull CodeContext codeContext, @Nonnull Repository repository) {
+        RepositoryAnalyzer repositoryAnalyzer =
+                new RepositoryAnalyzer(repository.getFileFilter(), this.analyzers, codeContext);
         try {
-            codeRepositoryAnalyzer.analyze(codeRepository.getDirectory());
+            repositoryAnalyzer.analyze(repository.getDirectory());
         } catch (IOException e) {
-            throw new RuntimeException("Failed to parse files of " + codeRepository + "!", e);
+            throw new RuntimeException("Failed to parse files of " + repository + "!", e);
         }
     }
 
@@ -80,26 +76,13 @@ public class DeadCodeFinder {
         return deadClasses;
     }
 
-    private AnalyzedCode merge(List<AnalyzedCode> analyzedCode) {
-        Set<String> analyzedClasses = newHashSet();
-        Map<String, Set<String>> dependencies = newHashMap();
-        for (AnalyzedCode code : analyzedCode) {
-            analyzedClasses.addAll(code.getAnalyzedClasses());
-            for (Entry<String, Set<String>> dependencyEntry : code.getCodeDependencies().entrySet()) {
-                Set<String> knownDependencies = getOrAddMappedSet(dependencies, dependencyEntry.getKey());
-                knownDependencies.addAll(dependencyEntry.getValue());
-            }
-        }
-        return new AnalyzedCode(analyzedClasses, dependencies);
-    }
-
-    private static class CodeRepositoryAnalyzer extends DirectoryWalker<Void> {
+    private static class RepositoryAnalyzer extends DirectoryWalker<Void> {
 
         private final Iterable<? extends Analyzer> analyzers;
         private final CodeContext codeContext;
         private Logger logger = LoggerFactory.getLogger(getClass());
 
-        public CodeRepositoryAnalyzer(@Nonnull FileFilter fileFilter, @Nonnull Iterable<? extends Analyzer> analyzers, @Nonnull CodeContext codeContext) {
+        public RepositoryAnalyzer(@Nonnull FileFilter fileFilter, @Nonnull Iterable<? extends Analyzer> analyzers, @Nonnull CodeContext codeContext) {
             super(fileFilter, -1);
             this.analyzers = analyzers;
             this.codeContext = codeContext;

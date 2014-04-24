@@ -12,7 +12,6 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.concurrent.Callable;
 
 import static de.is24.deadcode4j.Utils.getKeyFor;
@@ -34,7 +33,7 @@ public class WarPackagingHandler extends PackagingHandler {
 
     @Override
     @Nonnull
-    public Collection<CodeRepository> getCodeRepositoriesFor(@Nonnull MavenProject project) throws MojoExecutionException {
+    public Collection<Repository> getRepositoriesFor(@Nonnull MavenProject project) throws MojoExecutionException {
         if (getLog().isDebugEnabled()) {
             getLog().debug("Project " + getKeyFor(project) + " has war packaging, looking for webapp directory...");
         }
@@ -59,6 +58,6 @@ public class WarPackagingHandler extends PackagingHandler {
         }
         final File directory = new File(webappDirectory, "WEB-INF");
         IOFileFilter fileFilter = notFileFilter(asFileFilter(new SubDirectoryFilter(directory, "lib")));
-        return singleton(new CodeRepository(Collections.<File>emptyList(), directory, fileFilter));
+        return singleton(new Repository(directory, fileFilter));
     }
 }

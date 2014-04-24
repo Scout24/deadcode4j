@@ -1,6 +1,6 @@
 package de.is24.deadcode4j.plugin.packaginghandler;
 
-import de.is24.deadcode4j.CodeRepository;
+import de.is24.deadcode4j.Repository;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
@@ -24,7 +24,7 @@ public class PomPackagingHandler extends PackagingHandler {
 
     @Override
     @Nonnull
-    public Collection<CodeRepository> getCodeRepositoriesFor(@Nonnull MavenProject project) {
+    public Collection<Repository> getRepositoriesFor(@Nonnull MavenProject project) {
         if (getLog().isDebugEnabled()) {
             getLog().debug("Project " + getKeyFor(project) + " has pom packaging, so it is skipped.");
         }
