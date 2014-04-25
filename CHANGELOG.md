@@ -1,6 +1,9 @@
 # v.1.6-SNAPSHOT
 ## Features
 * ByteCodeAnalyzers know have access to the full class path
+    * `AnnotationsAnalyzer` now
+        * recursively examines the annotations
+        * examines the superclasses for annotations marked with `@Inherited`
     * `InterfacesAnalyzer` now determines implementation even if by a superclass or inherited by other interface
     * `SuperClassAnalyzer` now analyzes the whole class hierarchy
 
