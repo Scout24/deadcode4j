@@ -75,9 +75,6 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
         try {
             addAnnotations(codeContext, clazz, allAnnotations);
             allAnnotations.addAll(getInheritedAnnotations(codeContext, clazz));
-        } catch (ClassNotFoundException e) {
-            logger.warn("The class path is not correctly set up! Skipping interfaces check for {}.", clazz.getName(), e);
-            return;
         } catch (NotFoundException e) {
             logger.warn("The class path is not correctly set up! Skipping interfaces check for {}.", clazz.getName(), e);
             return;
@@ -102,7 +99,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
     }
 
     @Nonnull
-    private Set<String> getInheritedAnnotations(@Nonnull final CodeContext codeContext, @Nonnull final CtClass clazz) throws ClassNotFoundException, NotFoundException {
+    private Set<String> getInheritedAnnotations(@Nonnull final CodeContext codeContext, @Nonnull final CtClass clazz) throws NotFoundException {
         List<String> annotationsMarkedAsInherited = getOrLookUpAnnotationsMarkedAsInherited(codeContext);
         if (annotationsMarkedAsInherited.isEmpty()) {
             return emptySet();
@@ -126,7 +123,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
 
     @Nonnull
     @SuppressWarnings("unchecked")
-    private List<String> getOrLookUpAnnotationsMarkedAsInherited(@Nonnull CodeContext codeContext) throws ClassNotFoundException, NotFoundException {
+    private List<String> getOrLookUpAnnotationsMarkedAsInherited(@Nonnull CodeContext codeContext) {
         List<String> inheritedAnnotations = (List<String>) codeContext.getCache().get(getClass());
         if (inheritedAnnotations == null) {
             inheritedAnnotations = computeAnnotationsMarkedAsInherited(codeContext);
@@ -136,13 +133,23 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
     }
 
     @Nonnull
-    private List<String> computeAnnotationsMarkedAsInherited(@Nonnull CodeContext codeContext) throws ClassNotFoundException, NotFoundException {
+    private List<String> computeAnnotationsMarkedAsInherited(@Nonnull CodeContext codeContext) {
         List<String> inheritedAnnotations = newArrayList();
         ClassPool classPool = getOrCreateClassPool(codeContext);
         for (String annotation : annotations) {
-            CtClass annotationClazz = classPool.get(annotation);
-            if (annotationClazz.getAnnotation(Inherited.class) != null) {
-                inheritedAnnotations.add(annotation);
+            CtClass annotationClazz;
+            try {
+                annotationClazz = classPool.get(annotation);
+            } catch (NotFoundException e) {
+                logger.debug("Annotation [{}] cannot be found on the class path; skipping detection");
+                continue;
+            }
+            try {
+                if (annotationClazz.getAnnotation(Inherited.class) != null) {
+                    inheritedAnnotations.add(annotation);
+                }
+            } catch (ClassNotFoundException e) {
+                logger.debug("@Inherited is not available; we probably deal with Java < 5.");
             }
         }
         return inheritedAnnotations;
