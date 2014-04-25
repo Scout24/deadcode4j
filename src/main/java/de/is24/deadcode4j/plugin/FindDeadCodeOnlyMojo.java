@@ -164,14 +164,14 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
         if (interfacesMarkingLiveCode.isEmpty())
             return;
         analyzers.add(new CustomInterfacesAnalyzer(interfacesMarkingLiveCode));
-        getLog().info("Treating classes explicitly implementing any of " + interfacesMarkingLiveCode + " as live code.");
+        getLog().info("Treating classes implementing any of " + interfacesMarkingLiveCode + " as live code.");
     }
 
     private void addCustomSuperClassesAnalyzerIfConfigured(Set<Analyzer> analyzers) {
         if (superClassesMarkingLiveCode.isEmpty())
             return;
         analyzers.add(new CustomSuperClassAnalyzer(superClassesMarkingLiveCode));
-        getLog().info("Treating classes being direct subclasses of any of " + superClassesMarkingLiveCode + " as live code.");
+        getLog().info("Treating classes being subclasses of any of " + superClassesMarkingLiveCode + " as live code.");
     }
 
     private void addCustomXmlAnalyzerIfConfigured(Set<Analyzer> analyzers) {
@@ -182,7 +182,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
             checkArgument(!customXml.getXPaths().isEmpty(), "At least one entry for [xPaths] must be set!");
             for (String xPath : customXml.getXPaths()) {
                 customXmlAnalyzer.registerXPath(xPath);
-                getLog().info("Treating classes found at [/" + customXml.getRootElement() + "//" + xPath + "] as live code.");
+                getLog().info("Treating classes found at [/" + customXml.getRootElement() + "//" + xPath + "] in [" + customXml.getEndOfFileName() + "] files as live code.");
             }
             analyzers.add(customXmlAnalyzer);
         }
@@ -197,7 +197,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
         if (this.modulesToSkip.isEmpty()) {
             return this.reactorProjects;
         }
-        getLog().info("Skipping modules " + this.modulesToSkip + ":");
+        ArrayList<String> unknownModules = newArrayList(this.modulesToSkip);
         int baseDirPathIndex = project.getBasedir().getAbsolutePath().length() + 1;
         ArrayList<MavenProject> mavenProjects = newArrayList(this.reactorProjects);
         for (MavenProject mavenProject : this.reactorProjects) {
@@ -207,6 +207,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
             String projectPath = mavenProject.getBasedir().getAbsolutePath();
             String modulePath = projectPath.substring(baseDirPathIndex);
             if (this.modulesToSkip.contains(modulePath)) {
+                unknownModules.remove(modulePath);
                 getLog().info("  Project [" + getKeyFor(mavenProject) + "] will be skipped.");
                 mavenProjects.remove(mavenProject);
                 List<MavenProject> collectedProjects = mavenProject.getCollectedProjects();
@@ -215,6 +216,9 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
                     mavenProjects.removeAll(collectedProjects);
                 }
             }
+        }
+        for (String unknownModule : unknownModules) {
+            getLog().warn("Module [" + unknownModule + "] should be skipped, but does not exist. You should remove the configuration entry.");
         }
 
         return mavenProjects;

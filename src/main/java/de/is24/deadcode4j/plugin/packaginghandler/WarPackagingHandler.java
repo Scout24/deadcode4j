@@ -54,12 +54,12 @@ public class WarPackagingHandler extends PackagingHandler {
         if (webappDirectoryConfig != null) {
             webappDirectory = new File(webappDirectoryConfig.getValue());
             if (log) {
-                logger.debug("Found custom webapp directory [{}].", webappDirectory);
+                logger.debug("  Found custom webapp directory [{}].", webappDirectory);
             }
         } else {
             webappDirectory = new File(project.getBuild().getDirectory() + "/" + project.getBuild().getFinalName());
             if (log) {
-                logger.debug("Using default webapp directory [{}].", webappDirectory);
+                logger.debug("  Using default webapp directory [{}].", webappDirectory);
             }
         }
         if (!webappDirectory.exists()) {

@@ -27,7 +27,7 @@ public class DefaultPackagingHandler extends PackagingHandler {
                     " does not exist - assuming the project simply has nothing to provide!");
             return null;
         }
-        logger.debug("Going to analyze output directory [{}].", outputDirectory);
+        logger.debug("  Found output directory [{}].", outputDirectory);
         return new Repository(outputDirectory);
     }
 

@@ -4,8 +4,8 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 
 /**
- * Finds dead (i.e. unused) code. In contrast to <code>find</code>, no phase is executed.<br/>
- * This goal is deprecated; use <code>find-only</code> instead.
+ * This goal is deprecated; use <code>find-only</code> instead.<br/>
+ * Finds dead (i.e. unused) code. In contrast to <code>find</code>, no phase is executed.
  *
  * @see FindDeadCodeMojo
  * @see FindDeadCodeOnlyMojo
@@ -18,10 +18,10 @@ public class FindDeadCodeWithoutPackagingMojo extends FindDeadCodeOnlyMojo {
 
     @Override
     public void doExecute() throws MojoExecutionException {
-        getLog().warn("##########################################################");
-        getLog().warn("This goal is deprecated and will be removed in the future!");
+        getLog().warn("##############################################################");
+        getLog().warn("  This goal is deprecated and will be removed in the future!");
         getLog().warn("  Instead, use the goal [find-only].");
-        getLog().warn("##########################################################");
+        getLog().warn("##############################################################");
         super.doExecute();
     }
 
