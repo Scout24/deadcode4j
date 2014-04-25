@@ -18,6 +18,8 @@ import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.io.File;
 
@@ -101,8 +103,7 @@ public final class A_ModuleGenerator {
     @Test
     public void createsClassPathEntryForUnresolvedDependency() throws MojoExecutionException {
         addUnresolvedArtifact(mavenProject);
-        ArtifactResolutionResult artifactResolutionResult = new ArtifactResolutionResult();
-        when(this.repositorySystem.resolve(any(ArtifactResolutionRequest.class))).thenReturn(artifactResolutionResult);
+        enableArtifactResolving();
 
         Iterable<Module> modules = objectUnderTest.getModulesFor(asList(mavenProject));
 
@@ -137,19 +138,43 @@ public final class A_ModuleGenerator {
 
     private void addArtifact(MavenProject mavenProject, final boolean resolved) {
         Artifact artifact = new ArtifactStub() {
+            private boolean resolved = false;
+
             @Override
             public boolean isResolved() {
-                return resolved;
+                return this.resolved;
+            }
+
+            @Override
+            public void setResolved(boolean b) {
+                this.resolved = b;
+            }
+
+            @Override
+            public File getFile() {
+                return isResolved() ? super.getFile() : null;
             }
         };
         artifact.setGroupId("de.is24.junit");
         artifact.setArtifactId("dependency");
         artifact.setVersion("42");
         artifact.setScope("compile");
+        artifact.setResolved(resolved);
         artifact.setFile(tempFileRule.getTempFile());
 
         mavenProject.setResolvedArtifacts(newHashSet(artifact));
         mavenProject.setArtifactFilter(new ScopeArtifactFilter(SCOPE_COMPILE_PLUS_RUNTIME));
+    }
+
+    private void enableArtifactResolving() {
+        when(this.repositorySystem.resolve(any(ArtifactResolutionRequest.class))).thenAnswer(new Answer<ArtifactResolutionResult>() {
+            @Override
+            public ArtifactResolutionResult answer(InvocationOnMock invocationOnMock) throws Throwable {
+                ArtifactResolutionRequest request = (ArtifactResolutionRequest) invocationOnMock.getArguments()[0];
+                request.getArtifact().setResolved(true);
+                return new ArtifactResolutionResult();
+            }
+        });
     }
 
 }

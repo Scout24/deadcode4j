@@ -208,11 +208,11 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
             String modulePath = projectPath.substring(baseDirPathIndex);
             if (this.modulesToSkip.contains(modulePath)) {
                 unknownModules.remove(modulePath);
-                getLog().info("  Project [" + getKeyFor(mavenProject) + "] will be skipped.");
+                getLog().info("Project [" + getKeyFor(mavenProject) + "] will be skipped.");
                 mavenProjects.remove(mavenProject);
                 List<MavenProject> collectedProjects = mavenProject.getCollectedProjects();
                 if (collectedProjects.size() > 0) {
-                    getLog().info("    Aggregated Projects " + transform(collectedProjects, toKey()) + " will be skipped.");
+                    getLog().info("  Aggregated Projects " + transform(collectedProjects, toKey()) + " will be skipped.");
                     mavenProjects.removeAll(collectedProjects);
                 }
             }
