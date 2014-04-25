@@ -1,14 +1,16 @@
 package de.is24.deadcode4j;
 
+import de.is24.deadcode4j.junit.TempFileRule;
+import org.junit.Rule;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
-
-import static java.io.File.createTempFile;
 
 @SuppressWarnings("ConstantConditions")
 public class A_Repository {
+
+    @Rule
+    public final TempFileRule tempFileRule = new TempFileRule();
 
     @Test(expected = NullPointerException.class)
     public void throwsAnExceptionIfTheRepositoryIsNull() throws IOException {
@@ -17,9 +19,7 @@ public class A_Repository {
 
     @Test(expected = IllegalArgumentException.class)
     public void throwsAnExceptionIfTheRepositoryIsNoDirectory() throws IOException {
-        File tmpFile = createTempFile("JUnit", ".tmp");
-        tmpFile.deleteOnExit();
-        new Repository(tmpFile);
+        new Repository(tempFileRule.getTempFile());
     }
 
 }
