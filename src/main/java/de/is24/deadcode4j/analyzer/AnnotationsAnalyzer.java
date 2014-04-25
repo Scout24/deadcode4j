@@ -103,13 +103,13 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
             return emptySet();
         }
         Set<String> inheritedAnnotations = newHashSet();
-        CtClass loopClass = clazz;
-        do {
+        CtClass loopClass = clazz.getSuperclass();
+        while (loopClass != null && !"java.lang.Object".equals(loopClass.getName())) {
             for (Annotation annotation : getAnnotations(loopClass, PACKAGE, TYPE)) {
                 inheritedAnnotations.add(annotation.getTypeName());
             }
             loopClass = loopClass.getSuperclass();
-        } while (loopClass != null && !"java.lang.Object".equals(loopClass.getName()));
+        }
         return inheritedAnnotations;
     }
 
