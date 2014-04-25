@@ -81,8 +81,7 @@ public abstract class InterfacesAnalyzer extends ByteCodeAnalyzer implements Ana
                 interfaces.addAll(getAllImplementedInterfaces(anInterface));
             }
             loopClass = loopClass.getSuperclass();
-        } while (loopClass != null);
-        interfaces.remove("java.lang.Object");
+        } while (loopClass != null && !"java.lang.Object".equals(loopClass.getName()));
         return interfaces;
     }
 
