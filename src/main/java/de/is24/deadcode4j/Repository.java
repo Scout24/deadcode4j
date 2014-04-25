@@ -14,8 +14,9 @@ import static org.apache.commons.io.filefilter.TrueFileFilter.TRUE;
  * @since 1.2.0
  */
 public class Repository {
-
+    @Nonnull
     private final File directory;
+    @Nonnull
     private final FileFilter fileFilter;
 
     public Repository(@Nonnull File directory, @Nonnull FileFilter fileFilter) {
@@ -28,15 +29,18 @@ public class Repository {
         this(directory, TRUE);
     }
 
+    @Nonnull
     @Override
     public String toString() {
         return "Repository @" + this.directory;
     }
 
+    @Nonnull
     public File getDirectory() {
         return directory;
     }
 
+    @Nonnull
     public FileFilter getFileFilter() {
         return fileFilter;
     }

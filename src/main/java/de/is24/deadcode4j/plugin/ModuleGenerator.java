@@ -97,7 +97,7 @@ class ModuleGenerator {
     @Nonnull
     protected Iterable<File> computeClassPath(@Nonnull MavenProject project, @Nonnull Map<String, Module> knownModules) {
         String projectKey = getKeyFor(project);
-        logger.debug("Computing class path for project {}:", projectKey);
+        logger.debug("Computing class path for project {}...", projectKey);
         ArrayList<File> files = newArrayList();
         ScopeArtifactFilter artifactFilter = new ScopeArtifactFilter(Artifact.SCOPE_COMPILE);
         for (Artifact dependency : project.getArtifacts()) {
@@ -109,10 +109,10 @@ class ModuleGenerator {
             if (knownModule != null) {
                 Repository outputRepository = knownModule.getOutputRepository();
                 if (outputRepository == null) {
-                    logger.debug("No output available for {}; nothing added to the class path.", dependencyKey);
+                    logger.debug("  No output available for {}; nothing added to the class path.", dependencyKey);
                 } else {
                     files.add(outputRepository.getDirectory());
-                    logger.debug("Added project: {}", outputRepository.getDirectory());
+                    logger.debug("  Added project: {}", outputRepository.getDirectory());
                 }
                 continue;
             }
@@ -121,17 +121,17 @@ class ModuleGenerator {
                 request.setArtifact(dependency);
                 ArtifactResolutionResult artifactResolutionResult = repositorySystem.resolve(request);
                 if (!artifactResolutionResult.isSuccess()) {
-                    logger.warn("Failed to resolve [" + dependency + "]; some analyzers may not work properly.");
+                    logger.warn("  Failed to resolve [" + dependency + "]; some analyzers may not work properly.");
                     continue;
                 }
             }
             File classPathElement = dependency.getFile();
             if (classPathElement == null) {
-                logger.warn("No valid path to [" + dependency + "] found; some analyzers may not work properly.");
+                logger.warn("  No valid path to [" + dependency + "] found; some analyzers may not work properly.");
                 continue;
             }
             files.add(classPathElement);
-            logger.debug("Added artifact: {}", classPathElement);
+            logger.debug("  Added artifact: {}", classPathElement);
         }
         return files;
     }
