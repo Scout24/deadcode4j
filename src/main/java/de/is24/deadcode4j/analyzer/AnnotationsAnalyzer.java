@@ -22,7 +22,11 @@ import static java.util.Collections.disjoint;
  * @since 1.3
  */
 public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
-
+    private static final Set<String> DEAD_ENDS = newHashSet(
+            "java.lang.annotation.Documented",
+            "java.lang.annotation.Inherited",
+            "java.lang.annotation.Retention",
+            "java.lang.annotation.Target");
     private final Collection<String> annotations;
     private final String dependerId;
 
@@ -81,6 +85,8 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
         for (Annotation annotation : getAnnotations(clazz, PACKAGE, TYPE)) {
             String annotationClassName = annotation.getTypeName();
             if (!knownAnnotations.add(annotationClassName))
+                continue;
+            if (DEAD_ENDS.contains(annotationClassName))
                 continue;
             ClassPool classPool = getOrCreateClassPool(codeContext);
             CtClass annotationClazz = classPool.get(annotationClassName);
