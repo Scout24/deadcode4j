@@ -1,5 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
+import com.google.common.base.Function;
 import de.is24.deadcode4j.CodeContext;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -7,14 +8,19 @@ import javassist.NotFoundException;
 import javassist.bytecode.annotation.Annotation;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.annotation.Inherited;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.annotation.ElementType.PACKAGE;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.util.Collections.disjoint;
+import static java.util.Collections.emptySet;
 
 /**
  * Serves as a base class with which to mark classes as being in use if they carry one of the specified annotations.
@@ -68,6 +74,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
         Set<String> allAnnotations = newHashSet();
         try {
             addAnnotations(codeContext, clazz, allAnnotations);
+            allAnnotations.addAll(getInheritedAnnotations(codeContext, clazz));
         } catch (ClassNotFoundException e) {
             logger.warn("The class path is not correctly set up! Skipping interfaces check for {}.", clazz.getName(), e);
             return;
@@ -81,7 +88,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
         }
     }
 
-    private void addAnnotations(CodeContext codeContext, CtClass clazz, Set<String> knownAnnotations) throws ClassNotFoundException, NotFoundException {
+    private void addAnnotations(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz, Set<String> knownAnnotations) throws NotFoundException {
         for (Annotation annotation : getAnnotations(clazz, PACKAGE, TYPE)) {
             String annotationClassName = annotation.getTypeName();
             if (!knownAnnotations.add(annotationClassName))
@@ -92,6 +99,53 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
             CtClass annotationClazz = classPool.get(annotationClassName);
             addAnnotations(codeContext, annotationClazz, knownAnnotations);
         }
+    }
+
+    @Nonnull
+    private Set<String> getInheritedAnnotations(@Nonnull final CodeContext codeContext, @Nonnull final CtClass clazz) throws ClassNotFoundException, NotFoundException {
+        List<String> annotationsMarkedAsInherited = getOrLookUpAnnotationsMarkedAsInherited(codeContext);
+        if (annotationsMarkedAsInherited.isEmpty()) {
+            return emptySet();
+        }
+        final Set<String> inheritedAnnotations = newHashSet();
+        getClassHierarchy(clazz, new Function<CtClass, Void>() {
+            @Nullable
+            @Override
+            public Void apply(@Nullable CtClass clazz) {
+                if (clazz != null) {
+                    for (Annotation annotation : getAnnotations(clazz, PACKAGE, TYPE)) {
+                        String annotationClassName = annotation.getTypeName();
+                        inheritedAnnotations.add(annotationClassName);
+                    }
+                }
+                return null;
+            }
+        });
+        return inheritedAnnotations;
+    }
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    private List<String> getOrLookUpAnnotationsMarkedAsInherited(@Nonnull CodeContext codeContext) throws ClassNotFoundException, NotFoundException {
+        List<String> inheritedAnnotations = (List<String>) codeContext.getCache().get(getClass());
+        if (inheritedAnnotations == null) {
+            inheritedAnnotations = computeAnnotationsMarkedAsInherited(codeContext);
+            codeContext.getCache().put(getClass(), inheritedAnnotations);
+        }
+        return inheritedAnnotations;
+    }
+
+    @Nonnull
+    private List<String> computeAnnotationsMarkedAsInherited(@Nonnull CodeContext codeContext) throws ClassNotFoundException, NotFoundException {
+        List<String> inheritedAnnotations = newArrayList();
+        ClassPool classPool = getOrCreateClassPool(codeContext);
+        for (String annotation : annotations) {
+            CtClass annotationClazz = classPool.get(annotation);
+            if (annotationClazz.getAnnotation(Inherited.class) != null) {
+                inheritedAnnotations.add(annotation);
+            }
+        }
+        return inheritedAnnotations;
     }
 
 }

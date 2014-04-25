@@ -1,5 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
+import com.google.common.base.Function;
 import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
 import de.is24.deadcode4j.Repository;
@@ -10,6 +11,7 @@ import javassist.bytecode.annotation.Annotation;
 import org.apache.commons.io.IOUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -87,7 +89,7 @@ public abstract class ByteCodeAnalyzer extends AnalyzerAdapter implements Analyz
      *
      * @since 1.6
      */
-    protected final ClassPool getOrCreateClassPool(CodeContext codeContext) {
+    protected final ClassPool getOrCreateClassPool(@Nonnull CodeContext codeContext) {
         ClassPool classPool = (ClassPool) codeContext.getCache().get(ByteCodeAnalyzer.class);
         if (classPool == null) {
             classPool = createClassPool(codeContext);
@@ -99,11 +101,35 @@ public abstract class ByteCodeAnalyzer extends AnalyzerAdapter implements Analyz
     /**
      * Returns the class hierarchy for the specified class.
      *
+     * @see #getClassHierarchy(javassist.CtClass, com.google.common.base.Function)
      * @since 1.6
      */
-    protected final List<String> getClassHierarchy(CtClass clazz) throws NotFoundException {
+    @Nonnull
+    protected final List<String> getClassHierarchy(@Nonnull CtClass clazz) throws NotFoundException {
+        return getClassHierarchy(clazz, new Function<CtClass, Void>() {
+            @Nullable
+            @Override
+            public Void apply(@Nullable CtClass ctClass) {
+                return null;
+            }
+        });
+    }
+
+
+    /**
+     * Returns the class hierarchy for the specified class, calling the specified function for each of the hierarchy's
+     * class.
+     *
+     * @param clazz        the <code>CtClass</code> to examine
+     * @param clazzHandler the <code>Function</code> to call for each class
+     * @return a <code>List</code> with all class names of the class hierarchy
+     * @since 1.6
+     */
+    @Nonnull
+    protected final List<String> getClassHierarchy(@Nonnull CtClass clazz, @Nonnull Function<CtClass, Void> clazzHandler) throws NotFoundException {
         List<String> classes = newArrayList();
         do {
+            clazzHandler.apply(clazz);
             classes.add(clazz.getClassFile2().getSuperclass());
             clazz = clazz.getSuperclass();
         } while (clazz != null);
@@ -125,7 +151,8 @@ public abstract class ByteCodeAnalyzer extends AnalyzerAdapter implements Analyz
         analyzeClass(codeContext, ctClass);
     }
 
-    private ClassPool createClassPool(CodeContext codeContext) {
+    @Nonnull
+    private ClassPool createClassPool(@Nonnull CodeContext codeContext) {
         ClassPool classPool = new ClassPool(true);
         try {
             Repository outputRepository = codeContext.getModule().getOutputRepository();

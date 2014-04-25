@@ -50,6 +50,18 @@ public final class An_AnnotationsAnalyzer extends AnAnalyzer {
     }
 
     @Test
+    public void reportsSubClassOfClassBeingAnnotatedWithAnnotationMarkedAsInheritedAsBeingUsed() {
+        Analyzer objectUnderTest = new AnnotationsAnalyzer("junit", "de.is24.deadcode4j.junit.Annotation") {
+        };
+
+        objectUnderTest.doAnalysis(codeContext, getFile("SubClassOfAnnotatedClass.class"));
+
+        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        assertThat("Should have reported some dependencies!", codeDependencies.size(), is(1));
+        assertThat(concat(codeDependencies.values()), containsInAnyOrder("SubClassOfAnnotatedClass"));
+    }
+
+    @Test
     public void doesNotReportUnannotatedClassAsBeingUsed() {
         Analyzer objectUnderTest = new AnnotationsAnalyzer("junit", "de.is24.deadcode4j.junit.Annotation") {
         };
