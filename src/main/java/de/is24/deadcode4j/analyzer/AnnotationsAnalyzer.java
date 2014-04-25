@@ -1,6 +1,5 @@
 package de.is24.deadcode4j.analyzer;
 
-import com.google.common.base.Function;
 import de.is24.deadcode4j.CodeContext;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -8,7 +7,6 @@ import javassist.NotFoundException;
 import javassist.bytecode.annotation.Annotation;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.lang.annotation.Inherited;
 import java.util.Collection;
 import java.util.List;
@@ -104,20 +102,14 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
         if (annotationsMarkedAsInherited.isEmpty()) {
             return emptySet();
         }
-        final Set<String> inheritedAnnotations = newHashSet();
-        getClassHierarchy(clazz, new Function<CtClass, Void>() {
-            @Nullable
-            @Override
-            public Void apply(@Nullable CtClass clazz) {
-                if (clazz != null) {
-                    for (Annotation annotation : getAnnotations(clazz, PACKAGE, TYPE)) {
-                        String annotationClassName = annotation.getTypeName();
-                        inheritedAnnotations.add(annotationClassName);
-                    }
-                }
-                return null;
+        Set<String> inheritedAnnotations = newHashSet();
+        CtClass loopClass = clazz;
+        do {
+            for (Annotation annotation : getAnnotations(loopClass, PACKAGE, TYPE)) {
+                inheritedAnnotations.add(annotation.getTypeName());
             }
-        });
+            loopClass = loopClass.getSuperclass();
+        } while (loopClass != null && !"java.lang.Object".equals(loopClass.getName()));
         return inheritedAnnotations;
     }
 
