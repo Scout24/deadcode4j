@@ -38,6 +38,18 @@ public final class An_AnnotationsAnalyzer extends AnAnalyzer {
     }
 
     @Test
+    public void reportsClassAnnotatedWithAnnotatedAnnotationAsBeingUsed() {
+        Analyzer objectUnderTest = new AnnotationsAnalyzer("junit", "de.is24.deadcode4j.junit.Annotation") {
+        };
+
+        objectUnderTest.doAnalysis(codeContext, getFile("ClassAnnotatedWithAnnotatedAnnotation.class"));
+
+        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        assertThat("Should have reported some dependencies!", codeDependencies.size(), is(1));
+        assertThat(concat(codeDependencies.values()), containsInAnyOrder("ClassAnnotatedWithAnnotatedAnnotation"));
+    }
+
+    @Test
     public void doesNotReportUnannotatedClassAsBeingUsed() {
         Analyzer objectUnderTest = new AnnotationsAnalyzer("junit", "de.is24.deadcode4j.junit.Annotation") {
         };

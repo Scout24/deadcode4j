@@ -83,6 +83,20 @@ public abstract class ByteCodeAnalyzer extends AnalyzerAdapter implements Analyz
     protected abstract void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz);
 
     /**
+     * Returns the <code>ClassPool</code> used for examining classes.
+     *
+     * @since 1.6
+     */
+    protected final ClassPool getOrCreateClassPool(CodeContext codeContext) {
+        ClassPool classPool = (ClassPool) codeContext.getCache().get(ByteCodeAnalyzer.class);
+        if (classPool == null) {
+            classPool = createClassPool(codeContext);
+            codeContext.getCache().put(ByteCodeAnalyzer.class, classPool);
+        }
+        return classPool;
+    }
+
+    /**
      * Returns the class hierarchy for the specified class.
      *
      * @since 1.6
@@ -109,15 +123,6 @@ public abstract class ByteCodeAnalyzer extends AnalyzerAdapter implements Analyz
         }
         logger.debug("Analyzing class [{}]...", ctClass.getName());
         analyzeClass(codeContext, ctClass);
-    }
-
-    private ClassPool getOrCreateClassPool(CodeContext codeContext) {
-        ClassPool classPool = (ClassPool) codeContext.getCache().get(ByteCodeAnalyzer.class);
-        if (classPool == null) {
-            classPool = createClassPool(codeContext);
-            codeContext.getCache().put(ByteCodeAnalyzer.class, classPool);
-        }
-        return classPool;
     }
 
     private ClassPool createClassPool(CodeContext codeContext) {
