@@ -20,7 +20,9 @@ import static java.util.Collections.disjoint;
  */
 public abstract class InterfacesAnalyzer extends ByteCodeAnalyzer implements Analyzer {
 
+    @Nonnull
     private final String dependerId;
+    @Nonnull
     private final Set<String> interfaceClasses;
 
     private InterfacesAnalyzer(@Nonnull String dependerId, @Nonnull Set<String> interfaceNames) {
@@ -72,7 +74,8 @@ public abstract class InterfacesAnalyzer extends ByteCodeAnalyzer implements Ana
         }
     }
 
-    private Set<String> getAllImplementedInterfaces(final CtClass clazz) throws NotFoundException {
+    @Nonnull
+    private Set<String> getAllImplementedInterfaces(@Nonnull final CtClass clazz) throws NotFoundException {
         Set<String> interfaces = newHashSet();
         CtClass loopClass = clazz;
         do {
