@@ -92,14 +92,12 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
 
     @Test
     public void reportsDependencyToDefinedStrategyIfStrategyIsPartOfTheAnalysis() {
-        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassDefiningGenericGenerator.class"));
-        objectUnderTest.doAnalysis(codeContext, getFile("IndependentClass.class"));
+        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/knownStrategies/ClassDefiningGenericGenerator.class"));
         objectUnderTest.finishAnalysis(codeContext);
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat("Should have analyzed the class files!", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(2));
         assertThat(codeDependencies.keySet(), containsInAnyOrder(
-                "de.is24.deadcode4j.analyzer.hibernateannotations.ClassDefiningGenericGenerator"));
+                "de.is24.deadcode4j.analyzer.hibernateannotations.knownStrategies.ClassDefiningGenericGenerator"));
         assertThat(concat(codeDependencies.values()), contains("IndependentClass"));
     }
 
@@ -115,15 +113,12 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
 
     @Test
     public void reportsDependencyFromPackageToDefinedStrategies() {
-        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/package-info.class"));
-        objectUnderTest.doAnalysis(codeContext, getFile("IndependentClass.class"));
-        objectUnderTest.doAnalysis(codeContext, getFile("DependingClass.class"));
+        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/knownStrategies/package-info.class"));
         objectUnderTest.finishAnalysis(codeContext);
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat("Should have analyzed the class files!", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(3));
         assertThat(codeDependencies.keySet(), containsInAnyOrder(
-                "de.is24.deadcode4j.analyzer.hibernateannotations.package-info"));
+                "de.is24.deadcode4j.analyzer.hibernateannotations.knownStrategies.package-info"));
         assertThat(concat(codeDependencies.values()), containsInAnyOrder("IndependentClass", "DependingClass"));
     }
 

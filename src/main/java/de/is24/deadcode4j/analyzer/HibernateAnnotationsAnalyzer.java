@@ -4,6 +4,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
+import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.bytecode.annotation.*;
 
@@ -58,7 +59,6 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer impleme
     private final Map<String, String> typeDefinitions = newHashMap();
     private final Map<String, Set<String>> typeUsages = newHashMap();
     private final Map<String, String> generatorDefinitions = newHashMap();
-    private final Map<String, Set<String>> generatorStrategies = newHashMap();
     private final Map<String, Set<String>> generatorUsages = newHashMap();
 
     @Nonnull
@@ -103,8 +103,8 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer impleme
         processTypeDefAnnotation(clazz);
         processTypeDefsAnnotation(clazz);
         processTypeAnnotations(clazz);
-        processGenericGenerator(clazz);
-        processGenericGenerators(clazz);
+        processGenericGenerator(codeContext, clazz);
+        processGenericGenerators(codeContext, clazz);
         processGeneratedValueAnnotations(clazz);
     }
 
@@ -143,16 +143,18 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer impleme
         }
     }
 
-    private void processGenericGenerator(CtClass clazz) {
+    private void processGenericGenerator(CodeContext codeContext, CtClass clazz) {
         for (Annotation annotation : getAnnotations(clazz, "org.hibernate.annotations.GenericGenerator", PACKAGE, TYPE, METHOD, FIELD)) {
-            processGenericGenerator(clazz, annotation);
+            processGenericGenerator(codeContext, clazz, annotation);
         }
     }
 
-    private void processGenericGenerator(CtClass clazz, Annotation annotation) {
+    private void processGenericGenerator(CodeContext codeContext, CtClass clazz, Annotation annotation) {
         String className = clazz.getName();
         String generatorStrategy = getStringFrom(annotation, "strategy");
-        getOrAddMappedSet(this.generatorStrategies, className).add(generatorStrategy);
+        if (isClassKnown(codeContext, generatorStrategy)) {
+            codeContext.addDependencies(className, generatorStrategy);
+        }
         String generatorName = getStringFrom(annotation, "name");
         String previousEntry = this.generatorDefinitions.put(generatorName, className);
         if (previousEntry != null) {
@@ -161,10 +163,10 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer impleme
         }
     }
 
-    private void processGenericGenerators(CtClass clazz) {
+    private void processGenericGenerators(CodeContext codeContext, CtClass clazz) {
         for (Annotation annotation : getAnnotations(clazz, "org.hibernate.annotations.GenericGenerators", PACKAGE, TYPE)) {
             for (Annotation childAnnotation : getAnnotationsFrom(annotation, "value")) {
-                processGenericGenerator(clazz, childAnnotation);
+                processGenericGenerator(codeContext, clazz, childAnnotation);
             }
         }
     }
@@ -178,21 +180,22 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer impleme
         }
     }
 
-    private void reportDependencies(@Nonnull CodeContext codeContext) {
-        reportGeneratorStrategies(codeContext);
-        reportGeneratorUsage(codeContext);
-        reportTypeUsage(codeContext);
+    private boolean isClassKnown(CodeContext codeContext, String className) {
+        ClassPool classPool = getOrCreateClassPool(codeContext);
+        int dotIndex;
+        for (; ; ) {
+            if (classPool.find(className) != null)
+                return true;
+            dotIndex = className.lastIndexOf('.');
+            if (dotIndex < 0)
+                return false;
+            className = className.substring(0, dotIndex) + "." + className.substring(dotIndex + 1);
+        }
     }
 
-    private void reportGeneratorStrategies(CodeContext codeContext) {
-        for (Map.Entry<String, Set<String>> generatorStrategies : this.generatorStrategies.entrySet()) {
-            String definingClass = generatorStrategies.getKey();
-            for (String strategy : generatorStrategies.getValue()) {
-                if (codeContext.getAnalyzedCode().getAnalyzedClasses().contains(strategy)) {
-                    codeContext.addDependencies(definingClass, strategy);
-                }
-            }
-        }
+    private void reportDependencies(@Nonnull CodeContext codeContext) {
+        reportGeneratorUsage(codeContext);
+        reportTypeUsage(codeContext);
     }
 
     private void reportGeneratorUsage(CodeContext codeContext) {
