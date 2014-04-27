@@ -127,7 +127,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     }
 
     private DeadCode analyzeCode() throws MojoExecutionException {
-        Set<Analyzer> analyzers = Sets.newHashSet(
+        Set<Analyzer> analyzers = Sets.<Analyzer>newHashSet(
                 new AopXmlAnalyzer(),
                 new ApacheTilesAnalyzer(),
                 new CastorClassesAnalyzer(),
