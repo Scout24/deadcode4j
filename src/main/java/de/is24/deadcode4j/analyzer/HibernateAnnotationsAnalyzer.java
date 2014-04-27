@@ -215,16 +215,17 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer impleme
             String typeName = typeUsage.getKey();
             String classDefiningType = this.typeDefinitions.get(typeName);
 
-            String dependee = null;
+            final String dependee;
             if (classDefiningType != null) {
                 dependee = classDefiningType;
             } else if (codeContext.getAnalyzedCode().getAnalyzedClasses().contains(typeName)) {
                 dependee = typeName;
-            } // no matter what else, scope is outside of the analyzed project
-            if (dependee != null) {
-                for (String classUsingType : typeUsage.getValue()) {
-                    codeContext.addDependencies(classUsingType, dependee);
-                }
+            } else {
+                logger.debug("Encountered unknown org.hibernate.annotations.Type [{}].", typeName);
+                continue;
+            }
+            for (String classUsingType : typeUsage.getValue()) {
+                codeContext.addDependencies(classUsingType, dependee);
             }
         }
     }
