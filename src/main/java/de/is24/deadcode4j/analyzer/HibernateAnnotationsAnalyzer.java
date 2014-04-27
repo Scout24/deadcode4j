@@ -151,9 +151,9 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer impleme
 
     private void processGenericGenerator(CodeContext codeContext, CtClass clazz, Annotation annotation) {
         String className = clazz.getName();
-        String generatorStrategy = getStringFrom(annotation, "strategy");
-        if (isClassKnown(codeContext, generatorStrategy)) {
-            codeContext.addDependencies(className, generatorStrategy);
+        String resolvedStrategyClass = resolveClass(codeContext, getStringFrom(annotation, "strategy"));
+        if (resolvedStrategyClass != null) {
+            codeContext.addDependencies(className, resolvedStrategyClass);
         }
         String generatorName = getStringFrom(annotation, "name");
         String previousEntry = this.generatorDefinitions.put(generatorName, className);
@@ -180,15 +180,15 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer impleme
         }
     }
 
-    private boolean isClassKnown(CodeContext codeContext, String className) {
+    private String resolveClass(CodeContext codeContext, String className) {
         ClassPool classPool = getOrCreateClassPool(codeContext);
-        int dotIndex;
         for (; ; ) {
-            if (classPool.find(className) != null)
-                return true;
-            dotIndex = className.lastIndexOf('.');
+            if (classPool.find(className) != null) {
+                return className;
+            }
+            int dotIndex = className.lastIndexOf('.');
             if (dotIndex < 0)
-                return false;
+                return null;
             className = className.substring(0, dotIndex) + "$" + className.substring(dotIndex + 1);
         }
     }
@@ -218,11 +218,14 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer impleme
             final String dependee;
             if (classDefiningType != null) {
                 dependee = classDefiningType;
-            } else if (codeContext.getAnalyzedCode().getAnalyzedClasses().contains(typeName)) {
-                dependee = typeName;
             } else {
-                logger.debug("Encountered unknown org.hibernate.annotations.Type [{}].", typeName);
-                continue;
+                String resolvedTypeClass = resolveClass(codeContext, typeName);
+                if (resolvedTypeClass != null) {
+                    dependee = resolvedTypeClass;
+                } else {
+                    logger.debug("Encountered unknown org.hibernate.annotations.Type [{}].", typeName);
+                    continue;
+                }
             }
             for (String classUsingType : typeUsage.getValue()) {
                 codeContext.addDependencies(classUsingType, dependee);
