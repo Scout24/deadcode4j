@@ -1,7 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
 import com.google.common.collect.Sets;
-import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
 import javassist.CtClass;
 import javassist.NotFoundException;
@@ -20,7 +19,7 @@ import static com.google.common.collect.Lists.newArrayList;
  *
  * @since 1.4
  */
-public abstract class SuperClassAnalyzer extends ByteCodeAnalyzer implements Analyzer {
+public abstract class SuperClassAnalyzer extends ByteCodeAnalyzer {
 
     private final String dependerId;
     private final Collection<String> superClasses;

@@ -2,7 +2,6 @@ package de.is24.deadcode4j.analyzer;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -54,7 +53,7 @@ import static java.util.Collections.emptyList;
  * @since 1.4
  */
 @SuppressWarnings("PMD.TooManyStaticImports")
-public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer implements Analyzer {
+public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
 
     private final Map<String, String> typeDefinitions = newHashMap();
     private final Map<String, Set<String>> typeUsages = newHashMap();

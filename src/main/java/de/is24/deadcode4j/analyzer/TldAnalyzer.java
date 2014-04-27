@@ -1,14 +1,12 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.Analyzer;
-
 /**
  * Analyzes <code>*.tld</code> files: lists the function, listener, tag, tag extra info & validator classes being
  * referenced.
  *
  * @since 1.2.0
  */
-public final class TldAnalyzer extends SimpleXmlAnalyzer implements Analyzer {
+public final class TldAnalyzer extends SimpleXmlAnalyzer {
 
     public TldAnalyzer() {
         super("_tld_", ".tld", "taglib");

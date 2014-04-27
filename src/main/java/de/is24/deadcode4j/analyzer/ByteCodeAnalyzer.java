@@ -1,6 +1,5 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
 import de.is24.deadcode4j.Repository;
 import javassist.*;
@@ -27,7 +26,7 @@ import static java.util.Arrays.asList;
  *
  * @since 1.3
  */
-public abstract class ByteCodeAnalyzer extends AnalyzerAdapter implements Analyzer {
+public abstract class ByteCodeAnalyzer extends AnalyzerAdapter {
 
     /**
      * Retrieves all annotations of a package/class and its members (if requested).

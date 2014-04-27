@@ -1,8 +1,5 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.Analyzer;
-
-
 /**
  * Analyzes <a href="http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd">Spring Web Flow</a> XML
  * files: lists
@@ -15,7 +12,7 @@ import de.is24.deadcode4j.Analyzer;
  *
  * @since 1.5
  */
-public final class SpringWebFlowAnalyzer extends SimpleXmlAnalyzer implements Analyzer {
+public final class SpringWebFlowAnalyzer extends SimpleXmlAnalyzer {
 
     public SpringWebFlowAnalyzer() {
         super("_SpringWebFlow-XML_", ".xml", "flow");

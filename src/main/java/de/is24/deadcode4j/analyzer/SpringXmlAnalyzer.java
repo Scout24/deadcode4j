@@ -1,7 +1,5 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.Analyzer;
-
 /**
  * Analyzes Spring XML files:
  * <ul>
@@ -18,7 +16,7 @@ import de.is24.deadcode4j.Analyzer;
  *
  * @since 1.1.0
  */
-public class SpringXmlAnalyzer extends SimpleXmlAnalyzer implements Analyzer {
+public class SpringXmlAnalyzer extends SimpleXmlAnalyzer {
 
     public SpringXmlAnalyzer() {
         super("_Spring-XML_", ".xml", "beans");

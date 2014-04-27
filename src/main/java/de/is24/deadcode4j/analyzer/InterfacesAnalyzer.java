@@ -1,6 +1,5 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
 import javassist.CtClass;
 import javassist.NotFoundException;
@@ -18,7 +17,7 @@ import static java.util.Collections.disjoint;
  *
  * @since 1.4
  */
-public abstract class InterfacesAnalyzer extends ByteCodeAnalyzer implements Analyzer {
+public abstract class InterfacesAnalyzer extends ByteCodeAnalyzer {
 
     @Nonnull
     private final String dependerId;

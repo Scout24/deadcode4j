@@ -1,14 +1,12 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.Analyzer;
-
 /**
  * Analyzes class files: marks a class as being in use if it is annotated with one of those Spring annotations:
  * <ul>
  * <li>org.springframework.jmx.export.annotation.ManagedResource</li>
  * <li>org.springframework.stereotype.Component</li>
  * </ul>
- *
+ * <p/>
  * Those Spring annotations are marked with <code>@Component</code> and thus are recursively considered as well:
  * <ul>
  * <li>org.springframework.context.annotation.Configuration</li>
@@ -19,7 +17,7 @@ import de.is24.deadcode4j.Analyzer;
  *
  * @since 1.3
  */
-public final class SpringAnnotationsAnalyzer extends AnnotationsAnalyzer implements Analyzer {
+public final class SpringAnnotationsAnalyzer extends AnnotationsAnalyzer {
 
     public SpringAnnotationsAnalyzer() {
         super("_Spring-Annotation_",

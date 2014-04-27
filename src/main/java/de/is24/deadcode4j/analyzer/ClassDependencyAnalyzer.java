@@ -1,6 +1,5 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
 import javassist.CtClass;
 
@@ -12,7 +11,7 @@ import java.util.Collection;
  *
  * @since 1.0.0
  */
-public class ClassDependencyAnalyzer extends ByteCodeAnalyzer implements Analyzer {
+public class ClassDependencyAnalyzer extends ByteCodeAnalyzer {
 
     @Override
     protected void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {

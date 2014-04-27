@@ -3,8 +3,6 @@ package de.is24.deadcode4j.analyzer;
 import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
 import de.is24.deadcode4j.Module;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -21,8 +19,7 @@ import static com.google.common.collect.Iterables.isEmpty;
  *
  * @since 1.5
  */
-public class ServletContainerInitializerAnalyzer implements Analyzer {
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+public class ServletContainerInitializerAnalyzer extends AnalyzerAdapter {
     private final String depender;
     private final Analyzer classFinder;
     private final Analyzer webXmlAnalyzer = new XmlAnalyzer("web.xml") {

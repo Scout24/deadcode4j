@@ -1,6 +1,5 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
 import org.apache.commons.io.IOUtils;
 import org.xml.sax.SAXException;
@@ -20,7 +19,7 @@ import static com.google.common.base.Preconditions.checkArgument;
  *
  * @since 1.2.0
  */
-public abstract class XmlAnalyzer extends AnalyzerAdapter implements Analyzer {
+public abstract class XmlAnalyzer extends AnalyzerAdapter {
     private final SAXParser parser;
     private final String endOfFileName;
 
