@@ -25,6 +25,7 @@ import static java.util.Collections.emptySet;
  *
  * @since 1.3
  */
+@SuppressWarnings("PMD.TooManyStaticImports")
 public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
     private static final Set<String> DEAD_ENDS = newHashSet(
             "java.lang.annotation.Documented",

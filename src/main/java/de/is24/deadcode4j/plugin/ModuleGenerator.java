@@ -37,6 +37,7 @@ import static de.is24.deadcode4j.Utils.getValueOrDefault;
  * @see #getModulesFor(Iterable)
  * @since 1.6
  */
+@SuppressWarnings("PMD.TooManyStaticImports")
 class ModuleGenerator {
 
     @Nonnull
