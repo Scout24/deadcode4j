@@ -14,7 +14,7 @@ import static com.google.common.collect.Lists.newArrayList;
  *
  * @since 1.3
  */
-public class DeadCodeLogger {
+class DeadCodeLogger {
 
     private final Log log;
 
