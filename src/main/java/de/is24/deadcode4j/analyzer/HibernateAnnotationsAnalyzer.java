@@ -189,7 +189,7 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer impleme
             dotIndex = className.lastIndexOf('.');
             if (dotIndex < 0)
                 return false;
-            className = className.substring(0, dotIndex) + "." + className.substring(dotIndex + 1);
+            className = className.substring(0, dotIndex) + "$" + className.substring(dotIndex + 1);
         }
     }
 
