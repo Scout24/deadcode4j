@@ -63,7 +63,7 @@ public abstract class SuperClassAnalyzer extends ByteCodeAnalyzer implements Ana
         try {
             classHierarchy = getClassHierarchy(clazz);
         } catch (NotFoundException e) {
-            logger.warn("The class path is not correctly set up! Skipping superclass check for {}.", clazzName, e);
+            logger.warn("The class path is not correctly set up; could not load [{}]! Skipping superclass check for {}.", e.getMessage(), clazzName);
             return;
         }
         if (!Collections.disjoint(this.superClasses, classHierarchy)) {

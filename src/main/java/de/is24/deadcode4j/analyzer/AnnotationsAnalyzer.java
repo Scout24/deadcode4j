@@ -74,7 +74,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
             addAnnotations(codeContext, clazz, allAnnotations);
             allAnnotations.addAll(getInheritedAnnotations(codeContext, clazz));
         } catch (NotFoundException e) {
-            logger.warn("The class path is not correctly set up! Skipping interfaces check for {}.", clazz.getName(), e);
+            logger.warn("The class path is not correctly set up; could not load [{}]! Skipping interfaces check for {}.", e.getMessage(), clazz.getName());
             return;
         }
 
