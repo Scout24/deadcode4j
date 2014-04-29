@@ -1,24 +1,37 @@
 package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.CodeContext;
+import javassist.ClassPool;
 import javassist.CtClass;
+import javassist.NotFoundException;
 import javassist.bytecode.annotation.Annotation;
 
 import javax.annotation.Nonnull;
+import java.lang.annotation.Inherited;
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.annotation.ElementType.PACKAGE;
 import static java.lang.annotation.ElementType.TYPE;
+import static java.util.Collections.disjoint;
+import static java.util.Collections.emptySet;
 
 /**
  * Serves as a base class with which to mark classes as being in use if they carry one of the specified annotations.
  *
  * @since 1.3
  */
+@SuppressWarnings("PMD.TooManyStaticImports")
 public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
-
+    private static final Set<String> DEAD_ENDS = newHashSet(
+            "java.lang.annotation.Documented",
+            "java.lang.annotation.Inherited",
+            "java.lang.annotation.Retention",
+            "java.lang.annotation.Target");
     private final Collection<String> annotations;
     private final String dependerId;
 
@@ -56,10 +69,83 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
     protected final void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
         String className = clazz.getName();
         codeContext.addAnalyzedClass(className);
-        for (Annotation annotation : getAnnotations(clazz, PACKAGE, TYPE)) {
-            if (this.annotations.contains(annotation.getTypeName()))
-                codeContext.addDependencies(this.dependerId, className);
+
+        Set<String> allAnnotations = newHashSet();
+        try {
+            addAnnotations(codeContext, clazz, allAnnotations);
+            allAnnotations.addAll(getInheritedAnnotations(codeContext, clazz));
+        } catch (NotFoundException e) {
+            logger.warn("The class path is not correctly set up; could not load [{}]! Skipping interfaces check for {}.", e.getMessage(), clazz.getName());
+            return;
         }
+
+        if (!disjoint(this.annotations, allAnnotations)) {
+            codeContext.addDependencies(this.dependerId, className);
+        }
+    }
+
+    private void addAnnotations(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz, Set<String> knownAnnotations) throws NotFoundException {
+        for (Annotation annotation : getAnnotations(clazz, PACKAGE, TYPE)) {
+            String annotationClassName = annotation.getTypeName();
+            if (!knownAnnotations.add(annotationClassName))
+                continue;
+            if (DEAD_ENDS.contains(annotationClassName))
+                continue;
+            ClassPool classPool = getOrCreateClassPool(codeContext);
+            CtClass annotationClazz = classPool.get(annotationClassName);
+            addAnnotations(codeContext, annotationClazz, knownAnnotations);
+        }
+    }
+
+    @Nonnull
+    private Set<String> getInheritedAnnotations(@Nonnull final CodeContext codeContext, @Nonnull final CtClass clazz) throws NotFoundException {
+        List<String> annotationsMarkedAsInherited = getOrLookUpAnnotationsMarkedAsInherited(codeContext);
+        if (annotationsMarkedAsInherited.isEmpty()) {
+            return emptySet();
+        }
+        Set<String> inheritedAnnotations = newHashSet();
+        CtClass loopClass = clazz.getSuperclass();
+        while (loopClass != null && !"java.lang.Object".equals(loopClass.getName())) {
+            for (Annotation annotation : getAnnotations(loopClass, PACKAGE, TYPE)) {
+                inheritedAnnotations.add(annotation.getTypeName());
+            }
+            loopClass = loopClass.getSuperclass();
+        }
+        return inheritedAnnotations;
+    }
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    private List<String> getOrLookUpAnnotationsMarkedAsInherited(@Nonnull CodeContext codeContext) {
+        List<String> inheritedAnnotations = (List<String>) codeContext.getCache().get(getClass());
+        if (inheritedAnnotations == null) {
+            inheritedAnnotations = computeAnnotationsMarkedAsInherited(codeContext);
+            codeContext.getCache().put(getClass(), inheritedAnnotations);
+        }
+        return inheritedAnnotations;
+    }
+
+    @Nonnull
+    private List<String> computeAnnotationsMarkedAsInherited(@Nonnull CodeContext codeContext) {
+        List<String> inheritedAnnotations = newArrayList();
+        ClassPool classPool = getOrCreateClassPool(codeContext);
+        for (String annotation : annotations) {
+            CtClass annotationClazz;
+            try {
+                annotationClazz = classPool.get(annotation);
+            } catch (NotFoundException e) {
+                logger.debug("Annotation [{}] cannot be found on the class path; skipping detection");
+                continue;
+            }
+            try {
+                if (annotationClazz.getAnnotation(Inherited.class) != null) {
+                    inheritedAnnotations.add(annotation);
+                }
+            } catch (ClassNotFoundException e) {
+                logger.debug("@Inherited is not available; we probably deal with Java < 5.");
+            }
+        }
+        return inheritedAnnotations;
     }
 
 }

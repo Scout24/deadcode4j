@@ -6,14 +6,16 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
+import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
 
 /**
  * The <code>DeadCodeFinder</code> ties everything together in order to ultimately find dead code.
@@ -29,19 +31,22 @@ public class DeadCodeFinder {
     }
 
     @Nonnull
-    public DeadCode findDeadCode(@Nonnull Iterable<CodeRepository> codeRepositories) {
-        AnalyzedCode analyzedCode = analyzeCode(codeRepositories);
+    public DeadCode findDeadCode(@Nonnull Iterable<Module> modules) {
+        AnalyzedCode analyzedCode = analyzeCode(modules);
         return computeDeadCode(analyzedCode);
     }
 
     @Nonnull
-    private AnalyzedCode analyzeCode(@Nonnull Iterable<CodeRepository> codeRepositories) {
-        CodeContext codeContext = new CodeContext();
-        for (CodeRepository codeRepository : codeRepositories) {
-            analyzeRepository(codeContext, codeRepository);
+    private AnalyzedCode analyzeCode(@Nonnull Iterable<Module> modules) {
+        List<AnalyzedCode> analyzedCode = newArrayList();
+        for (Module module : modules) {
+            CodeContext codeContext = new CodeContext(module);
+            for (Repository repository : module.getAllRepositories()) {
+                analyzeRepository(codeContext, repository);
+            }
+            analyzedCode.add(codeContext.getAnalyzedCode());
         }
-
-        return codeContext.getAnalyzedCode();
+        return merge(analyzedCode);
     }
 
     @Nonnull
@@ -50,13 +55,12 @@ public class DeadCodeFinder {
         return new DeadCode(analyzedCode.getAnalyzedClasses(), deadClasses);
     }
 
-    private void analyzeRepository(@Nonnull CodeContext codeContext, @Nonnull CodeRepository codeRepository) {
-        CodeRepositoryAnalyzer codeRepositoryAnalyzer =
-                new CodeRepositoryAnalyzer(codeRepository.getFileFilter(), this.analyzers, codeContext);
+    private void analyzeRepository(@Nonnull CodeContext codeContext, @Nonnull Repository repository) {
+        RepositoryAnalyzer repositoryAnalyzer = new RepositoryAnalyzer(codeContext, repository, this.analyzers);
         try {
-            codeRepositoryAnalyzer.analyze(codeRepository.getDirectory());
+            repositoryAnalyzer.analyze();
         } catch (IOException e) {
-            throw new RuntimeException("Failed to parse files of " + codeRepository + "!", e);
+            throw new RuntimeException("Failed to parse files of " + repository + "!", e);
         }
     }
 
@@ -74,20 +78,36 @@ public class DeadCodeFinder {
         return deadClasses;
     }
 
-    private static class CodeRepositoryAnalyzer extends DirectoryWalker<Void> {
+    private AnalyzedCode merge(List<AnalyzedCode> analyzedCode) {
+        Set<String> analyzedClasses = newHashSet();
+        Map<String, Set<String>> dependencies = newHashMap();
+        for (AnalyzedCode code : analyzedCode) {
+            analyzedClasses.addAll(code.getAnalyzedClasses());
+            for (Map.Entry<String, Set<String>> dependencyEntry : code.getCodeDependencies().entrySet()) {
+                Set<String> knownDependencies = getOrAddMappedSet(dependencies, dependencyEntry.getKey());
+                knownDependencies.addAll(dependencyEntry.getValue());
+            }
+        }
+        return new AnalyzedCode(analyzedClasses, dependencies);
+    }
 
-        private final Iterable<? extends Analyzer> analyzers;
+    private static class RepositoryAnalyzer extends DirectoryWalker<Void> {
+
+        private final Logger logger = LoggerFactory.getLogger(getClass());
         private final CodeContext codeContext;
-        private Logger logger = LoggerFactory.getLogger(getClass());
+        private final Repository repository;
+        private final Iterable<? extends Analyzer> analyzers;
 
-        public CodeRepositoryAnalyzer(@Nonnull FileFilter fileFilter, @Nonnull Iterable<? extends Analyzer> analyzers, @Nonnull CodeContext codeContext) {
-            super(fileFilter, -1);
-            this.analyzers = analyzers;
+        public RepositoryAnalyzer(@Nonnull CodeContext codeContext, @Nonnull Repository repository, @Nonnull Iterable<? extends Analyzer> analyzers) {
+            super(repository.getFileFilter(), -1);
+            this.repository = repository;
             this.codeContext = codeContext;
+            this.analyzers = analyzers;
         }
 
-        public void analyze(File codeRepository) throws IOException {
-            super.walk(codeRepository, null);
+        public void analyze() throws IOException {
+            logger.debug("Starting analysis of [{}]...", this.repository);
+            super.walk(this.repository.getDirectory(), null);
         }
 
         @Override
@@ -105,8 +125,10 @@ public class DeadCodeFinder {
 
         @Override
         protected void handleEnd(Collection<Void> results) {
+            logger.debug("Finishing analysis of [{}]...", this.repository);
             for (Analyzer analyzer : this.analyzers)
                 analyzer.finishAnalysis(this.codeContext);
+            logger.debug("Finished analysis of [{}].", this.repository);
         }
 
     }

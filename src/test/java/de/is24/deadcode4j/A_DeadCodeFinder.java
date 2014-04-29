@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static com.google.common.collect.Maps.newHashMap;
-import static java.util.Arrays.asList;
+import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.emptySet;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -17,7 +17,7 @@ import static org.hamcrest.Matchers.hasSize;
 public final class A_DeadCodeFinder {
 
     private DeadCodeFinder deadCodeFinder;
-    private Map<String, Iterable<String>> codeDependencies = newHashMap();
+    private Map<String, Set<String>> codeDependencies = newHashMap();
 
     @Before
     public void setUpObjectUnderTest() {
@@ -54,7 +54,7 @@ public final class A_DeadCodeFinder {
     }
 
     private void setUpDependency(String depender, String... dependees) {
-        codeDependencies.put(depender, asList(dependees));
+        codeDependencies.put(depender, newHashSet(dependees));
     }
 
     private AnalyzedCode provideAnalyzedCode() {

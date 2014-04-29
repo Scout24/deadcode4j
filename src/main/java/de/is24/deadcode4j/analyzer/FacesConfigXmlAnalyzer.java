@@ -1,13 +1,11 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.Analyzer;
-
 /**
  * Analyzes <code>faces-config.xml</code> files: lists an incredible bunch of classes being referenced.
  *
  * @since 1.5
  */
-public final class FacesConfigXmlAnalyzer  extends SimpleXmlAnalyzer implements Analyzer {
+public final class FacesConfigXmlAnalyzer extends SimpleXmlAnalyzer {
 
     public FacesConfigXmlAnalyzer() {
         super("_faces-config.xml_", "faces-config.xml", "faces-config");

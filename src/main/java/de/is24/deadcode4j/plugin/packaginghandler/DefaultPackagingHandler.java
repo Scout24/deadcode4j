@@ -1,13 +1,13 @@
 package de.is24.deadcode4j.plugin.packaginghandler;
 
-import de.is24.deadcode4j.CodeRepository;
-import org.apache.maven.plugin.logging.Log;
+import de.is24.deadcode4j.Repository;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
-import java.util.Collection;
-import java.util.concurrent.Callable;
+import java.util.ArrayList;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static de.is24.deadcode4j.Utils.getKeyFor;
@@ -19,30 +19,26 @@ import static de.is24.deadcode4j.Utils.getKeyFor;
  */
 public class DefaultPackagingHandler extends PackagingHandler {
 
-    public DefaultPackagingHandler(Callable<Log> logAccessor) {
-        super(logAccessor);
+    @Nullable
+    @Override
+    public Repository getOutputRepositoryFor(@Nonnull MavenProject project) throws MojoExecutionException {
+        logger.debug("Project {} has {} packaging, looking for output directory...", getKeyFor(project), project.getPackaging());
+        File outputDirectory = new File(project.getBuild().getOutputDirectory());
+        if (!outputDirectory.exists()) {
+            logger.warn("The output directory of " + getKeyFor(project) +
+                    " does not exist - assuming the project simply has nothing to provide!");
+            return null;
+        }
+        logger.debug("  Found output directory [{}].", outputDirectory);
+        return new Repository(outputDirectory);
     }
 
-    @Override
     @Nonnull
-    public Collection<CodeRepository> getCodeRepositoriesFor(@Nonnull MavenProject project) {
-        Collection<CodeRepository> repositories = newArrayList();
-        addOutputDirectory(repositories, project);
+    @Override
+    public Iterable<Repository> getAdditionalRepositoriesFor(@Nonnull MavenProject project) throws MojoExecutionException {
+        ArrayList<Repository> repositories = newArrayList();
         addJavaFilesOfSourceDirectories(repositories, project);
         return repositories;
-    }
-
-    private void addOutputDirectory(@Nonnull Collection<CodeRepository> repositories, @Nonnull MavenProject project) {
-        File outputDirectory = new File(project.getBuild().getOutputDirectory());
-        if (outputDirectory.exists()) {
-            repositories.add(new CodeRepository(outputDirectory));
-            if (getLog().isDebugEnabled()) {
-                getLog().debug("Going to analyze output directory [" + outputDirectory + "].");
-            }
-        } else {
-            getLog().warn("The output directory of " + getKeyFor(project) +
-                    " does not exist - assuming the project simply has nothing to provide!");
-        }
     }
 
 }

@@ -1,7 +1,5 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.Analyzer;
-
 /**
  * Analyzes aop.xml files: lists the aspects being referenced.<br/>
  * This should work for both <a href="http://eclipse.org/aspectj/">AspectJ</a> and
@@ -9,7 +7,7 @@ import de.is24.deadcode4j.Analyzer;
  *
  * @since 1.5
  */
-public final class AopXmlAnalyzer extends SimpleXmlAnalyzer implements Analyzer {
+public final class AopXmlAnalyzer extends SimpleXmlAnalyzer {
 
     public AopXmlAnalyzer() {
         super("_AOP-XML_", "aop.xml", null);

@@ -1,21 +1,21 @@
 package de.is24.deadcode4j.plugin.packaginghandler;
 
-import de.is24.deadcode4j.CodeRepository;
+import de.is24.deadcode4j.Repository;
 import de.is24.deadcode4j.junit.FileLoader;
-import de.is24.deadcode4j.junit.TestLog;
 import org.apache.commons.io.DirectoryWalker;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.apache.maven.project.MavenProject;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.concurrent.Callable;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -25,24 +25,19 @@ public class A_PackagingHandler {
 
     private PackagingHandler objectUnderTest;
 
-    private static Callable<Log> logAccessor() {
-        return new Callable<Log>() {
-            private final Log log = new TestLog();
-
-            @Override
-            public Log call() throws Exception {
-                return log;
-            }
-        };
-    }
-
     @Before
     public void setUp() throws Exception {
-        objectUnderTest = new PackagingHandler(logAccessor()) {
+        objectUnderTest = new PackagingHandler() {
+            @Nullable
+            @Override
+            public Repository getOutputRepositoryFor(@Nonnull MavenProject project) throws MojoExecutionException {
+                return null;
+            }
+
             @Nonnull
             @Override
-            public Collection<CodeRepository> getCodeRepositoriesFor(@Nonnull MavenProject project) throws MojoExecutionException {
-                ArrayList<CodeRepository> repositories = newArrayList();
+            public Iterable<Repository> getAdditionalRepositoriesFor(@Nonnull MavenProject project) throws MojoExecutionException {
+                ArrayList<Repository> repositories = newArrayList();
                 addJavaFilesOfSourceDirectories(repositories, project);
                 return repositories;
             }
@@ -50,34 +45,32 @@ public class A_PackagingHandler {
     }
 
     @Test
-    public void addsNoCodeRepositoryIfMavenProjectDoesNotExist() throws MojoExecutionException {
+    public void addsNoRepositoryIfMavenProjectDoesNotExist() throws MojoExecutionException {
         @SuppressWarnings("ConstantConditions")
-        Collection<CodeRepository> codeRepositoriesFor = objectUnderTest.getCodeRepositoriesFor(null);
+        Iterable<Repository> repositories = objectUnderTest.getAdditionalRepositoriesFor(null);
 
-        assertThat(codeRepositoriesFor, is(empty()));
+        assertThat(repositories, is(emptyIterable()));
     }
 
     @Test
-    public void addsNoCodeRepositoryIfThereAreNoCompileSourceRoots() throws MojoExecutionException {
-        MavenProject mavenProject = new MavenProject() {
-            {
-                setCompileSourceRoots(null);
-            }
-        };
-        Collection<CodeRepository> codeRepositoriesFor = objectUnderTest.getCodeRepositoriesFor(mavenProject);
+    public void addsNoRepositoryIfThereAreNoCompileSourceRoots() throws MojoExecutionException {
+        MavenProjectStub mavenProject = new MavenProjectStub();
+        mavenProject.setCompileSourceRoots(null);
 
-        assertThat(codeRepositoriesFor, is(empty()));
+        Iterable<Repository> repositories = objectUnderTest.getAdditionalRepositoriesFor(mavenProject);
+
+        assertThat(repositories, is(emptyIterable()));
     }
 
     @Test
     public void addsCompileSourceRootsAsCodeRepositories() throws MojoExecutionException, IOException {
         MavenProject mavenProject = new MavenProject();
         mavenProject.getCompileSourceRoots().add(directoryThisClassIsLocated());
-        Collection<CodeRepository> codeRepositories = objectUnderTest.getCodeRepositoriesFor(mavenProject);
 
-        assertThat(codeRepositories, hasSize(1));
+        Iterable<Repository> repositories = objectUnderTest.getAdditionalRepositoriesFor(mavenProject);
 
-        CodeRepository repository = codeRepositories.iterator().next();
+        assertThat(repositories, is(Matchers.<Repository>iterableWithSize(1)));
+        Repository repository = repositories.iterator().next();
         Collection<String> results = getFileNames(repository);
         assertThat(results, hasItem(getClass().getSimpleName() + ".java"));
     }
@@ -86,16 +79,17 @@ public class A_PackagingHandler {
     public void addsCompileSourceRootsOnlyIfTheyExist() throws MojoExecutionException, IOException {
         MavenProject mavenProject = new MavenProject();
         mavenProject.getCompileSourceRoots().add("thisDirectory/is/so/never/gone/exist");
-        Collection<CodeRepository> codeRepositories = objectUnderTest.getCodeRepositoriesFor(mavenProject);
 
-        assertThat(codeRepositories, is(empty()));
+        Iterable<Repository> repositories = objectUnderTest.getAdditionalRepositoriesFor(mavenProject);
+
+        assertThat(repositories, is(emptyIterable()));
     }
 
     private String directoryThisClassIsLocated() {
         return FileLoader.getFile("../../src/test/java/de/is24/deadcode4j/plugin/packaginghandler").getAbsolutePath();
     }
 
-    private Collection<String> getFileNames(final CodeRepository repository) throws IOException {
+    private Collection<String> getFileNames(final Repository repository) throws IOException {
         return new DirectoryWalker<String>(repository.getFileFilter(), -1) {
             @Override
             protected void handleFile(File file, int depth, Collection<String> results) throws IOException {

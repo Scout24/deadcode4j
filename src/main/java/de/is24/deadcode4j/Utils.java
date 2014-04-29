@@ -1,10 +1,12 @@
 package de.is24.deadcode4j;
 
 import com.google.common.base.Function;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,6 +21,16 @@ public final class Utils {
 
     private Utils() {
         super();
+    }
+
+    /**
+     * Returns <i>groupId:artifactId:version</i> for the specified artifact.
+     *
+     * @since 1.6
+     */
+    @Nonnull
+    public static String getKeyFor(@Nonnull Artifact artifact) {
+        return artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getVersion();
     }
 
     /**
@@ -46,6 +58,15 @@ public final class Utils {
                 return input == null ? null : getKeyFor(input);
             }
         };
+    }
+
+    /**
+     * Adds the given element to a collection if the element is not <code>null</code>.
+     *
+     * @since 1.2.0
+     */
+    public static <E> boolean addIfNonNull(@Nonnull Collection<E> collection, @Nullable E element) {
+        return element != null && collection.add(element);
     }
 
     /**

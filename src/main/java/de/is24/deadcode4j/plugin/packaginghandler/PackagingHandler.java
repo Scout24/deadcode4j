@@ -1,21 +1,20 @@
 package de.is24.deadcode4j.plugin.packaginghandler;
 
 import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-import de.is24.deadcode4j.CodeRepository;
+import de.is24.deadcode4j.Repository;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.OrFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.emptyList;
@@ -27,33 +26,24 @@ import static org.apache.commons.io.filefilter.DirectoryFileFilter.DIRECTORY;
  * @since 1.2.0
  */
 public abstract class PackagingHandler {
-
-    private final Callable<Log> logAccessor;
-
-    protected PackagingHandler(Callable<Log> logAccessor) {
-        Preconditions.checkNotNull(logAccessor);
-        this.logAccessor = logAccessor;
-    }
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
-     * Returns the code repositories to analyze for this packaging.
+     * Returns the "output" repository - i.e. the directory where compiled classes can be found - for the given project.
      *
-     * @since 1.2.0
+     * @since 1.2
      */
-    @Nonnull
-    public abstract Collection<CodeRepository> getCodeRepositoriesFor(@Nonnull MavenProject project) throws MojoExecutionException;
+    @Nullable
+    public abstract Repository getOutputRepositoryFor(@Nonnull MavenProject project) throws MojoExecutionException;
 
     /**
-     * Returns the {@link org.apache.maven.plugin.logging.Log} to use.
+     * Returns additional repositories (configuration, JSPs, raw java files) to analyze for the given project.
      *
      * @since 1.6
      */
-    protected final Log getLog() {
-        try {
-            return logAccessor.call();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    @Nonnull
+    public Iterable<Repository> getAdditionalRepositoriesFor(@Nonnull MavenProject project) throws MojoExecutionException {
+        return emptyList();
     }
 
     /**
@@ -62,16 +52,16 @@ public abstract class PackagingHandler {
      *
      * @since 1.6
      */
-    protected void addJavaFilesOfSourceDirectories(@Nonnull Collection<CodeRepository> repositories, @Nonnull MavenProject project) {
+    protected void addJavaFilesOfSourceDirectories(@Nonnull Collection<Repository> repositories, @Nonnull MavenProject project) {
         repositories.addAll(getJavaFilesOfCompileSourceRootsAsCodeRepositories(project));
     }
 
     @Nonnull
-    private Collection<CodeRepository> getJavaFilesOfCompileSourceRootsAsCodeRepositories(@Nonnull MavenProject project) {
-        return new Function<MavenProject, Collection<CodeRepository>>() {
+    private Collection<Repository> getJavaFilesOfCompileSourceRootsAsCodeRepositories(@Nonnull MavenProject project) {
+        return new Function<MavenProject, Collection<Repository>>() {
             @Nonnull
             @Override
-            public Collection<CodeRepository> apply(@Nullable MavenProject input) {
+            public Collection<Repository> apply(@Nullable MavenProject input) {
                 if (input == null) {
                     return emptyList();
                 }
@@ -81,17 +71,15 @@ public abstract class PackagingHandler {
                     return emptyList();
                 }
 
-                Collection<CodeRepository> codeRepositories = newArrayList();
+                Collection<Repository> codeRepositories = newArrayList();
                 for (String compileSourceRoot : compileSourceRoots) {
                     File compileSourceDirectory = new File(compileSourceRoot);
                     if (!compileSourceDirectory.exists()) {
                         continue;
                     }
-                    codeRepositories.add(new CodeRepository(compileSourceDirectory,
+                    codeRepositories.add(new Repository(compileSourceDirectory,
                             new OrFileFilter(DIRECTORY, new RegexFileFilter(".*\\.java$", IOCase.INSENSITIVE))));
-                    if (getLog().isDebugEnabled()) {
-                        getLog().debug("Going to analyze Java files of source directory [" + compileSourceRoot + "].");
-                    }
+                    logger.debug("Going to analyze Java files of source directory [{}].", compileSourceRoot);
                 }
                 return codeRepositories;
             }

@@ -1,14 +1,12 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.Analyzer;
-
 /**
  * Analyzes <a href="http://tiles.apache.org/">Apache Tiles</a> definition XML files: lists the preparer, bean & item
  * classes being referenced.
  *
  * @since 1.5
  */
-public final class ApacheTilesAnalyzer extends SimpleXmlAnalyzer implements Analyzer {
+public final class ApacheTilesAnalyzer extends SimpleXmlAnalyzer {
 
     public ApacheTilesAnalyzer() {
         super("_ApacheTilesXml_", ".xml", "tiles-definitions");

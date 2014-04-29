@@ -2,8 +2,7 @@ package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import de.is24.deadcode4j.Module;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -11,6 +10,7 @@ import javax.annotation.Nonnull;
 import java.io.File;
 
 import static com.google.common.collect.Iterables.concat;
+import static com.google.common.collect.Iterables.isEmpty;
 
 /**
  * Analyzes both <code>web.xml</code> and class files: looks for implementations of
@@ -19,11 +19,26 @@ import static com.google.common.collect.Iterables.concat;
  *
  * @since 1.5
  */
-public class ServletContainerInitializerAnalyzer implements Analyzer {
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final ServletContainerInitializerCodeContext context = new ServletContainerInitializerCodeContext();
-    private final Analyzer classFinder;
+public class ServletContainerInitializerAnalyzer extends AnalyzerAdapter {
     private final String depender;
+    private final Analyzer classFinder;
+    private final Analyzer webXmlAnalyzer = new XmlAnalyzer("web.xml") {
+        @Nonnull
+        @Override
+        protected DefaultHandler createHandlerFor(@Nonnull final CodeContext codeContext) {
+            return new DefaultHandler() {
+                @Override
+                public void startElement(String uri, String localName, String qName, Attributes attributes)
+                        throws StopParsing {
+                    if ("web-app".equals(localName) && "true".equals(attributes.getValue("metadata-complete"))) {
+                        ((ServletContainerInitializerCodeContext) codeContext).setMetadataComplete();
+                    }
+                    throw new StopParsing();
+                }
+            };
+        }
+    };
+    private ServletContainerInitializerCodeContext context;
 
     /**
      * Creates a new instance of <code>ServletContainerInitializerAnalyzer</code>.
@@ -43,39 +58,30 @@ public class ServletContainerInitializerAnalyzer implements Analyzer {
         this("JEE-ServletContainerInitializer", "javax.servlet.ServletContainerInitializer");
     }
 
-    private final Analyzer webXmlAnalyzer = new XmlAnalyzer("web.xml") {
-        @Nonnull
-        @Override
-        protected DefaultHandler createHandlerFor(@Nonnull final CodeContext codeContext) {
-            return new DefaultHandler() {
-                @Override
-                public void startElement(String uri, String localName, String qName, Attributes attributes)
-                        throws StopParsing {
-                    if ("web-app".equals(localName) && "true".equals(attributes.getValue("metadata-complete"))) {
-                        ((ServletContainerInitializerCodeContext) codeContext).setMetadataComplete();
-                    }
-                    throw new StopParsing();
-                }
-            };
-        }
-    };
-
     @Override
     public void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull File fileName) {
-        this.context.setOriginalContext(codeContext);
+        if (this.context == null) {
+            this.context = new ServletContainerInitializerCodeContext(codeContext.getModule());
+            this.context.setOriginalContext(codeContext);
+        }
         this.webXmlAnalyzer.doAnalysis(this.context, fileName);
         this.classFinder.doAnalysis(this.context, fileName);
     }
 
     @Override
     public void finishAnalysis(@Nonnull CodeContext codeContext) {
-        if (this.context.isMetadataComplete()) {
+        ServletContainerInitializerCodeContext localContext = this.context;
+        this.context = null;
+        if (localContext == null) {
+            return;
+        }
+        if (localContext.isMetadataComplete()) {
             logger.debug("Found web.xml with completed metadata; " +
                     "ServletContainerInitializer implementations are treated as dead code");
             return;
         }
-        Iterable<String> initializerClasses = concat(this.context.getAnalyzedCode().getCodeDependencies().values());
-        if (initializerClasses != null) {
+        Iterable<String> initializerClasses = concat(localContext.getAnalyzedCode().getCodeDependencies().values());
+        if (!isEmpty(initializerClasses)) {
             codeContext.addDependencies(depender, initializerClasses);
         }
     }
@@ -84,6 +90,10 @@ public class ServletContainerInitializerAnalyzer implements Analyzer {
 
         private CodeContext originalContext;
         private boolean metadataComplete = false;
+
+        private ServletContainerInitializerCodeContext(Module module) {
+            super(module);
+        }
 
         @Override
         public void addAnalyzedClass(@Nonnull String clazz) {

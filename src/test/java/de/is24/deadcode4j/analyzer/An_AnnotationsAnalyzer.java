@@ -1,7 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.Analyzer;
-import de.is24.deadcode4j.CodeContext;
 import org.junit.Test;
 
 import java.util.Map;
@@ -17,7 +16,6 @@ public final class An_AnnotationsAnalyzer extends AnAnalyzer {
     public void reportsExistenceOfClass() {
         Analyzer objectUnderTest = new AnnotationsAnalyzer("junit", "de.is24.deadcode4j.junit.Annotation") {
         };
-        CodeContext codeContext = new CodeContext();
 
         objectUnderTest.doAnalysis(codeContext, getFile("A.class"));
         assertThat(codeContext.getAnalyzedCode().getAnalyzedClasses(), containsInAnyOrder("A"));
@@ -30,7 +28,6 @@ public final class An_AnnotationsAnalyzer extends AnAnalyzer {
     public void reportsAnnotatedClassAsBeingUsed() {
         Analyzer objectUnderTest = new AnnotationsAnalyzer("junit", "de.is24.deadcode4j.junit.Annotation", "java.lang.Deprecated") {
         };
-        CodeContext codeContext = new CodeContext();
 
         objectUnderTest.doAnalysis(codeContext, getFile("AnnotatedClass.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("DeadServlet.class"));
@@ -41,10 +38,33 @@ public final class An_AnnotationsAnalyzer extends AnAnalyzer {
     }
 
     @Test
+    public void reportsClassAnnotatedWithAnnotatedAnnotationAsBeingUsed() {
+        Analyzer objectUnderTest = new AnnotationsAnalyzer("junit", "de.is24.deadcode4j.junit.Annotation") {
+        };
+
+        objectUnderTest.doAnalysis(codeContext, getFile("ClassAnnotatedWithAnnotatedAnnotation.class"));
+
+        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        assertThat("Should have reported some dependencies!", codeDependencies.size(), is(1));
+        assertThat(concat(codeDependencies.values()), containsInAnyOrder("ClassAnnotatedWithAnnotatedAnnotation"));
+    }
+
+    @Test
+    public void reportsSubClassOfClassBeingAnnotatedWithAnnotationMarkedAsInheritedAsBeingUsed() {
+        Analyzer objectUnderTest = new AnnotationsAnalyzer("junit", "de.is24.deadcode4j.junit.Annotation") {
+        };
+
+        objectUnderTest.doAnalysis(codeContext, getFile("SubClassOfAnnotatedClass.class"));
+
+        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        assertThat("Should have reported some dependencies!", codeDependencies.size(), is(1));
+        assertThat(concat(codeDependencies.values()), containsInAnyOrder("SubClassOfAnnotatedClass"));
+    }
+
+    @Test
     public void doesNotReportUnannotatedClassAsBeingUsed() {
         Analyzer objectUnderTest = new AnnotationsAnalyzer("junit", "de.is24.deadcode4j.junit.Annotation") {
         };
-        CodeContext codeContext = new CodeContext();
 
         objectUnderTest.doAnalysis(codeContext, getFile("AnnotatedClass.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("DeadServlet.class"));

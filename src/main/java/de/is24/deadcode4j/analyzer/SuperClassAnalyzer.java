@@ -1,14 +1,17 @@
 package de.is24.deadcode4j.analyzer;
 
 import com.google.common.collect.Sets;
-import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
 import javassist.CtClass;
+import javassist.NotFoundException;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Lists.newArrayList;
 
 /**
  * Serves as a base class with which to mark classes as being in use if they are a direct subclass of one of the
@@ -16,7 +19,7 @@ import static com.google.common.base.Preconditions.checkArgument;
  *
  * @since 1.4
  */
-public abstract class SuperClassAnalyzer extends ByteCodeAnalyzer implements Analyzer {
+public abstract class SuperClassAnalyzer extends ByteCodeAnalyzer {
 
     private final String dependerId;
     private final Collection<String> superClasses;
@@ -55,9 +58,27 @@ public abstract class SuperClassAnalyzer extends ByteCodeAnalyzer implements Ana
     protected final void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
         String clazzName = clazz.getName();
         codeContext.addAnalyzedClass(clazzName);
-        if (this.superClasses.contains(clazz.getClassFile2().getSuperclass())) {
+        final List<String> classHierarchy;
+        try {
+            classHierarchy = getClassHierarchy(clazz);
+        } catch (NotFoundException e) {
+            logger.warn("The class path is not correctly set up; could not load [{}]! Skipping superclass check for {}.", e.getMessage(), clazzName);
+            return;
+        }
+        if (!Collections.disjoint(this.superClasses, classHierarchy)) {
             codeContext.addDependencies(this.dependerId, clazzName);
         }
+    }
+
+    @Nonnull
+    private List<String> getClassHierarchy(@Nonnull final CtClass clazz) throws NotFoundException {
+        List<String> classes = newArrayList();
+        CtClass loopClass = clazz;
+        do {
+            classes.add(loopClass.getClassFile2().getSuperclass());
+            loopClass = loopClass.getSuperclass();
+        } while (loopClass != null && !"java.lang.Object".equals(loopClass.getName()));
+        return classes;
     }
 
 }

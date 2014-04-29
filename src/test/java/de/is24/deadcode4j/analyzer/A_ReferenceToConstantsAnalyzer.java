@@ -1,7 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.Analyzer;
-import de.is24.deadcode4j.CodeContext;
 import de.is24.deadcode4j.analyzer.constants.ClassWithInnerClassNamedLikePotentialTarget;
 import org.junit.After;
 import org.junit.Before;
@@ -21,14 +20,12 @@ import static org.hamcrest.Matchers.*;
 public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
     private static final String FQ_CONSTANTS = "de.is24.deadcode4j.analyzer.constants.Constants";
     private Analyzer objectUnderTest;
-    private CodeContext codeContext;
     private Set<String> dependers = newHashSet();
     private List<String> dependees = newArrayList();
 
     @Before
     public void setUp() throws Exception {
         objectUnderTest = new ReferenceToConstantsAnalyzer();
-        codeContext = new CodeContext();
         codeContext.addAnalyzedClass(FQ_CONSTANTS); // make this class known to the context
         codeContext.addAnalyzedClass(FQ_CONSTANTS + ".More");
 

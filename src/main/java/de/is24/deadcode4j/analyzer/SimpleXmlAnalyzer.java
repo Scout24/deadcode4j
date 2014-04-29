@@ -1,6 +1,5 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
@@ -21,7 +20,7 @@ import static com.google.common.collect.Sets.newHashSet;
  *
  * @since 1.2.0
  */
-public abstract class SimpleXmlAnalyzer extends XmlAnalyzer implements Analyzer {
+public abstract class SimpleXmlAnalyzer extends XmlAnalyzer {
     private final String dependerId;
     private final String rootElement;
     private final Set<Element> registeredElements = newHashSet();
@@ -81,6 +80,71 @@ public abstract class SimpleXmlAnalyzer extends XmlAnalyzer implements Analyzer 
     }
 
     /**
+     * Represents an XML element that is to be examined.
+     *
+     * @since 1.5
+     */
+    protected static class Element {
+
+        private final String name;
+        private final Map<String, String> requiredAttributeValues = newHashMap();
+        private boolean reportTextAsClass = false;
+        private String attributeToReportAsClass;
+
+        public Element(@Nonnull String name) {
+            checkArgument(name.trim().length() > 0, "The element's [name] must be set!");
+            this.name = name;
+        }
+
+        /**
+         * Restricts the element to only be examined if it has an attribute with the specified value.
+         *
+         * @since 1.5
+         */
+        public Element withAttributeValue(@Nonnull String attributeName, @Nonnull String requiredValue) {
+            checkArgument(attributeName.trim().length() > 0, "[attributeName] must be given!");
+            checkArgument(requiredValue.trim().length() > 0, "[requiredValue] must be given!");
+            this.requiredAttributeValues.put(attributeName, requiredValue);
+            return this;
+        }
+
+        void reportTextAsClass() {
+            this.reportTextAsClass = true;
+        }
+
+        boolean shouldReportTextAsClass() {
+            return this.reportTextAsClass;
+        }
+
+        String getAttributeToReportAsClass() {
+            return this.attributeToReportAsClass;
+        }
+
+        void setAttributeToReportAsClass(@Nonnull String attributeName) {
+            checkArgument(attributeName.trim().length() > 0, "[attributeName] must be given!");
+            checkState(this.attributeToReportAsClass == null,
+                    "Already registered [" + this.attributeToReportAsClass + "] as attribute to report as class!");
+            this.attributeToReportAsClass = attributeName;
+        }
+
+        boolean matches(String localName, Attributes attributes) {
+            if (!name.equals(localName)) {
+                return false;
+            }
+            for (Map.Entry<String, String> entry : this.requiredAttributeValues.entrySet()) {
+                String expectedValue = entry.getValue();
+                String currentValue = attributes.getValue(entry.getKey());
+                if (!expectedValue.equals(currentValue)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+    }
+
+    /**
      * @since 1.2.0
      */
     private class XmlHandler extends DefaultHandler {
@@ -129,71 +193,6 @@ public abstract class SimpleXmlAnalyzer extends XmlAnalyzer implements Analyzer 
                 codeContext.addDependencies(dependerId, buffer.toString());
                 buffer = null;
             }
-        }
-
-    }
-
-    /**
-     * Represents an XML element that is to be examined.
-     *
-     * @since 1.5
-     */
-    protected static class Element {
-
-        private final String name;
-        private final Map<String, String> requiredAttributeValues = newHashMap();
-        private boolean reportTextAsClass = false;
-        private String attributeToReportAsClass;
-
-        public Element(@Nonnull String name) {
-            checkArgument(name.trim().length() > 0, "The element's [name] must be set!");
-            this.name = name;
-        }
-
-        /**
-         * Restricts the element to only be examined if it has an attribute with the specified value.
-         *
-         * @since 1.5
-         */
-        public Element withAttributeValue(@Nonnull String attributeName, @Nonnull String requiredValue) {
-            checkArgument(attributeName.trim().length() > 0, "[attributeName] must be given!");
-            checkArgument(requiredValue.trim().length() > 0, "[requiredValue] must be given!");
-            this.requiredAttributeValues.put(attributeName, requiredValue);
-            return this;
-        }
-
-        void reportTextAsClass() {
-            this.reportTextAsClass = true;
-        }
-
-        boolean shouldReportTextAsClass() {
-            return this.reportTextAsClass;
-        }
-
-        void setAttributeToReportAsClass(@Nonnull String attributeName) {
-            checkArgument(attributeName.trim().length() > 0, "[attributeName] must be given!");
-            checkState(this.attributeToReportAsClass == null,
-                    "Already registered [" + this.attributeToReportAsClass + "] as attribute to report as class!");
-            this.attributeToReportAsClass = attributeName;
-        }
-
-        String getAttributeToReportAsClass() {
-            return this.attributeToReportAsClass;
-        }
-
-        boolean matches(String localName, Attributes attributes) {
-            if (!name.equals(localName)) {
-                return false;
-            }
-            for (Map.Entry<String, String> entry : this.requiredAttributeValues.entrySet()) {
-                String expectedValue = entry.getValue();
-                String currentValue = attributes.getValue(entry.getKey());
-                if (!expectedValue.equals(currentValue)) {
-                    return false;
-                }
-            }
-
-            return true;
         }
 
     }

@@ -1,7 +1,5 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.Analyzer;
-
 /**
  * Analyzes class files: marks a class as being in use if it is annotated with one of those JEE annotations:
  * <ul>
@@ -23,7 +21,7 @@ import de.is24.deadcode4j.Analyzer;
  *
  * @since 1.3
  */
-public final class JeeAnnotationsAnalyzer extends AnnotationsAnalyzer implements Analyzer {
+public final class JeeAnnotationsAnalyzer extends AnnotationsAnalyzer {
 
     public JeeAnnotationsAnalyzer() {
         super("_JEE-Annotation_",

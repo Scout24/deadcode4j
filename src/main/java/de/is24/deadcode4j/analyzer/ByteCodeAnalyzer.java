@@ -1,11 +1,8 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.CtField;
-import javassist.CtMethod;
+import de.is24.deadcode4j.Repository;
+import javassist.*;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.AttributeInfo;
 import javassist.bytecode.annotation.Annotation;
@@ -29,7 +26,7 @@ import static java.util.Arrays.asList;
  *
  * @since 1.3
  */
-public abstract class ByteCodeAnalyzer extends AnalyzerAdapter implements Analyzer {
+public abstract class ByteCodeAnalyzer extends AnalyzerAdapter {
 
     /**
      * Retrieves all annotations of a package/class and its members (if requested).
@@ -84,12 +81,27 @@ public abstract class ByteCodeAnalyzer extends AnalyzerAdapter implements Analyz
      */
     protected abstract void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz);
 
+    /**
+     * Returns the <code>ClassPool</code> used for examining classes.
+     *
+     * @since 1.6
+     */
+    @Nonnull
+    protected final ClassPool getOrCreateClassPool(@Nonnull CodeContext codeContext) {
+        ClassPool classPool = (ClassPool) codeContext.getCache().get(ByteCodeAnalyzer.class);
+        if (classPool == null) {
+            classPool = createClassPool(codeContext);
+            codeContext.getCache().put(ByteCodeAnalyzer.class, classPool);
+        }
+        return classPool;
+    }
+
     private void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull File clazz) {
         final CtClass ctClass;
         FileInputStream in = null;
         try {
             in = new FileInputStream(clazz);
-            ctClass = new ClassPool(false).makeClass(in);
+            ctClass = getOrCreateClassPool(codeContext).makeClass(in);
         } catch (IOException e) {
             throw new RuntimeException("Could not analyze [" + clazz + "]!", e);
         } finally {
@@ -97,6 +109,23 @@ public abstract class ByteCodeAnalyzer extends AnalyzerAdapter implements Analyz
         }
         logger.debug("Analyzing class [{}]...", ctClass.getName());
         analyzeClass(codeContext, ctClass);
+    }
+
+    @Nonnull
+    private ClassPool createClassPool(@Nonnull CodeContext codeContext) {
+        ClassPool classPool = new ClassPool(true);
+        try {
+            Repository outputRepository = codeContext.getModule().getOutputRepository();
+            if (outputRepository != null) {
+                classPool.appendClassPath(outputRepository.getDirectory().getAbsolutePath());
+            }
+            for (File file : codeContext.getModule().getClassPath()) {
+                classPool.appendClassPath(file.getAbsolutePath());
+            }
+        } catch (NotFoundException e) {
+            throw new RuntimeException("Failed to set up ByteCodeAnalyzer!", e);
+        }
+        return classPool;
     }
 
 }

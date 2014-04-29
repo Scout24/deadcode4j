@@ -1,7 +1,7 @@
 @GenericGenerators({
-        @GenericGenerator(name = "generatorOne", strategy = "IndependentClass"),
+        @GenericGenerator(name = "generatorOne", strategy = "CompletelyUnknownClass"),
         @GenericGenerator(name = "generatorTwo", strategy = "uuid"),
-        @GenericGenerator(name = "generatorThree", strategy = "DependingClass")
+        @GenericGenerator(name = "generatorThree", strategy = "AnotherCompletelyUnknownClass")
 })
 @TypeDefs({
         @TypeDef(name = "byteClass", typeClass = Byte.class),

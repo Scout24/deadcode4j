@@ -1,7 +1,5 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.Analyzer;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.regex.Matcher;
@@ -14,7 +12,7 @@ import static com.google.common.base.Preconditions.checkArgument;
  *
  * @since 1.3
  */
-public final class CustomXmlAnalyzer extends SimpleXmlAnalyzer implements Analyzer {
+public final class CustomXmlAnalyzer extends SimpleXmlAnalyzer {
 
     //                                                              element       [@attribute='value']    /   @attribute|text()
     private static final Pattern XPATH_PATTERN = Pattern.compile("^([^/\\[]+)(?:\\[@([^=]+)='([^']+)'\\])?/(?:@(.*)|text\\(\\))$");
