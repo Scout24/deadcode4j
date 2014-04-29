@@ -340,7 +340,7 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
         triggerFinishAnalysisEvent();
 
         assertDependencyExists("de.is24.deadcode4j.analyzer.constants.ClassUsingInnerClassOfConstantInField",
-                FQ_CONSTANTS + ".More");
+                FQ_CONSTANTS + "$More");
     }
 
     @Test
@@ -362,7 +362,7 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
         triggerFinishAnalysisEvent();
 
         assertDependencyExists("de.is24.deadcode4j.analyzer.constants.subpackage.ClassUsingInnerClassOfConstantOfOtherPackageInField",
-                FQ_CONSTANTS + ".More");
+                FQ_CONSTANTS + "$More");
     }
 
     @Ignore("not sure if Constants.A_STRING.intern() is actually inlined by the compiler")
