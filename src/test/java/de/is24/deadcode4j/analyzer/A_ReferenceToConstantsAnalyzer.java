@@ -349,7 +349,7 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
         triggerFinishAnalysisEvent();
 
         assertDependencyExists("de.is24.deadcode4j.analyzer.constants.ClassUsingInnerClassOfConstantViaStaticImportInField",
-                FQ_CONSTANTS + ".More");
+                FQ_CONSTANTS + "$More");
     }
 
     @Test

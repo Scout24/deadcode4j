@@ -21,21 +21,19 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
-import java.util.*;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.List;
+import java.util.Set;
 
 import static com.google.common.base.Predicates.and;
 import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.*;
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.newLinkedList;
-import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.Math.max;
-import static java.util.Map.Entry;
 
 public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
-
-    private final Collection<Analysis> resultsNeedingPostProcessing = newArrayList();
 
     @Nonnull
     private static String getFirstElement(@Nonnull FieldAccessExpr fieldAccessExpr) {
@@ -57,29 +55,6 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         }
     }
 
-    @Override
-    public void finishAnalysis(@Nonnull CodeContext codeContext) {
-        Collection<String> analyzedClasses = codeContext.getAnalyzedCode().getAnalyzedClasses();
-        for (Analysis analysis : resultsNeedingPostProcessing) {
-            for (Entry<String, String> referenceToPackageType : analysis.referencesToPackageType.entrySet()) {
-                String depender = referenceToPackageType.getKey();
-                String dependee = referenceToPackageType.getValue();
-                // package wins over asterisk import
-                if (analyzedClasses.contains(dependee)) {
-                    codeContext.addDependencies(depender, dependee);
-                } else {
-                    String className = dependee.substring(dependee.lastIndexOf('.'));
-                    for (String asteriskImport : analysis.getAsteriskImports()) {
-                        dependee = asteriskImport + className;
-                        if (analyzedClasses.contains(dependee)) {
-                            codeContext.addDependencies(depender, dependee);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     private void analyzeJavaFile(final CodeContext codeContext, File file) {
         CompilationUnit compilationUnit;
         try {
@@ -88,10 +63,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             throw new RuntimeException("Failed to parse [" + file + "]!", e);
         }
 
-        Analysis result = compilationUnit.accept(new CompilationUnitVisitor(codeContext), null);
-        if (result.needsPostProcessing()) {
-            this.resultsNeedingPostProcessing.add(result);
-        }
+        compilationUnit.accept(new CompilationUnitVisitor(codeContext), null);
     }
 
     private static class CompilationUnitVisitor extends GenericVisitorAdapter<Analysis, Analysis> {
@@ -105,17 +77,6 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         };
         private final CodeContext codeContext;
         private final Deque<Set<String>> localVariables = newLinkedList();
-        /**
-         * @deprecated should go away
-         */
-        @Deprecated
-        private final Set<String> innerTypes = newHashSet();
-        private final Map<String, String> referenceToInnerOrPackageType = newHashMap();
-        /**
-         * @deprecated should go away
-         */
-        @Deprecated
-        private String typeName;
 
         public CompilationUnitVisitor(CodeContext codeContext) {
             this.codeContext = codeContext;
@@ -125,14 +86,12 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         public Analysis visit(CompilationUnit n, Analysis arg) {
             Analysis rootAnalysis = new Analysis(n.getPackage(), n.getImports());
             super.visit(n, rootAnalysis);
-            resolveInnerTypeReferences(rootAnalysis);
-            return new Analysis(rootAnalysis, this.referenceToInnerOrPackageType);
+            return rootAnalysis;
         }
 
         @Override
         public Analysis visit(AnnotationDeclaration n, Analysis arg) {
             String name = n.getName();
-            registerType(name);
             Analysis nestedAnalysis = new Analysis(arg, name);
             super.visit(n, nestedAnalysis);
             resolveFieldReferences(nestedAnalysis);
@@ -143,7 +102,6 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         @Override
         public Analysis visit(ClassOrInterfaceDeclaration n, Analysis arg) {
             String name = n.getName();
-            registerType(name);
             Analysis nestedAnalysis = new Analysis(arg, name);
             super.visit(n, nestedAnalysis);
             resolveFieldReferences(nestedAnalysis);
@@ -154,7 +112,6 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         @Override
         public Analysis visit(EnumDeclaration n, Analysis arg) {
             String name = n.getName();
-            registerType(name);
             Analysis nestedAnalysis = new Analysis(arg, name);
             super.visit(n, nestedAnalysis);
             resolveFieldReferences(nestedAnalysis);
@@ -226,6 +183,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             // then local variables & fields
             // now imports
             // then package access
+            // then asterisk imports
             // finally java.lang
             if (FieldAccessExpr.class.isInstance(n.getScope())) {
                 FieldAccessExpr nestedFieldAccessExpr = FieldAccessExpr.class.cast(n.getScope());
@@ -240,19 +198,8 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
                 String typeName = NameExpr.class.cast(n.getScope()).getName();
                 if (aLocalVariableExists(typeName))
                     return null;
-                if (!analysis.isFieldDefined(typeName)) {
-                    String referencedType = analysis.getImport(typeName);
-                    if (referencedType != null) {
-                        codeContext.addDependencies(analysis.getTypeName(), referencedType);
-                        return null;
-                    }
-                    referencedType = analysis.getStaticImport(typeName);
-                    if (referencedType != null) {
-                        codeContext.addDependencies(analysis.getTypeName(), referencedType + "." + typeName);
-                        return null;
-                    }
-                    this.referenceToInnerOrPackageType.put(analysis.getTypeName(), typeName);
-                }
+
+                analysis.addFieldReference(n);
             }
             return null;
         }
@@ -322,34 +269,56 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
                 if (refersToPackageType(fieldAccessExpr, analysis)) {
                     continue;
                 }
+                if (refersToAsteriskImport(fieldAccessExpr, analysis)) {
+                    continue;
+                }
                 if (refersToJavaLang(fieldAccessExpr, analysis)) {
+                    continue;
+                }
+                if (refersToDefaultPackage(fieldAccessExpr, analysis)) {
                     continue;
                 }
                 logger.debug("Could not resolve reference [{}] defined within [{}].", fieldAccessExpr.toString(), analysis.getTypeName());
             }
         }
 
-        private boolean refersToInnerType(@Nonnull FieldAccessExpr fieldAccessExpr,@Nonnull Analysis analysis) {
-            return refersToClass(fieldAccessExpr, analysis, analysis.getTypeName() + "$");
+        private boolean refersToInnerType(@Nonnull FieldAccessExpr fieldAccessExpr, @Nonnull Analysis analysis) {
+            return refersToClass(fieldAccessExpr, analysis, analysis.getParentTypeName() + "$");
         }
 
         private boolean refersToImport(FieldAccessExpr fieldAccessExpr, Analysis analysis) {
             String firstElement = getFirstElement(fieldAccessExpr);
             String anImport = analysis.getImport(firstElement);
+            if (anImport != null) {
+                return
+                        refersToClass(fieldAccessExpr, analysis, anImport.substring(0, max(0, anImport.lastIndexOf('.') + 1)));
+            }
+            anImport = analysis.getStaticImport(firstElement);
             return anImport != null &&
-                    refersToClass(fieldAccessExpr, analysis, anImport.substring(0, max(0, anImport.lastIndexOf('.') + 1)));
-            // TODO handle asterisk & static imports
+                    refersToClass(fieldAccessExpr, analysis, anImport + ".");
         }
 
         private boolean refersToPackageType(FieldAccessExpr fieldAccessExpr, Analysis analysis) {
             return refersToClass(fieldAccessExpr, analysis, analysis.packageName + ".");
         }
 
+        private boolean refersToAsteriskImport(FieldAccessExpr fieldAccessExpr, Analysis analysis) {
+            for (String asteriskImport : analysis.getAsteriskImports()) {
+                if (refersToClass(fieldAccessExpr, analysis, asteriskImport + "."))
+                    return true;
+            }
+            return false;
+        }
+
         private boolean refersToJavaLang(FieldAccessExpr fieldAccessExpr, Analysis analysis) {
             return refersToClass(fieldAccessExpr, analysis, "java.lang.");
         }
 
-        private boolean refersToClass(@Nonnull FieldAccessExpr fieldAccessExpr,@Nonnull Analysis analysis,@Nonnull String qualifierPrefix) {
+        private boolean refersToDefaultPackage(FieldAccessExpr fieldAccessExpr, Analysis analysis) {
+            return refersToClass(fieldAccessExpr, analysis, "");
+        }
+
+        private boolean refersToClass(@Nonnull FieldAccessExpr fieldAccessExpr, @Nonnull Analysis analysis, @Nonnull String qualifierPrefix) {
             String resolvedClass = resolveClass(qualifierPrefix + fieldAccessExpr.toString());
             if (resolvedClass != null) {
                 codeContext.addDependencies(analysis.getTypeName(), resolvedClass);
@@ -381,56 +350,17 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             }
         }
 
-        @SuppressWarnings("deprecation")
-        private void resolveInnerTypeReferences(Analysis analysis) {
-            Iterator<Entry<String, String>> namedReferences = this.referenceToInnerOrPackageType.entrySet().iterator();
-            while (namedReferences.hasNext()) {
-                Entry<String, String> referenceToInnerOrPackageType = namedReferences.next();
-                String namedReference = referenceToInnerOrPackageType.getValue();
-                if (this.innerTypes.contains(namedReference)) {
-                    codeContext.addDependencies(referenceToInnerOrPackageType.getKey(),
-                            analysis.packageName + "." + this.typeName + "$" + namedReference);
-                    namedReferences.remove();
-                }
-            }
-        }
-
-        @SuppressWarnings("deprecation")
-        private void registerType(String typeName) {
-            if (this.typeName == null) {
-                this.typeName = typeName;
-            } else {
-                this.innerTypes.add(typeName);
-            }
-        }
-
     }
 
     private static class Analysis {
 
         public final String packageName;
-        private final List<ImportDeclaration> imports;
         private final Analysis parent;
         private final String typeName;
+        private final List<ImportDeclaration> imports;
         private final Set<String> fieldNames = newHashSet();
         private final Set<FieldAccessExpr> fieldReferences = newHashSet();
         private final Set<String> nameReferences = newHashSet(); // reduce duplicate calls to one
-        public Map<String, String> referencesToPackageType;
-
-        @SuppressWarnings("deprecation")
-        @Deprecated
-        public Analysis(Analysis parent, Map<String, String> referencesToNamedType) {
-            this.parent = null;
-            this.typeName = null;
-
-            this.imports = parent.imports;
-            this.packageName = parent.packageName;
-            this.referencesToPackageType = newHashMap();
-            for (Entry<String, String> referenceToPackageType : referencesToNamedType.entrySet()) {
-                this.referencesToPackageType.put(referenceToPackageType.getKey(),
-                        packageName + "." + referenceToPackageType.getValue());
-            }
-        }
 
         public Analysis(Analysis arg, String typeName) {
             this.parent = arg;
@@ -489,10 +419,6 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             };
         }
 
-        public boolean needsPostProcessing() {
-            return !(this.referencesToPackageType.isEmpty());
-        }
-
         public void addFieldName(String name) {
             this.fieldNames.add(name);
         }
@@ -537,6 +463,16 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             }
 
             return buffy.length() > 0 ? buffy.toString() : null;
+        }
+
+        public String getParentTypeName() {
+            String fullTypeName = getTypeName();
+            if (fullTypeName == null)
+                return null;
+            int beginNestedType = fullTypeName.lastIndexOf("$");
+            if (beginNestedType < 0)
+                return fullTypeName;
+            return fullTypeName.substring(0, beginNestedType);
         }
 
         @SuppressWarnings("unchecked")
