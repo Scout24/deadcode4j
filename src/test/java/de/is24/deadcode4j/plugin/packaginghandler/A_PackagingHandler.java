@@ -14,7 +14,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -37,19 +36,9 @@ public class A_PackagingHandler {
             @Nonnull
             @Override
             public Iterable<Repository> getAdditionalRepositoriesFor(@Nonnull MavenProject project) throws MojoExecutionException {
-                ArrayList<Repository> repositories = newArrayList();
-                addJavaFilesOfSourceDirectories(repositories, project);
-                return repositories;
+                return getJavaFilesOfCompileSourceRootsAsRepositories(project);
             }
         };
-    }
-
-    @Test
-    public void addsNoRepositoryIfMavenProjectDoesNotExist() throws MojoExecutionException {
-        @SuppressWarnings("ConstantConditions")
-        Iterable<Repository> repositories = objectUnderTest.getAdditionalRepositoriesFor(null);
-
-        assertThat(repositories, is(emptyIterable()));
     }
 
     @Test

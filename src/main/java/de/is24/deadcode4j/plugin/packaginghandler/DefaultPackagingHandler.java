@@ -7,9 +7,7 @@ import org.apache.maven.project.MavenProject;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
-import java.util.ArrayList;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static de.is24.deadcode4j.Utils.getKeyFor;
 
 /**
@@ -36,9 +34,7 @@ public class DefaultPackagingHandler extends PackagingHandler {
     @Nonnull
     @Override
     public Iterable<Repository> getAdditionalRepositoriesFor(@Nonnull MavenProject project) throws MojoExecutionException {
-        ArrayList<Repository> repositories = newArrayList();
-        addJavaFilesOfSourceDirectories(repositories, project);
-        return repositories;
+        return getJavaFilesOfCompileSourceRootsAsRepositories(project);
     }
 
 }

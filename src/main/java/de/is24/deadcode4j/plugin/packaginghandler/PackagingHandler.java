@@ -1,6 +1,5 @@
 package de.is24.deadcode4j.plugin.packaginghandler;
 
-import com.google.common.base.Function;
 import de.is24.deadcode4j.Repository;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.OrFileFilter;
@@ -47,43 +46,29 @@ public abstract class PackagingHandler {
     }
 
     /**
-     * Adds each compile source root of a given <code>MavenProject</code> as a <code>CodeRepository</code> instance
+     * Returns each compile source root of a given <code>MavenProject</code> as a <code>Repository</code> instance
      * providing access to the Java files it contains.
      *
      * @since 1.6
      */
-    protected void addJavaFilesOfSourceDirectories(@Nonnull Collection<Repository> repositories, @Nonnull MavenProject project) {
-        repositories.addAll(getJavaFilesOfCompileSourceRootsAsCodeRepositories(project));
-    }
-
     @Nonnull
-    private Collection<Repository> getJavaFilesOfCompileSourceRootsAsCodeRepositories(@Nonnull MavenProject project) {
-        return new Function<MavenProject, Collection<Repository>>() {
-            @Nonnull
-            @Override
-            public Collection<Repository> apply(@Nullable MavenProject input) {
-                if (input == null) {
-                    return emptyList();
-                }
+    protected Collection<Repository> getJavaFilesOfCompileSourceRootsAsRepositories(@Nonnull MavenProject project) {
+        List<String> compileSourceRoots = project.getCompileSourceRoots();
+        if (compileSourceRoots == null) {
+            return emptyList();
+        }
 
-                List<String> compileSourceRoots = input.getCompileSourceRoots();
-                if (compileSourceRoots == null) {
-                    return emptyList();
-                }
-
-                Collection<Repository> codeRepositories = newArrayList();
-                for (String compileSourceRoot : compileSourceRoots) {
-                    File compileSourceDirectory = new File(compileSourceRoot);
-                    if (!compileSourceDirectory.exists()) {
-                        continue;
-                    }
-                    codeRepositories.add(new Repository(compileSourceDirectory,
-                            new OrFileFilter(DIRECTORY, new RegexFileFilter(".*\\.java$", IOCase.INSENSITIVE))));
-                    logger.debug("Going to analyze Java files of source directory [{}].", compileSourceRoot);
-                }
-                return codeRepositories;
+        Collection<Repository> codeRepositories = newArrayList();
+        for (String compileSourceRoot : compileSourceRoots) {
+            File compileSourceDirectory = new File(compileSourceRoot);
+            if (!compileSourceDirectory.exists()) {
+                continue;
             }
-        }.apply(project);
+            codeRepositories.add(new Repository(compileSourceDirectory,
+                    new OrFileFilter(DIRECTORY, new RegexFileFilter(".*\\.java$", IOCase.INSENSITIVE))));
+            logger.debug("  Found source directory [{}].", compileSourceRoot);
+        }
+        return codeRepositories;
     }
 
 }
