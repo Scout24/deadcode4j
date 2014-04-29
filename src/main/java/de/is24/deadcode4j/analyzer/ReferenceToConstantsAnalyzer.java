@@ -14,6 +14,7 @@ import japa.parser.ast.stmt.BlockStmt;
 import japa.parser.ast.stmt.ForStmt;
 import japa.parser.ast.stmt.ForeachStmt;
 import japa.parser.ast.visitor.GenericVisitorAdapter;
+import javassist.CtClass;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -115,6 +116,12 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
     private static class CompilationUnitVisitor extends GenericVisitorAdapter<Analysis, Analysis> {
 
+        private final ByteCodeAnalyzer byteCodeAnalyzer = new ByteCodeAnalyzer() {
+            @Override
+            protected void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
+                throw new UnsupportedOperationException();
+            }
+        };
         private final CodeContext codeContext;
         private final Deque<Set<String>> localVariables = newLinkedList();
         /**
