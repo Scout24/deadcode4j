@@ -128,4 +128,24 @@ public abstract class ByteCodeAnalyzer extends AnalyzerAdapter {
         return classPool;
     }
 
+    /**
+     * Returns the "resolved" class name for the given qualifier.
+     * "Resolved" in this case means that if the qualifier refers to an existing class, the class'
+     * {@link java.lang.ClassLoader binary name} is returned.
+     *
+     * @since 1.6
+     */
+    protected String resolveClass(CodeContext codeContext, String qualifier) {
+        ClassPool classPool = getOrCreateClassPool(codeContext);
+        for (; ; ) {
+            if (classPool.find(qualifier) != null) {
+                return qualifier;
+            }
+            int dotIndex = qualifier.lastIndexOf('.');
+            if (dotIndex < 0)
+                return null;
+            qualifier = qualifier.substring(0, dotIndex) + "$" + qualifier.substring(dotIndex + 1);
+        }
+    }
+
 }

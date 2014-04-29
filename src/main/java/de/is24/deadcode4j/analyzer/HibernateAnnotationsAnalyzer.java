@@ -3,7 +3,6 @@ package de.is24.deadcode4j.analyzer;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import de.is24.deadcode4j.CodeContext;
-import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.bytecode.annotation.*;
 
@@ -176,19 +175,6 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
             if (generatorName != null) {
                 getOrAddMappedSet(this.generatorUsages, generatorName).add(clazz.getName());
             }
-        }
-    }
-
-    private String resolveClass(CodeContext codeContext, String className) {
-        ClassPool classPool = getOrCreateClassPool(codeContext);
-        for (; ; ) {
-            if (classPool.find(className) != null) {
-                return className;
-            }
-            int dotIndex = className.lastIndexOf('.');
-            if (dotIndex < 0)
-                return null;
-            className = className.substring(0, dotIndex) + "$" + className.substring(dotIndex + 1);
         }
     }
 
