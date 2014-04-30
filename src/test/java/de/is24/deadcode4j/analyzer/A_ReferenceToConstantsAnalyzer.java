@@ -412,6 +412,25 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
     }
 
     @Test
+    public void recognizesReferenceOfInnerClassToOuterClassInFieldViaQualifier() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/InnerClassUsingConstantOfOuterClassInFieldViaQualifier.java");
+        triggerFinishAnalysisEvent();
+
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.InnerClassUsingConstantOfOuterClassInFieldViaQualifier$InnerClass",
+                "de.is24.deadcode4j.analyzer.constants.InnerClassUsingConstantOfOuterClassInFieldViaQualifier");
+    }
+
+    @Ignore("This dependency (inner to outer) is recognized anyways by the class dependency analysis")
+    @Test
+    public void recognizesReferenceOfInnerClassToOuterClassInFieldDirectly() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/InnerClassUsingConstantOfOuterClassInFieldDirectly.java");
+        triggerFinishAnalysisEvent();
+
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.InnerClassUsingConstantOfOuterClassInFieldDirectly$InnerClass",
+                "de.is24.deadcode4j.analyzer.constants.InnerClassUsingConstantOfOuterClassInFieldDirectly");
+    }
+
+    @Test
     public void ignoresReferencesToStaticMethods() {
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingStaticMethodInStaticField.java");
         triggerFinishAnalysisEvent();
