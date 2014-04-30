@@ -8,6 +8,7 @@ import org.apache.maven.project.MavenProject;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -126,6 +127,16 @@ public final class Utils {
                 }
             }
         };
+    }
+
+    /**
+     * Returns the given <code>Iterable</code> or an empty list if it is <code>null</code>.
+     *
+     * @since 1.6
+     */
+    @Nonnull
+    public static <E> Iterable<E> emptyIfNull(@Nullable Iterable<E> iterable) {
+        return iterable == null ? Collections.<E>emptyList() : iterable;
     }
 
 }
