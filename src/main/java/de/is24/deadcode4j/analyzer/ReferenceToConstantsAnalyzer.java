@@ -11,6 +11,7 @@ import japa.parser.ast.PackageDeclaration;
 import japa.parser.ast.body.*;
 import japa.parser.ast.expr.*;
 import japa.parser.ast.stmt.BlockStmt;
+import japa.parser.ast.stmt.CatchClause;
 import japa.parser.ast.stmt.ForStmt;
 import japa.parser.ast.stmt.ForeachStmt;
 import japa.parser.ast.visitor.GenericVisitorAdapter;
@@ -169,6 +170,26 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         }
 
         @Override
+        public Analysis visit(CatchClause n, Analysis arg) {
+            MultiTypeParameter multiTypeParameter = n.getExcept();
+            HashSet<String> blockVariables = newHashSet();
+            this.localVariables.addLast(blockVariables);
+            try {
+                blockVariables.add(multiTypeParameter.getId().getName());
+                for (AnnotationExpr annotationExpr : emptyIfNull(multiTypeParameter.getAnnotations())) {
+                    annotationExpr.accept(this, arg);
+                }
+                BlockStmt body = n.getCatchBlock();
+                if (body != null) {
+                    visit(body, arg);
+                }
+            } finally {
+                this.localVariables.removeLast();
+            }
+            return null;
+        }
+
+        @Override
         public Analysis visit(BlockStmt n, Analysis arg) {
             this.localVariables.addLast(Sets.<String>newHashSet());
             try {
@@ -205,6 +226,27 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
                 blockVariables.add(variableDeclarator.getId().getName());
             }
             return super.visit(n, arg);
+        }
+
+        @Override
+        public Analysis visit(MarkerAnnotationExpr n, Analysis arg) {
+            // performance
+            return null;
+        }
+
+        @Override
+        public Analysis visit(NormalAnnotationExpr n, Analysis arg) {
+            // performance
+            for (final MemberValuePair m : emptyIfNull(n.getPairs())) {
+                m.accept(this, arg);
+            }
+            return null;
+        }
+
+        @Override
+        public Analysis visit(SingleMemberAnnotationExpr n, Analysis arg) {
+            // performance
+            return n.getMemberValue().accept(this, arg);
         }
 
         @Override
@@ -245,8 +287,9 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
          * <code>org.slf4j.LoggerFactory.getLogger("foo")</code>, we want to analyze
          * <code>foo.bar.FOO.substring(1)</code>.
          */
-        private boolean isScopeOfAMethodCall(FieldAccessExpr n) {
-            return MethodCallExpr.class.isInstance(n.getParentNode()) && n == MethodCallExpr.class.cast(n.getParentNode()).getScope();
+        private boolean isScopeOfAMethodCall(Expression expression) {
+            return MethodCallExpr.class.isInstance(expression.getParentNode())
+                    && expression == MethodCallExpr.class.cast(expression.getParentNode()).getScope();
         }
 
         private boolean isRegularFieldAccessExpr(FieldAccessExpr fieldAccessExpr) {
@@ -272,7 +315,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
         @Override
         public Analysis visit(NameExpr n, Analysis analysis) {
-            if (isTargetOfAnAssignment(n)) {
+            if (isTargetOfAnAssignment(n) || isScopeOfAMethodCall(n)) {
                 return null;
             }
             String namedReference = n.getName();

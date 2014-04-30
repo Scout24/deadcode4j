@@ -180,6 +180,15 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
     }
 
     @Test
+    public void recognizesReferenceToConstantOfOtherPackageIsOverwrittenByCatchClauseParameter() {
+        // no one says you cannot name a variable like an imported class :(
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/subpackage/ClassUsingImportForConstantWithSameParameterNameInCatchClause.java");
+        triggerFinishAnalysisEvent();
+
+        assertDependencyToConstantsExists("de.is24.deadcode4j.analyzer.constants.subpackage.ClassUsingImportForConstantWithSameParameterNameInCatchClause$InnerClass");
+    }
+
+    @Test
     public void recognizesReferenceToConstantOfOtherPackageIsOverwrittenByConstructorParameter() {
         // no one says you cannot name a variable like an imported class :(
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/subpackage/ClassUsingImportForConstantWithSameParameterNameInConstructor.java");
