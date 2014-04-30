@@ -84,7 +84,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         public Analysis visit(CompilationUnit n, Analysis arg) {
             Analysis rootAnalysis = new Analysis(n.getPackage(), n.getImports());
             super.visit(n, rootAnalysis);
-            return rootAnalysis;
+            return null;
         }
 
         @Override
@@ -132,52 +132,49 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             this.localVariables.addLast(blockVariables);
             try {
                 for (Parameter parameter : emptyIfNull(n.getParameters())) {
-                        blockVariables.add(parameter.getId().getName());
+                    blockVariables.add(parameter.getId().getName());
+                }
+                for (AnnotationExpr annotationExpr : emptyIfNull(n.getAnnotations())) {
+                    annotationExpr.accept(this, arg);
                 }
                 BlockStmt body = n.getBody();
                 if (body != null) {
                     visit(body, arg);
                 }
-                for (AnnotationExpr annotationExpr : emptyIfNull(n.getAnnotations())) {
-                        annotationExpr.accept(this, arg);
-                }
             } finally {
                 this.localVariables.removeLast();
             }
-            return arg;
+            return null;
         }
 
         @Override
         public Analysis visit(BlockStmt n, Analysis arg) {
             this.localVariables.addLast(Sets.<String>newHashSet());
             try {
-                super.visit(n, arg);
+                return super.visit(n, arg);
             } finally {
                 this.localVariables.removeLast();
             }
-            return null;
         }
 
         @Override
         public Analysis visit(ForeachStmt n, Analysis arg) {
             this.localVariables.addLast(Sets.<String>newHashSet());
             try {
-                super.visit(n, arg);
+                return super.visit(n, arg);
             } finally {
                 this.localVariables.removeLast();
             }
-            return null;
         }
 
         @Override
         public Analysis visit(ForStmt n, Analysis arg) {
             this.localVariables.addLast(Sets.<String>newHashSet());
             try {
-                super.visit(n, arg);
+                return super.visit(n, arg);
             } finally {
                 this.localVariables.removeLast();
             }
-            return null;
         }
 
         @Override
@@ -186,8 +183,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             for (VariableDeclarator variableDeclarator : n.getVars()) {
                 blockVariables.add(variableDeclarator.getId().getName());
             }
-            super.visit(n, arg);
-            return null;
+            return super.visit(n, arg);
         }
 
         @Override
