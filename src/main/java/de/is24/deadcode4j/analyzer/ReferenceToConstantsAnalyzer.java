@@ -345,25 +345,13 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
         private void resolveFieldReferences(Analysis analysis) {
             for (FieldAccessExpr fieldAccessExpr : analysis.getFieldReferences()) {
-                if (analysis.isFieldDefined(getFirstElement(fieldAccessExpr))) {
-                    continue;
-                }
-                if (refersToInnerType(fieldAccessExpr, analysis)) {
-                    continue;
-                }
-                if (refersToImport(fieldAccessExpr, analysis)) {
-                    continue;
-                }
-                if (refersToPackageType(fieldAccessExpr, analysis)) {
-                    continue;
-                }
-                if (refersToAsteriskImport(fieldAccessExpr, analysis)) {
-                    continue;
-                }
-                if (refersToJavaLang(fieldAccessExpr, analysis)) {
-                    continue;
-                }
-                if (refersToDefaultPackage(fieldAccessExpr, analysis)) {
+                if (analysis.isFieldDefined(getFirstElement(fieldAccessExpr))
+                        || refersToInnerType(fieldAccessExpr, analysis)
+                        || refersToImport(fieldAccessExpr, analysis)
+                        || refersToPackageType(fieldAccessExpr, analysis)
+                        || refersToAsteriskImport(fieldAccessExpr, analysis)
+                        || refersToJavaLang(fieldAccessExpr, analysis)
+                        || refersToDefaultPackage(fieldAccessExpr, analysis)) {
                     continue;
                 }
                 logger.debug("Could not resolve reference [{}] defined within [{}].", fieldAccessExpr.toString(), analysis.getTypeName());
