@@ -189,6 +189,15 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
     }
 
     @Test
+    public void recognizesReferenceToConstantOfOtherPackageIsOverwrittenByMethodParameter() {
+        // no one says you cannot name a variable like an imported class :(
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/subpackage/ClassUsingImportForConstantWithSameParameterNameInMethod.java");
+        triggerFinishAnalysisEvent();
+
+        assertDependencyToConstantsExists("de.is24.deadcode4j.analyzer.constants.subpackage.ClassUsingImportForConstantWithSameParameterNameInMethod$InnerClass");
+    }
+
+    @Test
     public void recognizesReferenceToConstantOfOtherPackageIsOverwrittenByInstanceField() {
         // not allowed by JVM: prefers field all the time; however, the import may be defined
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/subpackage/ClassUsingImportForConstantWithSameFieldNameInMethod.java");
