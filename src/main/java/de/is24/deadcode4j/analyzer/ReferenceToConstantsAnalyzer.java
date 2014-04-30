@@ -375,7 +375,8 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         }
 
         private boolean refersToPackageType(FieldAccessExpr fieldAccessExpr, Analysis analysis) {
-            return refersToClass(fieldAccessExpr, analysis, analysis.packageName + ".");
+            String packagePrefix = analysis.packageName != null ? analysis.packageName + "." : "";
+            return refersToClass(fieldAccessExpr, analysis, packagePrefix);
         }
 
         private boolean refersToAsteriskImport(FieldAccessExpr fieldAccessExpr, Analysis analysis) {
@@ -391,7 +392,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         }
 
         private boolean refersToDefaultPackage(FieldAccessExpr fieldAccessExpr, Analysis analysis) {
-            return refersToClass(fieldAccessExpr, analysis, "");
+            return analysis.packageName != null && refersToClass(fieldAccessExpr, analysis, "");
         }
 
         private boolean refersToClass(@Nonnull FieldAccessExpr fieldAccessExpr, @Nonnull Analysis analysis, @Nonnull String qualifierPrefix) {
