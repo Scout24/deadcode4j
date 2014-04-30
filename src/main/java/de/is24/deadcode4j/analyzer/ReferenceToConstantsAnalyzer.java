@@ -119,12 +119,17 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         }
 
         @Override
+        public Analysis visit(EnumConstantDeclaration n, Analysis arg) {
+            arg.addFieldName(n.getName());
+            return super.visit(n, arg);
+        }
+
+        @Override
         public Analysis visit(FieldDeclaration n, Analysis arg) {
             for (VariableDeclarator variableDeclarator : n.getVariables()) {
                 arg.addFieldName(variableDeclarator.getId().getName());
             }
-            super.visit(n, arg);
-            return null;
+            return super.visit(n, arg);
         }
 
         @Override
@@ -251,7 +256,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
         @Override
         public Analysis visit(FieldAccessExpr n, Analysis analysis) {
-            if (isScopeOfAMethodCall(n)) {
+            if (isTargetOfAnAssignment(n) || isScopeOfAMethodCall(n) || isScopeOfThisExpression(n)) {
                 return null;
             }
             if (!isRegularFieldAccessExpr(n)) {
@@ -315,7 +320,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
 
         @Override
         public Analysis visit(NameExpr n, Analysis analysis) {
-            if (isTargetOfAnAssignment(n) || isScopeOfAMethodCall(n)) {
+            if (isTargetOfAnAssignment(n) || isScopeOfAMethodCall(n) || isScopeOfThisExpression(n)) {
                 return null;
             }
             String namedReference = n.getName();
@@ -324,6 +329,10 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             }
             analysis.addNameReference(namedReference);
             return null;
+        }
+
+        private boolean isScopeOfThisExpression(Expression n) {
+            return ThisExpr.class.isInstance(n.getParentNode());
         }
 
         private boolean isTargetOfAnAssignment(Expression n) {
