@@ -127,6 +127,27 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         }
 
         @Override
+        public Analysis visit(ConstructorDeclaration n, Analysis arg) {
+            HashSet<String> blockVariables = newHashSet();
+            this.localVariables.addLast(blockVariables);
+            try {
+                for (Parameter parameter : emptyIfNull(n.getParameters())) {
+                    blockVariables.add(parameter.getId().getName());
+                }
+                for (AnnotationExpr annotationExpr : emptyIfNull(n.getAnnotations())) {
+                    annotationExpr.accept(this, arg);
+                }
+                BlockStmt body = n.getBlock();
+                if (body != null) {
+                    visit(body, arg);
+                }
+            } finally {
+                this.localVariables.removeLast();
+            }
+            return null;
+        }
+
+        @Override
         public Analysis visit(MethodDeclaration n, Analysis arg) {
             HashSet<String> blockVariables = newHashSet();
             this.localVariables.addLast(blockVariables);
