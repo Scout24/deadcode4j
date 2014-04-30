@@ -407,18 +407,16 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         }
 
         private boolean refersToClass(@Nonnull FieldAccessExpr fieldAccessExpr, @Nonnull Analysis analysis, @Nonnull String qualifierPrefix) {
-            if (NameExpr.class.isInstance(fieldAccessExpr.getScope())) {
-                String resolvedClass = resolveClass(qualifierPrefix + NameExpr.class.cast(fieldAccessExpr.getScope()).getName());
-                if (resolvedClass != null) {
-                    codeContext.addDependencies(analysis.getTypeName(), resolvedClass);
-                    return true;
-                }
-                return false;
-            }
-            if (refersToClass(FieldAccessExpr.class.cast(fieldAccessExpr.getScope()), analysis, qualifierPrefix)) {
+            String resolvedClass = resolveClass(qualifierPrefix + fieldAccessExpr.toString());
+            if (resolvedClass != null) {
+                codeContext.addDependencies(analysis.getTypeName(), resolvedClass);
                 return true;
             }
-            String resolvedClass = resolveClass(qualifierPrefix + fieldAccessExpr.toString());
+            if (FieldAccessExpr.class.isInstance(fieldAccessExpr.getScope())) {
+                return refersToClass(FieldAccessExpr.class.cast(fieldAccessExpr.getScope()), analysis, qualifierPrefix);
+            }
+
+            resolvedClass = resolveClass(qualifierPrefix + NameExpr.class.cast(fieldAccessExpr.getScope()).getName());
             if (resolvedClass != null) {
                 codeContext.addDependencies(analysis.getTypeName(), resolvedClass);
                 return true;
