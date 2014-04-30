@@ -21,16 +21,14 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static com.google.common.base.Predicates.and;
 import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.*;
 import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Sets.newHashSet;
+import static de.is24.deadcode4j.Utils.emptyIfNull;
 import static java.lang.Math.max;
 
 public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
@@ -126,6 +124,27 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             }
             super.visit(n, arg);
             return null;
+        }
+
+        @Override
+        public Analysis visit(MethodDeclaration n, Analysis arg) {
+            HashSet<String> blockVariables = newHashSet();
+            this.localVariables.addLast(blockVariables);
+            try {
+                for (Parameter parameter : emptyIfNull(n.getParameters())) {
+                        blockVariables.add(parameter.getId().getName());
+                }
+                BlockStmt body = n.getBody();
+                if (body != null) {
+                    visit(body, arg);
+                }
+                for (AnnotationExpr annotationExpr : emptyIfNull(n.getAnnotations())) {
+                        annotationExpr.accept(this, arg);
+                }
+            } finally {
+                this.localVariables.removeLast();
+            }
+            return arg;
         }
 
         @Override
@@ -345,8 +364,10 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
                 if (staticImport != null) {
                     // TODO this should probably be resolved
                     codeContext.addDependencies(analysis.getTypeName(), staticImport);
+                    continue;
                 }
                 // TODO handle asterisk static imports
+                logger.debug("Could not resolve name reference [{}] defined within [{}].", referenceName, analysis.getTypeName());
             }
         }
 
