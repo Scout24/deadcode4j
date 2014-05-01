@@ -29,29 +29,26 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
 
     @Override
     public void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull File file) {
-
         if (file.getName().endsWith(".java")) {
             logger.debug("Analyzing Java file [{}]...", file);
-            analyzeJavaFile(codeContext, file);
+            final CompilationUnit compilationUnit;
+            try {
+                compilationUnit = JavaParser.parse(file, null, false);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to parse [" + file + "]!", e);
+            }
+            analyzeCompilationUnit(codeContext, compilationUnit);
         }
     }
 
-    private void analyzeJavaFile(@Nonnull final CodeContext codeContext, @Nonnull File file) {
-
-        final CompilationUnit compilationUnit;
-        try {
-            compilationUnit = JavaParser.parse(file, null, false);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to parse [" + file + "]!", e);
-        }
-
+    private void analyzeCompilationUnit(@Nonnull final CodeContext codeContext, @Nonnull final CompilationUnit compilationUnit) {
         compilationUnit.accept(new VoidVisitorAdapter<Object>() {
-            private final ByteCodeAnalyzer byteCodeAnalyzer = new ByteCodeAnalyzer() {
+            private final ClassPool classPool = new ByteCodeAnalyzer() {
                 @Override
                 protected void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
                     throw new UnsupportedOperationException();
                 }
-            };
+            }.getOrCreateClassPool(codeContext);
 
             @Override
             public void visit(ClassOrInterfaceType n, Object arg) {
@@ -72,7 +69,8 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 }
             }
 
-            private String getTypeName(ClassOrInterfaceType classOrInterfaceType) {
+            @Nonnull
+            private String getTypeName(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
                 StringBuilder buffy = new StringBuilder();
                 Node node = classOrInterfaceType;
                 while ((node = node.getParentNode()) != null) {
@@ -83,20 +81,15 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                         buffy.insert(0, '$');
                     buffy.insert(0, TypeDeclaration.class.cast(node).getName());
                 }
-                if (compilationUnit.getPackage() != null) {
-                    prependPackageName(compilationUnit, buffy);
-                }
-                return buffy.toString();
+                return prependPackageName(buffy).toString();
             }
 
-            private String resolveClass(
-                    @Nonnull ClassOrInterfaceType classOrInterfaceType) {
-                ClassPool classPool = this.byteCodeAnalyzer.getOrCreateClassPool(codeContext);
-                Optional<String> resolvedClass = resolveFullyQualifiedClass(classPool, classOrInterfaceType);
+            private String resolveClass(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
+                Optional<String> resolvedClass = resolveFullyQualifiedClass(classOrInterfaceType);
                 if (resolvedClass.isPresent()) {
                     return resolvedClass.get();
                 }
-                resolvedClass = resolveInnerType(classPool, classOrInterfaceType);
+                resolvedClass = resolveInnerType(classOrInterfaceType);
                 if (resolvedClass.isPresent()) {
                     return resolvedClass.get();
                 }
@@ -111,16 +104,14 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
             }
 
             @Nonnull
-            private Optional<String> resolveFullyQualifiedClass(@Nonnull ClassPool classPool,
-                                                                @Nonnull ClassOrInterfaceType classOrInterfaceType) {
+            private Optional<String> resolveFullyQualifiedClass(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
                 if (classOrInterfaceType.getScope() == null)
                     return absent();
-                return resolveClass(classPool, getQualifier(classOrInterfaceType));
+                return resolveClass(getQualifier(classOrInterfaceType));
             }
 
             @Nonnull
-            private Optional<String> resolveInnerType(@Nonnull ClassPool classPool,
-                                                      @Nonnull ClassOrInterfaceType classOrInterfaceType) {
+            private Optional<String> resolveInnerType(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
                 String outermostType = null;
                 Node node = classOrInterfaceType;
                 while ((node = node.getParentNode()) != null) {
@@ -132,8 +123,8 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 StringBuilder buffy = new StringBuilder(outermostType)
                         .append('$')
                         .append(getQualifier(classOrInterfaceType));
-                prependPackageName(compilationUnit, buffy);
-                return resolveClass(classPool, buffy.toString());
+                prependPackageName(buffy);
+                return resolveClass(buffy.toString());
             }
 
             @Nonnull
@@ -147,22 +138,21 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
             }
 
             @Nonnull
-            private StringBuilder prependPackageName(@Nonnull CompilationUnit compilationUnit,
-                                                     @Nonnull StringBuilder buffy) {
+            private StringBuilder prependPackageName(@Nonnull StringBuilder buffy) {
                 if (compilationUnit.getPackage() == null) {
                     return buffy;
                 }
                 NameExpr nameExpr = compilationUnit.getPackage().getName();
-                do {
+                for (; ; ) {
                     if (buffy.length() > 0) {
                         buffy.insert(0, '.');
                     }
                     buffy.insert(0, nameExpr.getName());
-
+                    if (!QualifiedNameExpr.class.isInstance(nameExpr)) {
+                        break;
+                    }
+                    nameExpr = QualifiedNameExpr.class.cast(nameExpr).getQualifier();
                 }
-
-                while (null != (nameExpr = QualifiedNameExpr.class.isInstance(nameExpr)
-                        ? QualifiedNameExpr.class.cast(nameExpr).getQualifier() : null));
                 return buffy;
             }
 
@@ -174,10 +164,9 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
              * @since 1.6
              */
             @Nonnull
-            private Optional<String> resolveClass(@Nonnull ClassPool classPool,
-                                                  @Nonnull String qualifier) {
+            private Optional<String> resolveClass(@Nonnull String qualifier) {
                 for (; ; ) {
-                    if (classPool.find(qualifier) != null) {
+                    if (this.classPool.find(qualifier) != null) {
                         return of(qualifier);
                     }
                     int dotIndex = qualifier.lastIndexOf('.');
