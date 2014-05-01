@@ -4,6 +4,11 @@ import com.google.common.base.Optional;
 import de.is24.deadcode4j.CodeContext;
 import japa.parser.JavaParser;
 import japa.parser.ast.CompilationUnit;
+import japa.parser.ast.Node;
+import japa.parser.ast.PackageDeclaration;
+import japa.parser.ast.body.TypeDeclaration;
+import japa.parser.ast.expr.NameExpr;
+import japa.parser.ast.expr.QualifiedNameExpr;
 import japa.parser.ast.type.ClassOrInterfaceType;
 import japa.parser.ast.type.ReferenceType;
 import japa.parser.ast.type.Type;
@@ -32,7 +37,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
         }
     }
 
-    private void analyzeJavaFile(final CodeContext codeContext, File file) {
+    private void analyzeJavaFile(@Nonnull final CodeContext codeContext, @Nonnull File file) {
 
         final CompilationUnit compilationUnit;
         try {
@@ -48,6 +53,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                     throw new UnsupportedOperationException();
                 }
             };
+
             @Override
             public void visit(ClassOrInterfaceType n, Object arg) {
                 List<Type> typeArguments = n.getTypeArgs();
@@ -62,15 +68,36 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                         continue;
                     }
                     ClassOrInterfaceType nestedClassOrInterface = ClassOrInterfaceType.class.cast(nestedType);
-                    codeContext.addDependencies("de.is24.deadcode4j.analyzer.typeerasure.TypedArrayList",
-                            resolveClass(nestedClassOrInterface));
+                    codeContext.addDependencies(getTypeName(n), resolveClass(nestedClassOrInterface));
                     this.visit(nestedClassOrInterface, arg); // resolve nested type arguments
                 }
             }
 
-            private String resolveClass(ClassOrInterfaceType classOrInterfaceType) {
+            private String getTypeName(ClassOrInterfaceType classOrInterfaceType) {
+                StringBuilder buffy = new StringBuilder();
+                Node node = classOrInterfaceType;
+                while ((node = node.getParentNode()) != null) {
+                    if (!TypeDeclaration.class.isInstance(node)) {
+                        continue;
+                    }
+                    if (buffy.length() > 0)
+                        buffy.insert(0, '$');
+                    buffy.insert(0, TypeDeclaration.class.cast(node).getName());
+                }
+                if (compilationUnit.getPackage() != null) {
+                    prependPackageName(compilationUnit, buffy);
+                }
+                return buffy.toString();
+            }
+
+            private String resolveClass(
+                    @Nonnull ClassOrInterfaceType classOrInterfaceType) {
                 ClassPool classPool = this.byteCodeAnalyzer.getOrCreateClassPool(codeContext);
                 Optional<String> resolvedClass = resolveFullyQualifiedClass(classPool, classOrInterfaceType);
+                if (resolvedClass.isPresent()) {
+                    return resolvedClass.get();
+                }
+                resolvedClass = resolveInnerType(classPool, classOrInterfaceType);
                 if (resolvedClass.isPresent()) {
                     return resolvedClass.get();
                 }
@@ -90,12 +117,66 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                     @Nonnull ClassOrInterfaceType classOrInterfaceType) {
                 if (classOrInterfaceType.getScope() == null)
                     return absent();
+                return resolveClass(classPool, getQualifier(classOrInterfaceType));
+            }
+
+            private Optional<String> resolveInnerType(ClassPool classPool, ClassOrInterfaceType classOrInterfaceType) {
+                String outermostType = null;
+                Node node = classOrInterfaceType;
+                while ((node = node.getParentNode()) != null) {
+                    if (!TypeDeclaration.class.isInstance(node)) {
+                        continue;
+                    }
+                    outermostType = TypeDeclaration.class.cast(node).getName();
+                }
+                StringBuilder buffy = new StringBuilder();
+                if (compilationUnit.getPackage() != null) {
+                    buffy.append(getPackage(compilationUnit.getPackage())).append('.');
+                }
+                if (outermostType != null) {
+                    buffy.append(outermostType).append('$');
+                }
+                buffy.append(getQualifier(classOrInterfaceType));
+                return resolveClass(classPool, buffy.toString());
+            }
+
+            private String getQualifier(ClassOrInterfaceType classOrInterfaceType) {
                 StringBuilder buffy = new StringBuilder(classOrInterfaceType.getName());
                 while ((classOrInterfaceType = classOrInterfaceType.getScope()) != null) {
                     buffy.insert(0, '.');
                     buffy.insert(0, classOrInterfaceType.getName());
                 }
-                return resolveClass(classPool, buffy.toString());
+                return buffy.toString();
+            }
+
+            @Nonnull
+            private String getPackage(@Nonnull PackageDeclaration packageDeclaration) {
+                NameExpr nameExpr = packageDeclaration.getName();
+                StringBuilder buffy = new StringBuilder(nameExpr.getName());
+                while ((nameExpr = QualifiedNameExpr.class.isInstance(nameExpr) ? QualifiedNameExpr.class.cast(nameExpr).getQualifier() : null) != null) {
+                    buffy.insert(0, '.');
+                    buffy.insert(0, nameExpr.getName());
+                }
+                return buffy.toString();
+            }
+
+            @Nonnull
+            private StringBuilder prependPackageName(@Nonnull CompilationUnit compilationUnit, StringBuilder buffy) {
+                if (compilationUnit.getPackage() == null) {
+                    return buffy;
+                }
+                NameExpr nameExpr = compilationUnit.getPackage().getName();
+                do {
+                    if (buffy.length() > 0) {
+                        buffy.insert(0, '.');
+                    }
+                    buffy.insert(0, nameExpr.getName());
+
+                }
+
+                while (null != (nameExpr = QualifiedNameExpr.class.isInstance(nameExpr)
+                        ? QualifiedNameExpr.class.cast(nameExpr).getQualifier() : null));
+                return buffy;
             }
 
             /**
@@ -105,7 +186,10 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
              *
              * @since 1.6
              */
-            private Optional<String> resolveClass(ClassPool classPool, String qualifier) {
+            @Nonnull
+            private Optional<String> resolveClass(
+                    @Nonnull ClassPool classPool,
+                    @Nonnull String qualifier) {
                 for (; ; ) {
                     if (classPool.find(qualifier) != null) {
                         return of(qualifier);
