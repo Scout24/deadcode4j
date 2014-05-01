@@ -22,7 +22,7 @@ public final class A_TypeErasureAnalyzer extends AnAnalyzer {
     public void recognizesClassTypeParameter() {
         objectUnderTest.doAnalysis(codeContext, getFile("../../src/test/java/de/is24/deadcode4j/analyzer/typeerasure/TypedArrayList.java"));
 
-        assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.TypedArrayList", "BigDecimal", "Comparable");
+        assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.TypedArrayList", "java.math.BigDecimal", "Comparable");
     }
 
     private void assertThatDependenciesAreReportedFor(String depender, String... dependee) {
