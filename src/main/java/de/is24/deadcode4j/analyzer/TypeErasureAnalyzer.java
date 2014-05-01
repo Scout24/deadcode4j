@@ -4,6 +4,7 @@ import com.google.common.base.Optional;
 import de.is24.deadcode4j.CodeContext;
 import japa.parser.JavaParser;
 import japa.parser.ast.CompilationUnit;
+import japa.parser.ast.ImportDeclaration;
 import japa.parser.ast.Node;
 import japa.parser.ast.body.TypeDeclaration;
 import japa.parser.ast.expr.NameExpr;
@@ -93,6 +94,10 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 if (resolvedClass.isPresent()) {
                     return resolvedClass.get();
                 }
+                resolvedClass = resolveImport(classOrInterfaceType);
+                if (resolvedClass.isPresent()) {
+                    return resolvedClass.get();
+                }
                 // fq
                 // inner type
                 // import
@@ -127,6 +132,24 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 return resolveClass(buffy.toString());
             }
 
+            private Optional<String> resolveImport(ClassOrInterfaceType classOrInterfaceType) {
+                if (compilationUnit.getImports() == null)
+                    return absent();
+                String referencedClass = getQualifier(classOrInterfaceType);
+                for (ImportDeclaration importDeclaration : compilationUnit.getImports()) {
+                    if (importDeclaration.isAsterisk() || importDeclaration.isStatic()) {
+                        continue;
+                    }
+                    String importedClass = importDeclaration.getName().getName();
+                    if (importedClass.equals(referencedClass) || referencedClass.startsWith(importedClass + ".")) {
+                        StringBuilder buffy = prepend(importDeclaration.getName(), new StringBuilder());
+                        buffy.append(referencedClass.substring(importedClass.length()));
+                        return resolveClass(buffy.toString());
+                    }
+                }
+                return absent();
+            }
+
             @Nonnull
             private String getQualifier(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
                 StringBuilder buffy = new StringBuilder(classOrInterfaceType.getName());
@@ -142,7 +165,10 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 if (compilationUnit.getPackage() == null) {
                     return buffy;
                 }
-                NameExpr nameExpr = compilationUnit.getPackage().getName();
+                return prepend(compilationUnit.getPackage().getName(), buffy);
+            }
+
+            private StringBuilder prepend(NameExpr nameExpr, StringBuilder buffy) {
                 for (; ; ) {
                     if (buffy.length() > 0) {
                         buffy.insert(0, '.');

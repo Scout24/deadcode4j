@@ -1,7 +1,8 @@
 package de.is24.deadcode4j.analyzer.typeerasure;
 import java.util.ArrayList;
+import java.util.Map;
 @SuppressWarnings("UnusedDeclaration")
-public class TypedArrayList extends ArrayList<Comparable<java.math.BigDecimal>> {
+public class TypedArrayList extends ArrayList<Map.Entry<java.math.BigDecimal, Comparable>> {
     @Override
     public String toString() {
         return new ArrayList<InnerClass>().toString();

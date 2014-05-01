@@ -25,6 +25,7 @@ public final class A_TypeErasureAnalyzer extends AnAnalyzer {
         assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.TypedArrayList",
                 "Comparable",
                 "java.math.BigDecimal",
+                "java.util.Map$Entry",
                 "de.is24.deadcode4j.analyzer.typeerasure.TypedArrayList$InnerClass");
         assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.TypedArrayList$SecondInnerClass",
                 "de.is24.deadcode4j.analyzer.typeerasure.TypedArrayList$InnerClass$NestedInnerClass");
