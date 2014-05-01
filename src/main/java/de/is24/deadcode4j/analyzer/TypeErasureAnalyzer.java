@@ -5,7 +5,6 @@ import de.is24.deadcode4j.CodeContext;
 import japa.parser.JavaParser;
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.Node;
-import japa.parser.ast.PackageDeclaration;
 import japa.parser.ast.body.TypeDeclaration;
 import japa.parser.ast.expr.NameExpr;
 import japa.parser.ast.expr.QualifiedNameExpr;
@@ -112,35 +111,33 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
             }
 
             @Nonnull
-            private Optional<String> resolveFullyQualifiedClass(
-                    @Nonnull ClassPool classPool,
-                    @Nonnull ClassOrInterfaceType classOrInterfaceType) {
+            private Optional<String> resolveFullyQualifiedClass(@Nonnull ClassPool classPool,
+                                                                @Nonnull ClassOrInterfaceType classOrInterfaceType) {
                 if (classOrInterfaceType.getScope() == null)
                     return absent();
                 return resolveClass(classPool, getQualifier(classOrInterfaceType));
             }
 
-            private Optional<String> resolveInnerType(ClassPool classPool, ClassOrInterfaceType classOrInterfaceType) {
+            @Nonnull
+            private Optional<String> resolveInnerType(@Nonnull ClassPool classPool,
+                                                      @Nonnull ClassOrInterfaceType classOrInterfaceType) {
                 String outermostType = null;
                 Node node = classOrInterfaceType;
                 while ((node = node.getParentNode()) != null) {
-                    if (!TypeDeclaration.class.isInstance(node)) {
-                        continue;
+                    if (TypeDeclaration.class.isInstance(node)) {
+                        outermostType = TypeDeclaration.class.cast(node).getName();
                     }
-                    outermostType = TypeDeclaration.class.cast(node).getName();
                 }
-                StringBuilder buffy = new StringBuilder();
-                if (compilationUnit.getPackage() != null) {
-                    buffy.append(getPackage(compilationUnit.getPackage())).append('.');
-                }
-                if (outermostType != null) {
-                    buffy.append(outermostType).append('$');
-                }
-                buffy.append(getQualifier(classOrInterfaceType));
+                assert outermostType != null;
+                StringBuilder buffy = new StringBuilder(outermostType)
+                        .append('$')
+                        .append(getQualifier(classOrInterfaceType));
+                prependPackageName(compilationUnit, buffy);
                 return resolveClass(classPool, buffy.toString());
             }
 
-            private String getQualifier(ClassOrInterfaceType classOrInterfaceType) {
+            @Nonnull
+            private String getQualifier(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
                 StringBuilder buffy = new StringBuilder(classOrInterfaceType.getName());
                 while ((classOrInterfaceType = classOrInterfaceType.getScope()) != null) {
                     buffy.insert(0, '.');
@@ -150,18 +147,8 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
             }
 
             @Nonnull
-            private String getPackage(@Nonnull PackageDeclaration packageDeclaration) {
-                NameExpr nameExpr = packageDeclaration.getName();
-                StringBuilder buffy = new StringBuilder(nameExpr.getName());
-                while ((nameExpr = QualifiedNameExpr.class.isInstance(nameExpr) ? QualifiedNameExpr.class.cast(nameExpr).getQualifier() : null) != null) {
-                    buffy.insert(0, '.');
-                    buffy.insert(0, nameExpr.getName());
-                }
-                return buffy.toString();
-            }
-
-            @Nonnull
-            private StringBuilder prependPackageName(@Nonnull CompilationUnit compilationUnit, StringBuilder buffy) {
+            private StringBuilder prependPackageName(@Nonnull CompilationUnit compilationUnit,
+                                                     @Nonnull StringBuilder buffy) {
                 if (compilationUnit.getPackage() == null) {
                     return buffy;
                 }
@@ -187,9 +174,8 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
              * @since 1.6
              */
             @Nonnull
-            private Optional<String> resolveClass(
-                    @Nonnull ClassPool classPool,
-                    @Nonnull String qualifier) {
+            private Optional<String> resolveClass(@Nonnull ClassPool classPool,
+                                                  @Nonnull String qualifier) {
                 for (; ; ) {
                     if (classPool.find(qualifier) != null) {
                         return of(qualifier);
