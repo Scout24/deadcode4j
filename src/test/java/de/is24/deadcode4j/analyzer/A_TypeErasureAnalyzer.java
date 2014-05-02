@@ -23,10 +23,12 @@ public final class A_TypeErasureAnalyzer extends AnAnalyzer {
         objectUnderTest.doAnalysis(codeContext, getFile("../../src/test/java/de/is24/deadcode4j/analyzer/typeerasure/TypedArrayList.java"));
 
         assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.TypedArrayList",
-                "Comparable",
+//                "Comparable",
                 "java.math.BigDecimal",
                 "java.util.Map$Entry",
                 "de.is24.deadcode4j.analyzer.typeerasure.TypedArrayList$InnerClass");
+        assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.TypedArrayList$InnerClass",
+                "de.is24.deadcode4j.analyzer.typeerasure.PackageClass");
         assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.TypedArrayList$SecondInnerClass",
                 "de.is24.deadcode4j.analyzer.typeerasure.TypedArrayList$InnerClass$NestedInnerClass");
     }

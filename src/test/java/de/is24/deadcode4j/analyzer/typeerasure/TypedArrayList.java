@@ -7,7 +7,7 @@ public class TypedArrayList extends ArrayList<Map.Entry<java.math.BigDecimal, Co
     public String toString() {
         return new ArrayList<InnerClass>().toString();
     }
-    public static class InnerClass {
+    public static class InnerClass extends ArrayList<PackageClass> {
         public static class NestedInnerClass {}
     }
     public static class SecondInnerClass {

@@ -65,7 +65,12 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                         continue;
                     }
                     ClassOrInterfaceType nestedClassOrInterface = ClassOrInterfaceType.class.cast(nestedType);
-                    codeContext.addDependencies(getTypeName(n), resolveClass(nestedClassOrInterface));
+                    Optional<String> resolvedClass = resolveClass(nestedClassOrInterface);
+                    if (resolvedClass.isPresent()) {
+                        codeContext.addDependencies(getTypeName(n), resolvedClass.get());
+                    } else {
+                        logger.debug("Could not resolve Type Argument [{}].", nestedClassOrInterface);
+                    }
                     this.visit(nestedClassOrInterface, arg); // resolve nested type arguments
                 }
             }
@@ -85,18 +90,23 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 return prependPackageName(buffy).toString();
             }
 
-            private String resolveClass(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
+            @Nonnull
+            private Optional<String> resolveClass(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
                 Optional<String> resolvedClass = resolveFullyQualifiedClass(classOrInterfaceType);
                 if (resolvedClass.isPresent()) {
-                    return resolvedClass.get();
+                    return resolvedClass;
                 }
                 resolvedClass = resolveInnerType(classOrInterfaceType);
                 if (resolvedClass.isPresent()) {
-                    return resolvedClass.get();
+                    return resolvedClass;
                 }
                 resolvedClass = resolveImport(classOrInterfaceType);
                 if (resolvedClass.isPresent()) {
-                    return resolvedClass.get();
+                    return resolvedClass;
+                }
+                resolvedClass = resolvePackageType(classOrInterfaceType);
+                if (resolvedClass.isPresent()) {
+                    return resolvedClass;
                 }
                 // fq
                 // inner type
@@ -105,7 +115,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 // asterisk
                 // java lang
                 // default package
-                return classOrInterfaceType.getName();
+                return absent();
             }
 
             @Nonnull
@@ -129,7 +139,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                         .append('$')
                         .append(getQualifier(classOrInterfaceType));
                 prependPackageName(buffy);
-                return resolveClass(buffy.toString());
+                return resolveClass(buffy);
             }
 
             private Optional<String> resolveImport(ClassOrInterfaceType classOrInterfaceType) {
@@ -144,10 +154,16 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                     if (importedClass.equals(referencedClass) || referencedClass.startsWith(importedClass + ".")) {
                         StringBuilder buffy = prepend(importDeclaration.getName(), new StringBuilder());
                         buffy.append(referencedClass.substring(importedClass.length()));
-                        return resolveClass(buffy.toString());
+                        return resolveClass(buffy);
                     }
                 }
                 return absent();
+            }
+
+            private Optional<String> resolvePackageType(ClassOrInterfaceType classOrInterfaceType) {
+                StringBuilder buffy = new StringBuilder(getQualifier(classOrInterfaceType));
+                prependPackageName(buffy);
+                return resolveClass(buffy);
             }
 
             @Nonnull
@@ -201,6 +217,12 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                     }
                     qualifier = qualifier.substring(0, dotIndex) + "$" + qualifier.substring(dotIndex + 1);
                 }
+            }
+
+
+            @Nonnull
+            private Optional<String> resolveClass(@Nonnull CharSequence qualifier) {
+                return resolveClass(qualifier.toString());
             }
         }, null);
     }
