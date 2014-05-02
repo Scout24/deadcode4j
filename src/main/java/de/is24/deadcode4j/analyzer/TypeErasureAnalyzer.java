@@ -24,6 +24,8 @@ import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 
 /**
+ * Analyzes Java files and reports dependencies to classes that are not part of the byte code due to type erasure.
+ *
  * @since 1.6
  */
 public class TypeErasureAnalyzer extends AnalyzerAdapter {
@@ -93,30 +95,22 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
             @Nonnull
             private Optional<String> resolveClass(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
                 Optional<String> resolvedClass = resolveFullyQualifiedClass(classOrInterfaceType);
-                if (resolvedClass.isPresent()) {
-                    return resolvedClass;
+                if (!resolvedClass.isPresent()) {
+                    resolvedClass = resolveInnerType(classOrInterfaceType);
                 }
-                resolvedClass = resolveInnerType(classOrInterfaceType);
-                if (resolvedClass.isPresent()) {
-                    return resolvedClass;
+                if (!resolvedClass.isPresent()) {
+                    resolvedClass = resolveImport(classOrInterfaceType);
                 }
-                resolvedClass = resolveImport(classOrInterfaceType);
-                if (resolvedClass.isPresent()) {
-                    return resolvedClass;
+                if (!resolvedClass.isPresent()) {
+                    resolvedClass = resolvePackageType(classOrInterfaceType);
                 }
-                resolvedClass = resolvePackageType(classOrInterfaceType);
-                if (resolvedClass.isPresent()) {
-                    return resolvedClass;
+                if (!resolvedClass.isPresent()) {
+                    resolvedClass = resolveAsteriskImports(classOrInterfaceType);
                 }
-                resolvedClass = resolveAsteriskImports(classOrInterfaceType);
-                if (resolvedClass.isPresent()) {
-                    return resolvedClass;
+                if (!resolvedClass.isPresent()) {
+                    resolvedClass = resolveJavaLangType(classOrInterfaceType);
                 }
-                resolvedClass = resolveJavaLangType(classOrInterfaceType);
-                if (resolvedClass.isPresent()) {
-                    return resolvedClass;
-                }
-                return absent();
+               return resolvedClass;
             }
 
             @Nonnull
