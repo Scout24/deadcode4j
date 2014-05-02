@@ -6,6 +6,10 @@ import japa.parser.JavaParser;
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
 import japa.parser.ast.Node;
+import japa.parser.ast.TypeParameter;
+import japa.parser.ast.body.ClassOrInterfaceDeclaration;
+import japa.parser.ast.body.ConstructorDeclaration;
+import japa.parser.ast.body.MethodDeclaration;
 import japa.parser.ast.body.TypeDeclaration;
 import japa.parser.ast.expr.NameExpr;
 import japa.parser.ast.expr.QualifiedNameExpr;
@@ -17,14 +21,21 @@ import javassist.ClassPool;
 import javassist.CtClass;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
+import java.util.Deque;
 import java.util.List;
+import java.util.Set;
 
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
+import static com.google.common.collect.Lists.newLinkedList;
+import static com.google.common.collect.Sets.newHashSet;
+import static java.util.Collections.emptySet;
 
 /**
  * Analyzes Java files and reports dependencies to classes that are not part of the byte code due to type erasure.
+ * <b>Note</b> that references to "inherited" types are not analyzed, as they are found by the byte code analysis.
  *
  * @since 1.6
  */
@@ -52,29 +63,97 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                     throw new UnsupportedOperationException();
                 }
             }.getOrCreateClassPool(codeContext);
+            private final Deque<Set<String>> definedTypeParameters = newLinkedList();
+
+            @Override
+            public void visit(ClassOrInterfaceDeclaration n, Object arg) {
+                this.definedTypeParameters.addLast(getTypeParameterNames(n.getTypeParameters()));
+                try {
+                    super.visit(n, arg);
+                } finally {
+                    this.definedTypeParameters.removeLast();
+                }
+            }
+
+            @Override
+            public void visit(ConstructorDeclaration n, Object arg) {
+                this.definedTypeParameters.addLast(getTypeParameterNames(n.getTypeParameters()));
+                try {
+                    super.visit(n, arg);
+                } finally {
+                    this.definedTypeParameters.removeLast();
+                }
+            }
+
+            @Override
+            public void visit(MethodDeclaration n, Object arg) {
+                this.definedTypeParameters.addLast(getTypeParameterNames(n.getTypeParameters()));
+                try {
+                    super.visit(n, arg);
+                } finally {
+                    this.definedTypeParameters.removeLast();
+                }
+            }
 
             @Override
             public void visit(ClassOrInterfaceType n, Object arg) {
                 List<Type> typeArguments = n.getTypeArgs();
-                if (typeArguments == null)
+                if (typeArguments == null) {
                     return;
+                }
                 for (Type type : typeArguments) {
-                    if (!ReferenceType.class.isInstance(type)) {
+                    ClassOrInterfaceType referencedType = getReferencedType(type);
+                    if (referencedType == null) {
                         continue;
                     }
-                    Type nestedType = ReferenceType.class.cast(type).getType();
-                    if (!ClassOrInterfaceType.class.isInstance(nestedType)) {
+                    if (typeParameterWithSameNameIsDefined(referencedType)) {
                         continue;
                     }
-                    ClassOrInterfaceType nestedClassOrInterface = ClassOrInterfaceType.class.cast(nestedType);
-                    Optional<String> resolvedClass = resolveClass(nestedClassOrInterface);
+                    Optional<String> resolvedClass = resolveClass(referencedType);
                     if (resolvedClass.isPresent()) {
                         codeContext.addDependencies(getTypeName(n), resolvedClass.get());
                     } else {
-                        logger.debug("Could not resolve Type Argument [{}].", nestedClassOrInterface);
+                        logger.debug("Could not resolve Type Argument [{}] used by [{}].", referencedType, getTypeName(n));
                     }
-                    this.visit(nestedClassOrInterface, arg); // resolve nested type arguments
+                    this.visit(referencedType, arg); // resolve nested type arguments
                 }
+            }
+
+            @Nonnull
+            private Set<String> getTypeParameterNames(@Nullable List<TypeParameter> typeParameters) {
+                if (typeParameters == null)
+                    return emptySet();
+                Set<String> parameters = newHashSet();
+                for (TypeParameter typeParameter : typeParameters) {
+                    parameters.add(typeParameter.getName());
+                }
+                return parameters;
+            }
+
+            @Nullable
+            private ClassOrInterfaceType getReferencedType(@Nonnull Type type) {
+                if (!ReferenceType.class.isInstance(type)) {
+                    logger.debug("[{}:{}] is no ReferenceType.", type.getClass(), type);
+                    return null;
+                }
+                Type nestedType = ReferenceType.class.cast(type).getType();
+                if (!ClassOrInterfaceType.class.isInstance(nestedType)) {
+                    logger.debug("[{}:{}] is no ClassOrInterfaceType.", type.getClass(), type);
+                    return null;
+                }
+                return ClassOrInterfaceType.class.cast(nestedType);
+            }
+
+            private boolean typeParameterWithSameNameIsDefined(@Nonnull ClassOrInterfaceType nestedClassOrInterface) {
+                if (nestedClassOrInterface.getScope() != null) {
+                    return false;
+                }
+                for (Set<String> definedTypeNames : this.definedTypeParameters) {
+                    if (definedTypeNames.contains(nestedClassOrInterface.getName())) {
+                        return true;
+                    }
+                }
+                return false;
             }
 
             @Nonnull
@@ -110,7 +189,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 if (!resolvedClass.isPresent()) {
                     resolvedClass = resolveJavaLangType(classOrInterfaceType);
                 }
-               return resolvedClass;
+                return resolvedClass;
             }
 
             @Nonnull
