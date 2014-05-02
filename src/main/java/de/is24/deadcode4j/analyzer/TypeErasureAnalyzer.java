@@ -143,7 +143,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                     return absent();
                 String referencedClass = getQualifier(classOrInterfaceType);
                 for (ImportDeclaration importDeclaration : compilationUnit.getImports()) {
-                    if (importDeclaration.isAsterisk() || importDeclaration.isStatic()) {
+                    if (importDeclaration.isAsterisk()) {
                         continue;
                     }
                     String importedClass = importDeclaration.getName().getName();
