@@ -7,10 +7,7 @@ import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
 import japa.parser.ast.Node;
 import japa.parser.ast.TypeParameter;
-import japa.parser.ast.body.ClassOrInterfaceDeclaration;
-import japa.parser.ast.body.ConstructorDeclaration;
-import japa.parser.ast.body.MethodDeclaration;
-import japa.parser.ast.body.TypeDeclaration;
+import japa.parser.ast.body.*;
 import japa.parser.ast.expr.NameExpr;
 import japa.parser.ast.expr.QualifiedNameExpr;
 import japa.parser.ast.type.ClassOrInterfaceType;
@@ -66,6 +63,12 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
             private final Deque<Set<String>> definedTypeParameters = newLinkedList();
 
             @Override
+            public void visit(AnnotationDeclaration n, Object arg) {
+                super.visit(n, arg);
+                codeContext.addAnalyzedClass(getTypeName(n));
+            }
+
+            @Override
             public void visit(ClassOrInterfaceDeclaration n, Object arg) {
                 this.definedTypeParameters.addLast(getTypeParameterNames(n.getTypeParameters()));
                 try {
@@ -73,6 +76,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 } finally {
                     this.definedTypeParameters.removeLast();
                 }
+                codeContext.addAnalyzedClass(getTypeName(n));
             }
 
             @Override
@@ -83,6 +87,12 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 } finally {
                     this.definedTypeParameters.removeLast();
                 }
+            }
+
+            @Override
+            public void visit(EnumDeclaration n, Object arg) {
+                super.visit(n, arg);
+                codeContext.addAnalyzedClass(getTypeName(n));
             }
 
             @Override
@@ -157,17 +167,16 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
             }
 
             @Nonnull
-            private String getTypeName(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
+            private String getTypeName(@Nonnull Node node) {
                 StringBuilder buffy = new StringBuilder();
-                Node node = classOrInterfaceType;
-                while ((node = node.getParentNode()) != null) {
+                do {
                     if (!TypeDeclaration.class.isInstance(node)) {
                         continue;
                     }
                     if (buffy.length() > 0)
                         buffy.insert(0, '$');
                     buffy.insert(0, TypeDeclaration.class.cast(node).getName());
-                }
+                } while  ((node = node.getParentNode()) != null);
                 return prependPackageName(buffy).toString();
             }
 
