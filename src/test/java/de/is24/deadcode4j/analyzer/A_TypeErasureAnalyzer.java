@@ -22,10 +22,6 @@ public final class A_TypeErasureAnalyzer extends AnAnalyzer {
     public void recognizesClassTypeParameter() {
         objectUnderTest.doAnalysis(codeContext, getFile("../../src/test/java/de/is24/deadcode4j/analyzer/typeerasure/TypedArrayList.java"));
 
-        assertThatClassesWereAnalyzed("de.is24.deadcode4j.analyzer.typeerasure.TypedArrayList",
-                "de.is24.deadcode4j.analyzer.typeerasure.TypedArrayList$InnerClass",
-                "de.is24.deadcode4j.analyzer.typeerasure.TypedArrayList$InnerClass$NestedInnerClass",
-                "de.is24.deadcode4j.analyzer.typeerasure.TypedArrayList$SecondInnerClass");
         assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.TypedArrayList",
                 "java.lang.Comparable",
                 "java.math.BigDecimal",
@@ -39,26 +35,17 @@ public final class A_TypeErasureAnalyzer extends AnAnalyzer {
                 "de.is24.deadcode4j.analyzer.typeerasure.TypedArrayList$InnerClass$NestedInnerClass");
     }
 
-    @Test
-    public void recognizesDefaultPackageReference() {
-        objectUnderTest.doAnalysis(codeContext, getFile("../../src/test/java/ClassWithTypeArgument.java"));
-
-        assertThatClassWasAnalyzed("ClassWithTypeArgument");
-        assertThatDependenciesAreReportedFor("ClassWithTypeArgument", "TypeParameterClass");
-    }
-
-    private void assertThatClassesWereAnalyzed(String... classes) {
-        assertThat(codeContext.getAnalyzedCode().getAnalyzedClasses(), hasItems(classes));
-    }
-
-    private void assertThatClassWasAnalyzed(String className) {
-        assertThatClassesWereAnalyzed(className);
-    }
-
     private void assertThatDependenciesAreReportedFor(String depender, String... dependee) {
         Map<String, Set<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
         assertThat(codeDependencies, hasEntry(equalTo(depender), any(Set.class)));
         assertThat(codeDependencies.get(depender), containsInAnyOrder(dependee));
+    }
+
+    @Test
+    public void recognizesDefaultPackageReference() {
+        objectUnderTest.doAnalysis(codeContext, getFile("../../src/test/java/ClassWithTypeArgument.java"));
+
+        assertThatDependenciesAreReportedFor("ClassWithTypeArgument", "TypeParameterClass");
     }
 
 }
