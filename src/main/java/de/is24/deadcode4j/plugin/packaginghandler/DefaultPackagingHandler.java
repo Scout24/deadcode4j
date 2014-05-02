@@ -31,4 +31,10 @@ public class DefaultPackagingHandler extends PackagingHandler {
         return new Repository(outputDirectory);
     }
 
+    @Nonnull
+    @Override
+    public Iterable<Repository> getAdditionalRepositoriesFor(@Nonnull MavenProject project) throws MojoExecutionException {
+        return getJavaFilesOfCompileSourceRootsAsRepositories(project);
+    }
+
 }
