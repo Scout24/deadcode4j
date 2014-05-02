@@ -23,7 +23,7 @@ public final class A_TypeErasureAnalyzer extends AnAnalyzer {
         objectUnderTest.doAnalysis(codeContext, getFile("../../src/test/java/de/is24/deadcode4j/analyzer/typeerasure/TypedArrayList.java"));
 
         assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.TypedArrayList",
-//                "Comparable",
+                "java.lang.Comparable",
                 "java.math.BigDecimal",
                 "java.util.Map$Entry",
                 "java.util.regex.Pattern",

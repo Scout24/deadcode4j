@@ -190,7 +190,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
             }
             @Nonnull
             private Optional<String> resolveJavaLangType(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
-                return absent();
+                return resolveClass("java.lang." + getQualifier(classOrInterfaceType));
             }
             @Nonnull
             private Optional<String> resolveDefaultPackageType(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
