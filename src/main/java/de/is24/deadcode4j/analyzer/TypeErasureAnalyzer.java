@@ -317,7 +317,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
             @Nonnull
             private Optional<String> resolveClass(@Nonnull String qualifier) {
                 for (; ; ) {
-                    if (this.classPool.find(qualifier) != null) {
+                    if (this.classPool.getOrNull(qualifier) != null) {
                         return of(qualifier);
                     }
                     int dotIndex = qualifier.lastIndexOf('.');
