@@ -40,4 +40,11 @@ public final class A_TypeErasureAnalyzer extends AnAnalyzer {
         assertThat(codeDependencies.get(depender), containsInAnyOrder(dependee));
     }
 
+    @Test
+    public void recognizesDefaultPackageReference() {
+        objectUnderTest.doAnalysis(codeContext, getFile("../../src/test/java/ClassWithTypeArgument.java"));
+
+        assertThatDependenciesAreReportedFor("ClassWithTypeArgument", "TypeParameterClass");
+    }
+
 }
