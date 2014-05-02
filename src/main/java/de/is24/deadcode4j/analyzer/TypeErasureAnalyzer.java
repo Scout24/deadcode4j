@@ -116,10 +116,6 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 if (resolvedClass.isPresent()) {
                     return resolvedClass;
                 }
-                resolvedClass = resolveDefaultPackageType(classOrInterfaceType);
-                if (resolvedClass.isPresent()) {
-                    return resolvedClass;
-                }
                 return absent();
             }
 
@@ -146,6 +142,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 prependPackageName(buffy);
                 return resolveClass(buffy);
             }
+
             @Nonnull
             private Optional<String> resolveImport(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
                 if (compilationUnit.getImports() == null)
@@ -164,12 +161,14 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 }
                 return absent();
             }
+
             @Nonnull
             private Optional<String> resolvePackageType(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
                 StringBuilder buffy = new StringBuilder(getQualifier(classOrInterfaceType));
                 prependPackageName(buffy);
                 return resolveClass(buffy);
             }
+
             @Nonnull
             private Optional<String> resolveAsteriskImports(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
                 if (compilationUnit.getImports() == null)
@@ -188,13 +187,10 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 }
                 return absent();
             }
+
             @Nonnull
             private Optional<String> resolveJavaLangType(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
                 return resolveClass("java.lang." + getQualifier(classOrInterfaceType));
-            }
-            @Nonnull
-            private Optional<String> resolveDefaultPackageType(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
-                return absent();
             }
 
             @Nonnull
