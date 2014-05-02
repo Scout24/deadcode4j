@@ -108,13 +108,18 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 if (resolvedClass.isPresent()) {
                     return resolvedClass;
                 }
-                // fq
-                // inner type
-                // import
-                // package
-                // asterisk
-                // java lang
-                // default package
+                resolvedClass = resolveAsteriskImports(classOrInterfaceType);
+                if (resolvedClass.isPresent()) {
+                    return resolvedClass;
+                }
+                resolvedClass = resolveJavaLangType(classOrInterfaceType);
+                if (resolvedClass.isPresent()) {
+                    return resolvedClass;
+                }
+                resolvedClass = resolveDefaultPackageType(classOrInterfaceType);
+                if (resolvedClass.isPresent()) {
+                    return resolvedClass;
+                }
                 return absent();
             }
 
@@ -141,8 +146,8 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 prependPackageName(buffy);
                 return resolveClass(buffy);
             }
-
-            private Optional<String> resolveImport(ClassOrInterfaceType classOrInterfaceType) {
+            @Nonnull
+            private Optional<String> resolveImport(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
                 if (compilationUnit.getImports() == null)
                     return absent();
                 String referencedClass = getQualifier(classOrInterfaceType);
@@ -159,11 +164,37 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 }
                 return absent();
             }
-
-            private Optional<String> resolvePackageType(ClassOrInterfaceType classOrInterfaceType) {
+            @Nonnull
+            private Optional<String> resolvePackageType(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
                 StringBuilder buffy = new StringBuilder(getQualifier(classOrInterfaceType));
                 prependPackageName(buffy);
                 return resolveClass(buffy);
+            }
+            @Nonnull
+            private Optional<String> resolveAsteriskImports(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
+                if (compilationUnit.getImports() == null)
+                    return absent();
+                String referencedClass = getQualifier(classOrInterfaceType);
+                for (ImportDeclaration importDeclaration : compilationUnit.getImports()) {
+                    if (!importDeclaration.isAsterisk() || importDeclaration.isStatic()) {
+                        continue;
+                    }
+                    StringBuilder buffy = new StringBuilder(referencedClass);
+                    prepend(importDeclaration.getName(), buffy);
+                    Optional<String> resolvedClass = resolveClass(buffy);
+                    if (resolvedClass.isPresent()) {
+                        return resolvedClass;
+                    }
+                }
+                return absent();
+            }
+            @Nonnull
+            private Optional<String> resolveJavaLangType(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
+                return absent();
+            }
+            @Nonnull
+            private Optional<String> resolveDefaultPackageType(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
+                return absent();
             }
 
             @Nonnull
