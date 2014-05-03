@@ -18,7 +18,6 @@ import japa.parser.ast.type.ReferenceType;
 import japa.parser.ast.type.Type;
 import japa.parser.ast.visitor.VoidVisitorAdapter;
 import javassist.ClassPool;
-import javassist.CtClass;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -31,6 +30,7 @@ import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Sets.newHashSet;
+import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
 import static java.util.Collections.emptySet;
 
 /**
@@ -57,12 +57,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
 
     private void analyzeCompilationUnit(@Nonnull final CodeContext codeContext, @Nonnull final CompilationUnit compilationUnit) {
         compilationUnit.accept(new VoidVisitorAdapter<Object>() {
-            private final ClassPool classPool = new ByteCodeAnalyzer() {
-                @Override
-                protected void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
-                    throw new UnsupportedOperationException();
-                }
-            }.getOrCreateClassPool(codeContext);
+            private final ClassPool classPool = classPoolAccessorFor(codeContext).getClassPool();
             private final Deque<Set<String>> definedTypeParameters = newLinkedList();
 
             @Override

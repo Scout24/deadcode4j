@@ -180,7 +180,7 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
     }
 
     private String resolveClass(CodeContext codeContext, String className) {
-        ClassPool classPool = getOrCreateClassPool(codeContext);
+        ClassPool classPool = getClassPool(codeContext);
         for (; ; ) {
             if (classPool.find(className) != null) {
                 return className;
