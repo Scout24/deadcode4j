@@ -13,15 +13,19 @@ import javassist.NotFoundException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
+import java.util.Set;
 
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
+import static com.google.common.collect.Sets.newHashSet;
 
 public final class ClassPoolAccessor {
     @Nonnull
     private final ClassPool classPool;
     @Nonnull
     private final LoadingCache<String, Optional<String>> classResolver;
+    @Nonnull
+    private final Set<String> knownPackages = newHashSet();
 
     public ClassPoolAccessor(@Nonnull CodeContext codeContext) {
         this.classPool = createClassPool(codeContext);
@@ -87,16 +91,36 @@ public final class ClassPoolAccessor {
                 }
                 for (; ; ) {
                     if (classPool.getOrNull(input) != null) {
+                        addToKnownPackages(input);
                         return of(input);
                     }
                     int dotIndex = input.lastIndexOf('.');
                     if (dotIndex < 0) {
                         return absent();
                     }
-                    input = input.substring(0, dotIndex) + "$" + input.substring(dotIndex + 1);
+                    String potentialPackage = input.substring(0, dotIndex);
+                    if (knownPackages.contains(potentialPackage)) {
+                        // no need to look for inner classes
+                        return absent();
+                    }
+                    input = potentialPackage + "$" + input.substring(dotIndex + 1);
                 }
             }
         }));
+    }
+
+    private void addToKnownPackages(String className) {
+        for (; ; ) {
+            int dotIndex = className.lastIndexOf('.');
+            if (dotIndex < 0) {
+                return;
+            }
+            className = className.substring(0, dotIndex);
+            if (!knownPackages.add(className)) {
+                return;
+            }
+        }
+
     }
 
 }
