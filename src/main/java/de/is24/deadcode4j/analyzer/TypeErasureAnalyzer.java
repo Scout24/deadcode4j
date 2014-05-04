@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 
 import static com.google.common.base.Optional.absent;
+import static com.google.common.base.Optional.of;
 import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Sets.newHashSet;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
@@ -204,9 +205,13 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                     }
                 }
                 assert outermostType != null;
+                String typeQualifier = getQualifier(classOrInterfaceType);
+                if (outermostType.equals(typeQualifier)) {
+                    return of(getTypeName(classOrInterfaceType));
+                }
                 StringBuilder buffy = new StringBuilder(outermostType)
                         .append('$')
-                        .append(getQualifier(classOrInterfaceType));
+                        .append(typeQualifier);
                 prependPackageName(buffy);
                 return classPoolAccessor.resolveClass(buffy);
             }
