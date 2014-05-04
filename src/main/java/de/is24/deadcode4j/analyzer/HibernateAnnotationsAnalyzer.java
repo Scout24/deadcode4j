@@ -1,9 +1,9 @@
 package de.is24.deadcode4j.analyzer;
 
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import de.is24.deadcode4j.CodeContext;
-import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.bytecode.annotation.*;
 
@@ -19,6 +19,7 @@ import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Maps.newHashMap;
 import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
+import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
 import static java.lang.annotation.ElementType.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -79,6 +80,17 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
                 "The member [" + memberName + "] is no StringMemberValue!");
         return StringMemberValue.class.cast(memberValue).getValue();
     }
+
+    @Nonnull
+    private static String getMandatoryStringFrom(@Nonnull Annotation annotation, @Nonnull String memberName) {
+        String memberValue = getStringFrom(annotation, memberName);
+        if (memberValue == null) {
+            throw new RuntimeException("Annotation [" + annotation.getTypeName()
+                    + "] has no value for mandatory member [" + memberName + "]!");
+        }
+        return memberValue;
+    }
+
 
     @Nonnull
     private static Iterable<Annotation> getAnnotationsFrom(@Nonnull Annotation annotation, @Nonnull String memberName) {
@@ -150,9 +162,10 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
 
     private void processGenericGenerator(CodeContext codeContext, CtClass clazz, Annotation annotation) {
         String className = clazz.getName();
-        String resolvedStrategyClass = resolveClass(codeContext, getStringFrom(annotation, "strategy"));
-        if (resolvedStrategyClass != null) {
-            codeContext.addDependencies(className, resolvedStrategyClass);
+        Optional<String> resolvedStrategyClass = classPoolAccessorFor(codeContext).resolveClass(
+                getMandatoryStringFrom(annotation, "strategy"));
+        if (resolvedStrategyClass.isPresent()) {
+            codeContext.addDependencies(className, resolvedStrategyClass.get());
         }
         String generatorName = getStringFrom(annotation, "name");
         String previousEntry = this.generatorDefinitions.put(generatorName, className);
@@ -176,19 +189,6 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
             if (generatorName != null) {
                 getOrAddMappedSet(this.generatorUsages, generatorName).add(clazz.getName());
             }
-        }
-    }
-
-    private String resolveClass(CodeContext codeContext, String className) {
-        ClassPool classPool = getClassPool(codeContext);
-        for (; ; ) {
-            if (classPool.find(className) != null) {
-                return className;
-            }
-            int dotIndex = className.lastIndexOf('.');
-            if (dotIndex < 0)
-                return null;
-            className = className.substring(0, dotIndex) + "$" + className.substring(dotIndex + 1);
         }
     }
 
@@ -218,9 +218,9 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
             if (classDefiningType != null) {
                 dependee = classDefiningType;
             } else {
-                String resolvedTypeClass = resolveClass(codeContext, typeName);
-                if (resolvedTypeClass != null) {
-                    dependee = resolvedTypeClass;
+                Optional<String> resolvedTypeClass = classPoolAccessorFor(codeContext).resolveClass(typeName);
+                if (resolvedTypeClass.isPresent()) {
+                    dependee = resolvedTypeClass.get();
                 } else {
                     logger.debug("Encountered unknown org.hibernate.annotations.Type [{}].", typeName);
                     continue;

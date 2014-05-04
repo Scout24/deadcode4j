@@ -1,5 +1,6 @@
 package de.is24.deadcode4j.analyzer.javassist;
 
+import com.google.common.base.Optional;
 import de.is24.deadcode4j.CodeContext;
 import de.is24.deadcode4j.Repository;
 import javassist.ClassPool;
@@ -7,6 +8,9 @@ import javassist.NotFoundException;
 
 import javax.annotation.Nonnull;
 import java.io.File;
+
+import static com.google.common.base.Optional.absent;
+import static com.google.common.base.Optional.of;
 
 public final class ClassPoolAccessor {
     @Nonnull
@@ -34,6 +38,28 @@ public final class ClassPoolAccessor {
     @Nonnull
     public final ClassPool getClassPool() {
         return this.classPool;
+    }
+
+    /**
+     * Returns the "resolved" class name for the given qualifier.
+     * "Resolved" in this case means that if the qualifier refers to an existing class, the class'
+     * {@link java.lang.ClassLoader binary name} is returned.
+     *
+     * @since 1.6
+     */
+    @Nonnull
+    public Optional<String> resolveClass(@Nonnull CharSequence qualifier) {
+        String qualifierString = qualifier.toString();
+        for (; ; ) {
+            if (this.classPool.getOrNull(qualifierString) != null) {
+                return of(qualifierString);
+            }
+            int dotIndex = qualifierString.lastIndexOf('.');
+            if (dotIndex < 0) {
+                return absent();
+            }
+            qualifierString = qualifierString.substring(0, dotIndex) + "$" + qualifierString.substring(dotIndex + 1);
+        }
     }
 
     @Nonnull

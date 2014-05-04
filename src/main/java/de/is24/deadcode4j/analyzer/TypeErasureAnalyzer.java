@@ -2,6 +2,7 @@ package de.is24.deadcode4j.analyzer;
 
 import com.google.common.base.Optional;
 import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
 import japa.parser.JavaParser;
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
@@ -17,7 +18,6 @@ import japa.parser.ast.type.ClassOrInterfaceType;
 import japa.parser.ast.type.ReferenceType;
 import japa.parser.ast.type.Type;
 import japa.parser.ast.visitor.VoidVisitorAdapter;
-import javassist.ClassPool;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Set;
 
 import static com.google.common.base.Optional.absent;
-import static com.google.common.base.Optional.of;
 import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Sets.newHashSet;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
@@ -57,7 +56,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
 
     private void analyzeCompilationUnit(@Nonnull final CodeContext codeContext, @Nonnull final CompilationUnit compilationUnit) {
         compilationUnit.accept(new VoidVisitorAdapter<Object>() {
-            private final ClassPool classPool = classPoolAccessorFor(codeContext).getClassPool();
+            private final ClassPoolAccessor classPoolAccessor = classPoolAccessorFor(codeContext);
             private final Deque<Set<String>> definedTypeParameters = newLinkedList();
 
             @Override
@@ -191,7 +190,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
             private Optional<String> resolveFullyQualifiedClass(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
                 if (classOrInterfaceType.getScope() == null)
                     return absent();
-                return resolveClass(getQualifier(classOrInterfaceType));
+                return classPoolAccessor.resolveClass(getQualifier(classOrInterfaceType));
             }
 
             @Nonnull
@@ -208,7 +207,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                         .append('$')
                         .append(getQualifier(classOrInterfaceType));
                 prependPackageName(buffy);
-                return resolveClass(buffy);
+                return classPoolAccessor.resolveClass(buffy);
             }
 
             @Nonnull
@@ -224,7 +223,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                     if (importedClass.equals(referencedClass) || referencedClass.startsWith(importedClass + ".")) {
                         StringBuilder buffy = prepend(importDeclaration.getName(), new StringBuilder());
                         buffy.append(referencedClass.substring(importedClass.length()));
-                        return resolveClass(buffy);
+                        return classPoolAccessor.resolveClass(buffy);
                     }
                 }
                 return absent();
@@ -234,7 +233,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
             private Optional<String> resolvePackageType(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
                 StringBuilder buffy = new StringBuilder(getQualifier(classOrInterfaceType));
                 prependPackageName(buffy);
-                return resolveClass(buffy);
+                return classPoolAccessor.resolveClass(buffy);
             }
 
             @Nonnull
@@ -248,7 +247,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                     }
                     StringBuilder buffy = new StringBuilder(referencedClass);
                     prepend(importDeclaration.getName(), buffy);
-                    Optional<String> resolvedClass = resolveClass(buffy);
+                    Optional<String> resolvedClass = classPoolAccessor.resolveClass(buffy);
                     if (resolvedClass.isPresent()) {
                         return resolvedClass;
                     }
@@ -258,7 +257,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
 
             @Nonnull
             private Optional<String> resolveJavaLangType(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
-                return resolveClass("java.lang." + getQualifier(classOrInterfaceType));
+                return classPoolAccessor.resolveClass("java.lang." + getQualifier(classOrInterfaceType));
             }
 
             @Nonnull
@@ -293,32 +292,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 return buffy;
             }
 
-            /**
-             * Returns the "resolved" class name for the given qualifier.
-             * "Resolved" in this case means that if the qualifier refers to an existing class, the class'
-             * {@link java.lang.ClassLoader binary name} is returned.
-             *
-             * @since 1.6
-             */
-            @Nonnull
-            private Optional<String> resolveClass(@Nonnull String qualifier) {
-                for (; ; ) {
-                    if (this.classPool.getOrNull(qualifier) != null) {
-                        return of(qualifier);
-                    }
-                    int dotIndex = qualifier.lastIndexOf('.');
-                    if (dotIndex < 0) {
-                        return absent();
-                    }
-                    qualifier = qualifier.substring(0, dotIndex) + "$" + qualifier.substring(dotIndex + 1);
-                }
-            }
 
-
-            @Nonnull
-            private Optional<String> resolveClass(@Nonnull CharSequence qualifier) {
-                return resolveClass(qualifier.toString());
-            }
         }, null);
     }
 
