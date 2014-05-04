@@ -8,6 +8,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import javax.annotation.Nonnull;
 import java.io.File;
+import java.util.Map;
 
 import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Iterables.isEmpty;
@@ -93,6 +94,11 @@ public class ServletContainerInitializerAnalyzer extends AnalyzerAdapter {
 
         private ServletContainerInitializerCodeContext(Module module) {
             super(module);
+        }
+
+        @Override
+        public Map<Object, Object> getCache() {
+            return this.originalContext.getCache();
         }
 
         @Override
