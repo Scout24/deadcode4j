@@ -44,7 +44,7 @@ public final class ClassPoolAccessor {
      * @since 1.6
      */
     @Nonnull
-    public final ClassPool getClassPool() {
+    public ClassPool getClassPool() {
         return this.classPool;
     }
 

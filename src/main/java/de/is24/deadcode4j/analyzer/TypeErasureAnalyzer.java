@@ -38,6 +38,7 @@ import static java.util.Collections.emptySet;
  *
  * @since 1.6
  */
+@SuppressWarnings("PMD.TooManyStaticImports")
 public class TypeErasureAnalyzer extends AnalyzerAdapter {
 
     @Override
