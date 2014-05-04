@@ -6,6 +6,8 @@
         * examines the superclasses for annotations marked with `@Inherited`
     * `InterfacesAnalyzer` now determines implementation even if by a superclass or inherited by other interface
     * `SuperClassAnalyzer` now analyzes the whole class hierarchy
+* Introduced `TypeErasureAnalyzer` which finds references that are not found in the byte code due to type erasure
+    * references to inner types defined by a superclass or an implemented interface are not recognized; as those types are marked as dependency of the defining *outer* class, they won't show up as false positive
 
 ## Internal
 * calculate class path for each project & pass along to analyzers

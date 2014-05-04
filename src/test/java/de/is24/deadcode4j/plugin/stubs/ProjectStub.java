@@ -4,6 +4,8 @@ import org.apache.maven.model.Build;
 import org.apache.maven.plugin.testing.stubs.ArtifactStub;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 public class ProjectStub extends MavenProjectStub {
 
     public ProjectStub() {
@@ -12,6 +14,8 @@ public class ProjectStub extends MavenProjectStub {
         artifact.setArtifactId("project");
         artifact.setVersion("42");
         setArtifact(artifact);
+
+        setCompileSourceRoots(newArrayList("src/test/java/"));
     }
 
     @SuppressWarnings("UnusedDeclaration") // configured via POM

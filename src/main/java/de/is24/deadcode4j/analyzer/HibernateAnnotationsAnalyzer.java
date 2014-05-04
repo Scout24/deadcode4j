@@ -1,9 +1,9 @@
 package de.is24.deadcode4j.analyzer;
 
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import de.is24.deadcode4j.CodeContext;
-import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.bytecode.annotation.*;
 
@@ -19,6 +19,7 @@ import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Maps.newHashMap;
 import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
+import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
 import static java.lang.annotation.ElementType.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -81,6 +82,17 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
     }
 
     @Nonnull
+    private static String getMandatoryStringFrom(@Nonnull Annotation annotation, @Nonnull String memberName) {
+        String memberValue = getStringFrom(annotation, memberName);
+        if (memberValue == null) {
+            throw new RuntimeException("Annotation [" + annotation.getTypeName()
+                    + "] has no value for mandatory member [" + memberName + "]!");
+        }
+        return memberValue;
+    }
+
+
+    @Nonnull
     private static Iterable<Annotation> getAnnotationsFrom(@Nonnull Annotation annotation, @Nonnull String memberName) {
         MemberValue memberValue = annotation.getMemberValue(memberName);
         if (memberValue == null)
@@ -121,6 +133,9 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
     private void processTypeDefinition(@Nonnull CtClass clazz, @Nonnull Annotation annotation) {
         String className = clazz.getName();
         String typeName = getStringFrom(annotation, "name");
+        if (typeName == null) {
+            return;
+        }
         String previousEntry = this.typeDefinitions.put(typeName, className);
         if (previousEntry != null) {
             logger.warn("The @TypeDef named [{}] is defined both by {} and {}.", typeName, previousEntry, className);
@@ -137,7 +152,7 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
 
     private void processTypeAnnotations(@Nonnull CtClass clazz) {
         for (Annotation annotation : getAnnotations(clazz, "org.hibernate.annotations.Type", METHOD, FIELD)) {
-            String typeName = getStringFrom(annotation, "type");
+            String typeName = getMandatoryStringFrom(annotation, "type");
             getOrAddMappedSet(this.typeUsages, typeName).add(clazz.getName());
         }
     }
@@ -150,11 +165,12 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
 
     private void processGenericGenerator(CodeContext codeContext, CtClass clazz, Annotation annotation) {
         String className = clazz.getName();
-        String resolvedStrategyClass = resolveClass(codeContext, getStringFrom(annotation, "strategy"));
-        if (resolvedStrategyClass != null) {
-            codeContext.addDependencies(className, resolvedStrategyClass);
+        Optional<String> resolvedStrategyClass = classPoolAccessorFor(codeContext).resolveClass(
+                getMandatoryStringFrom(annotation, "strategy"));
+        if (resolvedStrategyClass.isPresent()) {
+            codeContext.addDependencies(className, resolvedStrategyClass.get());
         }
-        String generatorName = getStringFrom(annotation, "name");
+        String generatorName = getMandatoryStringFrom(annotation, "name");
         String previousEntry = this.generatorDefinitions.put(generatorName, className);
         if (previousEntry != null) {
             logger.warn("The @GenericGenerator named [{}] is defined both by {} and {}.",
@@ -176,19 +192,6 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
             if (generatorName != null) {
                 getOrAddMappedSet(this.generatorUsages, generatorName).add(clazz.getName());
             }
-        }
-    }
-
-    private String resolveClass(CodeContext codeContext, String className) {
-        ClassPool classPool = getOrCreateClassPool(codeContext);
-        for (; ; ) {
-            if (classPool.find(className) != null) {
-                return className;
-            }
-            int dotIndex = className.lastIndexOf('.');
-            if (dotIndex < 0)
-                return null;
-            className = className.substring(0, dotIndex) + "$" + className.substring(dotIndex + 1);
         }
     }
 
@@ -218,9 +221,9 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
             if (classDefiningType != null) {
                 dependee = classDefiningType;
             } else {
-                String resolvedTypeClass = resolveClass(codeContext, typeName);
-                if (resolvedTypeClass != null) {
-                    dependee = resolvedTypeClass;
+                Optional<String> resolvedTypeClass = classPoolAccessorFor(codeContext).resolveClass(typeName);
+                if (resolvedTypeClass.isPresent()) {
+                    dependee = resolvedTypeClass.get();
                 } else {
                     logger.debug("Encountered unknown org.hibernate.annotations.Type [{}].", typeName);
                     continue;
