@@ -133,6 +133,9 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
     private void processTypeDefinition(@Nonnull CtClass clazz, @Nonnull Annotation annotation) {
         String className = clazz.getName();
         String typeName = getStringFrom(annotation, "name");
+        if (typeName == null) {
+            return;
+        }
         String previousEntry = this.typeDefinitions.put(typeName, className);
         if (previousEntry != null) {
             logger.warn("The @TypeDef named [{}] is defined both by {} and {}.", typeName, previousEntry, className);
@@ -149,7 +152,7 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
 
     private void processTypeAnnotations(@Nonnull CtClass clazz) {
         for (Annotation annotation : getAnnotations(clazz, "org.hibernate.annotations.Type", METHOD, FIELD)) {
-            String typeName = getStringFrom(annotation, "type");
+            String typeName = getMandatoryStringFrom(annotation, "type");
             getOrAddMappedSet(this.typeUsages, typeName).add(clazz.getName());
         }
     }
@@ -167,7 +170,7 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
         if (resolvedStrategyClass.isPresent()) {
             codeContext.addDependencies(className, resolvedStrategyClass.get());
         }
-        String generatorName = getStringFrom(annotation, "name");
+        String generatorName = getMandatoryStringFrom(annotation, "name");
         String previousEntry = this.generatorDefinitions.put(generatorName, className);
         if (previousEntry != null) {
             logger.warn("The @GenericGenerator named [{}] is defined both by {} and {}.",
