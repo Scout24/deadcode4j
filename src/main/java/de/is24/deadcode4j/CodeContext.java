@@ -34,8 +34,13 @@ public class CodeContext {
      *
      * @since 1.6
      */
-    public CodeContext(Module module) {
+    public CodeContext(@Nonnull Module module) {
         this.module = module;
+    }
+
+    @Override
+    public String toString() {
+        return "CodeContext for [" + this.module + "]";
     }
 
     /**
