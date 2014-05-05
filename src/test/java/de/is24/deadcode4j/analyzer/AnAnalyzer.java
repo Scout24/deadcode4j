@@ -19,7 +19,7 @@ public abstract class AnAnalyzer {
 
     @Before
     public final void initCodeContext() {
-        Module dummyModule = new Module(null, Collections.<File>emptyList(), Collections.<Repository>emptyList());
+        Module dummyModule = new Module("de.is24:deadcode4j-junit", null, Collections.<File>emptyList(), Collections.<Repository>emptyList());
         codeContext = new CodeContext(dummyModule);
     }
 

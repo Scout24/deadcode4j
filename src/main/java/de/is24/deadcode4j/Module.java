@@ -16,6 +16,8 @@ import static de.is24.deadcode4j.Utils.addIfNonNull;
  */
 public class Module {
 
+    @Nonnull
+    private final String moduleId;
     @Nullable
     private final Repository outputRepository;
     @Nonnull
@@ -26,12 +28,14 @@ public class Module {
     /**
      * Creates a new <code>Module</code>.
      *
+     * @param moduleId         the Module's identifier
      * @param outputRepository the "output" repository - i.e. the directory where compiled classes can be found
      * @param classPath        the class path entries of this module
      * @param repositories     additional repositories to analyze
      * @since 1.6
      */
-    public Module(@Nullable Repository outputRepository, @Nonnull Iterable<File> classPath, @Nonnull Iterable<Repository> repositories) {
+    public Module(@Nonnull String moduleId, @Nullable Repository outputRepository, @Nonnull Iterable<File> classPath, @Nonnull Iterable<Repository> repositories) {
+        this.moduleId = moduleId;
         this.outputRepository = outputRepository;
         this.classPath = newArrayList(classPath);
         this.allRepositories = newArrayList();
@@ -41,12 +45,11 @@ public class Module {
 
     @Override
     public String toString() {
-        StringBuilder buffy = new StringBuilder("Module ");
+        StringBuilder buffy = new StringBuilder("Module [").append(this.moduleId).append("] with");
         if (this.outputRepository == null) {
-            buffy.append("without output repository");
-        } else {
-            buffy.append("with output ").append(this.outputRepository);
+            buffy.append("out");
         }
+        buffy.append(" output repository");
         if (this.allRepositories.size() > 1) {
             buffy.append(" and ").append(this.allRepositories.size() - 1).append(" additional repositories");
         }

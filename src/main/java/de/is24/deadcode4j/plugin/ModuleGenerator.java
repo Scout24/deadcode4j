@@ -97,7 +97,7 @@ class ModuleGenerator {
         Repository outputRepository = packagingHandler.getOutputRepositoryFor(project);
         Iterable<Repository> additionalRepositories = packagingHandler.getAdditionalRepositoriesFor(project);
         Iterable<File> classPath = computeClassPath(project, knownModules);
-        return new Module(outputRepository, classPath, additionalRepositories);
+        return new Module(getKeyFor(project), outputRepository, classPath, additionalRepositories);
     }
 
     @Nonnull
