@@ -12,8 +12,8 @@ import org.apache.commons.io.IOUtils;
 
 import javax.annotation.Nonnull;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.annotation.ElementType;
 import java.util.Collections;
 import java.util.List;
@@ -22,8 +22,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
-import static java.nio.file.Files.newInputStream;
-import static java.nio.file.StandardOpenOption.READ;
 import static java.util.Arrays.asList;
 
 /**
@@ -99,9 +97,9 @@ public abstract class ByteCodeAnalyzer extends AnalyzerAdapter {
 
     private void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull File clazz) {
         final CtClass ctClass;
-        InputStream in = null;
+        FileInputStream in = null;
         try {
-            in = newInputStream(clazz.toPath(), READ);
+            in = new FileInputStream(clazz);
             ctClass = getClassPool(codeContext).makeClass(in);
         } catch (IOException e) {
             throw new RuntimeException("Could not analyze [" + clazz + "]!", e);
