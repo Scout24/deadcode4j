@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -58,7 +59,7 @@ public final class A_DeadCodeFinder {
     }
 
     private AnalyzedCode provideAnalyzedCode() {
-        return new AnalyzedCode(codeDependencies.keySet(), codeDependencies);
+        return new AnalyzedCode(EnumSet.noneOf(AnalysisStage.class), codeDependencies.keySet(), codeDependencies);
     }
 
 }

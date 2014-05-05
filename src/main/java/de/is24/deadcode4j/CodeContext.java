@@ -3,6 +3,7 @@ package de.is24.deadcode4j;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,6 +29,7 @@ public class CodeContext {
     private final Map<String, Set<String>> dependencyMap = newHashMap();
     private final Map<Object, Object> cache = newHashMap();
     private final Module module;
+    private final EnumSet<AnalysisStage> stagesWithExceptions = EnumSet.noneOf(AnalysisStage.class);
 
     /**
      * Creates a new instance of <code>CodeContext</code> for the specified module.
@@ -109,6 +111,16 @@ public class CodeContext {
      */
     @Nonnull
     public AnalyzedCode getAnalyzedCode() {
-        return new AnalyzedCode(this.analyzedClasses, this.dependencyMap);
+        return new AnalyzedCode(this.stagesWithExceptions, this.analyzedClasses, this.dependencyMap);
     }
+
+    /**
+     * Indicate that an exception occurred at the given stage.
+     *
+     * @since 1.6
+     */
+    public void addException(@Nonnull AnalysisStage stage) {
+        this.stagesWithExceptions.add(stage);
+    }
+
 }

@@ -7,10 +7,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
@@ -52,7 +49,7 @@ public class DeadCodeFinder {
     @Nonnull
     private DeadCode computeDeadCode(@Nonnull AnalyzedCode analyzedCode) {
         Collection<String> deadClasses = determineDeadClasses(analyzedCode);
-        return new DeadCode(analyzedCode.getAnalyzedClasses(), deadClasses);
+        return new DeadCode(analyzedCode.getStagesWithExceptions(), analyzedCode.getAnalyzedClasses(), deadClasses);
     }
 
     private void analyzeRepository(@Nonnull CodeContext codeContext, @Nonnull Repository repository) {
@@ -60,8 +57,23 @@ public class DeadCodeFinder {
         try {
             repositoryAnalyzer.analyze();
         } catch (IOException e) {
-            throw new RuntimeException("Failed to parse files of " + repository + "!", e);
+            throw new RuntimeException("This was unexpected; failed to parse files of " + repository + "!", e);
         }
+    }
+
+    private AnalyzedCode merge(List<AnalyzedCode> analyzedCode) {
+        EnumSet<AnalysisStage> stagesWithExceptions = EnumSet.noneOf(AnalysisStage.class);
+        Set<String> analyzedClasses = newHashSet();
+        Map<String, Set<String>> dependencies = newHashMap();
+        for (AnalyzedCode code : analyzedCode) {
+            stagesWithExceptions.addAll(code.getStagesWithExceptions());
+            analyzedClasses.addAll(code.getAnalyzedClasses());
+            for (Map.Entry<String, Set<String>> dependencyEntry : code.getCodeDependencies().entrySet()) {
+                Set<String> knownDependencies = getOrAddMappedSet(dependencies, dependencyEntry.getKey());
+                knownDependencies.addAll(dependencyEntry.getValue());
+            }
+        }
+        return new AnalyzedCode(stagesWithExceptions, analyzedClasses, dependencies);
     }
 
     @Nonnull
@@ -76,19 +88,6 @@ public class DeadCodeFinder {
         List<String> deadClasses = newArrayList(analyzedCode.getAnalyzedClasses());
         deadClasses.removeAll(classesInUse);
         return deadClasses;
-    }
-
-    private AnalyzedCode merge(List<AnalyzedCode> analyzedCode) {
-        Set<String> analyzedClasses = newHashSet();
-        Map<String, Set<String>> dependencies = newHashMap();
-        for (AnalyzedCode code : analyzedCode) {
-            analyzedClasses.addAll(code.getAnalyzedClasses());
-            for (Map.Entry<String, Set<String>> dependencyEntry : code.getCodeDependencies().entrySet()) {
-                Set<String> knownDependencies = getOrAddMappedSet(dependencies, dependencyEntry.getKey());
-                knownDependencies.addAll(dependencyEntry.getValue());
-            }
-        }
-        return new AnalyzedCode(analyzedClasses, dependencies);
     }
 
     private static class RepositoryAnalyzer extends DirectoryWalker<Void> {
@@ -118,7 +117,7 @@ public class DeadCodeFinder {
                     analyzer.doAnalysis(this.codeContext, file);
                 } catch (RuntimeException rE) {
                     logger.warn("Analyzer [{}] failed to analyze file [{}]!", analyzer, file, rE);
-                    throw rE;
+                    codeContext.addException(AnalysisStage.FILE_ANALYSIS);
                 }
             }
         }
