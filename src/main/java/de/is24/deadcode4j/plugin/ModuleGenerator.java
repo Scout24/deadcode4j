@@ -92,12 +92,17 @@ class ModuleGenerator {
     private Module getModuleFor(
             @Nonnull MavenProject project,
             @Nonnull Map<String, Module> knownModules) throws MojoExecutionException {
+        String projectId = getKeyFor(project);
+        String encoding = project.getProperties().getProperty("project.build.sourceEncoding");
+        if (encoding == null) {
+            logger.warn("No encoding set for ["+ projectId + "]! Parsing source files may cause issues.");
+        }
         PackagingHandler packagingHandler =
                 getValueOrDefault(this.packagingHandlers, project.getPackaging(), this.defaultPackagingHandler);
         Repository outputRepository = packagingHandler.getOutputRepositoryFor(project);
         Iterable<Repository> additionalRepositories = packagingHandler.getAdditionalRepositoriesFor(project);
         Iterable<File> classPath = computeClassPath(project, knownModules);
-        return new Module(getKeyFor(project), outputRepository, classPath, additionalRepositories);
+        return new Module(projectId, encoding, outputRepository, classPath, additionalRepositories);
     }
 
     @Nonnull

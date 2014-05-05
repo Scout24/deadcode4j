@@ -19,6 +19,8 @@ public class Module {
     @Nonnull
     private final String moduleId;
     @Nullable
+    private final String encoding;
+    @Nullable
     private final Repository outputRepository;
     @Nonnull
     private final List<File> classPath;
@@ -29,13 +31,19 @@ public class Module {
      * Creates a new <code>Module</code>.
      *
      * @param moduleId         the Module's identifier
+     * @param encoding         the Module's source encoding
      * @param outputRepository the "output" repository - i.e. the directory where compiled classes can be found
      * @param classPath        the class path entries of this module
      * @param repositories     additional repositories to analyze
      * @since 1.6
      */
-    public Module(@Nonnull String moduleId, @Nullable Repository outputRepository, @Nonnull Iterable<File> classPath, @Nonnull Iterable<Repository> repositories) {
+    public Module(@Nonnull String moduleId,
+                  @Nullable String encoding,
+                  @Nullable Repository outputRepository,
+                  @Nonnull Iterable<File> classPath,
+                  @Nonnull Iterable<Repository> repositories) {
         this.moduleId = moduleId;
+        this.encoding = encoding;
         this.outputRepository = outputRepository;
         this.classPath = newArrayList(classPath);
         this.allRepositories = newArrayList();
@@ -54,6 +62,11 @@ public class Module {
             buffy.append(" and ").append(this.allRepositories.size() - 1).append(" additional repositories");
         }
         return buffy.toString();
+    }
+
+    @Nullable
+    public String getEncoding() {
+        return encoding;
     }
 
     /**

@@ -4,6 +4,7 @@ import com.google.common.base.Optional;
 import de.is24.deadcode4j.CodeContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
 import japa.parser.JavaParser;
+import japa.parser.TokenMgrError;
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
 import japa.parser.ast.Node;
@@ -15,10 +16,11 @@ import japa.parser.ast.type.ClassOrInterfaceType;
 import japa.parser.ast.type.ReferenceType;
 import japa.parser.ast.type.Type;
 import japa.parser.ast.visitor.VoidVisitorAdapter;
+import org.apache.commons.io.IOUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.File;
+import java.io.*;
 import java.util.*;
 
 import static com.google.common.base.Optional.absent;
@@ -45,10 +47,18 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
         if (file.getName().endsWith(".java")) {
             logger.debug("Analyzing Java file [{}]...", file);
             final CompilationUnit compilationUnit;
+            Reader reader = null;
             try {
-                compilationUnit = JavaParser.parse(file, null, false);
+                reader = codeContext.getModule().getEncoding() != null
+                        ? new InputStreamReader(new FileInputStream(file), codeContext.getModule().getEncoding())
+                        : new FileReader(file);
+                compilationUnit = JavaParser.parse(reader, false);
+            } catch (TokenMgrError e) {
+                throw new RuntimeException("Failed to parse [" + file + "]!", e);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to parse [" + file + "]!", e);
+            } finally {
+                IOUtils.closeQuietly(reader);
             }
             analyzeCompilationUnit(codeContext, compilationUnit);
         }
