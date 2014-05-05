@@ -82,7 +82,7 @@ public final class ClassPoolAccessor {
     }
 
     private LoadingCache<String, Optional<String>> createResolverCache() {
-        return CacheBuilder.newBuilder().concurrencyLevel(1).recordStats().build(CacheLoader.from(new Function<String, Optional<String>>() {
+        return CacheBuilder.newBuilder().concurrencyLevel(1).build(CacheLoader.from(new Function<String, Optional<String>>() {
             @Nullable
             @Override
             public Optional<String> apply(@Nullable String input) {
