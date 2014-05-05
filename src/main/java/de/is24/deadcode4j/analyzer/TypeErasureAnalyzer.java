@@ -3,6 +3,7 @@ package de.is24.deadcode4j.analyzer;
 import com.google.common.base.Optional;
 import de.is24.deadcode4j.CodeContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import japa.parser.JavaParser;
 import japa.parser.TokenMgrError;
 import japa.parser.ast.CompilationUnit;
@@ -43,6 +44,7 @@ import static java.util.Map.Entry;
 public class TypeErasureAnalyzer extends AnalyzerAdapter {
 
     @Override
+    @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "The MavenProject does not provide the proper encoding")
     public void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull File file) {
         if (file.getName().endsWith(".java")) {
             logger.debug("Analyzing Java file [{}]...", file);
