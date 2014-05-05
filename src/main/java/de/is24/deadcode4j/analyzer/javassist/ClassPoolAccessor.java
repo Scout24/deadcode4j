@@ -24,8 +24,6 @@ public final class ClassPoolAccessor {
     private final ClassPool classPool;
     @Nonnull
     private final LoadingCache<String, Optional<String>> classResolver;
-    @Nonnull
-    private final Set<String> knownPackages = newHashSet();
 
     public ClassPoolAccessor(@Nonnull CodeContext codeContext) {
         this.classPool = createClassPool(codeContext);
@@ -83,6 +81,9 @@ public final class ClassPoolAccessor {
 
     private LoadingCache<String, Optional<String>> createResolverCache() {
         return CacheBuilder.newBuilder().concurrencyLevel(1).build(CacheLoader.from(new Function<String, Optional<String>>() {
+            @Nonnull
+            private final Set<String> knownPackages = newHashSet();
+
             @Nullable
             @Override
             public Optional<String> apply(@Nullable String input) {
@@ -106,21 +107,22 @@ public final class ClassPoolAccessor {
                     input = potentialPackage + "$" + input.substring(dotIndex + 1);
                 }
             }
+
+            private void addToKnownPackages(@Nonnull String className) {
+                for (; ; ) {
+                    int dotIndex = className.lastIndexOf('.');
+                    if (dotIndex < 0) {
+                        return;
+                    }
+                    className = className.substring(0, dotIndex);
+                    if (!knownPackages.add(className)) {
+                        return;
+                    }
+                }
+
+            }
+
         }));
-    }
-
-    private void addToKnownPackages(String className) {
-        for (; ; ) {
-            int dotIndex = className.lastIndexOf('.');
-            if (dotIndex < 0) {
-                return;
-            }
-            className = className.substring(0, dotIndex);
-            if (!knownPackages.add(className)) {
-                return;
-            }
-        }
-
     }
 
 }
