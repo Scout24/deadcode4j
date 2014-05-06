@@ -122,6 +122,10 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
     @Override
     public void finishAnalysis(@Nonnull CodeContext codeContext) {
         reportDependencies(codeContext);
+        this.generatorDefinitions.clear();
+        this.generatorUsages.clear();
+        this.typeDefinitions.clear();
+        this.typeUsages.clear();
     }
 
     private void processTypeDefAnnotation(@Nonnull CtClass clazz) {
