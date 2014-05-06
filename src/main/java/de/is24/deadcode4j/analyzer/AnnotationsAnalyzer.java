@@ -134,7 +134,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
             try {
                 annotationClazz = classPool.get(annotation);
             } catch (NotFoundException e) {
-                logger.debug("Annotation [{}] cannot be found on the class path; skipping detection");
+                logger.debug("Annotation [{}] cannot be found on the class path; skipping detection", annotation);
                 continue;
             }
             try {
