@@ -17,7 +17,6 @@ import japa.parser.ast.type.ClassOrInterfaceType;
 import japa.parser.ast.type.ReferenceType;
 import japa.parser.ast.type.Type;
 import japa.parser.ast.visitor.VoidVisitorAdapter;
-import org.apache.commons.io.IOUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -33,6 +32,7 @@ import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
 import static java.util.Collections.emptySet;
 import static java.util.Map.Entry;
+import static org.apache.commons.io.IOUtils.closeQuietly;
 
 /**
  * Analyzes Java files and reports dependencies to classes that are not part of the byte code due to type erasure.
@@ -60,7 +60,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
             } catch (Exception e) {
                 throw new RuntimeException("Failed to parse [" + file + "]!", e);
             } finally {
-                IOUtils.closeQuietly(reader);
+                closeQuietly(reader);
             }
             analyzeCompilationUnit(codeContext, compilationUnit);
         }
@@ -76,40 +76,6 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
             public void visit(CompilationUnit n, Void arg) {
                 super.visit(n, arg);
                 resolveTypeReferences();
-            }
-
-            private void resolveTypeReferences() {
-                for (Entry<String, Set<String>> typeReference : this.typeReferences.entrySet()) {
-                    String referencedType = typeReference.getKey();
-                    Optional<String> resolvedClass = resolveTypeReference(referencedType);
-                    if (resolvedClass.isPresent()) {
-                        for (String depender : typeReference.getValue()) {
-                            codeContext.addDependencies(depender, resolvedClass.get());
-                        }
-                    } else {
-                        logger.debug("Could not resolve Type Argument [{}] used by [{}].", referencedType, typeReference.getValue());
-                    }
-                }
-            }
-
-            private Optional<String> resolveTypeReference(String typeReference) {
-                Optional<String> resolvedClass = resolveFullyQualifiedClass(typeReference);
-                if (!resolvedClass.isPresent()) {
-                    resolvedClass = resolveInnerType(typeReference);
-                }
-                if (!resolvedClass.isPresent()) {
-                    resolvedClass = resolveImport(typeReference);
-                }
-                if (!resolvedClass.isPresent()) {
-                    resolvedClass = resolvePackageType(typeReference);
-                }
-                if (!resolvedClass.isPresent()) {
-                    resolvedClass = resolveAsteriskImports(typeReference);
-                }
-                if (!resolvedClass.isPresent()) {
-                    resolvedClass = resolveJavaLangType(typeReference);
-                }
-                return resolvedClass;
             }
 
             @Override
@@ -214,6 +180,50 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
             }
 
             @Nonnull
+            private String getQualifier(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
+                StringBuilder buffy = new StringBuilder(classOrInterfaceType.getName());
+                while ((classOrInterfaceType = classOrInterfaceType.getScope()) != null) {
+                    buffy.insert(0, '.');
+                    buffy.insert(0, classOrInterfaceType.getName());
+                }
+                return buffy.toString();
+            }
+
+            private void resolveTypeReferences() {
+                for (Entry<String, Set<String>> typeReference : this.typeReferences.entrySet()) {
+                    String referencedType = typeReference.getKey();
+                    Optional<String> resolvedClass = resolveTypeReference(referencedType);
+                    if (resolvedClass.isPresent()) {
+                        for (String depender : typeReference.getValue()) {
+                            codeContext.addDependencies(depender, resolvedClass.get());
+                        }
+                    } else {
+                        logger.debug("Could not resolve Type Argument [{}] used by [{}].", referencedType, typeReference.getValue());
+                    }
+                }
+            }
+
+            private Optional<String> resolveTypeReference(String typeReference) {
+                Optional<String> resolvedClass = resolveFullyQualifiedClass(typeReference);
+                if (!resolvedClass.isPresent()) {
+                    resolvedClass = resolveInnerType(typeReference);
+                }
+                if (!resolvedClass.isPresent()) {
+                    resolvedClass = resolveImport(typeReference);
+                }
+                if (!resolvedClass.isPresent()) {
+                    resolvedClass = resolvePackageType(typeReference);
+                }
+                if (!resolvedClass.isPresent()) {
+                    resolvedClass = resolveAsteriskImports(typeReference);
+                }
+                if (!resolvedClass.isPresent()) {
+                    resolvedClass = resolveJavaLangType(typeReference);
+                }
+                return resolvedClass;
+            }
+
+            @Nonnull
             private Optional<String> resolveFullyQualifiedClass(@Nonnull String typeReference) {
                 if (typeReference.indexOf('.') < 0) {
                     return absent();
@@ -278,16 +288,6 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
             @Nonnull
             private Optional<String> resolveJavaLangType(@Nonnull String typeReference) {
                 return classPoolAccessor.resolveClass("java.lang." + typeReference);
-            }
-
-            @Nonnull
-            private String getQualifier(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
-                StringBuilder buffy = new StringBuilder(classOrInterfaceType.getName());
-                while ((classOrInterfaceType = classOrInterfaceType.getScope()) != null) {
-                    buffy.insert(0, '.');
-                    buffy.insert(0, classOrInterfaceType.getName());
-                }
-                return buffy.toString();
             }
 
             @Nonnull
