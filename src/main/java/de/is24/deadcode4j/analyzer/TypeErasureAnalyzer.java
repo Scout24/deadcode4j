@@ -1,5 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import de.is24.deadcode4j.CodeContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
@@ -29,6 +30,7 @@ import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
+import static de.is24.deadcode4j.Utils.or;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
 import static java.util.Collections.emptySet;
 import static java.util.Map.Entry;
@@ -192,7 +194,16 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
             private void resolveTypeReferences() {
                 for (Entry<String, Set<String>> typeReference : this.typeReferences.entrySet()) {
                     String referencedType = typeReference.getKey();
-                    Optional<String> resolvedClass = resolveTypeReference(referencedType);
+                    @SuppressWarnings("unchecked")
+                    Optional<String> resolvedClass = or(
+                            resolveFullyQualifiedClass(),
+                            resolveInnerType(),
+                            resolveImport(),
+                            resolvePackageType(),
+                            resolveAsteriskImports(),
+                            resolveJavaLangType()
+                    ).apply(referencedType);
+                    assert resolvedClass != null;
                     if (resolvedClass.isPresent()) {
                         for (String depender : typeReference.getValue()) {
                             codeContext.addDependencies(depender, resolvedClass.get());
@@ -203,91 +214,107 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 }
             }
 
-            private Optional<String> resolveTypeReference(String typeReference) {
-                Optional<String> resolvedClass = resolveFullyQualifiedClass(typeReference);
-                if (!resolvedClass.isPresent()) {
-                    resolvedClass = resolveInnerType(typeReference);
-                }
-                if (!resolvedClass.isPresent()) {
-                    resolvedClass = resolveImport(typeReference);
-                }
-                if (!resolvedClass.isPresent()) {
-                    resolvedClass = resolvePackageType(typeReference);
-                }
-                if (!resolvedClass.isPresent()) {
-                    resolvedClass = resolveAsteriskImports(typeReference);
-                }
-                if (!resolvedClass.isPresent()) {
-                    resolvedClass = resolveJavaLangType(typeReference);
-                }
-                return resolvedClass;
-            }
-
             @Nonnull
-            private Optional<String> resolveFullyQualifiedClass(@Nonnull String typeReference) {
-                if (typeReference.indexOf('.') < 0) {
-                    return absent();
-                }
-                return classPoolAccessor.resolveClass(typeReference);
-            }
-
-            @Nonnull
-            private Optional<String> resolveInnerType(@Nonnull String typeReference) {
-                String potentialInnerType = getOuterMostType() + "$" + typeReference.replace('.', '$');
-                if (!getTypeNames().contains(potentialInnerType)) {
-                    return absent();
-                }
-                StringBuilder buffy = new StringBuilder(potentialInnerType);
-                prependPackageName(buffy);
-                return of(buffy.toString());
-            }
-
-            @Nonnull
-            private Optional<String> resolveImport(@Nonnull String typeReference) {
-                if (compilationUnit.getImports() == null)
-                    return absent();
-                for (ImportDeclaration importDeclaration : compilationUnit.getImports()) {
-                    if (importDeclaration.isAsterisk()) {
-                        continue;
+            private Function<String, Optional<String>> resolveFullyQualifiedClass() {
+                return new Function<String, Optional<String>>() {
+                    @Nonnull
+                    @Override
+                    public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull String typeReference) {
+                        if (typeReference.indexOf('.') < 0) {
+                            return absent();
+                        }
+                        return classPoolAccessor.resolveClass(typeReference);
                     }
-                    String importedClass = importDeclaration.getName().getName();
-                    if (importedClass.equals(typeReference) || typeReference.startsWith(importedClass + ".")) {
-                        StringBuilder buffy = prepend(importDeclaration.getName(), new StringBuilder());
-                        buffy.append(typeReference.substring(importedClass.length()));
+                };
+            }
+
+            @Nonnull
+            private Function<String, Optional<String>> resolveInnerType() {
+                return new Function<String, Optional<String>>() {
+                    @Nonnull
+                    @Override
+                    public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull String typeReference) {
+                        String potentialInnerType = getOuterMostType() + "$" + typeReference.replace('.', '$');
+                        if (!getTypeNames().contains(potentialInnerType)) {
+                            return absent();
+                        }
+                        StringBuilder buffy = new StringBuilder(potentialInnerType);
+                        prependPackageName(buffy);
+                        return of(buffy.toString());
+                    }
+                };
+            }
+
+            @Nonnull
+            private Function<String, Optional<String>> resolveImport() {
+                return new Function<String, Optional<String>>() {
+                    @Nonnull
+                    @Override
+                    public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull String typeReference) {
+                        if (compilationUnit.getImports() == null)
+                            return absent();
+                        for (ImportDeclaration importDeclaration : compilationUnit.getImports()) {
+                            if (importDeclaration.isAsterisk()) {
+                                continue;
+                            }
+                            String importedClass = importDeclaration.getName().getName();
+                            if (importedClass.equals(typeReference) || typeReference.startsWith(importedClass + ".")) {
+                                StringBuilder buffy = prepend(importDeclaration.getName(), new StringBuilder());
+                                buffy.append(typeReference.substring(importedClass.length()));
+                                return classPoolAccessor.resolveClass(buffy);
+                            }
+                        }
+                        return absent();
+                    }
+                };
+            }
+
+            @Nonnull
+            private Function<String, Optional<String>> resolvePackageType() {
+                return new Function<String, Optional<String>>() {
+                    @Nonnull
+                    @Override
+                    public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull String typeReference) {
+                        StringBuilder buffy = new StringBuilder(typeReference);
+                        prependPackageName(buffy);
                         return classPoolAccessor.resolveClass(buffy);
                     }
-                }
-                return absent();
+                };
             }
 
             @Nonnull
-            private Optional<String> resolvePackageType(@Nonnull String typeReference) {
-                StringBuilder buffy = new StringBuilder(typeReference);
-                prependPackageName(buffy);
-                return classPoolAccessor.resolveClass(buffy);
-            }
-
-            @Nonnull
-            private Optional<String> resolveAsteriskImports(@Nonnull String typeReference) {
-                if (compilationUnit.getImports() == null)
-                    return absent();
-                for (ImportDeclaration importDeclaration : compilationUnit.getImports()) {
-                    if (!importDeclaration.isAsterisk() || importDeclaration.isStatic()) {
-                        continue;
+            private Function<String, Optional<String>> resolveAsteriskImports() {
+                return new Function<String, Optional<String>>() {
+                    @Nonnull
+                    @Override
+                    public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull String typeReference) {
+                        if (compilationUnit.getImports() == null)
+                            return absent();
+                        for (ImportDeclaration importDeclaration : compilationUnit.getImports()) {
+                            if (!importDeclaration.isAsterisk() || importDeclaration.isStatic()) {
+                                continue;
+                            }
+                            StringBuilder buffy = new StringBuilder(typeReference);
+                            prepend(importDeclaration.getName(), buffy);
+                            Optional<String> resolvedClass = classPoolAccessor.resolveClass(buffy);
+                            if (resolvedClass.isPresent()) {
+                                return resolvedClass;
+                            }
+                        }
+                        return absent();
                     }
-                    StringBuilder buffy = new StringBuilder(typeReference);
-                    prepend(importDeclaration.getName(), buffy);
-                    Optional<String> resolvedClass = classPoolAccessor.resolveClass(buffy);
-                    if (resolvedClass.isPresent()) {
-                        return resolvedClass;
-                    }
-                }
-                return absent();
+                };
             }
 
             @Nonnull
-            private Optional<String> resolveJavaLangType(@Nonnull String typeReference) {
-                return classPoolAccessor.resolveClass("java.lang." + typeReference);
+            private Function<String, Optional<String>> resolveJavaLangType() {
+                return new Function<String, Optional<String>>() {
+                    @Nonnull
+                    @Override
+                    public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull String typeReference) {
+                        return classPoolAccessor.resolveClass("java.lang." + typeReference);
+                    }
+                };
             }
 
             @Nonnull
