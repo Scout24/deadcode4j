@@ -25,13 +25,23 @@ public final class Utils {
     }
 
     /**
-     * Returns <i>groupId:artifactId:version</i> for the specified artifact.
+     * Returns <i>groupId:artifactId</i> for the specified artifact.
      *
      * @since 1.6
      */
     @Nonnull
     public static String getKeyFor(@Nonnull Artifact artifact) {
-        return artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getVersion();
+        return artifact.getGroupId() + ":" + artifact.getArtifactId();
+    }
+
+    /**
+     * Returns <i>groupId:artifactId:version</i> for the specified artifact.
+     *
+     * @since 1.6
+     */
+    @Nonnull
+    public static String getVersionedKeyFor(@Nonnull Artifact artifact) {
+        return getKeyFor(artifact) + ":" + artifact.getVersion();
     }
 
     /**

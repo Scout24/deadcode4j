@@ -28,8 +28,7 @@ import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.size;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
-import static de.is24.deadcode4j.Utils.getKeyFor;
-import static de.is24.deadcode4j.Utils.getValueOrDefault;
+import static de.is24.deadcode4j.Utils.*;
 
 /**
  * Calculates the modules for the given maven projects.
@@ -77,12 +76,12 @@ class ModuleGenerator {
         Map<String, Module> knownModules = newHashMap();
         for (MavenProject project : projects) {
             Module module = getModuleFor(project, knownModules);
-            knownModules.put(getKeyFor(project.getArtifact()), module);
+            knownModules.put(module.getModuleId(), module);
             if (size(module.getAllRepositories()) > 0) {
                 modules.add(module);
                 logger.debug("Added [{}] for [{}].", module, project);
             } else {
-                logger.info("Project [{}] does not provide any repository, therefore it will be skipped.", getKeyFor(project));
+                logger.info("Project [{}] does not provide any repository, therefore it will be skipped.", module.getModuleId());
             }
         }
         return modules;
@@ -95,7 +94,7 @@ class ModuleGenerator {
         String projectId = getKeyFor(project);
         String encoding = project.getProperties().getProperty("project.build.sourceEncoding");
         if (encoding == null) {
-            logger.warn("No encoding set for ["+ projectId + "]! Parsing source files may cause issues.");
+            logger.warn("No encoding set for [{}]! Parsing source files may cause issues.", projectId);
         }
         PackagingHandler packagingHandler =
                 getValueOrDefault(this.packagingHandlers, project.getPackaging(), this.defaultPackagingHandler);
@@ -159,7 +158,7 @@ class ModuleGenerator {
         request.setArtifact(artifact);
         ArtifactResolutionResult artifactResolutionResult = repositorySystem.resolve(request);
         if (!artifactResolutionResult.isSuccess()) {
-            logger.warn("  Failed to resolve [" + getKeyFor(artifact) + "]; some analyzers may not work properly.");
+            logger.warn("  Failed to resolve [{}]; some analyzers may not work properly.", getVersionedKeyFor(artifact));
         }
     }
 
@@ -168,7 +167,7 @@ class ModuleGenerator {
             @Nonnull Artifact artifact) {
         File classPathElement = artifact.getFile();
         if (classPathElement == null) {
-            logger.warn("  No valid path to [" + getKeyFor(artifact) + "] found; some analyzers may not work properly.");
+            logger.warn("  No valid path to [{}] found; some analyzers may not work properly.", getVersionedKeyFor(artifact));
             return;
         }
         files.add(classPathElement);

@@ -64,6 +64,22 @@ public class Module {
         return buffy.toString();
     }
 
+    /**
+     * Returns the module's ID.
+     *
+     * @since 1.6
+     */
+    @Nonnull
+    public String getModuleId() {
+        return moduleId;
+    }
+
+
+    /**
+     * Returns the module's source file encoding.
+     *
+     * @since 1.6
+     */
     @Nullable
     public String getEncoding() {
         return encoding;
