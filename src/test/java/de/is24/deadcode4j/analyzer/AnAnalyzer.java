@@ -21,7 +21,7 @@ public abstract class AnAnalyzer {
     public final void initCodeContext() {
         Module dummyModule = new Module(
                 "de.is24:deadcode4j-junit",
-                null,
+                "UTF-8",
                 Collections.<File>emptyList(),
                 null,
                 Collections.<Repository>emptyList());
