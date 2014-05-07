@@ -20,10 +20,10 @@ public class Module {
     private final String moduleId;
     @Nullable
     private final String encoding;
-    @Nullable
-    private final Repository outputRepository;
     @Nonnull
     private final List<File> classPath;
+    @Nullable
+    private final Repository outputRepository;
     @Nonnull
     private final List<Repository> allRepositories;
 
@@ -32,20 +32,20 @@ public class Module {
      *
      * @param moduleId         the Module's identifier
      * @param encoding         the Module's source encoding
-     * @param outputRepository the "output" repository - i.e. the directory where compiled classes can be found
      * @param classPath        the class path entries of this module
+     * @param outputRepository the "output" repository - i.e. the directory where compiled classes can be found
      * @param repositories     additional repositories to analyze
      * @since 1.6
      */
     public Module(@Nonnull String moduleId,
                   @Nullable String encoding,
-                  @Nullable Repository outputRepository,
                   @Nonnull Iterable<File> classPath,
+                  @Nullable Repository outputRepository,
                   @Nonnull Iterable<Repository> repositories) {
         this.moduleId = moduleId;
         this.encoding = encoding;
-        this.outputRepository = outputRepository;
         this.classPath = newArrayList(classPath);
+        this.outputRepository = outputRepository;
         this.allRepositories = newArrayList();
         addIfNonNull(allRepositories, outputRepository);
         addAll(allRepositories, repositories);
@@ -86,6 +86,16 @@ public class Module {
     }
 
     /**
+     * Returns all class path entries of this module.
+     *
+     * @since 1.6
+     */
+    @Nonnull
+    public Iterable<File> getClassPath() {
+        return classPath;
+    }
+
+    /**
      * Returns the "output" repository - i.e. the directory where compiled classes can be found.
      *
      * @since 1.6
@@ -95,6 +105,7 @@ public class Module {
         return outputRepository;
     }
 
+
     /**
      * Returns all repositories to analyze (including the {@link #getOutputRepository() output repository}).
      *
@@ -103,17 +114,6 @@ public class Module {
     @Nonnull
     public Iterable<Repository> getAllRepositories() {
         return this.allRepositories;
-    }
-
-
-    /**
-     * Returns all class path entries of this module.
-     *
-     * @since 1.6
-     */
-    @Nonnull
-    public Iterable<File> getClassPath() {
-        return classPath;
     }
 
 }
