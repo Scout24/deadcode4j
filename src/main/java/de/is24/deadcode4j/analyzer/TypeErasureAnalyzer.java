@@ -14,9 +14,7 @@ import japa.parser.ast.TypeParameter;
 import japa.parser.ast.body.*;
 import japa.parser.ast.expr.NameExpr;
 import japa.parser.ast.expr.QualifiedNameExpr;
-import japa.parser.ast.type.ClassOrInterfaceType;
-import japa.parser.ast.type.ReferenceType;
-import japa.parser.ast.type.Type;
+import japa.parser.ast.type.*;
 import japa.parser.ast.visitor.VoidVisitorAdapter;
 
 import javax.annotation.Nonnull;
@@ -142,13 +140,30 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
 
             @Nullable
             private ClassOrInterfaceType getReferencedType(@Nonnull Type type) {
-                if (!ReferenceType.class.isInstance(type)) {
-                    logger.debug("[{}:{}] is no ReferenceType.", type.getClass(), type);
+                final Type nestedType;
+                if (ReferenceType.class.isInstance(type)) {
+                    nestedType = ReferenceType.class.cast(type).getType();
+                } else if (WildcardType.class.isInstance(type)) {
+                    WildcardType wildcardType = WildcardType.class.cast(type);
+                    ReferenceType referenceType = wildcardType.getExtends();
+                    if (referenceType == null){
+                        referenceType = wildcardType.getSuper();
+                    }
+                    if (referenceType == null) {
+                        // unbounded wildcard - nothing ro refer to
+                        return null;
+                    }
+                    nestedType = referenceType.getType();
+                } else {
+                    logger.warn("Encountered unexpected Type [{}:{}]; please create an issue at https://github.com/ImmobilienScout24/deadcode4j.", type.getClass(), type);
                     return null;
                 }
-                Type nestedType = ReferenceType.class.cast(type).getType();
+                if (PrimitiveType.class.isInstance(nestedType)) {
+                    // references to primitives won't be reported
+                    return null;
+                }
                 if (!ClassOrInterfaceType.class.isInstance(nestedType)) {
-                    logger.debug("[{}:{}] is no ClassOrInterfaceType.", type.getClass(), type);
+                    logger.warn("[{}:{}] is no ClassOrInterfaceType; please create an issue at https://github.com/ImmobilienScout24/deadcode4j.", type.getClass(), type);
                     return null;
                 }
                 return ClassOrInterfaceType.class.cast(nestedType);

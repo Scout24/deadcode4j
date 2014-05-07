@@ -35,17 +35,31 @@ public final class A_TypeErasureAnalyzer extends AnAnalyzer {
                 "de.is24.deadcode4j.analyzer.typeerasure.TypedArrayList$InnerClass$NestedInnerClass");
     }
 
-    private void assertThatDependenciesAreReportedFor(String depender, String... dependee) {
-        Map<String, Set<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat(codeDependencies, hasEntry(equalTo(depender), any(Set.class)));
-        assertThat(codeDependencies.get(depender), containsInAnyOrder(dependee));
-    }
-
     @Test
     public void recognizesDefaultPackageReference() {
         objectUnderTest.doAnalysis(codeContext, getFile("../../src/test/java/ClassWithTypeArgument.java"));
 
         assertThatDependenciesAreReportedFor("ClassWithTypeArgument", "TypeParameterClass");
+    }
+
+    @Test
+    public void recognizesLowerBoundOfWildCard() {
+        objectUnderTest.doAnalysis(codeContext, getFile("../../src/test/java/de/is24/deadcode4j/analyzer/typeerasure/ClassWithLowerBoundedWildCard.java"));
+
+        assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.ClassWithLowerBoundedWildCard", "java.util.Collection");
+    }
+
+    @Test
+    public void recognizesUpperBoundOfWildCard() {
+        objectUnderTest.doAnalysis(codeContext, getFile("../../src/test/java/de/is24/deadcode4j/analyzer/typeerasure/ClassWithUpperBoundedWildCard.java"));
+
+        assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.ClassWithUpperBoundedWildCard", "java.util.Collection");
+    }
+
+    private void assertThatDependenciesAreReportedFor(String depender, String... dependee) {
+        Map<String, Set<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        assertThat(codeDependencies, hasEntry(equalTo(depender), any(Set.class)));
+        assertThat(codeDependencies.get(depender), containsInAnyOrder(dependee));
     }
 
 }
