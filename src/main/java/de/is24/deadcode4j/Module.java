@@ -56,6 +56,16 @@ public class Module {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        return this == obj || Module.class.isInstance(obj) && this.moduleId.equals(Module.class.cast(obj).moduleId);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.moduleId.hashCode();
+    }
+
+    @Override
     public String toString() {
         StringBuilder buffy = new StringBuilder("Module [").append(this.moduleId).append("] with");
         if (this.outputRepository == null) {
@@ -125,6 +135,20 @@ public class Module {
     @Nonnull
     public Iterable<Repository> getAllRepositories() {
         return this.allRepositories;
+    }
+
+    private boolean requires(@Nonnull Module module) {
+        for (Resource dependency : dependencies) {
+            Optional<Module> optionalModule = dependency.getReferencedModule();
+            if (!optionalModule.isPresent()) {
+                continue;
+            }
+            Module referencedModule = optionalModule.get();
+            if (module.equals(referencedModule) || referencedModule.requires(module)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
