@@ -12,6 +12,7 @@ import java.util.*;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
+import static de.is24.deadcode4j.Module.sort;
 import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
 
 /**
@@ -36,7 +37,7 @@ public class DeadCodeFinder {
     @Nonnull
     private AnalyzedCode analyzeCode(@Nonnull Iterable<Module> modules) {
         List<AnalyzedCode> analyzedCode = newArrayList();
-        for (Module module : modules) {
+        for (Module module : sort(modules)) {
             CodeContext codeContext = new CodeContext(module);
             for (Repository repository : module.getAllRepositories()) {
                 analyzeRepository(codeContext, repository);

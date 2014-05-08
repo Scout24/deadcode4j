@@ -1,6 +1,8 @@
 package de.is24.deadcode4j;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.collect.Ordering;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -55,6 +57,40 @@ public class Module {
         addAll(allRepositories, repositories);
     }
 
+    /**
+     * Sorts the given modules by their dependencies onto one another, and alphabetically on second order.
+     *
+     * @since 1.6
+     */
+    @Nonnull
+    public static Iterable<Module> sort(@Nonnull Iterable<Module> modules) {
+        List<Module> unsortedModules = newArrayList(modules);
+        List<Module> sortedModules = newArrayListWithCapacity(unsortedModules.size());
+        while (!unsortedModules.isEmpty()) {
+            List<Module> modulesToAdd = newArrayList();
+            for (Module module : unsortedModules) {
+                if (sortedModules.containsAll(module.getModuleDependencies())) {
+                    modulesToAdd.add(module);
+                }
+            }
+            modulesToAdd = Ordering.natural().onResultOf(toModuleId()).sortedCopy(modulesToAdd);
+            sortedModules.addAll(modulesToAdd);
+            unsortedModules.removeAll(modulesToAdd);
+        }
+        return sortedModules;
+    }
+
+    @Nonnull
+    private static Function<Module, String> toModuleId() {
+        return new Function<Module, String>() {
+            @Nullable
+            @Override
+            public String apply(@Nullable Module input) {
+                return input == null ? null : input.getModuleId();
+            }
+        };
+    }
+
     @Override
     public boolean equals(Object obj) {
         return this == obj || Module.class.isInstance(obj) && this.moduleId.equals(Module.class.cast(obj).moduleId);
@@ -87,7 +123,6 @@ public class Module {
     public String getModuleId() {
         return moduleId;
     }
-
 
     /**
      * Returns the module's source file encoding.
@@ -126,7 +161,6 @@ public class Module {
         return outputRepository;
     }
 
-
     /**
      * Returns all repositories to analyze (including the {@link #getOutputRepository() output repository}).
      *
@@ -137,18 +171,15 @@ public class Module {
         return this.allRepositories;
     }
 
-    private boolean requires(@Nonnull Module module) {
+    private Collection<?> getModuleDependencies() {
+        List<Module> requiredModules = newArrayList();
         for (Resource dependency : dependencies) {
-            Optional<Module> optionalModule = dependency.getReferencedModule();
-            if (!optionalModule.isPresent()) {
-                continue;
-            }
-            Module referencedModule = optionalModule.get();
-            if (module.equals(referencedModule) || referencedModule.requires(module)) {
-                return true;
+            Optional<Module> moduleEntry = dependency.getReferencedModule();
+            if (moduleEntry.isPresent()) {
+                requiredModules.add(moduleEntry.get());
             }
         }
-        return false;
+        return requiredModules;
     }
 
 }
