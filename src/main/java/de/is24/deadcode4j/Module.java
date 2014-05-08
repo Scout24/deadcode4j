@@ -1,12 +1,16 @@
 package de.is24.deadcode4j;
 
+import com.google.common.base.Optional;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
+import java.util.Collection;
 import java.util.List;
 
 import static com.google.common.collect.Iterables.addAll;
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Lists.newArrayListWithCapacity;
 import static de.is24.deadcode4j.Utils.addIfNonNull;
 
 /**
@@ -21,7 +25,7 @@ public class Module {
     @Nullable
     private final String encoding;
     @Nonnull
-    private final List<File> classPath;
+    private final Collection<Resource> dependencies;
     @Nullable
     private final Repository outputRepository;
     @Nonnull
@@ -30,21 +34,21 @@ public class Module {
     /**
      * Creates a new <code>Module</code>.
      *
-     * @param moduleId         the Module's identifier
-     * @param encoding         the Module's source encoding
-     * @param classPath        the class path entries of this module
+     * @param moduleId         the module's identifier
+     * @param encoding         the module's source encoding
+     * @param dependencies     the resources this module depends on
      * @param outputRepository the "output" repository - i.e. the directory where compiled classes can be found
      * @param repositories     additional repositories to analyze
      * @since 1.6
      */
     public Module(@Nonnull String moduleId,
                   @Nullable String encoding,
-                  @Nonnull Iterable<File> classPath,
+                  @Nonnull Collection<Resource> dependencies,
                   @Nullable Repository outputRepository,
                   @Nonnull Iterable<Repository> repositories) {
         this.moduleId = moduleId;
         this.encoding = encoding;
-        this.classPath = newArrayList(classPath);
+        this.dependencies = dependencies;
         this.outputRepository = outputRepository;
         this.allRepositories = newArrayList();
         addIfNonNull(allRepositories, outputRepository);
@@ -92,6 +96,13 @@ public class Module {
      */
     @Nonnull
     public Iterable<File> getClassPath() {
+        List<File> classPath = newArrayListWithCapacity(dependencies.size());
+        for (Resource dependency : dependencies) {
+            Optional<File> classPathEntry = dependency.getClassPathEntry();
+            if (classPathEntry.isPresent()) {
+                classPath.add(classPathEntry.get());
+            }
+        }
         return classPath;
     }
 

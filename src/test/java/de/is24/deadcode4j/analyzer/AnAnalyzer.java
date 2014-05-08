@@ -3,6 +3,7 @@ package de.is24.deadcode4j.analyzer;
 import de.is24.deadcode4j.CodeContext;
 import de.is24.deadcode4j.Module;
 import de.is24.deadcode4j.Repository;
+import de.is24.deadcode4j.Resource;
 import de.is24.deadcode4j.junit.FileLoader;
 import de.is24.deadcode4j.junit.LoggingRule;
 import org.junit.Before;
@@ -22,7 +23,7 @@ public abstract class AnAnalyzer {
         Module dummyModule = new Module(
                 "de.is24:deadcode4j-junit",
                 "UTF-8",
-                Collections.<File>emptyList(),
+                Collections.<Resource>emptyList(),
                 null,
                 Collections.<Repository>emptyList());
         codeContext = new CodeContext(dummyModule);
