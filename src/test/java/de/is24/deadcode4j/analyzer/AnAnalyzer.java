@@ -11,6 +11,12 @@ import org.junit.Rule;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+
+import static com.google.common.collect.Iterables.concat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
 public abstract class AnAnalyzer {
 
@@ -31,6 +37,23 @@ public abstract class AnAnalyzer {
 
     protected File getFile(String fileName) {
         return FileLoader.getFile(fileName);
+    }
+
+    protected void assertThatDependenciesAreReportedFor(String depender, String... dependee) {
+        Map<String, Set<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        assertThat(codeDependencies, hasEntry(equalTo(depender), any(Set.class)));
+        assertThat(codeDependencies.get(depender), containsInAnyOrder(dependee));
+    }
+
+    protected void assertThatDependenciesAreReported(String... dependee) {
+        Map<String, Set<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        Iterable<String> allReportedDependees = concat(codeDependencies.values());
+        assertThat(allReportedDependees, containsInAnyOrder(dependee));
+    }
+
+    protected void assertThatNoDependenciesAreReported() {
+        Map<String, Set<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        assertThat(codeDependencies.size(), is(0));
     }
 
 }

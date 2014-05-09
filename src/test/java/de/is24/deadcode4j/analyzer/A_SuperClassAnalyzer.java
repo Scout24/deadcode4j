@@ -3,12 +3,8 @@ package de.is24.deadcode4j.analyzer;
 import de.is24.deadcode4j.Analyzer;
 import org.junit.Test;
 
-import java.util.Map;
-
-import static com.google.common.collect.Iterables.concat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.is;
 
 public final class A_SuperClassAnalyzer extends AnAnalyzer {
 
@@ -32,9 +28,7 @@ public final class A_SuperClassAnalyzer extends AnAnalyzer {
         objectUnderTest.doAnalysis(codeContext, getFile("DeadServlet.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("SubClassThatShouldBeLive.class"));
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat("Should have reported some dependencies!", codeDependencies.size(), is(1));
-        assertThat(concat(codeDependencies.values()), containsInAnyOrder("DeadServlet", "SubClassThatShouldBeLive"));
+        assertThatDependenciesAreReported("DeadServlet", "SubClassThatShouldBeLive");
     }
 
     @Test
@@ -44,9 +38,7 @@ public final class A_SuperClassAnalyzer extends AnAnalyzer {
 
         objectUnderTest.doAnalysis(codeContext, getFile("SubClassOfSubClassThatShouldBeLive.class"));
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat("Should have reported some dependencies!", codeDependencies.size(), is(1));
-        assertThat(concat(codeDependencies.values()), containsInAnyOrder("SubClassOfSubClassThatShouldBeLive"));
+        assertThatDependenciesAreReported("SubClassOfSubClassThatShouldBeLive");
     }
 
     @Test
@@ -57,9 +49,7 @@ public final class A_SuperClassAnalyzer extends AnAnalyzer {
         objectUnderTest.doAnalysis(codeContext, getFile("DeadServlet.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("SubClassThatShouldBeLive.class"));
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat("Should have reported some dependencies!", codeDependencies.size(), is(1));
-        assertThat(concat(codeDependencies.values()), containsInAnyOrder("SubClassThatShouldBeLive"));
+        assertThatDependenciesAreReported("SubClassThatShouldBeLive");
     }
 
 }

@@ -4,10 +4,9 @@ import org.junit.Test;
 
 import java.util.Map;
 
-import static com.google.common.collect.Iterables.concat;
-import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.is;
 
 public final class A_SimpleXmlAnalyzer extends AnAnalyzer {
 
@@ -34,8 +33,7 @@ public final class A_SimpleXmlAnalyzer extends AnAnalyzer {
 
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/empty.xml"));
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat("Should NOT have analyzed the XML file!", codeDependencies.size(), is(0));
+        assertThatNoDependenciesAreReported();
     }
 
     @Test
@@ -48,9 +46,7 @@ public final class A_SimpleXmlAnalyzer extends AnAnalyzer {
 
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat("Should have analyzed the XML file!", codeDependencies.size(), is(1));
-        assertThat(getOnlyElement(codeDependencies.values()), contains("de.is24.deadcode4j.ClassInElement"));
+        assertThatDependenciesAreReported("de.is24.deadcode4j.ClassInElement");
     }
 
     @Test
@@ -63,9 +59,7 @@ public final class A_SimpleXmlAnalyzer extends AnAnalyzer {
 
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat("Should have analyzed the XML file!", codeDependencies.size(), is(1));
-        assertThat(concat(codeDependencies.values()), containsInAnyOrder("de.is24.deadcode4j.UnlockedClassInElement"));
+        assertThatDependenciesAreReported("de.is24.deadcode4j.UnlockedClassInElement");
     }
 
     @Test
@@ -78,9 +72,7 @@ public final class A_SimpleXmlAnalyzer extends AnAnalyzer {
 
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat("Should have analyzed the XML file!", codeDependencies.size(), is(1));
-        assertThat(getOnlyElement(codeDependencies.values()), contains("de.is24.deadcode4j.ClassInAttribute"));
+        assertThatDependenciesAreReported("de.is24.deadcode4j.ClassInAttribute");
     }
 
     @Test
@@ -93,9 +85,7 @@ public final class A_SimpleXmlAnalyzer extends AnAnalyzer {
 
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat("Should have analyzed the XML file!", codeDependencies.size(), is(1));
-        assertThat(concat(codeDependencies.values()), containsInAnyOrder("de.is24.deadcode4j.UnlockedClassInAttribute"));
+        assertThatDependenciesAreReported("de.is24.deadcode4j.UnlockedClassInAttribute");
     }
 
     @Test
@@ -109,11 +99,9 @@ public final class A_SimpleXmlAnalyzer extends AnAnalyzer {
 
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat("Should have analyzed the XML file!", codeDependencies.size(), is(1));
-        assertThat(concat(codeDependencies.values()), containsInAnyOrder(
+        assertThatDependenciesAreReported(
                 "de.is24.deadcode4j.UnlockedClassInAttribute",
-                "de.is24.deadcode4j.UnlockedClassInElement"));
+                "de.is24.deadcode4j.UnlockedClassInElement");
     }
 
     @Test
@@ -126,12 +114,9 @@ public final class A_SimpleXmlAnalyzer extends AnAnalyzer {
 
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat("Should have analyzed the XML file!", codeDependencies.size(), is(1));
-        assertThat(getOnlyElement(codeDependencies.values()),
-                containsInAnyOrder("de.is24.deadcode4j.FirstClassInAnotherElement",
-                        "de.is24.deadcode4j.SecondClassInAnotherElement")
-        );
+        assertThatDependenciesAreReported(
+                "de.is24.deadcode4j.FirstClassInAnotherElement",
+                "de.is24.deadcode4j.SecondClassInAnotherElement");
     }
 
     @Test
@@ -146,12 +131,11 @@ public final class A_SimpleXmlAnalyzer extends AnAnalyzer {
 
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat("Should have analyzed the XML file!", codeDependencies.size(), is(1));
-        assertThat(getOnlyElement(codeDependencies.values()),
-                containsInAnyOrder("de.is24.deadcode4j.ClassInElement", "de.is24.deadcode4j.FirstClassInAnotherElement",
-                        "de.is24.deadcode4j.SecondClassInAnotherElement", "de.is24.deadcode4j.ClassInAttribute")
-        );
+        assertThatDependenciesAreReported(
+                "de.is24.deadcode4j.ClassInElement",
+                "de.is24.deadcode4j.FirstClassInAnotherElement",
+                "de.is24.deadcode4j.SecondClassInAnotherElement",
+                "de.is24.deadcode4j.ClassInAttribute");
     }
 
     @Test
@@ -166,12 +150,11 @@ public final class A_SimpleXmlAnalyzer extends AnAnalyzer {
 
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/prefixed.xml"));
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat("Should have analyzed the XML file!", codeDependencies.size(), is(1));
-        assertThat(getOnlyElement(codeDependencies.values()),
-                containsInAnyOrder("de.is24.deadcode4j.ClassInElement", "de.is24.deadcode4j.FirstClassInAnotherElement",
-                        "de.is24.deadcode4j.SecondClassInAnotherElement", "de.is24.deadcode4j.ClassInAttribute")
-        );
+        assertThatDependenciesAreReported(
+                "de.is24.deadcode4j.ClassInElement",
+                "de.is24.deadcode4j.FirstClassInAnotherElement",
+                "de.is24.deadcode4j.SecondClassInAnotherElement",
+                "de.is24.deadcode4j.ClassInAttribute");
     }
 
 }

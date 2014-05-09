@@ -3,10 +3,7 @@ package de.is24.deadcode4j.analyzer;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Map;
-
 import static com.google.common.collect.Iterables.concat;
-import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assume.assumeThat;
@@ -27,9 +24,7 @@ public final class A_ClassDependencyAnalyzer extends AnAnalyzer {
         assertThat("Should analyze one class", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(1));
         assertThat(codeContext.getAnalyzedCode().getAnalyzedClasses(), contains("SingleClass"));
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat("Should analyze one class", codeDependencies.size(), is(1));
-        assertThat("Should find dependency to java.lang.Object (only)", getOnlyElement(codeDependencies.values()), contains("java.lang.Object"));
+        assertThatDependenciesAreReportedFor("SingleClass", "java.lang.Object");
     }
 
     @Test
@@ -39,9 +34,9 @@ public final class A_ClassDependencyAnalyzer extends AnAnalyzer {
         assertThat("Should analyze one class", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(1));
         assertThat(codeContext.getAnalyzedCode().getAnalyzedClasses(), contains("DependingClass"));
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat("Should analyze one class", codeDependencies.size(), is(1));
-        assertThat(getOnlyElement(codeDependencies.values()), hasItem("IndependentClass"));
+        assertThatDependenciesAreReportedFor("DependingClass",
+                "IndependentClass",
+                "java.lang.Object");
     }
 
     @Test
@@ -62,9 +57,9 @@ public final class A_ClassDependencyAnalyzer extends AnAnalyzer {
         assertThat("Should analyze one class", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(1));
         assertThat(codeContext.getAnalyzedCode().getAnalyzedClasses(), containsInAnyOrder("de.is24.deadcode4j.analyzer.classdependency.ClassWithInnerClasses$UnusedInnerClass"));
 
-        Iterable<String> allDependencies = concat(codeContext.getAnalyzedCode().getCodeDependencies().values());
-        assertThat(allDependencies, containsInAnyOrder("java.lang.Object",
-                "de.is24.deadcode4j.analyzer.classdependency.ClassWithInnerClasses"));
+        assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.classdependency.ClassWithInnerClasses$UnusedInnerClass",
+                "de.is24.deadcode4j.analyzer.classdependency.ClassWithInnerClasses",
+                "java.lang.Object");
     }
 
     @Test

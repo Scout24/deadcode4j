@@ -3,12 +3,6 @@ package de.is24.deadcode4j.analyzer;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Map;
-import java.util.Set;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-
 public final class A_TypeErasureAnalyzer extends AnAnalyzer {
 
     private TypeErasureAnalyzer objectUnderTest;
@@ -39,27 +33,24 @@ public final class A_TypeErasureAnalyzer extends AnAnalyzer {
     public void recognizesDefaultPackageReference() {
         objectUnderTest.doAnalysis(codeContext, getFile("../../src/test/java/ClassWithTypeArgument.java"));
 
-        assertThatDependenciesAreReportedFor("ClassWithTypeArgument", "TypeParameterClass");
+        assertThatDependenciesAreReportedFor("ClassWithTypeArgument",
+                "TypeParameterClass");
     }
 
     @Test
     public void recognizesLowerBoundOfWildCard() {
         objectUnderTest.doAnalysis(codeContext, getFile("../../src/test/java/de/is24/deadcode4j/analyzer/typeerasure/ClassWithLowerBoundedWildCard.java"));
 
-        assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.ClassWithLowerBoundedWildCard", "java.util.Collection");
+        assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.ClassWithLowerBoundedWildCard",
+                "java.util.Collection");
     }
 
     @Test
     public void recognizesUpperBoundOfWildCard() {
         objectUnderTest.doAnalysis(codeContext, getFile("../../src/test/java/de/is24/deadcode4j/analyzer/typeerasure/ClassWithUpperBoundedWildCard.java"));
 
-        assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.ClassWithUpperBoundedWildCard", "java.util.Collection");
-    }
-
-    private void assertThatDependenciesAreReportedFor(String depender, String... dependee) {
-        Map<String, Set<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat(codeDependencies, hasEntry(equalTo(depender), any(Set.class)));
-        assertThat(codeDependencies.get(depender), containsInAnyOrder(dependee));
+        assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.ClassWithUpperBoundedWildCard",
+                "java.util.Collection");
     }
 
 }

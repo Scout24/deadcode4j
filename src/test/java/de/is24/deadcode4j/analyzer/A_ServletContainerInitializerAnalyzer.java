@@ -4,12 +4,6 @@ import de.is24.deadcode4j.Analyzer;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Map;
-
-import static com.google.common.collect.Iterables.concat;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-
 public class A_ServletContainerInitializerAnalyzer extends AnAnalyzer {
 
     private Analyzer objectUnderTest;
@@ -26,9 +20,7 @@ public class A_ServletContainerInitializerAnalyzer extends AnAnalyzer {
         objectUnderTest.doAnalysis(codeContext, getFile("SomeServletInitializer.class"));
         objectUnderTest.finishAnalysis(codeContext);
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        Iterable<String> allReportedClasses = concat(codeDependencies.values());
-        assertThat(allReportedClasses, containsInAnyOrder("SomeServletInitializer"));
+        assertThatDependenciesAreReported("SomeServletInitializer");
     }
 
     @Test
@@ -37,9 +29,7 @@ public class A_ServletContainerInitializerAnalyzer extends AnAnalyzer {
         objectUnderTest.doAnalysis(codeContext, getFile("SomeServletInitializer.class"));
         objectUnderTest.finishAnalysis(codeContext);
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        Iterable<String> allReportedClasses = concat(codeDependencies.values());
-        assertThat(allReportedClasses, containsInAnyOrder("SomeServletInitializer"));
+        assertThatDependenciesAreReported("SomeServletInitializer");
     }
 
     @Test
@@ -48,9 +38,7 @@ public class A_ServletContainerInitializerAnalyzer extends AnAnalyzer {
         objectUnderTest.doAnalysis(codeContext, getFile("SomeServletInitializer.class"));
         objectUnderTest.finishAnalysis(codeContext);
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        Iterable<String> allReportedClasses = concat(codeDependencies.values());
-        assertThat(allReportedClasses, is(emptyIterable()));
+        assertThatNoDependenciesAreReported();
     }
 
 }

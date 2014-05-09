@@ -3,12 +3,6 @@ package de.is24.deadcode4j.analyzer;
 import de.is24.deadcode4j.Analyzer;
 import org.junit.Test;
 
-import java.util.Map;
-
-import static com.google.common.collect.Iterables.concat;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-
 public final class A_SpringNamespaceHandlerAnalyzer extends AnAnalyzer {
 
     @Test
@@ -17,9 +11,7 @@ public final class A_SpringNamespaceHandlerAnalyzer extends AnAnalyzer {
 
         objectUnderTest.doAnalysis(codeContext, getFile("META-INF/spring.handlers"));
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        Iterable<String> allReportedClasses = concat(codeDependencies.values());
-        assertThat(allReportedClasses, containsInAnyOrder("CustomNamespaceHandler", "AnotherNamespaceHandler"));
+        assertThatDependenciesAreReported("CustomNamespaceHandler", "AnotherNamespaceHandler");
     }
 
 }

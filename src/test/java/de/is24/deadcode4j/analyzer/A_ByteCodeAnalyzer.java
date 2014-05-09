@@ -6,10 +6,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
-import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasSize;
 
 public final class A_ByteCodeAnalyzer extends AnAnalyzer {
 
@@ -38,8 +38,7 @@ public final class A_ByteCodeAnalyzer extends AnAnalyzer {
         objectUnderTest.doAnalysis(codeContext, getFile("spring.xml"));
 
         assertThat("Should analyze no class", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(0));
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat("Should analyze no class", codeDependencies.size(), is(0));
+        assertThatNoDependenciesAreReported();
     }
 
 }

@@ -4,9 +4,7 @@ import org.junit.Test;
 
 import java.util.Map;
 
-import static com.google.common.collect.Iterables.concat;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.greaterThan;
 
 public final class A_SpringWebXmlAnalyzer extends AnAnalyzer {
@@ -20,9 +18,12 @@ public final class A_SpringWebXmlAnalyzer extends AnAnalyzer {
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
         assertThat("Should have analyzed the web.xml file!", codeDependencies.size(), greaterThan(1));
 
-        Iterable<String> allReportedClasses = concat(codeDependencies.values());
-        assertThat(allReportedClasses, containsInAnyOrder("servlet.contextClass", "servlet.initializerClass",
-                "root.contextClass", "root.initializerClass", "root.secondInitializerClass"));
+        assertThatDependenciesAreReported(
+                "servlet.contextClass",
+                "servlet.initializerClass",
+                "root.contextClass",
+                "root.initializerClass",
+                "root.secondInitializerClass");
     }
 
 }

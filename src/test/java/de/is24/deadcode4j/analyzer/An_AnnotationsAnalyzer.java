@@ -3,12 +3,8 @@ package de.is24.deadcode4j.analyzer;
 import de.is24.deadcode4j.Analyzer;
 import org.junit.Test;
 
-import java.util.Map;
-
-import static com.google.common.collect.Iterables.concat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.is;
 
 public final class An_AnnotationsAnalyzer extends AnAnalyzer {
 
@@ -32,9 +28,7 @@ public final class An_AnnotationsAnalyzer extends AnAnalyzer {
         objectUnderTest.doAnalysis(codeContext, getFile("AnnotatedClass.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("DeadServlet.class"));
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat("Should have reported some dependencies!", codeDependencies.size(), is(1));
-        assertThat(concat(codeDependencies.values()), containsInAnyOrder("AnnotatedClass", "DeadServlet"));
+        assertThatDependenciesAreReported("AnnotatedClass", "DeadServlet");
     }
 
     @Test
@@ -44,9 +38,7 @@ public final class An_AnnotationsAnalyzer extends AnAnalyzer {
 
         objectUnderTest.doAnalysis(codeContext, getFile("ClassAnnotatedWithAnnotatedAnnotation.class"));
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat("Should have reported some dependencies!", codeDependencies.size(), is(1));
-        assertThat(concat(codeDependencies.values()), containsInAnyOrder("ClassAnnotatedWithAnnotatedAnnotation"));
+        assertThatDependenciesAreReported("ClassAnnotatedWithAnnotatedAnnotation");
     }
 
     @Test
@@ -56,9 +48,7 @@ public final class An_AnnotationsAnalyzer extends AnAnalyzer {
 
         objectUnderTest.doAnalysis(codeContext, getFile("SubClassOfAnnotatedClass.class"));
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat("Should have reported some dependencies!", codeDependencies.size(), is(1));
-        assertThat(concat(codeDependencies.values()), containsInAnyOrder("SubClassOfAnnotatedClass"));
+        assertThatDependenciesAreReported("SubClassOfAnnotatedClass");
     }
 
     @Test
@@ -69,9 +59,7 @@ public final class An_AnnotationsAnalyzer extends AnAnalyzer {
         objectUnderTest.doAnalysis(codeContext, getFile("AnnotatedClass.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("DeadServlet.class"));
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat("Should have reported some dependencies!", codeDependencies.size(), is(1));
-        assertThat(concat(codeDependencies.values()), containsInAnyOrder("AnnotatedClass"));
+        assertThatDependenciesAreReported("AnnotatedClass");
     }
 
 }
