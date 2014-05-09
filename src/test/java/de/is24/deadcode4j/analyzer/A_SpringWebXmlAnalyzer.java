@@ -7,12 +7,15 @@ import java.util.Map;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 
-public final class A_SpringWebXmlAnalyzer extends AnAnalyzer {
+public final class A_SpringWebXmlAnalyzer extends AFinalAnalyzer<SpringWebXmlAnalyzer> {
+
+    @Override
+    protected SpringWebXmlAnalyzer createAnalyzer() {
+        return new SpringWebXmlAnalyzer();
+    }
 
     @Test
     public void shouldParseWebXmlFiles() {
-        SpringWebXmlAnalyzer objectUnderTest = new SpringWebXmlAnalyzer();
-
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/spring.web.xml"));
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();

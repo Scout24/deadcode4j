@@ -2,12 +2,15 @@ package de.is24.deadcode4j.analyzer;
 
 import org.junit.Test;
 
-public final class A_TldAnalyzer extends AnAnalyzer {
+public final class A_TldAnalyzer extends AFinalAnalyzer<TldAnalyzer> {
+
+    @Override
+    protected TldAnalyzer createAnalyzer() {
+        return new TldAnalyzer();
+    }
 
     @Test
     public void shouldParseTldFiles() {
-        TldAnalyzer objectUnderTest = new TldAnalyzer();
-
         objectUnderTest.doAnalysis(codeContext, getFile("taglib.tld"));
 
         assertThatDependenciesAreReported(

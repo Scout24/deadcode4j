@@ -2,12 +2,15 @@ package de.is24.deadcode4j.analyzer;
 
 import org.junit.Test;
 
-public final class A_WebXmlAnalyzer extends AnAnalyzer {
+public final class A_WebXmlAnalyzer extends AFinalAnalyzer<WebXmlAnalyzer> {
+
+    @Override
+    protected WebXmlAnalyzer createAnalyzer() {
+        return new WebXmlAnalyzer();
+    }
 
     @Test
     public void shouldParseWebXmlFiles() {
-        WebXmlAnalyzer objectUnderTest = new WebXmlAnalyzer();
-
         objectUnderTest.doAnalysis(codeContext, getFile("web.xml"));
 
         assertThatDependenciesAreReported(
