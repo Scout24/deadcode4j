@@ -1,9 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.CodeContext;
-import de.is24.deadcode4j.Module;
-import de.is24.deadcode4j.Repository;
-import de.is24.deadcode4j.Resource;
+import de.is24.deadcode4j.*;
 import de.is24.deadcode4j.junit.FileLoader;
 import de.is24.deadcode4j.junit.LoggingRule;
 import org.junit.Before;
@@ -18,7 +15,22 @@ import static com.google.common.collect.Iterables.concat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-public abstract class AnAnalyzer {
+public abstract class AnAnalyzer<T extends Analyzer> {
+
+    protected T objectUnderTest;
+
+    @Before
+    public final void initAnalyzer() {
+        objectUnderTest = createAnalyzer();
+    }
+
+    protected T createAnalyzer() {
+        return null;
+    }
+
+    protected void finishAnalysis() {
+        this.objectUnderTest.finishAnalysis(this.codeContext);
+    }
 
     @Rule
     public final LoggingRule enableLogging = new LoggingRule();
