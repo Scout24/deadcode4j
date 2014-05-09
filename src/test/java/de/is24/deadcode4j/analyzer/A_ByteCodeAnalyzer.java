@@ -7,7 +7,6 @@ import org.junit.Test;
 import javax.annotation.Nonnull;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 
 public final class A_ByteCodeAnalyzer extends AnAnalyzer<ByteCodeAnalyzer> {
@@ -26,8 +25,7 @@ public final class A_ByteCodeAnalyzer extends AnAnalyzer<ByteCodeAnalyzer> {
     public void analyzesAClassFile() {
         objectUnderTest.doAnalysis(codeContext, getFile("SingleClass.class"));
 
-        assertThat("Should analyze one class", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(1));
-        assertThat(codeContext.getAnalyzedCode().getAnalyzedClasses(), contains("SingleClass"));
+        assertThatClassesAreReported("SingleClass");
         assertThatNoDependenciesAreReported();
     }
 
