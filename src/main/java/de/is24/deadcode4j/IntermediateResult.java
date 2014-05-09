@@ -1,5 +1,7 @@
 package de.is24.deadcode4j;
 
+import javax.annotation.Nonnull;
+
 /**
  * If an <code>IntermediateResult</code> is put into a {@link CodeContext#getCache() code context's cache},
  * it will be made available to the code context of those modules depending on the module the result belongs to.
@@ -19,7 +21,8 @@ public interface IntermediateResult {
      * @return a new <code>IntermediateResult</code> instance
      * @since 1.6
      */
-    IntermediateResult mergeSibling(IntermediateResult sibling);
+    @Nonnull
+    IntermediateResult mergeSibling(@Nonnull IntermediateResult sibling);
 
     /**
      * If a module depends on module <i>A</i> which in turn depends on module <i>B</i>, both providing an intermediate
@@ -33,6 +36,7 @@ public interface IntermediateResult {
      * @return a new <code>IntermediateResult</code> instance
      * @since 1.6
      */
-    IntermediateResult mergeParent(IntermediateResult parent);
+    @Nonnull
+    IntermediateResult mergeParent(@Nonnull IntermediateResult parent);
 
 }

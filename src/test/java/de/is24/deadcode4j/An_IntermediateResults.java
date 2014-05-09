@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import javax.annotation.Nonnull;
 import java.util.Map;
 
 import static de.is24.deadcode4j.CodeContextBuilder.givenCodeContext;
@@ -139,13 +140,15 @@ public final class An_IntermediateResults {
             return this.string;
         }
 
+        @Nonnull
         @Override
-        public IntermediateResult mergeSibling(IntermediateResult sibling) {
+        public IntermediateResult mergeSibling(@Nonnull IntermediateResult sibling) {
             return new AnIntermediateResult(this.string + "+" + sibling);
         }
 
+        @Nonnull
         @Override
-        public IntermediateResult mergeParent(IntermediateResult parent) {
+        public IntermediateResult mergeParent(@Nonnull IntermediateResult parent) {
             return new AnIntermediateResult(this.string + "->(" + parent + ")");
         }
 
