@@ -14,7 +14,6 @@ public class A_ServletContainerInitializerAnalyzer extends AnAnalyzer<ServletCon
     public void shouldRecognizeServletContainerInitializerClasses() {
         analyzeFile("de/is24/deadcode4j/analyzer/v3-metadata-missing.web.xml");
         analyzeFile("SomeServletInitializer.class");
-        finishAnalysis();
 
         assertThatDependenciesAreReported("SomeServletInitializer");
     }
@@ -23,7 +22,6 @@ public class A_ServletContainerInitializerAnalyzer extends AnAnalyzer<ServletCon
     public void shouldRecognizeServletContainerInitializerClassesIfMetadataCompleteAttributeIsFalse() {
         analyzeFile("de/is24/deadcode4j/analyzer/v3-metadata-incomplete.web.xml");
         analyzeFile("SomeServletInitializer.class");
-        finishAnalysis();
 
         assertThatDependenciesAreReported("SomeServletInitializer");
     }
@@ -32,7 +30,6 @@ public class A_ServletContainerInitializerAnalyzer extends AnAnalyzer<ServletCon
     public void shouldRecognizeMetadataCompleteAttribute() {
         analyzeFile("de/is24/deadcode4j/analyzer/v3-metadata-complete.web.xml");
         analyzeFile("SomeServletInitializer.class");
-        finishAnalysis();
 
         assertThatNoDependenciesAreReported();
     }
