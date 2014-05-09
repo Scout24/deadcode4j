@@ -10,12 +10,9 @@ import org.mockito.Matchers;
 import org.mockito.internal.matchers.VarargMatcher;
 import org.slf4j.Logger;
 
-import java.util.Map;
-
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -34,13 +31,20 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
     }
 
     @Test
+    public void reportsExistenceOfClasses() {
+        objectUnderTest.doAnalysis(codeContext, getFile("A.class"));
+        assertThat(codeContext.getAnalyzedCode().getAnalyzedClasses(), containsInAnyOrder("A"));
+
+        objectUnderTest.doAnalysis(codeContext, getFile("B.class"));
+        assertThat(codeContext.getAnalyzedCode().getAnalyzedClasses(), containsInAnyOrder("A", "B"));
+    }
+
+    @Test
     public void recognizesDependencyFromClassWithTypeAnnotatedFieldToTypeDefAnnotatedClass() {
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassWithTypeDef.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassUsingTypeAtField.class"));
         objectUnderTest.finishAnalysis(codeContext);
 
-
-        assertThat("Should have analyzed the class files!", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(2));
         assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.hibernateannotations.ClassUsingTypeAtField",
                 "de.is24.deadcode4j.analyzer.hibernateannotations.ClassWithTypeDef");
     }
@@ -51,8 +55,6 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassUsingTypeAtMethod.class"));
         objectUnderTest.finishAnalysis(codeContext);
 
-
-        assertThat("Should have analyzed the class files!", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(2));
         assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.hibernateannotations.ClassUsingTypeAtMethod",
                 "de.is24.deadcode4j.analyzer.hibernateannotations.ClassWithTypeDef");
     }
@@ -64,8 +66,6 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/AnotherEntity.class"));
         objectUnderTest.finishAnalysis(codeContext);
 
-
-        assertThat("Should have analyzed the class files!", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(3));
         assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.hibernateannotations.Entity",
                 "de.is24.deadcode4j.analyzer.hibernateannotations.package-info");
         assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.hibernateannotations.AnotherEntity",
@@ -78,8 +78,6 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
         objectUnderTest.doAnalysis(codeContext, getFile("IndependentClass.class"));
         objectUnderTest.finishAnalysis(codeContext);
 
-
-        assertThat("Should have analyzed the class files!", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(2));
         assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.hibernateannotations.ClassUsingTypeWithoutTypeDef",
                 "IndependentClass");
     }
@@ -98,9 +96,7 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
         objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/hibernateannotations/ClassDefiningGenericGenerator.class"));
         objectUnderTest.finishAnalysis(codeContext);
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat("Should have analyzed the class files!", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(1));
-        assertTrue("Should not report any dependency!", codeDependencies.isEmpty());
+        assertThatNoDependenciesAreReported();
     }
 
     @Test
@@ -119,7 +115,6 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
         objectUnderTest.finishAnalysis(codeContext);
 
 
-        assertThat("Should have analyzed the class files!", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(2));
         assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.hibernateannotations.ClassUsingGeneratedValueAtField",
                 "de.is24.deadcode4j.analyzer.hibernateannotations.ClassDefiningGenericGenerator");
     }
@@ -131,7 +126,6 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
         objectUnderTest.finishAnalysis(codeContext);
 
 
-        assertThat("Should have analyzed the class files!", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(2));
         assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.hibernateannotations.ClassUsingGeneratedValueAtMethod",
                 "de.is24.deadcode4j.analyzer.hibernateannotations.ClassDefiningGenericGenerator");
     }
@@ -144,7 +138,6 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
         objectUnderTest.finishAnalysis(codeContext);
 
 
-        assertThat("Should have analyzed the class files!", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(3));
         assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.hibernateannotations.AnotherEntityWithGeneratedValue",
                 "de.is24.deadcode4j.analyzer.hibernateannotations.package-info");
         assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.hibernateannotations.EntityWithGeneratedValue",
