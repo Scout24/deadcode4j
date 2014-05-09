@@ -22,6 +22,7 @@ import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
  */
 public class DeadCodeFinder {
 
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private final Set<? extends Analyzer> analyzers;
 
     public DeadCodeFinder(@Nonnull Set<? extends Analyzer> analyzers) {
@@ -42,6 +43,10 @@ public class DeadCodeFinder {
             for (Repository repository : module.getAllRepositories()) {
                 analyzeRepository(codeContext, repository);
             }
+            logger.debug("Finishing analysis of [{}]...", codeContext);
+            for (Analyzer analyzer : this.analyzers)
+                analyzer.finishAnalysis(codeContext);
+            logger.debug("Finished analysis of [{}].", codeContext);
             analyzedCode.add(codeContext.getAnalyzedCode());
         }
         return merge(analyzedCode);
@@ -125,10 +130,7 @@ public class DeadCodeFinder {
 
         @Override
         protected void handleEnd(Collection<Void> results) {
-            logger.debug("Finishing analysis of [{}]...", this.repository);
-            for (Analyzer analyzer : this.analyzers)
-                analyzer.finishAnalysis(this.codeContext);
-            logger.debug("Finished analysis of [{}].", this.repository);
+            logger.debug("Analysis of [{}] is done.", this.repository);
         }
 
     }
