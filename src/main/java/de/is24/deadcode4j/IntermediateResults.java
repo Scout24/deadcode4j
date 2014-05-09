@@ -1,5 +1,8 @@
 package de.is24.deadcode4j;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.annotation.Nonnull;
 import java.util.Map;
 
@@ -13,6 +16,7 @@ import static com.google.common.collect.Maps.newHashMap;
  */
 public final class IntermediateResults {
 
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     @Nonnull
     private final Map<Module, Map<Object, IntermediateResult>> intermediateResults = newHashMap();
 
@@ -43,6 +47,7 @@ public final class IntermediateResults {
         for (Map.Entry<Object, Object> cachedEntry : codeContext.getCache().entrySet()) {
             Object cachedValue = cachedEntry.getValue();
             if (IntermediateResult.class.isInstance(cachedValue)) {
+                logger.debug("{} stored [{}].", codeContext.getModule(), cachedValue);
                 intermediateResults.put(cachedEntry.getKey(), IntermediateResult.class.cast(cachedValue));
             }
         }
