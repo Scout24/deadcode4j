@@ -17,7 +17,7 @@ public class An_XmlAnalyzer extends AnAnalyzer {
     public void parsesMatchingFile() {
         final AtomicBoolean fileIsParsed = new AtomicBoolean(false);
 
-        XmlAnalyzer objectUnderTest = new XmlAnalyzer(".xml") {
+        objectUnderTest = new XmlAnalyzer(".xml") {
             @Nonnull
             @Override
             protected DefaultHandler createHandlerFor(@Nonnull CodeContext codeContext) {
@@ -33,7 +33,7 @@ public class An_XmlAnalyzer extends AnAnalyzer {
 
     @Test
     public void doesNotParseNonMatchingFile() {
-        XmlAnalyzer objectUnderTest = new XmlAnalyzer(".foo") {
+        objectUnderTest = new XmlAnalyzer(".foo") {
             @Nonnull
             @Override
             protected DefaultHandler createHandlerFor(@Nonnull CodeContext codeContext) {
