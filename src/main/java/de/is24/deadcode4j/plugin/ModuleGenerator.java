@@ -109,7 +109,7 @@ class ModuleGenerator {
     protected Collection<Resource> computeDependencies(
             @Nonnull MavenProject project,
             @Nonnull Map<String, Module> knownModules) {
-        logger.debug("Computing class path for project [{}]...", getKeyFor(project));
+        logger.debug("Gathering dependencies for project [{}]...", getKeyFor(project));
         List<Resource> dependencies = newArrayList();
         for (Artifact dependency : filter(project.getArtifacts(), artifactsWithCompileScope())) {
             if (addKnownArtifact(dependencies, dependency, knownModules)) {
@@ -118,6 +118,7 @@ class ModuleGenerator {
             resolveArtifact(dependency);
             addArtifactPath(dependencies, dependency);
         }
+        logger.debug("[{}] dependencies found for [{}].", dependencies.size(), getKeyFor(project));
         return dependencies;
     }
 

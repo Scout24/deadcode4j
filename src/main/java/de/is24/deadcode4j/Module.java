@@ -69,7 +69,7 @@ public class Module {
         while (!unsortedModules.isEmpty()) {
             List<Module> modulesToAdd = newArrayList();
             for (Module module : unsortedModules) {
-                if (sortedModules.containsAll(module.getModuleDependencies())) {
+                if (sortedModules.containsAll(module.getRequiredModules())) {
                     modulesToAdd.add(module);
                 }
             }
@@ -103,15 +103,7 @@ public class Module {
 
     @Override
     public String toString() {
-        StringBuilder buffy = new StringBuilder("Module [").append(this.moduleId).append("] with");
-        if (this.outputRepository == null) {
-            buffy.append("out");
-        }
-        buffy.append(" output repository");
-        if (this.allRepositories.size() > 1) {
-            buffy.append(" and ").append(this.allRepositories.size() - 1).append(" additional repositories");
-        }
-        return buffy.toString();
+        return "Module [" + this.moduleId + "]";
     }
 
     /**
@@ -171,7 +163,7 @@ public class Module {
         return this.allRepositories;
     }
 
-    private Collection<?> getModuleDependencies() {
+    private Collection<Module> getRequiredModules() {
         List<Module> requiredModules = newArrayList();
         for (Resource dependency : dependencies) {
             Optional<Module> moduleEntry = dependency.getReferencedModule();
