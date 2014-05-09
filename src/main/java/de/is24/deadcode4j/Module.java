@@ -69,7 +69,7 @@ public class Module {
         while (!unsortedModules.isEmpty()) {
             List<Module> modulesToAdd = newArrayList();
             for (Module module : unsortedModules) {
-                if (sortedModules.containsAll(module.getModuleDependencies())) {
+                if (sortedModules.containsAll(module.getRequiredModules())) {
                     modulesToAdd.add(module);
                 }
             }
@@ -163,7 +163,7 @@ public class Module {
         return this.allRepositories;
     }
 
-    private Collection<?> getModuleDependencies() {
+    private Collection<Module> getRequiredModules() {
         List<Module> requiredModules = newArrayList();
         for (Resource dependency : dependencies) {
             Optional<Module> moduleEntry = dependency.getReferencedModule();
