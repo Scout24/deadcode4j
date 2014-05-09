@@ -2,7 +2,7 @@ package de.is24.deadcode4j.analyzer;
 
 import org.junit.Test;
 
-public final class A_CustomXmlAnalyzer extends AFinalAnalyzer<CustomXmlAnalyzer> {
+public final class A_CustomXmlAnalyzer extends AnAnalyzer<CustomXmlAnalyzer> {
 
     @Override
     protected CustomXmlAnalyzer createAnalyzer() {

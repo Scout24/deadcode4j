@@ -10,7 +10,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 
-public final class A_ByteCodeAnalyzer extends AFinalAnalyzer<ByteCodeAnalyzer> {
+public final class A_ByteCodeAnalyzer extends AnAnalyzer<ByteCodeAnalyzer> {
 
     @Override
     protected ByteCodeAnalyzer createAnalyzer() {

@@ -6,7 +6,7 @@ import static com.google.common.collect.Iterables.concat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assume.assumeThat;
 
-public final class A_ClassDependencyAnalyzer extends AFinalAnalyzer<ClassDependencyAnalyzer> {
+public final class A_ClassDependencyAnalyzer extends AnAnalyzer<ClassDependencyAnalyzer> {
 
     @Override
     protected ClassDependencyAnalyzer createAnalyzer() {

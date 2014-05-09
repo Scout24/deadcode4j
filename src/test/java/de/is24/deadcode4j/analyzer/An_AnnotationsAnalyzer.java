@@ -2,7 +2,7 @@ package de.is24.deadcode4j.analyzer;
 
 import org.junit.Test;
 
-public final class An_AnnotationsAnalyzer extends AFinalAnalyzer<AnnotationsAnalyzer> {
+public final class An_AnnotationsAnalyzer extends AnAnalyzer<AnnotationsAnalyzer> {
 
     @Override
     protected AnnotationsAnalyzer createAnalyzer() {

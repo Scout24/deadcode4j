@@ -2,7 +2,7 @@ package de.is24.deadcode4j.analyzer;
 
 import org.junit.Test;
 
-public class A_ServletContainerInitializerAnalyzer extends AFinalAnalyzer<ServletContainerInitializerAnalyzer> {
+public class A_ServletContainerInitializerAnalyzer extends AnAnalyzer<ServletContainerInitializerAnalyzer> {
 
     @Override
     protected ServletContainerInitializerAnalyzer createAnalyzer() {

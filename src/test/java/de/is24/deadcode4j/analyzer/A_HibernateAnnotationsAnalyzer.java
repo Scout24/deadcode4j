@@ -13,7 +13,7 @@ import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-public final class A_HibernateAnnotationsAnalyzer extends AFinalAnalyzer<HibernateAnnotationsAnalyzer> {
+public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer<HibernateAnnotationsAnalyzer> {
 
     private static <T> Matcher<T[]> hasVarArgItem(Matcher<? super T> elementMatcher) {
         return new MyVarArgsMatcher<T>(elementMatcher);

@@ -7,7 +7,7 @@ import java.util.Map;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 
-public final class A_SpringWebXmlAnalyzer extends AFinalAnalyzer<SpringWebXmlAnalyzer> {
+public final class A_SpringWebXmlAnalyzer extends AnAnalyzer<SpringWebXmlAnalyzer> {
 
     @Override
     protected SpringWebXmlAnalyzer createAnalyzer() {

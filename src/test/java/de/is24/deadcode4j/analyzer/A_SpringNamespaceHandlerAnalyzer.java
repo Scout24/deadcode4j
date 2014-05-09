@@ -2,7 +2,7 @@ package de.is24.deadcode4j.analyzer;
 
 import org.junit.Test;
 
-public final class A_SpringNamespaceHandlerAnalyzer extends AFinalAnalyzer<SpringNamespaceHandlerAnalyzer> {
+public final class A_SpringNamespaceHandlerAnalyzer extends AnAnalyzer<SpringNamespaceHandlerAnalyzer> {
 
     @Override
     protected SpringNamespaceHandlerAnalyzer createAnalyzer() {

@@ -2,7 +2,7 @@ package de.is24.deadcode4j.analyzer;
 
 import org.junit.Test;
 
-public final class A_WebXmlAnalyzer extends AFinalAnalyzer<WebXmlAnalyzer> {
+public final class A_WebXmlAnalyzer extends AnAnalyzer<WebXmlAnalyzer> {
 
     @Override
     protected WebXmlAnalyzer createAnalyzer() {

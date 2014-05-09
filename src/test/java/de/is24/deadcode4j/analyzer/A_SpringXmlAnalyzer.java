@@ -2,7 +2,7 @@ package de.is24.deadcode4j.analyzer;
 
 import org.junit.Test;
 
-public final class A_SpringXmlAnalyzer extends AFinalAnalyzer<SpringXmlAnalyzer> {
+public final class A_SpringXmlAnalyzer extends AnAnalyzer<SpringXmlAnalyzer> {
 
     @Override
     protected SpringXmlAnalyzer createAnalyzer() {

@@ -2,7 +2,7 @@ package de.is24.deadcode4j.analyzer;
 
 import org.junit.Test;
 
-public final class A_TypeErasureAnalyzer extends AFinalAnalyzer<TypeErasureAnalyzer> {
+public final class A_TypeErasureAnalyzer extends AnAnalyzer<TypeErasureAnalyzer> {
 
     @Override
     protected TypeErasureAnalyzer createAnalyzer() {
