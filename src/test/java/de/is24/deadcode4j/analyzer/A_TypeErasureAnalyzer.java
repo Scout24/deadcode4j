@@ -1,15 +1,12 @@
 package de.is24.deadcode4j.analyzer;
 
-import org.junit.Before;
 import org.junit.Test;
 
-public final class A_TypeErasureAnalyzer extends AnAnalyzer {
+public final class A_TypeErasureAnalyzer extends AFinalAnalyzer<TypeErasureAnalyzer> {
 
-    private TypeErasureAnalyzer objectUnderTest;
-
-    @Before
-    public void initAnalyzer() {
-        objectUnderTest = new TypeErasureAnalyzer();
+    @Override
+    protected TypeErasureAnalyzer createAnalyzer() {
+        return new TypeErasureAnalyzer();
     }
 
     @Test

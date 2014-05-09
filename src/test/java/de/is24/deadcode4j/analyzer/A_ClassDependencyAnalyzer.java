@@ -1,19 +1,16 @@
 package de.is24.deadcode4j.analyzer;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import static com.google.common.collect.Iterables.concat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assume.assumeThat;
 
-public final class A_ClassDependencyAnalyzer extends AnAnalyzer {
+public final class A_ClassDependencyAnalyzer extends AFinalAnalyzer<ClassDependencyAnalyzer> {
 
-    private ClassDependencyAnalyzer objectUnderTest;
-
-    @Before
-    public void setUp() throws Exception {
-        objectUnderTest = new ClassDependencyAnalyzer();
+    @Override
+    protected ClassDependencyAnalyzer createAnalyzer() {
+        return new ClassDependencyAnalyzer();
     }
 
     @Test

@@ -1,16 +1,12 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.Analyzer;
-import org.junit.Before;
 import org.junit.Test;
 
-public class A_ServletContainerInitializerAnalyzer extends AnAnalyzer {
+public class A_ServletContainerInitializerAnalyzer extends AFinalAnalyzer<ServletContainerInitializerAnalyzer> {
 
-    private Analyzer objectUnderTest;
-
-    @Before
-    public void setUp() throws Exception {
-        objectUnderTest = new ServletContainerInitializerAnalyzer("JUnit", "javax.servlet.ServletContainerInitializer") {
+    @Override
+    protected ServletContainerInitializerAnalyzer createAnalyzer() {
+        return new ServletContainerInitializerAnalyzer("JUnit", "javax.servlet.ServletContainerInitializer") {
         };
     }
 
@@ -40,5 +36,4 @@ public class A_ServletContainerInitializerAnalyzer extends AnAnalyzer {
 
         assertThatNoDependenciesAreReported();
     }
-
 }

@@ -1,15 +1,17 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.Analyzer;
 import org.junit.Test;
 
-public final class A_SuperClassAnalyzer extends AnAnalyzer {
+public final class A_SuperClassAnalyzer extends AFinalAnalyzer<SuperClassAnalyzer> {
+
+    @Override
+    protected SuperClassAnalyzer createAnalyzer() {
+        return new SuperClassAnalyzer("junit", "java.lang.Thread") {
+        };
+    }
 
     @Test
     public void reportsExistenceOfClasses() {
-        Analyzer objectUnderTest = new SuperClassAnalyzer("junit", "java.lang.Thread") {
-        };
-
         objectUnderTest.doAnalysis(codeContext, getFile("A.class"));
         assertThatClassesAreReported("A");
 
@@ -19,7 +21,7 @@ public final class A_SuperClassAnalyzer extends AnAnalyzer {
 
     @Test
     public void reportsASubClassAsLiveCode() {
-        Analyzer objectUnderTest = new SuperClassAnalyzer("junit", "javax.servlet.http.HttpServlet", "java.lang.Thread") {
+        objectUnderTest = new SuperClassAnalyzer("junit", "javax.servlet.http.HttpServlet", "java.lang.Thread") {
         };
 
         objectUnderTest.doAnalysis(codeContext, getFile("DeadServlet.class"));
@@ -30,9 +32,6 @@ public final class A_SuperClassAnalyzer extends AnAnalyzer {
 
     @Test
     public void reportsASubClassOfASubClassAsLiveCode() {
-        Analyzer objectUnderTest = new SuperClassAnalyzer("junit", "java.lang.Thread") {
-        };
-
         objectUnderTest.doAnalysis(codeContext, getFile("SubClassOfSubClassThatShouldBeLive.class"));
 
         assertThatDependenciesAreReported("SubClassOfSubClassThatShouldBeLive");
@@ -40,9 +39,6 @@ public final class A_SuperClassAnalyzer extends AnAnalyzer {
 
     @Test
     public void doesNotReportASubClassWithIrrelevantSuperClass() {
-        Analyzer objectUnderTest = new SuperClassAnalyzer("junit", "java.lang.Thread") {
-        };
-
         objectUnderTest.doAnalysis(codeContext, getFile("DeadServlet.class"));
         objectUnderTest.doAnalysis(codeContext, getFile("SubClassThatShouldBeLive.class"));
 
