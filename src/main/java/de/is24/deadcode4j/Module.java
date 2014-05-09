@@ -3,6 +3,8 @@ package de.is24.deadcode4j;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.Ordering;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -72,6 +74,16 @@ public class Module {
                 if (sortedModules.containsAll(module.getRequiredModules())) {
                     modulesToAdd.add(module);
                 }
+            }
+            if (modulesToAdd.isEmpty()) {
+                Logger logger = LoggerFactory.getLogger(Module.class);
+                logger.error("Could not resolve dependencies for all modules! Those modules are affected:");
+                for (Module unsortedModule : unsortedModules) {
+                    List<Module> unresolvedModules = newArrayList(unsortedModule.getRequiredModules());
+                    unresolvedModules.removeAll(sortedModules);
+                    logger.error("  {} requires {}", unsortedModule, unresolvedModules);
+                }
+                throw new RuntimeException("Could not build dependency graph!");
             }
             modulesToAdd = Ordering.natural().onResultOf(toModuleId()).sortedCopy(modulesToAdd);
             sortedModules.addAll(modulesToAdd);
