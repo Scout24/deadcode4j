@@ -56,13 +56,15 @@
     </prerequisites>
 
     <properties>
+        <!-- Configure Maven plugins -->
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
+        <test>**/A_*.java,**/An_*.java</test>
+        <!-- own stuff -->
         <testScenarios.directory>${java.io.tmpdir}/deadcode4j</testScenarios.directory>
-
+        <!-- Dependency Management -->
         <version.findbugs>2.0.3</version.findbugs>
         <version.maven>3.2.1</version.maven>
     </properties>
@@ -129,17 +131,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.17</version>
-                <configuration>
-                    <includes>
-                        <include>**/A_*.java</include>
-                        <include>**/An_*.java</include>
-                    </includes>
-                </configuration>
             </plugin>
 
             <plugin>
