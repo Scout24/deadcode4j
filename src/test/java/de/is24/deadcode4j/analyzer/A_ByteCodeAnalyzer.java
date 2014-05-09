@@ -31,6 +31,7 @@ public final class A_ByteCodeAnalyzer extends AnAnalyzer {
 
         assertThat("Should analyze one class", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(1));
         assertThat(codeContext.getAnalyzedCode().getAnalyzedClasses(), contains("SingleClass"));
+        assertThatNoDependenciesAreReported();
     }
 
     @Test
