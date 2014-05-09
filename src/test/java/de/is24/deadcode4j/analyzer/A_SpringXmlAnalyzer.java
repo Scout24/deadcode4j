@@ -11,7 +11,7 @@ public final class A_SpringXmlAnalyzer extends AnAnalyzer<SpringXmlAnalyzer> {
 
     @Test
     public void shouldParseSpringFiles() {
-        objectUnderTest.doAnalysis(codeContext, getFile("spring.xml"));
+        analyzeFile("spring.xml");
 
         assertThatDependenciesAreReported("SpringXmlBean");
     }

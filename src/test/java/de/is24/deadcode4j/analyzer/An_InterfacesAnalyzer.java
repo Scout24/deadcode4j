@@ -12,10 +12,10 @@ public final class An_InterfacesAnalyzer extends AnAnalyzer<InterfacesAnalyzer> 
 
     @Test
     public void reportsExistenceOfClasses() {
-        objectUnderTest.doAnalysis(codeContext, getFile("A.class"));
+        analyzeFile("A.class");
         assertThatClassesAreReported("A");
 
-        objectUnderTest.doAnalysis(codeContext, getFile("B.class"));
+        analyzeFile("B.class");
         assertThatClassesAreReported("A", "B");
     }
 
@@ -24,16 +24,16 @@ public final class An_InterfacesAnalyzer extends AnAnalyzer<InterfacesAnalyzer> 
         objectUnderTest = new InterfacesAnalyzer("junit", "java.lang.Cloneable", "java.io.Serializable") {
         };
 
-        objectUnderTest.doAnalysis(codeContext, getFile("ClassImplementingCloneable.class"));
-        objectUnderTest.doAnalysis(codeContext, getFile("DeadServlet.class"));
+        analyzeFile("ClassImplementingCloneable.class");
+        analyzeFile("DeadServlet.class");
 
         assertThatDependenciesAreReported("ClassImplementingCloneable", "DeadServlet");
     }
 
     @Test
     public void doesNotReportNonImplementingClassAsBeingUsed() {
-        objectUnderTest.doAnalysis(codeContext, getFile("ClassImplementingCloneable.class"));
-        objectUnderTest.doAnalysis(codeContext, getFile("DeadServlet.class"));
+        analyzeFile("ClassImplementingCloneable.class");
+        analyzeFile("DeadServlet.class");
 
         assertThatDependenciesAreReported("ClassImplementingCloneable");
     }
@@ -43,7 +43,7 @@ public final class An_InterfacesAnalyzer extends AnAnalyzer<InterfacesAnalyzer> 
         objectUnderTest = new InterfacesAnalyzer("junit", "java.lang.Runnable") {
         };
 
-        objectUnderTest.doAnalysis(codeContext, getFile("SubClassThatShouldBeLive.class"));
+        analyzeFile("SubClassThatShouldBeLive.class");
 
         assertThatDependenciesAreReported("SubClassThatShouldBeLive");
     }
@@ -53,8 +53,8 @@ public final class An_InterfacesAnalyzer extends AnAnalyzer<InterfacesAnalyzer> 
         objectUnderTest = new InterfacesAnalyzer("junit", "java.io.Serializable") {
         };
 
-        objectUnderTest.doAnalysis(codeContext, getFile("ClassImplementingExternalizable.class"));
-        objectUnderTest.doAnalysis(codeContext, getFile("SubClassOfClassImplementingExternalizable.class"));
+        analyzeFile("ClassImplementingExternalizable.class");
+        analyzeFile("SubClassOfClassImplementingExternalizable.class");
 
         assertThatDependenciesAreReported(
                 "ClassImplementingExternalizable",

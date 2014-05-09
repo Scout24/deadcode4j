@@ -12,10 +12,10 @@ public final class A_SuperClassAnalyzer extends AnAnalyzer<SuperClassAnalyzer> {
 
     @Test
     public void reportsExistenceOfClasses() {
-        objectUnderTest.doAnalysis(codeContext, getFile("A.class"));
+        analyzeFile("A.class");
         assertThatClassesAreReported("A");
 
-        objectUnderTest.doAnalysis(codeContext, getFile("B.class"));
+        analyzeFile("B.class");
         assertThatClassesAreReported("A", "B");
     }
 
@@ -24,23 +24,23 @@ public final class A_SuperClassAnalyzer extends AnAnalyzer<SuperClassAnalyzer> {
         objectUnderTest = new SuperClassAnalyzer("junit", "javax.servlet.http.HttpServlet", "java.lang.Thread") {
         };
 
-        objectUnderTest.doAnalysis(codeContext, getFile("DeadServlet.class"));
-        objectUnderTest.doAnalysis(codeContext, getFile("SubClassThatShouldBeLive.class"));
+        analyzeFile("DeadServlet.class");
+        analyzeFile("SubClassThatShouldBeLive.class");
 
         assertThatDependenciesAreReported("DeadServlet", "SubClassThatShouldBeLive");
     }
 
     @Test
     public void reportsASubClassOfASubClassAsLiveCode() {
-        objectUnderTest.doAnalysis(codeContext, getFile("SubClassOfSubClassThatShouldBeLive.class"));
+        analyzeFile("SubClassOfSubClassThatShouldBeLive.class");
 
         assertThatDependenciesAreReported("SubClassOfSubClassThatShouldBeLive");
     }
 
     @Test
     public void doesNotReportASubClassWithIrrelevantSuperClass() {
-        objectUnderTest.doAnalysis(codeContext, getFile("DeadServlet.class"));
-        objectUnderTest.doAnalysis(codeContext, getFile("SubClassThatShouldBeLive.class"));
+        analyzeFile("DeadServlet.class");
+        analyzeFile("SubClassThatShouldBeLive.class");
 
         assertThatDependenciesAreReported("SubClassThatShouldBeLive");
     }

@@ -23,7 +23,7 @@ public final class A_ByteCodeAnalyzer extends AnAnalyzer<ByteCodeAnalyzer> {
 
     @Test
     public void analyzesAClassFile() {
-        objectUnderTest.doAnalysis(codeContext, getFile("SingleClass.class"));
+        analyzeFile("SingleClass.class");
 
         assertThatClassesAreReported("SingleClass");
         assertThatNoDependenciesAreReported();
@@ -31,7 +31,7 @@ public final class A_ByteCodeAnalyzer extends AnAnalyzer<ByteCodeAnalyzer> {
 
     @Test
     public void doesNotAnalyzeNonClassFile() {
-        objectUnderTest.doAnalysis(codeContext, getFile("spring.xml"));
+        analyzeFile("spring.xml");
 
         assertThat("Should analyze no class", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(0));
         assertThatNoDependenciesAreReported();

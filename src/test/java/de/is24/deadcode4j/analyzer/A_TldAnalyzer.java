@@ -11,7 +11,7 @@ public final class A_TldAnalyzer extends AnAnalyzer<TldAnalyzer> {
 
     @Test
     public void shouldParseTldFiles() {
-        objectUnderTest.doAnalysis(codeContext, getFile("taglib.tld"));
+        analyzeFile("taglib.tld");
 
         assertThatDependenciesAreReported(
                 "TagClass",

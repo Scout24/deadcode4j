@@ -11,7 +11,7 @@ public final class A_WebXmlAnalyzer extends AnAnalyzer<WebXmlAnalyzer> {
 
     @Test
     public void shouldParseWebXmlFiles() {
-        objectUnderTest.doAnalysis(codeContext, getFile("web.xml"));
+        analyzeFile("web.xml");
 
         assertThatDependenciesAreReported(
                 "WebAppListener",

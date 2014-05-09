@@ -11,7 +11,7 @@ public final class A_TypeErasureAnalyzer extends AnAnalyzer<TypeErasureAnalyzer>
 
     @Test
     public void recognizesClassTypeParameter() {
-        objectUnderTest.doAnalysis(codeContext, getFile("../../src/test/java/de/is24/deadcode4j/analyzer/typeerasure/TypedArrayList.java"));
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/typeerasure/TypedArrayList.java");
 
         assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.TypedArrayList",
                 "java.lang.Comparable",
@@ -28,7 +28,7 @@ public final class A_TypeErasureAnalyzer extends AnAnalyzer<TypeErasureAnalyzer>
 
     @Test
     public void recognizesDefaultPackageReference() {
-        objectUnderTest.doAnalysis(codeContext, getFile("../../src/test/java/ClassWithTypeArgument.java"));
+        analyzeFile("../../src/test/java/ClassWithTypeArgument.java");
 
         assertThatDependenciesAreReportedFor("ClassWithTypeArgument",
                 "TypeParameterClass");
@@ -36,7 +36,7 @@ public final class A_TypeErasureAnalyzer extends AnAnalyzer<TypeErasureAnalyzer>
 
     @Test
     public void recognizesLowerBoundOfWildCard() {
-        objectUnderTest.doAnalysis(codeContext, getFile("../../src/test/java/de/is24/deadcode4j/analyzer/typeerasure/ClassWithLowerBoundedWildCard.java"));
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/typeerasure/ClassWithLowerBoundedWildCard.java");
 
         assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.ClassWithLowerBoundedWildCard",
                 "java.util.Collection");
@@ -44,7 +44,7 @@ public final class A_TypeErasureAnalyzer extends AnAnalyzer<TypeErasureAnalyzer>
 
     @Test
     public void recognizesUpperBoundOfWildCard() {
-        objectUnderTest.doAnalysis(codeContext, getFile("../../src/test/java/de/is24/deadcode4j/analyzer/typeerasure/ClassWithUpperBoundedWildCard.java"));
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/typeerasure/ClassWithUpperBoundedWildCard.java");
 
         assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.ClassWithUpperBoundedWildCard",
                 "java.util.Collection");

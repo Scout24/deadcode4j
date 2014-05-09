@@ -20,7 +20,7 @@ public final class A_SimpleXmlAnalyzer extends AnAnalyzer<SimpleXmlAnalyzer> {
     public void usesTheSpecifiedDependerIdToReportDependencies() {
         objectUnderTest.registerClassElement("elementWithClass");
 
-        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
+        analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
 
         Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
         assertThat("Should have analyzed the XML file!", codeDependencies.size(), is(1));
@@ -32,7 +32,7 @@ public final class A_SimpleXmlAnalyzer extends AnAnalyzer<SimpleXmlAnalyzer> {
         objectUnderTest = new SimpleXmlAnalyzer("junit", ".xml", "acme") {
         };
 
-        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/empty.xml"));
+        analyzeFile("de/is24/deadcode4j/analyzer/empty.xml");
 
         assertThatNoDependenciesAreReported();
     }
@@ -41,7 +41,7 @@ public final class A_SimpleXmlAnalyzer extends AnAnalyzer<SimpleXmlAnalyzer> {
     public void reportsTheClassFoundForTheRegisteredElement() {
         objectUnderTest.registerClassElement("elementWithClass");
 
-        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
+        analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
 
         assertThatDependenciesAreReported("de.is24.deadcode4j.ClassInElement");
     }
@@ -50,7 +50,7 @@ public final class A_SimpleXmlAnalyzer extends AnAnalyzer<SimpleXmlAnalyzer> {
     public void reportsTheClassFound_ForTheRegisteredElement_HavingASpecificAttributeValue() {
         objectUnderTest.registerClassElement("restrictedElement").withAttributeValue("locked", "false");
 
-        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
+        analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
 
         assertThatDependenciesAreReported("de.is24.deadcode4j.UnlockedClassInElement");
     }
@@ -59,7 +59,7 @@ public final class A_SimpleXmlAnalyzer extends AnAnalyzer<SimpleXmlAnalyzer> {
     public void reportsTheClassFoundForTheRegisteredAttribute() {
         objectUnderTest.registerClassAttribute("element", "attributeWithClass");
 
-        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
+        analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
 
         assertThatDependenciesAreReported("de.is24.deadcode4j.ClassInAttribute");
     }
@@ -68,7 +68,7 @@ public final class A_SimpleXmlAnalyzer extends AnAnalyzer<SimpleXmlAnalyzer> {
     public void reportsTheClassFound_ForTheRegisteredAttribute_HavingASpecificAttributeValue() {
         objectUnderTest.registerClassAttribute("restrictedElement", "attributeWithClass").withAttributeValue("locked", "false");
 
-        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
+        analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
 
         assertThatDependenciesAreReported("de.is24.deadcode4j.UnlockedClassInAttribute");
     }
@@ -78,7 +78,7 @@ public final class A_SimpleXmlAnalyzer extends AnAnalyzer<SimpleXmlAnalyzer> {
         objectUnderTest.registerClassElement("restrictedElement").withAttributeValue("locked", "false");
         objectUnderTest.registerClassAttribute("restrictedElement", "attributeWithClass").withAttributeValue("locked", "false");
 
-        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
+        analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
 
         assertThatDependenciesAreReported(
                 "de.is24.deadcode4j.UnlockedClassInAttribute",
@@ -89,7 +89,7 @@ public final class A_SimpleXmlAnalyzer extends AnAnalyzer<SimpleXmlAnalyzer> {
     public void reportsMultipleFoundClasses() {
         objectUnderTest.registerClassElement("anotherElementWithClass");
 
-        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
+        analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
 
         assertThatDependenciesAreReported(
                 "de.is24.deadcode4j.FirstClassInAnotherElement",
@@ -102,7 +102,7 @@ public final class A_SimpleXmlAnalyzer extends AnAnalyzer<SimpleXmlAnalyzer> {
         objectUnderTest.registerClassElement("anotherElementWithClass");
         objectUnderTest.registerClassAttribute("element", "attributeWithClass");
 
-        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
+        analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
 
         assertThatDependenciesAreReported(
                 "de.is24.deadcode4j.ClassInElement",
@@ -117,7 +117,7 @@ public final class A_SimpleXmlAnalyzer extends AnAnalyzer<SimpleXmlAnalyzer> {
         objectUnderTest.registerClassElement("anotherElementWithClass");
         objectUnderTest.registerClassAttribute("element", "attributeWithClass");
 
-        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/prefixed.xml"));
+        analyzeFile("de/is24/deadcode4j/analyzer/prefixed.xml");
 
         assertThatDependenciesAreReported(
                 "de.is24.deadcode4j.ClassInElement",

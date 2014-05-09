@@ -12,10 +12,10 @@ public final class An_AnnotationsAnalyzer extends AnAnalyzer<AnnotationsAnalyzer
 
     @Test
     public void reportsExistenceOfClass() {
-        objectUnderTest.doAnalysis(codeContext, getFile("A.class"));
+        analyzeFile("A.class");
         assertThatClassesAreReported("A");
 
-        objectUnderTest.doAnalysis(codeContext, getFile("B.class"));
+        analyzeFile("B.class");
         assertThatClassesAreReported("A", "B");
     }
 
@@ -24,30 +24,30 @@ public final class An_AnnotationsAnalyzer extends AnAnalyzer<AnnotationsAnalyzer
         objectUnderTest = new AnnotationsAnalyzer("junit", "de.is24.deadcode4j.junit.Annotation", "java.lang.Deprecated") {
         };
 
-        objectUnderTest.doAnalysis(codeContext, getFile("AnnotatedClass.class"));
-        objectUnderTest.doAnalysis(codeContext, getFile("DeadServlet.class"));
+        analyzeFile("AnnotatedClass.class");
+        analyzeFile("DeadServlet.class");
 
         assertThatDependenciesAreReported("AnnotatedClass", "DeadServlet");
     }
 
     @Test
     public void reportsClassAnnotatedWithAnnotatedAnnotationAsBeingUsed() {
-        objectUnderTest.doAnalysis(codeContext, getFile("ClassAnnotatedWithAnnotatedAnnotation.class"));
+        analyzeFile("ClassAnnotatedWithAnnotatedAnnotation.class");
 
         assertThatDependenciesAreReported("ClassAnnotatedWithAnnotatedAnnotation");
     }
 
     @Test
     public void reportsSubClassOfClassBeingAnnotatedWithAnnotationMarkedAsInheritedAsBeingUsed() {
-        objectUnderTest.doAnalysis(codeContext, getFile("SubClassOfAnnotatedClass.class"));
+        analyzeFile("SubClassOfAnnotatedClass.class");
 
         assertThatDependenciesAreReported("SubClassOfAnnotatedClass");
     }
 
     @Test
     public void doesNotReportUnannotatedClassAsBeingUsed() {
-        objectUnderTest.doAnalysis(codeContext, getFile("AnnotatedClass.class"));
-        objectUnderTest.doAnalysis(codeContext, getFile("DeadServlet.class"));
+        analyzeFile("AnnotatedClass.class");
+        analyzeFile("DeadServlet.class");
 
         assertThatDependenciesAreReported("AnnotatedClass");
     }

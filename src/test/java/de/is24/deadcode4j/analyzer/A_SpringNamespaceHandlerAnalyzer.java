@@ -11,7 +11,7 @@ public final class A_SpringNamespaceHandlerAnalyzer extends AnAnalyzer<SpringNam
 
     @Test
     public void shouldRecognizeDefinedNamespaceHandlers() {
-        objectUnderTest.doAnalysis(codeContext, getFile("META-INF/spring.handlers"));
+        analyzeFile("META-INF/spring.handlers");
 
         assertThatDependenciesAreReported("CustomNamespaceHandler", "AnotherNamespaceHandler");
     }

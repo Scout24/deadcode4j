@@ -12,8 +12,8 @@ public class A_ServletContainerInitializerAnalyzer extends AnAnalyzer<ServletCon
 
     @Test
     public void shouldRecognizeServletContainerInitializerClasses() {
-        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/v3-metadata-missing.web.xml"));
-        objectUnderTest.doAnalysis(codeContext, getFile("SomeServletInitializer.class"));
+        analyzeFile("de/is24/deadcode4j/analyzer/v3-metadata-missing.web.xml");
+        analyzeFile("SomeServletInitializer.class");
         finishAnalysis();
 
         assertThatDependenciesAreReported("SomeServletInitializer");
@@ -21,8 +21,8 @@ public class A_ServletContainerInitializerAnalyzer extends AnAnalyzer<ServletCon
 
     @Test
     public void shouldRecognizeServletContainerInitializerClassesIfMetadataCompleteAttributeIsFalse() {
-        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/v3-metadata-incomplete.web.xml"));
-        objectUnderTest.doAnalysis(codeContext, getFile("SomeServletInitializer.class"));
+        analyzeFile("de/is24/deadcode4j/analyzer/v3-metadata-incomplete.web.xml");
+        analyzeFile("SomeServletInitializer.class");
         finishAnalysis();
 
         assertThatDependenciesAreReported("SomeServletInitializer");
@@ -30,8 +30,8 @@ public class A_ServletContainerInitializerAnalyzer extends AnAnalyzer<ServletCon
 
     @Test
     public void shouldRecognizeMetadataCompleteAttribute() {
-        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/v3-metadata-complete.web.xml"));
-        objectUnderTest.doAnalysis(codeContext, getFile("SomeServletInitializer.class"));
+        analyzeFile("de/is24/deadcode4j/analyzer/v3-metadata-complete.web.xml");
+        analyzeFile("SomeServletInitializer.class");
         finishAnalysis();
 
         assertThatNoDependenciesAreReported();

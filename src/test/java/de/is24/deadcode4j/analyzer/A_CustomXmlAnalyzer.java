@@ -18,7 +18,7 @@ public final class A_CustomXmlAnalyzer extends AnAnalyzer<CustomXmlAnalyzer> {
     public void selectsTheTextOfTheSpecifiedNode() {
         objectUnderTest.registerXPath("elementWithClass/text()");
 
-        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
+        analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
 
         assertThatDependenciesAreReported("de.is24.deadcode4j.ClassInElement");
     }
@@ -27,7 +27,7 @@ public final class A_CustomXmlAnalyzer extends AnAnalyzer<CustomXmlAnalyzer> {
     public void selectsTheTextOfTheRestrictedNode() {
         objectUnderTest.registerXPath("restrictedElement[@locked='false']/text()");
 
-        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
+        analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
 
         assertThatDependenciesAreReported("de.is24.deadcode4j.UnlockedClassInElement");
     }
@@ -36,7 +36,7 @@ public final class A_CustomXmlAnalyzer extends AnAnalyzer<CustomXmlAnalyzer> {
     public void selectsTheAttributeOfTheSpecifiedNode() {
         objectUnderTest.registerXPath("element/@attributeWithClass");
 
-        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
+        analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
 
         assertThatDependenciesAreReported("de.is24.deadcode4j.ClassInAttribute");
     }
@@ -45,7 +45,7 @@ public final class A_CustomXmlAnalyzer extends AnAnalyzer<CustomXmlAnalyzer> {
     public void selectsTheAttributeOfTheRestrictedNode() {
         objectUnderTest.registerXPath("restrictedElement[@locked='false']/@attributeWithClass");
 
-        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/some.xml"));
+        analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
 
         assertThatDependenciesAreReported("de.is24.deadcode4j.UnlockedClassInAttribute");
     }

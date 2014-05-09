@@ -6,7 +6,6 @@ import de.is24.deadcode4j.junit.LoggingRule;
 import org.junit.Before;
 import org.junit.Rule;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -17,24 +16,15 @@ import static org.hamcrest.Matchers.*;
 
 public abstract class AnAnalyzer<T extends Analyzer> {
 
+    @Rule
+    public final LoggingRule enableLogging = new LoggingRule();
     protected T objectUnderTest;
+    protected CodeContext codeContext;
 
     @Before
     public final void initAnalyzer() {
         objectUnderTest = createAnalyzer();
     }
-
-    protected T createAnalyzer() {
-        return null;
-    }
-
-    protected void finishAnalysis() {
-        this.objectUnderTest.finishAnalysis(this.codeContext);
-    }
-
-    @Rule
-    public final LoggingRule enableLogging = new LoggingRule();
-    protected CodeContext codeContext;
 
     @Before
     public final void initCodeContext() {
@@ -47,8 +37,16 @@ public abstract class AnAnalyzer<T extends Analyzer> {
         codeContext = new CodeContext(dummyModule);
     }
 
-    protected File getFile(String fileName) {
-        return FileLoader.getFile(fileName);
+    protected T createAnalyzer() {
+        return null;
+    }
+
+    protected void analyzeFile(String fileName) {
+        objectUnderTest.doAnalysis(codeContext, FileLoader.getFile(fileName));
+    }
+
+    protected void finishAnalysis() {
+        this.objectUnderTest.finishAnalysis(this.codeContext);
     }
 
     protected void assertThatClassesAreReported(String... classes) {
