@@ -103,15 +103,7 @@ public class Module {
 
     @Override
     public String toString() {
-        StringBuilder buffy = new StringBuilder("Module [").append(this.moduleId).append("] with");
-        if (this.outputRepository == null) {
-            buffy.append("out");
-        }
-        buffy.append(" output repository");
-        if (this.allRepositories.size() > 1) {
-            buffy.append(" and ").append(this.allRepositories.size() - 1).append(" additional repositories");
-        }
-        return buffy.toString();
+        return "Module [" + this.moduleId + "]";
     }
 
     /**
