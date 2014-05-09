@@ -39,6 +39,10 @@ public abstract class AnAnalyzer {
         return FileLoader.getFile(fileName);
     }
 
+    protected void assertThatClassesAreReported(String... classes) {
+        assertThat(codeContext.getAnalyzedCode().getAnalyzedClasses(), containsInAnyOrder(classes));
+    }
+
     protected void assertThatDependenciesAreReportedFor(String depender, String... dependee) {
         Map<String, Set<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
         assertThat(codeDependencies, hasEntry(equalTo(depender), any(Set.class)));

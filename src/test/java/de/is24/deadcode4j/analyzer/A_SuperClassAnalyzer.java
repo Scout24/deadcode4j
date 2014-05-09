@@ -3,9 +3,6 @@ package de.is24.deadcode4j.analyzer;
 import de.is24.deadcode4j.Analyzer;
 import org.junit.Test;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-
 public final class A_SuperClassAnalyzer extends AnAnalyzer {
 
     @Test
@@ -14,10 +11,10 @@ public final class A_SuperClassAnalyzer extends AnAnalyzer {
         };
 
         objectUnderTest.doAnalysis(codeContext, getFile("A.class"));
-        assertThat(codeContext.getAnalyzedCode().getAnalyzedClasses(), containsInAnyOrder("A"));
+        assertThatClassesAreReported("A");
 
         objectUnderTest.doAnalysis(codeContext, getFile("B.class"));
-        assertThat(codeContext.getAnalyzedCode().getAnalyzedClasses(), containsInAnyOrder("A", "B"));
+        assertThatClassesAreReported("A", "B");
     }
 
     @Test

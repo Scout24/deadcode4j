@@ -10,8 +10,6 @@ import org.mockito.Matchers;
 import org.mockito.internal.matchers.VarargMatcher;
 import org.slf4j.Logger;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
@@ -33,10 +31,10 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer {
     @Test
     public void reportsExistenceOfClasses() {
         objectUnderTest.doAnalysis(codeContext, getFile("A.class"));
-        assertThat(codeContext.getAnalyzedCode().getAnalyzedClasses(), containsInAnyOrder("A"));
+        assertThatClassesAreReported("A");
 
         objectUnderTest.doAnalysis(codeContext, getFile("B.class"));
-        assertThat(codeContext.getAnalyzedCode().getAnalyzedClasses(), containsInAnyOrder("A", "B"));
+        assertThatClassesAreReported("A", "B");
     }
 
     @Test
