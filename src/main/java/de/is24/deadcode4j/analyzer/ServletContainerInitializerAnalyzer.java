@@ -1,7 +1,9 @@
 package de.is24.deadcode4j.analyzer;
 
+import com.google.common.collect.Maps;
 import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.IntermediateResult;
 import de.is24.deadcode4j.Module;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
@@ -93,10 +95,11 @@ public class ServletContainerInitializerAnalyzer extends AnalyzerAdapter {
         private boolean metadataComplete = false;
 
         private ServletContainerInitializerCodeContext(Module module) {
-            super(module);
+            super(module, Maps.<Object, IntermediateResult>newHashMap());
         }
 
         @Override
+        @Nonnull
         public Map<Object, Object> getCache() {
             return this.originalContext.getCache();
         }
