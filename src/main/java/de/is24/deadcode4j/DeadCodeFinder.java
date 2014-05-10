@@ -20,6 +20,7 @@ import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
  *
  * @since 1.0.0
  */
+@SuppressWarnings("PMD.TooManyStaticImports")
 public class DeadCodeFinder {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
