@@ -34,6 +34,7 @@
 
     <modules>
         <module>definitions</module>
+        <module>overriding-definition</module>
         <module>usages</module>
     </modules>
 
@@ -42,6 +43,12 @@
             <dependency>
                 <groupId>de.is24.junit</groupId>
                 <artifactId>scatteredHibernate-definitions</artifactId>
+                <version>${project.version}</version>
+                <scope>compile</scope>
+            </dependency>
+            <dependency>
+                <groupId>de.is24.junit</groupId>
+                <artifactId>scatteredHibernate-usages</artifactId>
                 <version>${project.version}</version>
                 <scope>compile</scope>
             </dependency>

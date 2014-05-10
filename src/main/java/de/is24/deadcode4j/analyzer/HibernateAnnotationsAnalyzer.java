@@ -27,6 +27,7 @@ import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolA
 import static java.lang.annotation.ElementType.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 
 /**
  * Analyzes class files:
@@ -206,7 +207,8 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
 
     private void reportDependencies(@Nonnull CodeContext codeContext) {
         reportGeneratorUsage(codeContext);
-        reportTypeUsage(codeContext);
+        reportNewTypeUsages(codeContext);
+        reportExistingTypeUsagesForNewDefinitions(codeContext);
     }
 
     private void reportGeneratorUsage(CodeContext codeContext) {
@@ -221,7 +223,7 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
         }
     }
 
-    private void reportTypeUsage(CodeContext codeContext) {
+    private void reportNewTypeUsages(CodeContext codeContext) {
         if (this.typeUsages.isEmpty()) {
             return;
         }
@@ -248,19 +250,36 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
         }
     }
 
+    private void reportExistingTypeUsagesForNewDefinitions(CodeContext codeContext) {
+        if (this.typeDefinitions.isEmpty()) {
+            return;
+        }
+        for (Map.Entry<String, Set<String>> typeUsage : getExistingTypeUsages(codeContext).entrySet()) {
+            String typeName = typeUsage.getKey();
+            String classDefiningType = this.typeDefinitions.get(typeName);
+            if (classDefiningType == null) {
+                continue;
+            }
+            logger.debug("This module provides the type definition [{}] for modules it depends on.", typeName);
+            for (String classUsingType : typeUsage.getValue()) {
+                codeContext.addDependencies(classUsingType, classDefiningType);
+            }
+        }
+    }
+
     private Map<String, String> getAllTypeDefinitions(@Nonnull CodeContext codeContext) {
         Object object = codeContext.getIntermediateResult(getClass().getName() + "|typeDefinitions");
         if (object == null) {
             return this.typeDefinitions;
         }
         @SuppressWarnings("unchecked")
-        Map<String, String> inheritedTypeDefinitions = ((MappedIntermediateResults) object).getMap();
+        Map<String, String> inheritedTypeDefinitions = ((IntermediateTypeDefinitions) object).getMap();
 
         Map<String, String> allTypeDefinitions = newHashMap(this.typeDefinitions);
         for (Map.Entry<String, String> inheritedDefinition : inheritedTypeDefinitions.entrySet()) {
             String typeName = inheritedDefinition.getKey();
             if (allTypeDefinitions.containsKey(typeName)) {
-                logger.debug("The inherited type definition [{}] is overridden by this Module.", typeName);
+                logger.debug("The inherited type definition [{}] is overridden by this module.", typeName);
                 continue;
             }
             allTypeDefinitions.put(typeName, inheritedDefinition.getValue());
@@ -269,25 +288,37 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
         return allTypeDefinitions;
     }
 
-    private void storeIntermediateResults(CodeContext codeContext) {
-        if (this.typeDefinitions.isEmpty()) {
-            return;
+    private Map<String, Set<String>> getExistingTypeUsages(@Nonnull CodeContext codeContext) {
+        Object object = codeContext.getIntermediateResult(getClass().getName() + "|typeUsages");
+        if (object == null) {
+            return emptyMap();
         }
-        codeContext.getCache().put(getClass().getName() + "|typeDefinitions", new MappedIntermediateResults(this.typeDefinitions));
+        return ((IntermediateTypeUsages) object).getMap();
     }
 
-    private static class MappedIntermediateResults implements IntermediateResult {
+    private void storeIntermediateResults(CodeContext codeContext) {
+        if (!this.typeDefinitions.isEmpty()) {
+            codeContext.getCache().put(getClass().getName() + "|typeDefinitions",
+                    new IntermediateTypeDefinitions(this.typeDefinitions));
+        }
+        if (!this.typeUsages.isEmpty()) {
+            codeContext.getCache().put(getClass().getName() + "|typeUsages",
+                    new IntermediateTypeUsages(this.typeUsages));
+        }
+    }
+
+    private static class IntermediateTypeDefinitions implements IntermediateResult {
 
         private final Logger logger = LoggerFactory.getLogger(getClass());
         private final Map<String, String> typeDefinitions;
 
-        public MappedIntermediateResults(Map<String, String> typeDefinitions) {
+        public IntermediateTypeDefinitions(Map<String, String> typeDefinitions) {
             this.typeDefinitions = newHashMap(typeDefinitions);
         }
 
         @Override
         public String toString() {
-            return "MappedIntermediateResults " + this.typeDefinitions;
+            return getClass().getSimpleName() + ": " + this.typeDefinitions;
         }
 
         @Nonnull
@@ -308,9 +339,9 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
         }
 
         @Nonnull
-        private IntermediateResult merge(IntermediateResult sibling, String logMessage) {
+        private IntermediateResult merge(IntermediateResult result, String logMessage) {
             HashMap<String, String> mergedTypeDefinitions = newHashMap(this.typeDefinitions);
-            for (Map.Entry<String, String> typeDefinition : MappedIntermediateResults.class.cast(sibling).typeDefinitions.entrySet()) {
+            for (Map.Entry<String, String> typeDefinition : IntermediateTypeDefinitions.class.cast(result).typeDefinitions.entrySet()) {
                 String existingDefinition = mergedTypeDefinitions.get(typeDefinition.getKey());
                 if (existingDefinition == null) {
                     mergedTypeDefinitions.put(typeDefinition.getKey(), typeDefinition.getValue());
@@ -318,7 +349,53 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
                     logger.debug(logMessage, typeDefinition.getKey(), existingDefinition, typeDefinition.getValue());
                 }
             }
-            return new MappedIntermediateResults(mergedTypeDefinitions);
+            return new IntermediateTypeDefinitions(mergedTypeDefinitions);
+        }
+
+    }
+
+    private static class IntermediateTypeUsages implements IntermediateResult {
+
+        private final Map<String, Set<String>> typeUsages;
+
+        public IntermediateTypeUsages(Map<String, Set<String>> typeUsages) {
+            this.typeUsages = newHashMap(typeUsages);
+        }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + ": " + this.typeUsages;
+        }
+
+        @Nonnull
+        @Override
+        public IntermediateResult mergeSibling(@Nonnull IntermediateResult sibling) {
+            return merge(sibling);
+        }
+
+        @Nonnull
+        @Override
+        public IntermediateResult mergeParent(@Nonnull IntermediateResult parent) {
+            return merge(parent);
+        }
+
+        @Nonnull
+        public Map<String, Set<String>> getMap() {
+            return typeUsages;
+        }
+
+        @Nonnull
+        private IntermediateResult merge(IntermediateResult result) {
+            Map<String, Set<String>> mergedTypeUsages = newHashMap(this.typeUsages);
+            for (Map.Entry<String, Set<String>> typeUsages : IntermediateTypeUsages.class.cast(result).typeUsages.entrySet()) {
+                Set<String> existingDefinition = mergedTypeUsages.get(typeUsages.getKey());
+                if (existingDefinition == null) {
+                    mergedTypeUsages.put(typeUsages.getKey(), typeUsages.getValue());
+                } else {
+                    existingDefinition.addAll(typeUsages.getValue());
+                }
+            }
+            return new IntermediateTypeUsages(mergedTypeUsages);
         }
 
     }

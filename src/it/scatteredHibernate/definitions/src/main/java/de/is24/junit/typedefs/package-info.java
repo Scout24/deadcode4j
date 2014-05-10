@@ -4,5 +4,3 @@ package de.is24.junit.typedefs;
 
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
-
-import java.lang.String;
