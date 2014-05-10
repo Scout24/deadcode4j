@@ -156,6 +156,23 @@ public class Module {
     }
 
     /**
+     * Returns all modules required by this module, listed in order of their position in the class path.
+     *
+     * @since 1.6
+     */
+    @Nonnull
+    public Collection<Module> getRequiredModules() {
+        List<Module> requiredModules = newArrayList();
+        for (Resource dependency : dependencies) {
+            Optional<Module> moduleEntry = dependency.getReferencedModule();
+            if (moduleEntry.isPresent()) {
+                requiredModules.add(moduleEntry.get());
+            }
+        }
+        return requiredModules;
+    }
+
+    /**
      * Returns the "output" repository - i.e. the directory where compiled classes can be found.
      *
      * @since 1.6
@@ -173,17 +190,6 @@ public class Module {
     @Nonnull
     public Iterable<Repository> getAllRepositories() {
         return this.allRepositories;
-    }
-
-    private Collection<Module> getRequiredModules() {
-        List<Module> requiredModules = newArrayList();
-        for (Resource dependency : dependencies) {
-            Optional<Module> moduleEntry = dependency.getReferencedModule();
-            if (moduleEntry.isPresent()) {
-                requiredModules.add(moduleEntry.get());
-            }
-        }
-        return requiredModules;
     }
 
 }

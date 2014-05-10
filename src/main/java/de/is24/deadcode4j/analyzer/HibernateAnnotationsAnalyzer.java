@@ -10,6 +10,7 @@ import javassist.bytecode.annotation.*;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.annotation.ElementType;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,6 +19,7 @@ import static com.google.common.base.Predicates.notNull;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Maps.newHashMap;
+import static de.is24.deadcode4j.IntermediateResults.*;
 import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
 import static java.lang.annotation.ElementType.*;
@@ -122,10 +124,7 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
     @Override
     public void finishAnalysis(@Nonnull CodeContext codeContext) {
         reportDependencies(codeContext);
-        this.generatorDefinitions.clear();
-        this.generatorUsages.clear();
-        this.typeDefinitions.clear();
-        this.typeUsages.clear();
+        storeIntermediateResults(codeContext);
     }
 
     private void processTypeDefAnnotation(@Nonnull CtClass clazz) {
@@ -200,14 +199,20 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
     }
 
     private void reportDependencies(@Nonnull CodeContext codeContext) {
-        reportGeneratorUsage(codeContext);
-        reportTypeUsage(codeContext);
+        reportNewGeneratorUsages(codeContext);
+        reportExistingGeneratorUsagesForNewDefinitions(codeContext);
+        reportNewTypeUsages(codeContext);
+        reportExistingTypeUsagesForNewDefinitions(codeContext);
     }
 
-    private void reportGeneratorUsage(CodeContext codeContext) {
+    private void reportNewGeneratorUsages(CodeContext codeContext) {
+        if (this.generatorUsages.isEmpty()) {
+            return;
+        }
+        Map<String, String> allGeneratorDefinitions = getAllGeneratorDefinitions(codeContext);
         for (Map.Entry<String, Set<String>> generatorUsage : this.generatorUsages.entrySet()) {
             String generatorName = generatorUsage.getKey();
-            String classDefiningGenerator = this.generatorDefinitions.get(generatorName);
+            String classDefiningGenerator = allGeneratorDefinitions.get(generatorName);
             if (classDefiningGenerator != null) {
                 for (String classUsingGenerator : generatorUsage.getValue()) {
                     codeContext.addDependencies(classUsingGenerator, classDefiningGenerator);
@@ -216,10 +221,31 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
         }
     }
 
-    private void reportTypeUsage(CodeContext codeContext) {
+    private void reportExistingGeneratorUsagesForNewDefinitions(CodeContext codeContext) {
+        if (this.generatorDefinitions.isEmpty()) {
+            return;
+        }
+        for (Map.Entry<String, Set<String>> usage : getExistingGeneratorUsages(codeContext).entrySet()) {
+            String usageName = usage.getKey();
+            String classDefiningType = this.generatorDefinitions.get(usageName);
+            if (classDefiningType == null) {
+                continue;
+            }
+            logger.debug("This module provides the generator definition [{}] for modules it depends on.", usageName);
+            for (String classUsingType : usage.getValue()) {
+                codeContext.addDependencies(classUsingType, classDefiningType);
+            }
+        }
+    }
+
+    private void reportNewTypeUsages(CodeContext codeContext) {
+        if (this.typeUsages.isEmpty()) {
+            return;
+        }
+        Map<String, String> allTypeDefinitions = getAllTypeDefinitions(codeContext);
         for (Map.Entry<String, Set<String>> typeUsage : this.typeUsages.entrySet()) {
             String typeName = typeUsage.getKey();
-            String classDefiningType = this.typeDefinitions.get(typeName);
+            String classDefiningType = allTypeDefinitions.get(typeName);
 
             final String dependee;
             if (classDefiningType != null) {
@@ -236,6 +262,100 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
             for (String classUsingType : typeUsage.getValue()) {
                 codeContext.addDependencies(classUsingType, dependee);
             }
+        }
+    }
+
+    private void reportExistingTypeUsagesForNewDefinitions(CodeContext codeContext) {
+        if (this.typeDefinitions.isEmpty()) {
+            return;
+        }
+        for (Map.Entry<String, Set<String>> typeUsage : getExistingTypeUsages(codeContext).entrySet()) {
+            String typeName = typeUsage.getKey();
+            String classDefiningType = this.typeDefinitions.get(typeName);
+            if (classDefiningType == null) {
+                continue;
+            }
+            logger.debug("This module provides the type definition [{}] for modules it depends on.", typeName);
+            for (String classUsingType : typeUsage.getValue()) {
+                codeContext.addDependencies(classUsingType, classDefiningType);
+            }
+        }
+    }
+
+    @Nonnull
+    private Map<String, String> getAllGeneratorDefinitions(@Nonnull CodeContext codeContext) {
+        IntermediateResultMap<String, String> resultMap =
+                resultMapFrom(codeContext, getClass().getName() + "|generatorDefinitions");
+        if (resultMap == null) {
+            return this.generatorDefinitions;
+        }
+        Map<String, String> inheritedDefinitions = resultMap.getMap();
+
+        Map<String, String> allDefinitions = newHashMap(this.generatorDefinitions);
+        for (Map.Entry<String, String> inheritedDefinition : inheritedDefinitions.entrySet()) {
+            String definitionName = inheritedDefinition.getKey();
+            if (allDefinitions.containsKey(definitionName)) {
+                logger.debug("The inherited generator definition [{}] is overridden by this module.", definitionName);
+                continue;
+            }
+            allDefinitions.put(definitionName, inheritedDefinition.getValue());
+        }
+
+        return allDefinitions;
+    }
+
+    @Nonnull
+    private Map<String, String> getAllTypeDefinitions(@Nonnull CodeContext codeContext) {
+        IntermediateResultMap<String, String> resultMap =
+                resultMapFrom(codeContext, getClass().getName() + "|typeDefinitions");
+        if (resultMap == null) {
+            return this.typeDefinitions;
+        }
+        Map<String, String> inheritedTypeDefinitions = resultMap.getMap();
+
+        Map<String, String> allTypeDefinitions = newHashMap(this.typeDefinitions);
+        for (Map.Entry<String, String> inheritedDefinition : inheritedTypeDefinitions.entrySet()) {
+            String typeName = inheritedDefinition.getKey();
+            if (allTypeDefinitions.containsKey(typeName)) {
+                logger.debug("The inherited type definition [{}] is overridden by this module.", typeName);
+                continue;
+            }
+            allTypeDefinitions.put(typeName, inheritedDefinition.getValue());
+        }
+
+        return allTypeDefinitions;
+    }
+
+    @Nonnull
+    private Map<String, Set<String>> getExistingGeneratorUsages(@Nonnull CodeContext codeContext) {
+        IntermediateResultMap<String, Set<String>> resultMap =
+                resultMapFrom(codeContext, getClass().getName() + "|generatorUsages");
+        return resultMap != null ? resultMap.getMap() : Collections.<String, Set<String>>emptyMap();
+    }
+
+    @Nonnull
+    private Map<String, Set<String>> getExistingTypeUsages(@Nonnull CodeContext codeContext) {
+        IntermediateResultMap<String, Set<String>> resultMap =
+                resultMapFrom(codeContext, getClass().getName() + "|typeUsages");
+        return resultMap != null ? resultMap.getMap() : Collections.<String, Set<String>>emptyMap();
+    }
+
+    private void storeIntermediateResults(@Nonnull CodeContext codeContext) {
+        if (!this.generatorDefinitions.isEmpty()) {
+            codeContext.getCache().put(getClass().getName() + "|generatorDefinitions", resultMapFor(this.generatorDefinitions));
+            this.generatorDefinitions.clear();
+        }
+        if (!this.generatorUsages.isEmpty()) {
+            codeContext.getCache().put(getClass().getName() + "|generatorUsages", resultMapFor(this.generatorUsages));
+            this.generatorUsages.clear();
+        }
+        if (!this.typeDefinitions.isEmpty()) {
+            codeContext.getCache().put(getClass().getName() + "|typeDefinitions", resultMapFor(this.typeDefinitions));
+            this.typeDefinitions.clear();
+        }
+        if (!this.typeUsages.isEmpty()) {
+            codeContext.getCache().put(getClass().getName() + "|typeUsages", resultMapFor(this.typeUsages));
+            this.typeUsages.clear();
         }
     }
 

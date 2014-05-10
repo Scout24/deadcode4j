@@ -1,14 +1,21 @@
 package de.is24.deadcode4j.analyzer;
 
+import de.is24.deadcode4j.IntermediateResult;
 import org.codehaus.plexus.util.ReflectionUtils;
 import org.hamcrest.Matcher;
 import org.hamcrest.collection.IsArrayContaining;
 import org.junit.Test;
-import org.mockito.Matchers;
 import org.mockito.internal.matchers.VarargMatcher;
 import org.slf4j.Logger;
 
-import static org.hamcrest.Matchers.equalTo;
+import java.util.Map;
+
+import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
+import static de.is24.deadcode4j.CodeContextBuilder.givenCodeContext;
+import static de.is24.deadcode4j.IntermediateResultMapBuilder.givenIntermediateResultMap;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -126,6 +133,137 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer<HibernateAn
     }
 
     @Test
+    public void storesTypeDefinitionsAndUsagesAsIntermediateResults() {
+        analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/Entity.class");
+        analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/package-info.class");
+        doFinishAnalysis();
+
+        assertThat(this.codeContext.getCache().get(HibernateAnnotationsAnalyzer.class.getName() + "|typeDefinitions"),
+                is(instanceOf(IntermediateResult.class)));
+        assertThat(this.codeContext.getCache().get(HibernateAnnotationsAnalyzer.class.getName() + "|typeUsages"),
+                is(instanceOf(IntermediateResult.class)));
+    }
+
+    @Test
+    public void considersTypeDefinitionsFromIntermediateResults() {
+        this.codeContext = givenCodeContext(
+                this.codeContext.getModule(),
+                HibernateAnnotationsAnalyzer.class.getName() + "|typeDefinitions",
+                givenIntermediateResultMap("byteClass", "Foo"));
+
+        analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/Entity.class");
+
+        assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.hibernateannotations.Entity", "Foo");
+    }
+
+    @Test
+    public void prefersOwnTypeDefinitionsOverIntermediateResults() {
+        this.codeContext = givenCodeContext(
+                this.codeContext.getModule(),
+                HibernateAnnotationsAnalyzer.class.getName() + "|typeDefinitions",
+                givenIntermediateResultMap("byteClass", "Foo"));
+
+        analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/Entity.class");
+        analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/package-info.class");
+
+        assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.hibernateannotations.Entity",
+                "de.is24.deadcode4j.analyzer.hibernateannotations.package-info");
+    }
+
+    @Test
+    public void considersTypeUsagesFromIntermediateResults() {
+        this.codeContext = givenCodeContext(
+                this.codeContext.getModule(),
+                HibernateAnnotationsAnalyzer.class.getName() + "|typeUsages",
+                givenIntermediateResultMap("byteClass", newHashSet("Foo", "Bar")));
+
+        analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/package-info.class");
+
+        assertThatDependenciesAreReportedFor("Foo", "de.is24.deadcode4j.analyzer.hibernateannotations.package-info");
+        assertThatDependenciesAreReportedFor("Bar", "de.is24.deadcode4j.analyzer.hibernateannotations.package-info");
+    }
+
+    @Test
+    public void ignoresTypeUsagesFromIntermediateResultsForTypeDefinitionsFromIntermediateResults() {
+        Map<Object, IntermediateResult> intermediateResults = newHashMap();
+        intermediateResults.put(HibernateAnnotationsAnalyzer.class.getName() + "|typeUsages",
+                givenIntermediateResultMap("byteClass", newHashSet("Bar")));
+        intermediateResults.put(HibernateAnnotationsAnalyzer.class.getName() + "|typeDefinitions",
+                givenIntermediateResultMap("byteClass", "Foo"));
+        this.codeContext = givenCodeContext(this.codeContext.getModule(), intermediateResults);
+
+        analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/EntityWithGeneratedValue.class");
+
+        assertThatNoDependenciesAreReported();
+    }
+
+    @Test
+    public void storesGeneratorDefinitionsAndUsagesAsIntermediateResults() {
+        analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/EntityWithGeneratedValue.class");
+        analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/package-info.class");
+        doFinishAnalysis();
+
+        assertThat(this.codeContext.getCache().get(HibernateAnnotationsAnalyzer.class.getName() + "|generatorDefinitions"),
+                is(instanceOf(IntermediateResult.class)));
+        assertThat(this.codeContext.getCache().get(HibernateAnnotationsAnalyzer.class.getName() + "|generatorUsages"),
+                is(instanceOf(IntermediateResult.class)));
+    }
+
+    @Test
+    public void considersGeneratorDefinitionsFromIntermediateResults() {
+        this.codeContext = givenCodeContext(
+                this.codeContext.getModule(),
+                HibernateAnnotationsAnalyzer.class.getName() + "|generatorDefinitions",
+                givenIntermediateResultMap("generatorOne", "Foo"));
+
+        analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/EntityWithGeneratedValue.class");
+
+        assertThatDependenciesAreReportedFor(
+                "de.is24.deadcode4j.analyzer.hibernateannotations.EntityWithGeneratedValue", "Foo");
+    }
+
+    @Test
+    public void prefersOwnGeneratorDefinitionsOverIntermediateResults() {
+        this.codeContext = givenCodeContext(
+                this.codeContext.getModule(),
+                HibernateAnnotationsAnalyzer.class.getName() + "|generatorDefinitions",
+                givenIntermediateResultMap("generatorOne", "Foo"));
+
+        analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/EntityWithGeneratedValue.class");
+        analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/package-info.class");
+
+        assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.hibernateannotations.EntityWithGeneratedValue",
+                "de.is24.deadcode4j.analyzer.hibernateannotations.package-info");
+    }
+
+    @Test
+    public void considersGeneratorUsagesFromIntermediateResults() {
+        this.codeContext = givenCodeContext(
+                this.codeContext.getModule(),
+                HibernateAnnotationsAnalyzer.class.getName() + "|generatorUsages",
+                givenIntermediateResultMap("generatorOne", newHashSet("Foo", "Bar")));
+
+        analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/package-info.class");
+
+        assertThatDependenciesAreReportedFor("Foo", "de.is24.deadcode4j.analyzer.hibernateannotations.package-info");
+        assertThatDependenciesAreReportedFor("Bar", "de.is24.deadcode4j.analyzer.hibernateannotations.package-info");
+    }
+
+    @Test
+    public void ignoresGeneratorUsagesFromIntermediateResultsForGeneratorDefinitionsFromIntermediateResults() {
+        Map<Object, IntermediateResult> intermediateResults = newHashMap();
+        intermediateResults.put(HibernateAnnotationsAnalyzer.class.getName() + "|generatorUsages",
+                givenIntermediateResultMap("generatorOne", newHashSet("Bar")));
+        intermediateResults.put(HibernateAnnotationsAnalyzer.class.getName() + "|generatorDefinitions",
+                givenIntermediateResultMap("generatorOne", "Foo"));
+        this.codeContext = givenCodeContext(this.codeContext.getModule(), intermediateResults);
+
+        analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/Entity.class");
+
+        assertThatNoDependenciesAreReported();
+    }
+
+    @Test
     public void issuesWarningForDuplicatedTypeDef() throws IllegalAccessException {
         Logger loggerMock = mock(Logger.class);
         ReflectionUtils.setVariableValueInObject(objectUnderTest, "logger", loggerMock);
@@ -135,7 +273,7 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer<HibernateAn
         finishAnalysis();
 
         verify(loggerMock).warn(
-                Matchers.contains("@TypeDef"),
+                org.mockito.Matchers.contains("@TypeDef"),
                 (Object[]) argThat(hasVarArgItem(equalTo("aRandomType"))));
     }
 

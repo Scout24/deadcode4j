@@ -36,7 +36,7 @@ public abstract class AnAnalyzer<T extends Analyzer> {
                 Collections.<Resource>emptyList(),
                 null,
                 Collections.<Repository>emptyList());
-        codeContext = new CodeContext(dummyModule);
+        codeContext = new CodeContext(dummyModule, Collections.<Object, IntermediateResult>emptyMap());
         analysisIsFinished = false;
     }
 

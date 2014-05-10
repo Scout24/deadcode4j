@@ -20,6 +20,7 @@ import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
  *
  * @since 1.0.0
  */
+@SuppressWarnings("PMD.TooManyStaticImports")
 public class DeadCodeFinder {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -38,8 +39,9 @@ public class DeadCodeFinder {
     @Nonnull
     private AnalyzedCode analyzeCode(@Nonnull Iterable<Module> modules) {
         List<AnalyzedCode> analyzedCode = newArrayList();
+        IntermediateResults intermediateResults = new IntermediateResults();
         for (Module module : sort(modules)) {
-            CodeContext codeContext = new CodeContext(module);
+            CodeContext codeContext = new CodeContext(module, intermediateResults.calculateIntermediateResultsFor(module));
             for (Repository repository : module.getAllRepositories()) {
                 analyzeRepository(codeContext, repository);
             }
@@ -47,6 +49,7 @@ public class DeadCodeFinder {
             for (Analyzer analyzer : this.analyzers)
                 analyzer.finishAnalysis(codeContext);
             logger.debug("Finished analysis of [{}].", codeContext);
+            intermediateResults.add(codeContext);
             analyzedCode.add(codeContext.getAnalyzedCode());
         }
         return merge(analyzedCode);

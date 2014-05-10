@@ -3,6 +3,7 @@ package de.is24.deadcode4j;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
@@ -25,10 +26,17 @@ import static java.util.Arrays.asList;
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class CodeContext {
     private final org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
+    @Nonnull
     private final Set<String> analyzedClasses = newHashSet();
+    @Nonnull
     private final Map<String, Set<String>> dependencyMap = newHashMap();
+    @Nonnull
     private final Map<Object, Object> cache = newHashMap();
+    @Nonnull
     private final Module module;
+    @Nonnull
+    private final Map<Object, IntermediateResult> intermediateResults;
+    @Nonnull
     private final EnumSet<AnalysisStage> stagesWithExceptions = EnumSet.noneOf(AnalysisStage.class);
 
     /**
@@ -36,8 +44,9 @@ public class CodeContext {
      *
      * @since 1.6
      */
-    public CodeContext(@Nonnull Module module) {
+    public CodeContext(@Nonnull Module module, @Nonnull Map<Object, IntermediateResult> intermediateResults) {
         this.module = module;
+        this.intermediateResults = newHashMap(intermediateResults);
     }
 
     @Override
@@ -50,6 +59,7 @@ public class CodeContext {
      *
      * @since 1.6
      */
+    @Nonnull
     public Module getModule() {
         return module;
     }
@@ -59,8 +69,14 @@ public class CodeContext {
      *
      * @return a simple {@link java.util.Map}
      */
+    @Nonnull
     public Map<Object, Object> getCache() {
         return cache;
+    }
+
+    @Nullable
+    public IntermediateResult getIntermediateResult(@Nonnull Object key) {
+        return this.intermediateResults.get(key);
     }
 
     /**

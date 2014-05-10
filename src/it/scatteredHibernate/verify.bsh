@@ -1,0 +1,18 @@
+import java.io.*;
+
+File buildLog = new File(basedir, "build.log");
+BufferedReader reader = new BufferedReader(new FileReader(buildLog));
+String line;
+boolean analyzed = false, success = false;
+while ((line = reader.readLine()) != null) {
+    if (line.contains("Analyzed 3 class(es).")) {
+        analyzed = true;
+    } else if (line.contains("No unused classes found.")) {
+        success = true;
+    }
+}
+if (!analyzed) {
+    throw new RuntimeException("Did not analyze the expected number of classes!");
+} else if (!success) {
+    throw new RuntimeException("Found unused classes; this is not expected!");
+}
