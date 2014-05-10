@@ -1,8 +1,5 @@
 package de.is24.junit;
 
-import de.is24.junit.typedefs.CustomClass;
-import de.is24.junit.typedefs.CustomClass;
-
 import javax.persistence.Id;
 import org.hibernate.annotations.Type;
 
