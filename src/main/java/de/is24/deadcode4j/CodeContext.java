@@ -3,6 +3,7 @@ package de.is24.deadcode4j;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
@@ -71,6 +72,11 @@ public class CodeContext {
     @Nonnull
     public Map<Object, Object> getCache() {
         return cache;
+    }
+
+    @Nullable
+    public IntermediateResult getIntermediateResult(@Nonnull Object key) {
+        return this.intermediateResults.get(key);
     }
 
     /**

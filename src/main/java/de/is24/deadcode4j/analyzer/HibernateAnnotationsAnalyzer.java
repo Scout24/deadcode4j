@@ -4,12 +4,16 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.IntermediateResult;
 import javassist.CtClass;
 import javassist.bytecode.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.annotation.ElementType;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -122,6 +126,7 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
     @Override
     public void finishAnalysis(@Nonnull CodeContext codeContext) {
         reportDependencies(codeContext);
+        storeIntermediateResults(codeContext);
         this.generatorDefinitions.clear();
         this.generatorUsages.clear();
         this.typeDefinitions.clear();
@@ -217,9 +222,13 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
     }
 
     private void reportTypeUsage(CodeContext codeContext) {
+        if (this.typeUsages.isEmpty()) {
+            return;
+        }
+        Map<String, String> allTypeDefinitions = getAllTypeDefinitions(codeContext);
         for (Map.Entry<String, Set<String>> typeUsage : this.typeUsages.entrySet()) {
             String typeName = typeUsage.getKey();
-            String classDefiningType = this.typeDefinitions.get(typeName);
+            String classDefiningType = allTypeDefinitions.get(typeName);
 
             final String dependee;
             if (classDefiningType != null) {
@@ -237,6 +246,81 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
                 codeContext.addDependencies(classUsingType, dependee);
             }
         }
+    }
+
+    private Map<String, String> getAllTypeDefinitions(@Nonnull CodeContext codeContext) {
+        Object object = codeContext.getIntermediateResult(getClass().getName() + "|typeDefinitions");
+        if (object == null) {
+            return this.typeDefinitions;
+        }
+        @SuppressWarnings("unchecked")
+        Map<String, String> inheritedTypeDefinitions = ((MappedIntermediateResults) object).getMap();
+
+        Map<String, String> allTypeDefinitions = newHashMap(this.typeDefinitions);
+        for (Map.Entry<String, String> inheritedDefinition : inheritedTypeDefinitions.entrySet()) {
+            String typeName = inheritedDefinition.getKey();
+            if (allTypeDefinitions.containsKey(typeName)) {
+                logger.debug("The inherited type definition [{}] is overridden by this Module.", typeName);
+                continue;
+            }
+            allTypeDefinitions.put(typeName, inheritedDefinition.getValue());
+        }
+
+        return allTypeDefinitions;
+    }
+
+    private void storeIntermediateResults(CodeContext codeContext) {
+        if (this.typeDefinitions.isEmpty()) {
+            return;
+        }
+        codeContext.getCache().put(getClass().getName() + "|typeDefinitions", new MappedIntermediateResults(this.typeDefinitions));
+    }
+
+    private static class MappedIntermediateResults implements IntermediateResult {
+
+        private final Logger logger = LoggerFactory.getLogger(getClass());
+        private final Map<String, String> typeDefinitions;
+
+        public MappedIntermediateResults(Map<String, String> typeDefinitions) {
+            this.typeDefinitions = newHashMap(typeDefinitions);
+        }
+
+        @Override
+        public String toString() {
+            return "MappedIntermediateResults " + this.typeDefinitions;
+        }
+
+        @Nonnull
+        @Override
+        public IntermediateResult mergeSibling(@Nonnull IntermediateResult sibling) {
+            return merge(sibling, "Type Definition [{}] refers to classes [{}] and [{}] defined by different parent modules, keeping the former.");
+        }
+
+        @Nonnull
+        @Override
+        public IntermediateResult mergeParent(@Nonnull IntermediateResult parent) {
+            return merge(parent, "Type Definition [{}] refers to classes [{}] and [{}] defined by different modules in the hierarchy, keeping the former.");
+        }
+
+        @Nonnull
+        public Map<String, String> getMap() {
+            return typeDefinitions;
+        }
+
+        @Nonnull
+        private IntermediateResult merge(IntermediateResult sibling, String logMessage) {
+            HashMap<String, String> mergedTypeDefinitions = newHashMap(this.typeDefinitions);
+            for (Map.Entry<String, String> typeDefinition : MappedIntermediateResults.class.cast(sibling).typeDefinitions.entrySet()) {
+                String existingDefinition = mergedTypeDefinitions.get(typeDefinition.getKey());
+                if (existingDefinition == null) {
+                    mergedTypeDefinitions.put(typeDefinition.getKey(), typeDefinition.getValue());
+                } else if (!existingDefinition.equals(typeDefinition.getValue())) {
+                    logger.debug(logMessage, typeDefinition.getKey(), existingDefinition, typeDefinition.getValue());
+                }
+            }
+            return new MappedIntermediateResults(mergedTypeDefinitions);
+        }
+
     }
 
 }

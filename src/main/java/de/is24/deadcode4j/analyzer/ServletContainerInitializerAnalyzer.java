@@ -9,6 +9,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.util.Map;
 
@@ -98,10 +99,16 @@ public class ServletContainerInitializerAnalyzer extends AnalyzerAdapter {
             super(module, Maps.<Object, IntermediateResult>newHashMap());
         }
 
-        @Override
         @Nonnull
+        @Override
         public Map<Object, Object> getCache() {
             return this.originalContext.getCache();
+        }
+
+        @Nullable
+        @Override
+        public IntermediateResult getIntermediateResult(@Nonnull Object key) {
+            return this.originalContext.getIntermediateResult(key);
         }
 
         @Override
