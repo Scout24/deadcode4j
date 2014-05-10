@@ -4,16 +4,13 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import de.is24.deadcode4j.CodeContext;
-import de.is24.deadcode4j.IntermediateResult;
 import javassist.CtClass;
 import javassist.bytecode.annotation.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.annotation.ElementType;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,12 +19,12 @@ import static com.google.common.base.Predicates.notNull;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Maps.newHashMap;
+import static de.is24.deadcode4j.IntermediateResults.*;
 import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
 import static java.lang.annotation.ElementType.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
 
 /**
  * Analyzes class files:
@@ -268,12 +265,11 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
     }
 
     private Map<String, String> getAllTypeDefinitions(@Nonnull CodeContext codeContext) {
-        Object object = codeContext.getIntermediateResult(getClass().getName() + "|typeDefinitions");
-        if (object == null) {
+        IntermediateResultMap<String, String> resultMap = resultMapFrom(codeContext, getClass().getName() + "|typeDefinitions");
+        if (resultMap == null) {
             return this.typeDefinitions;
         }
-        @SuppressWarnings("unchecked")
-        Map<String, String> inheritedTypeDefinitions = ((IntermediateTypeDefinitions) object).getMap();
+        Map<String, String> inheritedTypeDefinitions = resultMap.getMap();
 
         Map<String, String> allTypeDefinitions = newHashMap(this.typeDefinitions);
         for (Map.Entry<String, String> inheritedDefinition : inheritedTypeDefinitions.entrySet()) {
@@ -289,115 +285,19 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
     }
 
     private Map<String, Set<String>> getExistingTypeUsages(@Nonnull CodeContext codeContext) {
-        Object object = codeContext.getIntermediateResult(getClass().getName() + "|typeUsages");
-        if (object == null) {
-            return emptyMap();
-        }
-        return ((IntermediateTypeUsages) object).getMap();
+        IntermediateResultMap<String, Set<String>> resultMap = resultMapFrom(codeContext, getClass().getName() + "|typeUsages");
+        return resultMap != null ? resultMap.getMap() : Collections.<String, Set<String>>emptyMap();
     }
 
     private void storeIntermediateResults(CodeContext codeContext) {
         if (!this.typeDefinitions.isEmpty()) {
             codeContext.getCache().put(getClass().getName() + "|typeDefinitions",
-                    new IntermediateTypeDefinitions(this.typeDefinitions));
+                    resultMapFor(this.typeDefinitions));
         }
         if (!this.typeUsages.isEmpty()) {
             codeContext.getCache().put(getClass().getName() + "|typeUsages",
-                    new IntermediateTypeUsages(this.typeUsages));
+                    resultMapFor(this.typeUsages));
         }
-    }
-
-    private static class IntermediateTypeDefinitions implements IntermediateResult {
-
-        private final Logger logger = LoggerFactory.getLogger(getClass());
-        private final Map<String, String> typeDefinitions;
-
-        public IntermediateTypeDefinitions(Map<String, String> typeDefinitions) {
-            this.typeDefinitions = newHashMap(typeDefinitions);
-        }
-
-        @Override
-        public String toString() {
-            return getClass().getSimpleName() + ": " + this.typeDefinitions;
-        }
-
-        @Nonnull
-        @Override
-        public IntermediateResult mergeSibling(@Nonnull IntermediateResult sibling) {
-            return merge(sibling, "Type Definition [{}] refers to classes [{}] and [{}] defined by different parent modules, keeping the former.");
-        }
-
-        @Nonnull
-        @Override
-        public IntermediateResult mergeParent(@Nonnull IntermediateResult parent) {
-            return merge(parent, "Type Definition [{}] refers to classes [{}] and [{}] defined by different modules in the hierarchy, keeping the former.");
-        }
-
-        @Nonnull
-        public Map<String, String> getMap() {
-            return typeDefinitions;
-        }
-
-        @Nonnull
-        private IntermediateResult merge(IntermediateResult result, String logMessage) {
-            HashMap<String, String> mergedTypeDefinitions = newHashMap(this.typeDefinitions);
-            for (Map.Entry<String, String> typeDefinition : IntermediateTypeDefinitions.class.cast(result).typeDefinitions.entrySet()) {
-                String existingDefinition = mergedTypeDefinitions.get(typeDefinition.getKey());
-                if (existingDefinition == null) {
-                    mergedTypeDefinitions.put(typeDefinition.getKey(), typeDefinition.getValue());
-                } else if (!existingDefinition.equals(typeDefinition.getValue())) {
-                    logger.debug(logMessage, typeDefinition.getKey(), existingDefinition, typeDefinition.getValue());
-                }
-            }
-            return new IntermediateTypeDefinitions(mergedTypeDefinitions);
-        }
-
-    }
-
-    private static class IntermediateTypeUsages implements IntermediateResult {
-
-        private final Map<String, Set<String>> typeUsages;
-
-        public IntermediateTypeUsages(Map<String, Set<String>> typeUsages) {
-            this.typeUsages = newHashMap(typeUsages);
-        }
-
-        @Override
-        public String toString() {
-            return getClass().getSimpleName() + ": " + this.typeUsages;
-        }
-
-        @Nonnull
-        @Override
-        public IntermediateResult mergeSibling(@Nonnull IntermediateResult sibling) {
-            return merge(sibling);
-        }
-
-        @Nonnull
-        @Override
-        public IntermediateResult mergeParent(@Nonnull IntermediateResult parent) {
-            return merge(parent);
-        }
-
-        @Nonnull
-        public Map<String, Set<String>> getMap() {
-            return typeUsages;
-        }
-
-        @Nonnull
-        private IntermediateResult merge(IntermediateResult result) {
-            Map<String, Set<String>> mergedTypeUsages = newHashMap(this.typeUsages);
-            for (Map.Entry<String, Set<String>> typeUsages : IntermediateTypeUsages.class.cast(result).typeUsages.entrySet()) {
-                Set<String> existingDefinition = mergedTypeUsages.get(typeUsages.getKey());
-                if (existingDefinition == null) {
-                    mergedTypeUsages.put(typeUsages.getKey(), typeUsages.getValue());
-                } else {
-                    existingDefinition.addAll(typeUsages.getValue());
-                }
-            }
-            return new IntermediateTypeUsages(mergedTypeUsages);
-        }
-
     }
 
 }
