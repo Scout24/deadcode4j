@@ -186,6 +186,60 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer<HibernateAn
     }
 
     @Test
+    public void considersGeneratorDefinitionsFromIntermediateResults() {
+        this.codeContext = givenCodeContext(
+                this.codeContext.getModule(),
+                HibernateAnnotationsAnalyzer.class.getName() + "|generatorDefinitions",
+                givenIntermediateResultMap("generatorOne", "Foo"));
+
+        analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/EntityWithGeneratedValue.class");
+
+        assertThatDependenciesAreReportedFor(
+                "de.is24.deadcode4j.analyzer.hibernateannotations.EntityWithGeneratedValue", "Foo");
+    }
+
+    @Test
+    public void prefersOwnGeneratorDefinitionsOverIntermediateResults() {
+        this.codeContext = givenCodeContext(
+                this.codeContext.getModule(),
+                HibernateAnnotationsAnalyzer.class.getName() + "|generatorDefinitions",
+                givenIntermediateResultMap("generatorOne", "Foo"));
+
+        analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/EntityWithGeneratedValue.class");
+        analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/package-info.class");
+
+        assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.hibernateannotations.EntityWithGeneratedValue",
+                "de.is24.deadcode4j.analyzer.hibernateannotations.package-info");
+    }
+
+    @Test
+    public void considersGeneratorUsagesFromIntermediateResults() {
+        this.codeContext = givenCodeContext(
+                this.codeContext.getModule(),
+                HibernateAnnotationsAnalyzer.class.getName() + "|generatorUsages",
+                givenIntermediateResultMap("generatorOne", newHashSet("Foo", "Bar")));
+
+        analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/package-info.class");
+
+        assertThatDependenciesAreReportedFor("Foo", "de.is24.deadcode4j.analyzer.hibernateannotations.package-info");
+        assertThatDependenciesAreReportedFor("Bar", "de.is24.deadcode4j.analyzer.hibernateannotations.package-info");
+    }
+
+    @Test
+    public void ignoresGeneratorUsagesFromIntermediateResultsForGeneratorDefinitionsFromIntermediateResults() {
+        Map<Object, IntermediateResult> intermediateResults = newHashMap();
+        intermediateResults.put(HibernateAnnotationsAnalyzer.class.getName() + "|generatorUsages",
+                givenIntermediateResultMap("generatorOne", newHashSet("Bar")));
+        intermediateResults.put(HibernateAnnotationsAnalyzer.class.getName() + "|generatorDefinitions",
+                givenIntermediateResultMap("generatorOne", "Foo"));
+        this.codeContext = givenCodeContext(this.codeContext.getModule(), intermediateResults);
+
+        analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/Entity.class");
+
+        assertThatNoDependenciesAreReported();
+    }
+
+    @Test
     public void issuesWarningForDuplicatedTypeDef() throws IllegalAccessException {
         Logger loggerMock = mock(Logger.class);
         ReflectionUtils.setVariableValueInObject(objectUnderTest, "logger", loggerMock);
