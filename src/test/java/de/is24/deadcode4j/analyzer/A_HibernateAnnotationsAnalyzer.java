@@ -5,7 +5,6 @@ import org.codehaus.plexus.util.ReflectionUtils;
 import org.hamcrest.Matcher;
 import org.hamcrest.collection.IsArrayContaining;
 import org.junit.Test;
-import org.mockito.Matchers;
 import org.mockito.internal.matchers.VarargMatcher;
 import org.slf4j.Logger;
 
@@ -15,7 +14,8 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static de.is24.deadcode4j.CodeContextBuilder.givenCodeContext;
 import static de.is24.deadcode4j.IntermediateResultMapBuilder.givenIntermediateResultMap;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -133,6 +133,18 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer<HibernateAn
     }
 
     @Test
+    public void storesTypeDefinitionsAndUsagesAsIntermediateResults() {
+        analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/Entity.class");
+        analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/package-info.class");
+        doFinishAnalysis();
+
+        assertThat(this.codeContext.getCache().get(HibernateAnnotationsAnalyzer.class.getName() + "|typeDefinitions"),
+                is(instanceOf(IntermediateResult.class)));
+        assertThat(this.codeContext.getCache().get(HibernateAnnotationsAnalyzer.class.getName() + "|typeUsages"),
+                is(instanceOf(IntermediateResult.class)));
+    }
+
+    @Test
     public void considersTypeDefinitionsFromIntermediateResults() {
         this.codeContext = givenCodeContext(
                 this.codeContext.getModule(),
@@ -183,6 +195,18 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer<HibernateAn
         analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/EntityWithGeneratedValue.class");
 
         assertThatNoDependenciesAreReported();
+    }
+
+    @Test
+    public void storesGeneratorDefinitionsAndUsagesAsIntermediateResults() {
+        analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/EntityWithGeneratedValue.class");
+        analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/package-info.class");
+        doFinishAnalysis();
+
+        assertThat(this.codeContext.getCache().get(HibernateAnnotationsAnalyzer.class.getName() + "|generatorDefinitions"),
+                is(instanceOf(IntermediateResult.class)));
+        assertThat(this.codeContext.getCache().get(HibernateAnnotationsAnalyzer.class.getName() + "|generatorUsages"),
+                is(instanceOf(IntermediateResult.class)));
     }
 
     @Test
@@ -249,7 +273,7 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer<HibernateAn
         finishAnalysis();
 
         verify(loggerMock).warn(
-                Matchers.contains("@TypeDef"),
+                org.mockito.Matchers.contains("@TypeDef"),
                 (Object[]) argThat(hasVarArgItem(equalTo("aRandomType"))));
     }
 
