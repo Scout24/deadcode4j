@@ -8,12 +8,9 @@ import javassist.CtMethod;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.AttributeInfo;
 import javassist.bytecode.annotation.Annotation;
-import org.apache.commons.io.IOUtils;
 
 import javax.annotation.Nonnull;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.lang.annotation.ElementType;
 import java.util.Collections;
 import java.util.List;
@@ -96,16 +93,7 @@ public abstract class ByteCodeAnalyzer extends AnalyzerAdapter {
     }
 
     private void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull File clazz) {
-        final CtClass ctClass;
-        FileInputStream in = null;
-        try {
-            in = new FileInputStream(clazz);
-            ctClass = getClassPool(codeContext).makeClass(in);
-        } catch (IOException e) {
-            throw new RuntimeException("Could not analyze [" + clazz + "]!", e);
-        } finally {
-            IOUtils.closeQuietly(in);
-        }
+        CtClass ctClass = classPoolAccessorFor(codeContext).loadClass(clazz);
         logger.debug("Analyzing class [{}]...", ctClass.getName());
         analyzeClass(codeContext, ctClass);
     }
