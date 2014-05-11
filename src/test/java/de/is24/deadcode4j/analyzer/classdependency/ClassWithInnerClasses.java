@@ -6,13 +6,7 @@ public class ClassWithInnerClasses {
     public ClassWithInnerClasses() {
         new UsedStaticInnerClass();
     }
-
-    public static class UnusedStaticInnerClass {
-    }
-
-    public static class UsedStaticInnerClass {
-    }
-
-    public class UnusedInnerClass {
-    }
+    public static class UnusedStaticInnerClass {}
+    public static class UsedStaticInnerClass {}
+    public class UnusedInnerClass {}
 }
