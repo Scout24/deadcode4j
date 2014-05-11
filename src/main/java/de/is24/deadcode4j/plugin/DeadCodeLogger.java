@@ -1,11 +1,13 @@
 package de.is24.deadcode4j.plugin;
 
 import com.google.common.collect.Ordering;
+import de.is24.deadcode4j.AnalysisStage;
 import de.is24.deadcode4j.DeadCode;
 import org.apache.maven.plugin.logging.Log;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
+import java.util.EnumSet;
 
 import static com.google.common.collect.Lists.newArrayList;
 
@@ -23,12 +25,31 @@ class DeadCodeLogger {
     }
 
     public void log(@Nonnull DeadCode deadCode, @Nonnull Iterable<String> classesToIgnore) {
+        logExceptions(deadCode.getStagesWithExceptions());
         logAnalyzedClasses(deadCode.getAnalyzedClasses());
 
         Collection<String> deadClasses = newArrayList(deadCode.getDeadClasses());
         removeAndLogIgnoredClasses(deadClasses, classesToIgnore);
 
         logDeadClasses(deadClasses);
+    }
+
+    private void logExceptions(EnumSet<AnalysisStage> stagesWithExceptions) {
+        for (AnalysisStage stageWithException : stagesWithExceptions) {
+            switch (stageWithException) {
+                case GENERAL_SETUP:
+                    log.error("Failed to set up deadcode4j. Analysis was certainly inaccurate.");
+                    break;
+                case MODULE_SETUP:
+                    log.warn("Failed to set up at least one module. Analysis is likely to be inaccurate.");
+                    break;
+                case FILE_ANALYSIS:
+                    log.warn("At least one file could not be parsed; analysis may be inaccurate!");
+                    break;
+                case DEADCODE_ANALYSIS:
+                    log.warn("Failed to determine dead code. Analysis was certainly inaccurate.");
+            }
+        }
     }
 
     private void logAnalyzedClasses(@Nonnull Collection<String> analyzedClasses) {

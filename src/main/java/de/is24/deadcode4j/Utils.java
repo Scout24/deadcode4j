@@ -1,6 +1,7 @@
 package de.is24.deadcode4j;
 
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 
@@ -25,13 +26,23 @@ public final class Utils {
     }
 
     /**
-     * Returns <i>groupId:artifactId:version</i> for the specified artifact.
+     * Returns <i>groupId:artifactId</i> for the specified artifact.
      *
      * @since 1.6
      */
     @Nonnull
     public static String getKeyFor(@Nonnull Artifact artifact) {
-        return artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getVersion();
+        return artifact.getGroupId() + ":" + artifact.getArtifactId();
+    }
+
+    /**
+     * Returns <i>groupId:artifactId:version</i> for the specified artifact.
+     *
+     * @since 1.6
+     */
+    @Nonnull
+    public static String getVersionedKeyFor(@Nonnull Artifact artifact) {
+        return getKeyFor(artifact) + ":" + artifact.getVersion();
     }
 
     /**
@@ -92,6 +103,30 @@ public final class Utils {
             map.put(key, values);
         }
         return values;
+    }
+
+    /**
+     * Returns a <code>Function</code> that will call the specified functions one by one until a return value is
+     * <i>present</i> or the end of the call chain is reached.
+     *
+     * @since 1.6
+     */
+    @Nonnull
+    public static <F, T> Function<F, Optional<T>> or(@Nonnull final Function<F, Optional<T>>... functions) {
+        return new Function<F, Optional<T>>() {
+            @Nonnull
+            @Override
+            @SuppressWarnings("ConstantConditions")
+            public Optional<T> apply(@Nullable F input) {
+                int i = 0;
+                for (; ; ) {
+                    Optional<T> result = functions[i++].apply(input);
+                    if (result.isPresent() || i == functions.length) {
+                        return result;
+                    }
+                }
+            }
+        };
     }
 
     /**

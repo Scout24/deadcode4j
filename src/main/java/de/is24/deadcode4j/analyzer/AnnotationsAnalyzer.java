@@ -91,7 +91,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
                 continue;
             if (DEAD_ENDS.contains(annotationClassName))
                 continue;
-            ClassPool classPool = getOrCreateClassPool(codeContext);
+            ClassPool classPool = getClassPool(codeContext);
             CtClass annotationClazz = classPool.get(annotationClassName);
             addAnnotations(codeContext, annotationClazz, knownAnnotations);
         }
@@ -128,13 +128,13 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
     @Nonnull
     private List<String> computeAnnotationsMarkedAsInherited(@Nonnull CodeContext codeContext) {
         List<String> inheritedAnnotations = newArrayList();
-        ClassPool classPool = getOrCreateClassPool(codeContext);
+        ClassPool classPool = getClassPool(codeContext);
         for (String annotation : annotations) {
             CtClass annotationClazz;
             try {
                 annotationClazz = classPool.get(annotation);
             } catch (NotFoundException e) {
-                logger.debug("Annotation [{}] cannot be found on the class path; skipping detection");
+                logger.debug("Annotation [{}] cannot be found on the class path; skipping detection", annotation);
                 continue;
             }
             try {

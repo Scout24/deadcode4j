@@ -1,7 +1,6 @@
 package de.is24.deadcode4j.plugin.packaginghandler;
 
 import de.is24.deadcode4j.Repository;
-import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.OrFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -17,6 +16,7 @@ import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.emptyList;
+import static org.apache.commons.io.IOCase.INSENSITIVE;
 import static org.apache.commons.io.filefilter.DirectoryFileFilter.DIRECTORY;
 
 /**
@@ -48,6 +48,7 @@ public abstract class PackagingHandler {
     /**
      * Returns each compile source root of a given <code>MavenProject</code> as a <code>Repository</code> instance
      * providing access to the Java files it contains.
+     * Silently ignores compile source roots that do not exist in the file system.
      *
      * @since 1.6
      */
@@ -62,10 +63,11 @@ public abstract class PackagingHandler {
         for (String compileSourceRoot : compileSourceRoots) {
             File compileSourceDirectory = new File(compileSourceRoot);
             if (!compileSourceDirectory.exists()) {
+                logger.debug("  Compile Source Directory [{}] does not exist?", compileSourceDirectory);
                 continue;
             }
             codeRepositories.add(new Repository(compileSourceDirectory,
-                    new OrFileFilter(DIRECTORY, new RegexFileFilter(".*\\.java$", IOCase.INSENSITIVE))));
+                    new OrFileFilter(DIRECTORY, new RegexFileFilter(".*\\.java$", INSENSITIVE))));
             logger.debug("  Found source directory [{}].", compileSourceRoot);
         }
         return codeRepositories;

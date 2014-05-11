@@ -1,56 +1,36 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.Analyzer;
-import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Map;
+public class A_ServletContainerInitializerAnalyzer extends AnAnalyzer<ServletContainerInitializerAnalyzer> {
 
-import static com.google.common.collect.Iterables.concat;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-
-public class A_ServletContainerInitializerAnalyzer extends AnAnalyzer {
-
-    private Analyzer objectUnderTest;
-
-    @Before
-    public void setUp() throws Exception {
-        objectUnderTest = new ServletContainerInitializerAnalyzer("JUnit", "javax.servlet.ServletContainerInitializer") {
+    @Override
+    protected ServletContainerInitializerAnalyzer createAnalyzer() {
+        return new ServletContainerInitializerAnalyzer("JUnit", "javax.servlet.ServletContainerInitializer") {
         };
     }
 
     @Test
     public void shouldRecognizeServletContainerInitializerClasses() {
-        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/v3-metadata-missing.web.xml"));
-        objectUnderTest.doAnalysis(codeContext, getFile("SomeServletInitializer.class"));
-        objectUnderTest.finishAnalysis(codeContext);
+        analyzeFile("de/is24/deadcode4j/analyzer/v3-metadata-missing.web.xml");
+        analyzeFile("SomeServletInitializer.class");
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        Iterable<String> allReportedClasses = concat(codeDependencies.values());
-        assertThat(allReportedClasses, containsInAnyOrder("SomeServletInitializer"));
+        assertThatDependenciesAreReported("SomeServletInitializer");
     }
 
     @Test
     public void shouldRecognizeServletContainerInitializerClassesIfMetadataCompleteAttributeIsFalse() {
-        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/v3-metadata-incomplete.web.xml"));
-        objectUnderTest.doAnalysis(codeContext, getFile("SomeServletInitializer.class"));
-        objectUnderTest.finishAnalysis(codeContext);
+        analyzeFile("de/is24/deadcode4j/analyzer/v3-metadata-incomplete.web.xml");
+        analyzeFile("SomeServletInitializer.class");
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        Iterable<String> allReportedClasses = concat(codeDependencies.values());
-        assertThat(allReportedClasses, containsInAnyOrder("SomeServletInitializer"));
+        assertThatDependenciesAreReported("SomeServletInitializer");
     }
 
     @Test
     public void shouldRecognizeMetadataCompleteAttribute() {
-        objectUnderTest.doAnalysis(codeContext, getFile("de/is24/deadcode4j/analyzer/v3-metadata-complete.web.xml"));
-        objectUnderTest.doAnalysis(codeContext, getFile("SomeServletInitializer.class"));
-        objectUnderTest.finishAnalysis(codeContext);
+        analyzeFile("de/is24/deadcode4j/analyzer/v3-metadata-complete.web.xml");
+        analyzeFile("SomeServletInitializer.class");
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        Iterable<String> allReportedClasses = concat(codeDependencies.values());
-        assertThat(allReportedClasses, is(emptyIterable()));
+        assertThatNoDependenciesAreReported();
     }
-
 }

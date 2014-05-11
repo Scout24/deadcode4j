@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -55,11 +56,15 @@
     </prerequisites>
 
     <properties>
+        <!-- Configure Maven plugins -->
+        <maven.compiler.source>1.6</maven.compiler.source>
+        <maven.compiler.target>1.6</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
+        <test>**/A_*.java,**/An_*.java</test>
+        <!-- own stuff -->
         <testScenarios.directory>${java.io.tmpdir}/deadcode4j</testScenarios.directory>
-
+        <!-- Dependency Management -->
         <version.findbugs>2.0.3</version.findbugs>
         <version.maven>3.2.1</version.maven>
     </properties>

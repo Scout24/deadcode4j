@@ -3,6 +3,7 @@ package de.is24.deadcode4j.plugin;
 import com.google.common.base.Predicate;
 import de.is24.deadcode4j.Module;
 import de.is24.deadcode4j.Repository;
+import de.is24.deadcode4j.Resource;
 import de.is24.deadcode4j.plugin.packaginghandler.DefaultPackagingHandler;
 import de.is24.deadcode4j.plugin.packaginghandler.PackagingHandler;
 import de.is24.deadcode4j.plugin.packaginghandler.PomPackagingHandler;
@@ -20,7 +21,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -28,8 +29,7 @@ import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.size;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
-import static de.is24.deadcode4j.Utils.getKeyFor;
-import static de.is24.deadcode4j.Utils.getValueOrDefault;
+import static de.is24.deadcode4j.Utils.*;
 
 /**
  * Calculates the modules for the given maven projects.
@@ -77,12 +77,12 @@ class ModuleGenerator {
         Map<String, Module> knownModules = newHashMap();
         for (MavenProject project : projects) {
             Module module = getModuleFor(project, knownModules);
-            knownModules.put(getKeyFor(project.getArtifact()), module);
+            knownModules.put(module.getModuleId(), module);
             if (size(module.getAllRepositories()) > 0) {
                 modules.add(module);
                 logger.debug("Added [{}] for [{}].", module, project);
             } else {
-                logger.info("Project [{}] does not provide any repository, therefore it will be skipped.", getKeyFor(project));
+                logger.info("Project [{}] does not provide any repository, therefore it will be skipped.", module.getModuleId());
             }
         }
         return modules;
@@ -92,28 +92,34 @@ class ModuleGenerator {
     private Module getModuleFor(
             @Nonnull MavenProject project,
             @Nonnull Map<String, Module> knownModules) throws MojoExecutionException {
+        String projectId = getKeyFor(project);
+        String encoding = project.getProperties().getProperty("project.build.sourceEncoding");
+        if (encoding == null) {
+            logger.warn("No encoding set for [{}]! Parsing source files may cause issues.", projectId);
+        }
         PackagingHandler packagingHandler =
                 getValueOrDefault(this.packagingHandlers, project.getPackaging(), this.defaultPackagingHandler);
         Repository outputRepository = packagingHandler.getOutputRepositoryFor(project);
         Iterable<Repository> additionalRepositories = packagingHandler.getAdditionalRepositoriesFor(project);
-        Iterable<File> classPath = computeClassPath(project, knownModules);
-        return new Module(outputRepository, classPath, additionalRepositories);
+        Collection<Resource> dependencies = computeDependencies(project, knownModules);
+        return new Module(projectId, encoding, dependencies, outputRepository, additionalRepositories);
     }
 
     @Nonnull
-    protected Iterable<File> computeClassPath(
+    protected Collection<Resource> computeDependencies(
             @Nonnull MavenProject project,
             @Nonnull Map<String, Module> knownModules) {
-        logger.debug("Computing class path for project [{}]...", getKeyFor(project));
-        ArrayList<File> files = newArrayList();
+        logger.debug("Gathering dependencies for project [{}]...", getKeyFor(project));
+        List<Resource> dependencies = newArrayList();
         for (Artifact dependency : filter(project.getArtifacts(), artifactsWithCompileScope())) {
-            if (addKnownArtifact(files, dependency, knownModules)) {
+            if (addKnownArtifact(dependencies, dependency, knownModules)) {
                 continue;
             }
             resolveArtifact(dependency);
-            addArtifactPath(files, dependency);
+            addArtifactPath(dependencies, dependency);
         }
-        return files;
+        logger.debug("[{}] dependencies found for [{}].", dependencies.size(), getKeyFor(project));
+        return dependencies;
     }
 
     private Predicate<Artifact> artifactsWithCompileScope() {
@@ -128,7 +134,7 @@ class ModuleGenerator {
     }
 
     private boolean addKnownArtifact(
-            @Nonnull ArrayList<File> files,
+            @Nonnull List<Resource> resources,
             @Nonnull Artifact artifact,
             @Nonnull Map<String, Module> knownModules) {
         String dependencyKey = getKeyFor(artifact);
@@ -136,13 +142,8 @@ class ModuleGenerator {
         if (knownModule == null) {
             return false;
         }
-        Repository outputRepository = knownModule.getOutputRepository();
-        if (outputRepository == null) {
-            logger.info("  No output available for project [{}]; nothing added to the class path.", dependencyKey);
-        } else {
-            files.add(outputRepository.getDirectory());
-            logger.debug("  Added project: [{}]", outputRepository.getDirectory());
-        }
+        resources.add(Resource.of(knownModule));
+        logger.debug("  Added project: [{}]", knownModule);
         return true;
     }
 
@@ -154,19 +155,19 @@ class ModuleGenerator {
         request.setArtifact(artifact);
         ArtifactResolutionResult artifactResolutionResult = repositorySystem.resolve(request);
         if (!artifactResolutionResult.isSuccess()) {
-            logger.warn("  Failed to resolve [" + getKeyFor(artifact) + "]; some analyzers may not work properly.");
+            logger.warn("  Failed to resolve [{}]; some analyzers may not work properly.", getVersionedKeyFor(artifact));
         }
     }
 
     private void addArtifactPath(
-            @Nonnull ArrayList<File> files,
+            @Nonnull List<Resource> resources,
             @Nonnull Artifact artifact) {
         File classPathElement = artifact.getFile();
         if (classPathElement == null) {
-            logger.warn("  No valid path to [" + getKeyFor(artifact) + "] found; some analyzers may not work properly.");
+            logger.warn("  No valid path to [{}] found; some analyzers may not work properly.", getVersionedKeyFor(artifact));
             return;
         }
-        files.add(classPathElement);
+        resources.add(Resource.of(classPathElement));
         logger.debug("  Added artifact: [{}]", classPathElement);
     }
 

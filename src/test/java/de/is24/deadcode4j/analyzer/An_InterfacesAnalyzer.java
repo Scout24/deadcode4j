@@ -1,79 +1,64 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.Analyzer;
 import org.junit.Test;
 
-import java.util.Map;
+public final class An_InterfacesAnalyzer extends AnAnalyzer<InterfacesAnalyzer> {
 
-import static com.google.common.collect.Iterables.concat;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.is;
-
-public final class An_InterfacesAnalyzer extends AnAnalyzer {
+    @Override
+    protected InterfacesAnalyzer createAnalyzer() {
+        return new InterfacesAnalyzer("junit", "java.lang.Cloneable") {
+        };
+    }
 
     @Test
     public void reportsExistenceOfClasses() {
-        Analyzer objectUnderTest = new InterfacesAnalyzer("junit", "java.lang.Cloneable") {
-        };
+        analyzeFile("A.class");
+        assertThatClassesAreReported("A");
 
-        objectUnderTest.doAnalysis(codeContext, getFile("A.class"));
-        assertThat(codeContext.getAnalyzedCode().getAnalyzedClasses(), containsInAnyOrder("A"));
-
-        objectUnderTest.doAnalysis(codeContext, getFile("B.class"));
-        assertThat(codeContext.getAnalyzedCode().getAnalyzedClasses(), containsInAnyOrder("A", "B"));
+        analyzeFile("B.class");
+        assertThatClassesAreReported("A", "B");
     }
 
     @Test
     public void reportsImplementingClassAsBeingUsed() {
-        Analyzer objectUnderTest = new InterfacesAnalyzer("junit", "java.lang.Cloneable", "java.io.Serializable") {
+        objectUnderTest = new InterfacesAnalyzer("junit", "java.lang.Cloneable", "java.io.Serializable") {
         };
 
-        objectUnderTest.doAnalysis(codeContext, getFile("ClassImplementingCloneable.class"));
-        objectUnderTest.doAnalysis(codeContext, getFile("DeadServlet.class"));
+        analyzeFile("ClassImplementingCloneable.class");
+        analyzeFile("DeadServlet.class");
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat("Should have reported some dependencies!", codeDependencies.size(), is(1));
-        assertThat(concat(codeDependencies.values()), containsInAnyOrder("ClassImplementingCloneable", "DeadServlet"));
+        assertThatDependenciesAreReported("ClassImplementingCloneable", "DeadServlet");
     }
 
     @Test
     public void doesNotReportNonImplementingClassAsBeingUsed() {
-        Analyzer objectUnderTest = new InterfacesAnalyzer("junit", "java.lang.Cloneable") {
-        };
+        analyzeFile("ClassImplementingCloneable.class");
+        analyzeFile("DeadServlet.class");
 
-        objectUnderTest.doAnalysis(codeContext, getFile("ClassImplementingCloneable.class"));
-        objectUnderTest.doAnalysis(codeContext, getFile("DeadServlet.class"));
-
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat("Should have reported some dependencies!", codeDependencies.size(), is(1));
-        assertThat(concat(codeDependencies.values()), containsInAnyOrder("ClassImplementingCloneable"));
+        assertThatDependenciesAreReported("ClassImplementingCloneable");
     }
 
     @Test
     public void reportsSubClassImplementingClassAsBeingUsed() {
-        Analyzer objectUnderTest = new InterfacesAnalyzer("junit", "java.lang.Runnable") {
+        objectUnderTest = new InterfacesAnalyzer("junit", "java.lang.Runnable") {
         };
 
-        objectUnderTest.doAnalysis(codeContext, getFile("SubClassThatShouldBeLive.class"));
+        analyzeFile("SubClassThatShouldBeLive.class");
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat("Should have reported some dependencies!", codeDependencies.size(), is(1));
-        assertThat(concat(codeDependencies.values()), containsInAnyOrder("SubClassThatShouldBeLive"));
+        assertThatDependenciesAreReported("SubClassThatShouldBeLive");
     }
 
     @Test
     public void reportsClassImplementingSubInterfaceAsBeingUsed() {
-        Analyzer objectUnderTest = new InterfacesAnalyzer("junit", "java.io.Serializable") {
+        objectUnderTest = new InterfacesAnalyzer("junit", "java.io.Serializable") {
         };
 
-        objectUnderTest.doAnalysis(codeContext, getFile("ClassImplementingExternalizable.class"));
-        objectUnderTest.doAnalysis(codeContext, getFile("SubClassOfClassImplementingExternalizable.class"));
+        analyzeFile("ClassImplementingExternalizable.class");
+        analyzeFile("SubClassOfClassImplementingExternalizable.class");
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
-        assertThat("Should have reported some dependencies!", codeDependencies.size(), is(1));
-        assertThat(concat(codeDependencies.values()),
-                containsInAnyOrder("ClassImplementingExternalizable", "SubClassOfClassImplementingExternalizable"));
+        assertThatDependenciesAreReported(
+                "ClassImplementingExternalizable",
+                "SubClassOfClassImplementingExternalizable");
     }
 
 }

@@ -4,6 +4,7 @@ import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.Mojo;
 
 import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
+import static org.apache.maven.plugins.annotations.ResolutionScope.COMPILE;
 
 /**
  * Finds dead (i.e. unused) code. Causes the
@@ -13,7 +14,11 @@ import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
  * @see FindDeadCodeOnlyMojo
  * @since 1.0.0
  */
-@Mojo(name = "find", aggregator = true, threadSafe = true, requiresProject = true)
+@Mojo(name = "find",
+        aggregator = true,
+        requiresProject = true,
+        requiresDependencyCollection = COMPILE,
+        threadSafe = true)
 @Execute(phase = PACKAGE)
 public class FindDeadCodeMojo extends FindDeadCodeOnlyMojo {
 

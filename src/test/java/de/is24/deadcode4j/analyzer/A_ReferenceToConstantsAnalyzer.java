@@ -17,15 +17,13 @@ import static com.google.common.collect.Sets.newHashSet;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
+public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer<ReferenceToConstantsAnalyzer> {
     private static final String FQ_CONSTANTS = "de.is24.deadcode4j.analyzer.constants.Constants";
-    private Analyzer objectUnderTest;
     private Set<String> dependers = newHashSet();
     private List<String> dependees = newArrayList();
 
     @Before
     public void setUp() throws Exception {
-        objectUnderTest = new ReferenceToConstantsAnalyzer();
         codeContext.addAnalyzedClass(FQ_CONSTANTS); // make this class known to the context
         codeContext.addAnalyzedClass(FQ_CONSTANTS + ".More");
 
@@ -40,6 +38,11 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
 
         List<String> allReportedClasses = newArrayList(concat(codeDependencies.values()));
         assertThat(allReportedClasses, containsInAnyOrder(this.dependees.toArray()));
+    }
+
+    @Override
+    protected ReferenceToConstantsAnalyzer createAnalyzer() {
+        return new ReferenceToConstantsAnalyzer();
     }
 
     @Test
@@ -443,10 +446,6 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer {
     public void ignoresReferencesToStaticMethods() {
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingStaticMethodInStaticField.java");
         triggerFinishAnalysisEvent();
-    }
-
-    private void analyzeFile(String fileName) {
-        objectUnderTest.doAnalysis(codeContext, getFile(fileName));
     }
 
     private void triggerFinishAnalysisEvent() {

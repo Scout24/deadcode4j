@@ -1,6 +1,7 @@
 package de.is24.deadcode4j;
 
 import javax.annotation.Nonnull;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -10,10 +11,17 @@ import java.util.Set;
  * @since 1.0.0
  */
 public class AnalyzedCode {
+    @Nonnull
+    private final EnumSet<AnalysisStage> stagesWithExceptions;
+    @Nonnull
     private final Set<String> analyzedClasses;
+    @Nonnull
     private final Map<String, Set<String>> codeDependencies;
 
-    public AnalyzedCode(@Nonnull Set<String> analyzedClasses, @Nonnull Map<String, Set<String>> codeDependencies) {
+    public AnalyzedCode(@Nonnull EnumSet<AnalysisStage> stagesWithExceptions,
+                        @Nonnull Set<String> analyzedClasses,
+                        @Nonnull Map<String, Set<String>> codeDependencies) {
+        this.stagesWithExceptions = stagesWithExceptions;
         this.analyzedClasses = analyzedClasses;
         this.codeDependencies = codeDependencies;
     }
@@ -29,6 +37,16 @@ public class AnalyzedCode {
     @Nonnull
     public Map<String, Set<String>> getCodeDependencies() {
         return codeDependencies;
+    }
+
+    /**
+     * Returns the stages for which an exception occurred.
+     *
+     * @since 1.6
+     */
+    @Nonnull
+    public EnumSet<AnalysisStage> getStagesWithExceptions() {
+        return stagesWithExceptions;
     }
 
 }

@@ -144,6 +144,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
                 new SpringWebXmlAnalyzer(),
                 new SpringXmlAnalyzer(),
                 new TldAnalyzer(),
+                new TypeErasureAnalyzer(),
                 new WebXmlAnalyzer(),
                 new WsddAnalyzer());
         addCustomAnnotationsAnalyzerIfConfigured(analyzers);

@@ -1,9 +1,11 @@
 package de.is24.deadcode4j.analyzer;
 
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Sets;
 import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
 import japa.parser.JavaParser;
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
@@ -15,7 +17,6 @@ import japa.parser.ast.stmt.CatchClause;
 import japa.parser.ast.stmt.ForStmt;
 import japa.parser.ast.stmt.ForeachStmt;
 import japa.parser.ast.visitor.GenericVisitorAdapter;
-import javassist.CtClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +31,7 @@ import static com.google.common.collect.Iterables.*;
 import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Sets.newHashSet;
 import static de.is24.deadcode4j.Utils.emptyIfNull;
+import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
 import static java.lang.Math.max;
 
 public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
@@ -68,16 +70,12 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
     private static class CompilationUnitVisitor extends GenericVisitorAdapter<Analysis, Analysis> {
 
         private final Logger logger = LoggerFactory.getLogger(getClass());
-        private final ByteCodeAnalyzer byteCodeAnalyzer = new ByteCodeAnalyzer() {
-            @Override
-            protected void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
-                throw new UnsupportedOperationException();
-            }
-        };
+        private final ClassPoolAccessor classPoolAccessor;
         private final CodeContext codeContext;
         private final Deque<Set<String>> localVariables = newLinkedList();
 
         public CompilationUnitVisitor(CodeContext codeContext) {
+            this.classPoolAccessor = classPoolAccessorFor(codeContext);
             this.codeContext = codeContext;
         }
 
@@ -305,17 +303,17 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         }
 
         private boolean isFullyQualifiedReference(FieldAccessExpr fieldAccessExpr, Analysis analysis) {
-            String resolvedClass = resolveClass(fieldAccessExpr.toString());
-            if (resolvedClass != null) {
-                codeContext.addDependencies(analysis.getTypeName(), resolvedClass);
+            Optional<String> resolvedClass = resolveClass(fieldAccessExpr.toString());
+            if (resolvedClass.isPresent()) {
+                codeContext.addDependencies(analysis.getTypeName(), resolvedClass.get());
                 return true;
             }
             return FieldAccessExpr.class.isInstance(fieldAccessExpr.getScope())
                     && isFullyQualifiedReference(FieldAccessExpr.class.cast(fieldAccessExpr.getScope()), analysis);
         }
 
-        private String resolveClass(String qualifier) {
-            return this.byteCodeAnalyzer.resolveClass(this.codeContext, qualifier);
+        private Optional<String> resolveClass(String qualifier) {
+            return this.classPoolAccessor.resolveClass(qualifier);
         }
 
         @Override
@@ -396,9 +394,9 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
         }
 
         private boolean refersToClass(@Nonnull FieldAccessExpr fieldAccessExpr, @Nonnull Analysis analysis, @Nonnull String qualifierPrefix) {
-            String resolvedClass = resolveClass(qualifierPrefix + fieldAccessExpr.toString());
-            if (resolvedClass != null) {
-                codeContext.addDependencies(analysis.getTypeName(), resolvedClass);
+            Optional<String> resolvedClass = resolveClass(qualifierPrefix + fieldAccessExpr.toString());
+            if (resolvedClass.isPresent()) {
+                codeContext.addDependencies(analysis.getTypeName(), resolvedClass.get());
                 return true;
             }
             if (FieldAccessExpr.class.isInstance(fieldAccessExpr.getScope())) {
@@ -406,8 +404,8 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
             }
 
             resolvedClass = resolveClass(qualifierPrefix + NameExpr.class.cast(fieldAccessExpr.getScope()).getName());
-            if (resolvedClass != null) {
-                codeContext.addDependencies(analysis.getTypeName(), resolvedClass);
+            if (resolvedClass.isPresent()) {
+                codeContext.addDependencies(analysis.getTypeName(), resolvedClass.get());
                 return true;
             }
             return false;
