@@ -2,6 +2,7 @@ package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.CodeContext;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
@@ -13,7 +14,7 @@ import javax.annotation.Nonnull;
  */
 public abstract class AnalyzerAdapter implements Analyzer {
 
-    protected final org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
     public String toString() {
