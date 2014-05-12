@@ -36,13 +36,29 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
             "java.lang.annotation.Target");
     private final String dependerId;
     private final Collection<String> annotations;
+    private final NonNullFunction<CodeContext, Collection<String>> supplyAnnotationsFoundInClassPath = new NonNullFunction<CodeContext, Collection<String>>() {
+        @Nonnull
+        @Override
+        public Collection<String> apply(@Nonnull CodeContext input) {
+            ClassPool classPool = classPoolAccessorFor(input).getClassPool();
+            Collection<String> knownAnnotations = newArrayList();
+            for (String annotation : annotations) {
+                CtClass annotationClass = classPool.getOrNull(annotation);
+                if (annotationClass != null) {
+                    knownAnnotations.add(annotation);
+                }
+            }
+            logger.debug("[{}] found those annotations in the class path: {}", AnnotationsAnalyzer.this, knownAnnotations);
+            return knownAnnotations;
+        }
+    };
     private final NonNullFunction<CodeContext, List<String>> supplyAnnotationsMarkedAsInherited = new NonNullFunction<CodeContext, List<String>>() {
         @Nonnull
         @Override
         public List<String> apply(@Nonnull CodeContext codeContext) {
             List<String> inheritedAnnotations = newArrayList();
             ClassPool classPool = classPoolAccessorFor(codeContext).getClassPool();
-            for (String annotation : annotations) {
+            for (String annotation : getAnnotationsInClassPath(codeContext)) {
                 CtClass annotationClazz = classPool.getOrNull(annotation);
                 if (annotationClazz == null) {
                     logger.debug("Annotation [{}] cannot be found on the class path; skipping detection", annotation);
@@ -56,6 +72,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
                     logger.debug("@Inherited is not available; we probably deal with Java < 5.");
                 }
             }
+            logger.debug("[{}] found those inheritable annotations: {}", AnnotationsAnalyzer.this, inheritedAnnotations);
             return inheritedAnnotations;
         }
     };
@@ -92,6 +109,11 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
 
     @Override
     protected final void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
+        Collection<String> availableAnnotations = getAnnotationsInClassPath(codeContext);
+        if (availableAnnotations.isEmpty()) {
+            return;
+        }
+
         String className = clazz.getName();
         codeContext.addAnalyzedClass(className);
 
@@ -104,7 +126,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
             return;
         }
 
-        if (!disjoint(this.annotations, allAnnotations)) {
+        if (!disjoint(availableAnnotations, allAnnotations)) {
             codeContext.addDependencies(this.dependerId, className);
         }
     }
@@ -123,7 +145,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
 
     @Nonnull
     private Set<String> getInheritedAnnotations(@Nonnull final CodeContext codeContext, @Nonnull final CtClass clazz) throws NotFoundException {
-        List<String> annotationsMarkedAsInherited = getOrLookUpAnnotationsMarkedAsInherited(codeContext);
+        List<String> annotationsMarkedAsInherited = getAnnotationsMarkedAsInherited(codeContext);
         if (annotationsMarkedAsInherited.isEmpty()) {
             return emptySet();
         }
@@ -139,9 +161,13 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
     }
 
     @Nonnull
-    @SuppressWarnings("unchecked")
-    private List<String> getOrLookUpAnnotationsMarkedAsInherited(@Nonnull final CodeContext codeContext) {
-        return codeContext.getOrCreateCacheEntry(this, supplyAnnotationsMarkedAsInherited);
+    private Collection<String> getAnnotationsInClassPath(@Nonnull CodeContext codeContext) {
+        return codeContext.getOrCreateCacheEntry(getClass().getName() + "|knownAnnotations", supplyAnnotationsFoundInClassPath);
+    }
+
+    @Nonnull
+    private List<String> getAnnotationsMarkedAsInherited(@Nonnull CodeContext codeContext) {
+        return codeContext.getOrCreateCacheEntry(getClass().getName() + "|inheritableAnnotations", supplyAnnotationsMarkedAsInherited);
     }
 
 }
