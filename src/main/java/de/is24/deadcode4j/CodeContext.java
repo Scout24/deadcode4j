@@ -78,10 +78,10 @@ public class CodeContext {
     @Nonnull
     public <T> T getOrCreateCacheEntry(Object key, NonNullFunction<CodeContext, T> supplier) {
         @SuppressWarnings("unchecked")
-        T entry = (T) this.cache.get(key);
+        T entry = (T) getCache().get(key);
         if (entry == null) {
             entry = supplier.apply(this);
-            this.cache.put(key, entry);
+            getCache().put(key, entry);
         }
         return entry;
     }
