@@ -4,6 +4,8 @@ import org.apache.maven.model.Build;
 import org.apache.maven.plugin.testing.stubs.ArtifactStub;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 
+import java.util.Properties;
+
 import static com.google.common.collect.Lists.newArrayList;
 
 public class ProjectStub extends MavenProjectStub {
@@ -14,8 +16,19 @@ public class ProjectStub extends MavenProjectStub {
         artifact.setArtifactId("project");
         artifact.setVersion("42");
         setArtifact(artifact);
+        setGroupId(artifact.getGroupId());
+        setArtifactId(artifact.getArtifactId());
+        setVersion(artifact.getVersion());
+        setPackaging("jar");
 
         setCompileSourceRoots(newArrayList("src/test/java/"));
+    }
+
+    @Override
+    public Properties getProperties() {
+        Properties properties = super.getProperties();
+        properties.setProperty("project.build.sourceEncoding", "UTF-8");
+        return properties;
     }
 
     @SuppressWarnings("UnusedDeclaration") // configured via POM
