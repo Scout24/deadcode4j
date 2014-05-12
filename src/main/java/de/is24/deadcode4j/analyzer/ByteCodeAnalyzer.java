@@ -1,5 +1,9 @@
 package de.is24.deadcode4j.analyzer;
 
+import com.google.common.base.Function;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import de.is24.deadcode4j.CodeContext;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -8,9 +12,13 @@ import javassist.CtMethod;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.AttributeInfo;
 import javassist.bytecode.annotation.Annotation;
+import org.apache.commons.io.IOUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.lang.annotation.ElementType;
 import java.util.Collections;
 import java.util.List;
@@ -93,9 +101,45 @@ public abstract class ByteCodeAnalyzer extends AnalyzerAdapter {
     }
 
     private void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull File clazz) {
-        CtClass ctClass = classPoolAccessorFor(codeContext).loadClass(clazz);
+        CtClass ctClass = getOrCreateClassLoader(codeContext).getUnchecked(clazz);
         logger.debug("Analyzing class [{}]...", ctClass.getName());
         analyzeClass(codeContext, ctClass);
+    }
+
+    private LoadingCache<File, CtClass> getOrCreateClassLoader(CodeContext codeContext) {
+        @SuppressWarnings("unchecked")
+        LoadingCache<File, CtClass> classLoader = (LoadingCache<File, CtClass>) codeContext.getCache().get(ByteCodeAnalyzer.class);
+        if (classLoader == null) {
+            classLoader = createLoaderCache(codeContext);
+            codeContext.getCache().put(ByteCodeAnalyzer.class, classLoader);
+        }
+        return classLoader;
+    }
+
+    @Nonnull
+    private LoadingCache<File, CtClass> createLoaderCache(final CodeContext codeContext) {
+        return CacheBuilder.newBuilder().
+                concurrencyLevel(1).
+                maximumSize(1). // this is fine as long as we process files sequentially
+                build(CacheLoader.from(new Function<File, CtClass>() {
+            @Nullable
+            @Override
+            public CtClass apply(@Nullable File input) {
+                System.out.println("Loading " + input);
+                if (input == null) {
+                    throw new NullPointerException("Cannot load class from [null]!");
+                }
+                FileInputStream in = null;
+                try {
+                    in = new FileInputStream(input);
+                    return getClassPool(codeContext).makeClass(in);
+                } catch (IOException e) {
+                    throw new RuntimeException("Could not load class from [" + input + "]!", e);
+                } finally {
+                    IOUtils.closeQuietly(in);
+                }
+            }
+        }));
     }
 
 }
