@@ -58,7 +58,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
         public List<String> apply(@Nonnull CodeContext codeContext) {
             List<String> inheritedAnnotations = newArrayList();
             ClassPool classPool = classPoolAccessorFor(codeContext).getClassPool();
-            for (String annotation : getAnnotationsInClassPath(codeContext)) {
+            for (String annotation : getAnnotationsFoundInClassPath(codeContext)) {
                 CtClass annotationClazz = classPool.getOrNull(annotation);
                 if (annotationClazz == null) {
                     logger.debug("Annotation [{}] cannot be found on the class path; skipping detection", annotation);
@@ -109,7 +109,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
 
     @Override
     protected final void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
-        Collection<String> availableAnnotations = getAnnotationsInClassPath(codeContext);
+        Collection<String> availableAnnotations = getAnnotationsFoundInClassPath(codeContext);
         if (availableAnnotations.isEmpty()) {
             return;
         }
@@ -161,7 +161,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
     }
 
     @Nonnull
-    private Collection<String> getAnnotationsInClassPath(@Nonnull CodeContext codeContext) {
+    private Collection<String> getAnnotationsFoundInClassPath(@Nonnull CodeContext codeContext) {
         return codeContext.getOrCreateCacheEntry(getClass().getName() + "|knownAnnotations", supplyAnnotationsFoundInClassPath);
     }
 
