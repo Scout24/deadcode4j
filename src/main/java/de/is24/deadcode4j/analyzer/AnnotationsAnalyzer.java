@@ -1,6 +1,7 @@
 package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.analyzer.javassist.ClassPathFilter;
 import de.is24.guava.NonNullFunction;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -9,7 +10,6 @@ import javassist.bytecode.annotation.Annotation;
 
 import javax.annotation.Nonnull;
 import java.lang.annotation.Inherited;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -35,23 +35,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
             "java.lang.annotation.Retention",
             "java.lang.annotation.Target");
     private final String dependerId;
-    private final Collection<String> annotations;
-    private final NonNullFunction<CodeContext, Collection<String>> supplyAnnotationsFoundInClassPath = new NonNullFunction<CodeContext, Collection<String>>() {
-        @Nonnull
-        @Override
-        public Collection<String> apply(@Nonnull CodeContext input) {
-            ClassPool classPool = classPoolAccessorFor(input).getClassPool();
-            Collection<String> knownAnnotations = newArrayList();
-            for (String annotation : annotations) {
-                CtClass annotationClass = classPool.getOrNull(annotation);
-                if (annotationClass != null) {
-                    knownAnnotations.add(annotation);
-                }
-            }
-            logger.debug("Found those annotations in the class path: {}", knownAnnotations);
-            return knownAnnotations;
-        }
-    };
+    private final NonNullFunction<CodeContext, Set<String>> supplyAnnotationsFoundInClassPath;
     private final NonNullFunction<CodeContext, List<String>> supplyAnnotationsMarkedAsInherited = new NonNullFunction<CodeContext, List<String>>() {
         @Nonnull
         @Override
@@ -69,7 +53,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
                         inheritedAnnotations.add(annotation);
                     }
                 } catch (ClassNotFoundException e) {
-                    logger.debug("@Inherited is not available; we probably deal with Java < 5.");
+                    logger.debug("@Inherited is not available; this is quite disturbing.");
                 }
             }
             logger.debug("Found those inheritable annotations: {}", inheritedAnnotations);
@@ -77,10 +61,10 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
         }
     };
 
-    private AnnotationsAnalyzer(@Nonnull String dependerId, @Nonnull Collection<String> annotations) {
+    private AnnotationsAnalyzer(@Nonnull String dependerId, @Nonnull Set<String> annotations) {
+        checkArgument(!annotations.isEmpty(), "annotations cannot by empty!");
         this.dependerId = dependerId;
-        this.annotations = annotations;
-        checkArgument(!this.annotations.isEmpty(), "annotations cannot by empty!");
+        this.supplyAnnotationsFoundInClassPath = new ClassPathFilter(annotations);
     }
 
     /**
@@ -109,7 +93,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
 
     @Override
     protected final void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
-        Collection<String> availableAnnotations = getAnnotationsFoundInClassPath(codeContext);
+        Set<String> availableAnnotations = getAnnotationsFoundInClassPath(codeContext);
         if (availableAnnotations.isEmpty()) {
             return;
         }
@@ -161,7 +145,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
     }
 
     @Nonnull
-    private Collection<String> getAnnotationsFoundInClassPath(@Nonnull CodeContext codeContext) {
+    private Set<String> getAnnotationsFoundInClassPath(@Nonnull CodeContext codeContext) {
         return codeContext.getOrCreateCacheEntry(getClass().getName() + "|knownAnnotations", supplyAnnotationsFoundInClassPath);
     }
 
