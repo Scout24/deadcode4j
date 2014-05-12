@@ -16,6 +16,11 @@ public abstract class AnalyzerAdapter implements Analyzer {
     protected final org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
+    public String toString() {
+        return getClass().getName();
+    }
+
+    @Override
     public void finishAnalysis(@Nonnull CodeContext codeContext) {
     }
 
