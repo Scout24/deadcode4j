@@ -125,7 +125,6 @@ public abstract class ByteCodeAnalyzer extends AnalyzerAdapter {
             @Nullable
             @Override
             public CtClass apply(@Nullable File input) {
-                System.out.println("Loading " + input);
                 if (input == null) {
                     throw new NullPointerException("Cannot load class from [null]!");
                 }
