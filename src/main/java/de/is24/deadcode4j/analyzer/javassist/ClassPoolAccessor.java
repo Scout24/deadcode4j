@@ -7,6 +7,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import de.is24.deadcode4j.CodeContext;
 import de.is24.deadcode4j.Repository;
+import de.is24.guava.NonNullFunction;
 import javassist.ClassPool;
 import javassist.NotFoundException;
 
@@ -27,6 +28,14 @@ import static com.google.common.collect.Sets.newHashSet;
  */
 public final class ClassPoolAccessor {
     @Nonnull
+    private static final NonNullFunction<CodeContext, ClassPoolAccessor> SUPPLIER = new NonNullFunction<CodeContext, ClassPoolAccessor>() {
+        @Nonnull
+        @Override
+        public ClassPoolAccessor apply(@Nonnull CodeContext input) {
+            return new ClassPoolAccessor(input);
+        }
+    };
+    @Nonnull
     private final ClassPool classPool;
     @Nonnull
     private final LoadingCache<String, Optional<String>> classResolver;
@@ -44,12 +53,7 @@ public final class ClassPoolAccessor {
      */
     @Nonnull
     public static ClassPoolAccessor classPoolAccessorFor(@Nonnull CodeContext codeContext) {
-        ClassPoolAccessor classPoolAccessor = (ClassPoolAccessor) codeContext.getCache().get(ClassPoolAccessor.class);
-        if (classPoolAccessor == null) {
-            classPoolAccessor = new ClassPoolAccessor(codeContext);
-            codeContext.getCache().put(ClassPoolAccessor.class, classPoolAccessor);
-        }
-        return classPoolAccessor;
+        return codeContext.getOrCreateCacheEntry(ClassPoolAccessor.class, SUPPLIER);
     }
 
     @Nonnull

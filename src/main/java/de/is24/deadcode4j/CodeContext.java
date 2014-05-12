@@ -1,5 +1,6 @@
 package de.is24.deadcode4j;
 
+import de.is24.guava.NonNullFunction;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
@@ -72,6 +73,17 @@ public class CodeContext {
     @Nonnull
     public Map<Object, Object> getCache() {
         return cache;
+    }
+
+    @Nonnull
+    public <T> T getOrCreateCacheEntry(Object key, NonNullFunction<CodeContext, T> supplier) {
+        @SuppressWarnings("unchecked")
+        T entry = (T) this.cache.get(key);
+        if (entry == null) {
+            entry = supplier.apply(this);
+            this.cache.put(key, entry);
+        }
+        return entry;
     }
 
     @Nullable
