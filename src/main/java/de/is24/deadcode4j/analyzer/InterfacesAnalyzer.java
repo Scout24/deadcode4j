@@ -1,6 +1,8 @@
 package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.CodeContext;
+import de.is24.guava.NonNullFunction;
+import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;
 
@@ -9,6 +11,7 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Sets.newHashSet;
+import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
 import static java.util.Collections.disjoint;
 
 /**
@@ -23,6 +26,22 @@ public abstract class InterfacesAnalyzer extends ByteCodeAnalyzer {
     private final String dependerId;
     @Nonnull
     private final Set<String> interfaceClasses;
+    private final NonNullFunction<CodeContext, Set<String>> supplyInterfacesFoundInClassPath = new NonNullFunction<CodeContext, Set<String>>() {
+        @Nonnull
+        @Override
+        public Set<String> apply(@Nonnull CodeContext input) {
+            ClassPool classPool = classPoolAccessorFor(input).getClassPool();
+            Set<String> knownClasses = newHashSet();
+            for (String className : interfaceClasses) {
+                CtClass ctClass = classPool.getOrNull(className);
+                if (ctClass != null) {
+                    knownClasses.add(className);
+                }
+            }
+            logger.debug("Found those interfaces in the class path: {}", knownClasses);
+            return knownClasses;
+        }
+    };
 
     private InterfacesAnalyzer(@Nonnull String dependerId, @Nonnull Set<String> interfaceNames) {
         this.dependerId = dependerId;
@@ -58,6 +77,10 @@ public abstract class InterfacesAnalyzer extends ByteCodeAnalyzer {
 
     @Override
     protected final void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
+        Set<String> knownInterfaces = getInterfacesFoundInClassPath(codeContext);
+        if (knownInterfaces.isEmpty()) {
+            return;
+        }
         String clazzName = clazz.getName();
         codeContext.addAnalyzedClass(clazzName);
 
@@ -68,7 +91,7 @@ public abstract class InterfacesAnalyzer extends ByteCodeAnalyzer {
             logger.warn("The class path is not correctly set up; could not load [{}]! Skipping interfaces check for {}.", e.getMessage(), clazz.getName());
             return;
         }
-        if (!disjoint(this.interfaceClasses, allImplementedInterfaces)) {
+        if (!disjoint(knownInterfaces, allImplementedInterfaces)) {
             codeContext.addDependencies(this.dependerId, clazzName);
         }
     }
@@ -85,6 +108,11 @@ public abstract class InterfacesAnalyzer extends ByteCodeAnalyzer {
             loopClass = loopClass.getSuperclass();
         } while (loopClass != null && !"java.lang.Object".equals(loopClass.getName()));
         return interfaces;
+    }
+
+    @Nonnull
+    private Set<String> getInterfacesFoundInClassPath(@Nonnull CodeContext codeContext) {
+        return codeContext.getOrCreateCacheEntry(getClass(), supplyInterfacesFoundInClassPath);
     }
 
 }
