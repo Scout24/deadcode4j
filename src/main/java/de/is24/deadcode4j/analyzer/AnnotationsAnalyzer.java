@@ -16,6 +16,7 @@ import java.util.Set;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
+import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
 import static java.lang.annotation.ElementType.PACKAGE;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.util.Collections.disjoint;
@@ -40,7 +41,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
         @Override
         public List<String> apply(@Nonnull CodeContext codeContext) {
             List<String> inheritedAnnotations = newArrayList();
-            ClassPool classPool = getClassPool(codeContext);
+            ClassPool classPool = classPoolAccessorFor(codeContext).getClassPool();
             for (String annotation : annotations) {
                 CtClass annotationClazz = classPool.getOrNull(annotation);
                 if (annotationClazz == null) {
@@ -115,8 +116,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
                 continue;
             if (DEAD_ENDS.contains(annotationClassName))
                 continue;
-            ClassPool classPool = getClassPool(codeContext);
-            CtClass annotationClazz = classPool.get(annotationClassName);
+            CtClass annotationClazz = classPoolAccessorFor(codeContext).getClassPool().get(annotationClassName);
             addAnnotations(codeContext, annotationClazz, knownAnnotations);
         }
     }

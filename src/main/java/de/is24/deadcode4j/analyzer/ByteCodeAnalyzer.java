@@ -5,7 +5,6 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import de.is24.deadcode4j.CodeContext;
 import de.is24.guava.NonNullFunction;
-import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtField;
 import javassist.CtMethod;
@@ -32,6 +31,7 @@ import static java.util.Arrays.asList;
 /**
  * Serves as a base class with which to analyze byte code (classes).
  *
+ * @see de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor
  * @since 1.3
  */
 @SuppressWarnings("PMD.TooManyStaticImports")
@@ -115,16 +115,6 @@ public abstract class ByteCodeAnalyzer extends AnalyzerAdapter {
      * @since 1.3
      */
     protected abstract void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz);
-
-    /**
-     * Returns the <code>ClassPool</code> used for examining classes.
-     *
-     * @since 1.6
-     */
-    @Nonnull
-    protected final ClassPool getClassPool(@Nonnull CodeContext codeContext) {
-        return classPoolAccessorFor(codeContext).getClassPool();
-    }
 
     private void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull File clazz) {
         CtClass ctClass = getOrCreateClassLoader(codeContext).getUnchecked(clazz);
