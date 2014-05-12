@@ -1,10 +1,10 @@
 package de.is24.deadcode4j.analyzer;
 
-import com.google.common.base.Function;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import de.is24.deadcode4j.CodeContext;
+import de.is24.guava.NonNullFunction;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtField;
@@ -15,7 +15,6 @@ import javassist.bytecode.annotation.Annotation;
 import org.apache.commons.io.IOUtils;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -25,6 +24,7 @@ import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
+import static de.is24.guava.NonNullFunctions.toFunction;
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.util.Arrays.asList;
@@ -36,6 +36,32 @@ import static java.util.Arrays.asList;
  */
 @SuppressWarnings("PMD.TooManyStaticImports")
 public abstract class ByteCodeAnalyzer extends AnalyzerAdapter {
+
+    private static final NonNullFunction<CodeContext, LoadingCache<File, CtClass>> SUPPLIER =
+            new NonNullFunction<CodeContext, LoadingCache<File, CtClass>>() {
+                @Nonnull
+                @Override
+                public LoadingCache<File, CtClass> apply(@Nonnull final CodeContext codeContext) {
+                    return CacheBuilder.newBuilder().
+                            concurrencyLevel(1).
+                            maximumSize(1). // this is fine as long as we process files sequentially
+                            build(CacheLoader.from(toFunction(new NonNullFunction<File, CtClass>() {
+                        @Nonnull
+                        @Override
+                        public CtClass apply(@Nonnull File file) {
+                            FileInputStream in = null;
+                            try {
+                                in = new FileInputStream(file);
+                                return classPoolAccessorFor(codeContext).getClassPool().makeClass(in);
+                            } catch (IOException e) {
+                                throw new RuntimeException("Could not load class from [" + file + "]!", e);
+                            } finally {
+                                IOUtils.closeQuietly(in);
+                            }
+                        }
+                    })));
+                }
+            };
 
     /**
      * Retrieves all annotations of a package/class and its members (if requested).
@@ -107,38 +133,7 @@ public abstract class ByteCodeAnalyzer extends AnalyzerAdapter {
     }
 
     private LoadingCache<File, CtClass> getOrCreateClassLoader(CodeContext codeContext) {
-        @SuppressWarnings("unchecked")
-        LoadingCache<File, CtClass> classLoader = (LoadingCache<File, CtClass>) codeContext.getCache().get(ByteCodeAnalyzer.class);
-        if (classLoader == null) {
-            classLoader = createLoaderCache(codeContext);
-            codeContext.getCache().put(ByteCodeAnalyzer.class, classLoader);
-        }
-        return classLoader;
-    }
-
-    @Nonnull
-    private LoadingCache<File, CtClass> createLoaderCache(final CodeContext codeContext) {
-        return CacheBuilder.newBuilder().
-                concurrencyLevel(1).
-                maximumSize(1). // this is fine as long as we process files sequentially
-                build(CacheLoader.from(new Function<File, CtClass>() {
-            @Nullable
-            @Override
-            public CtClass apply(@Nullable File input) {
-                if (input == null) {
-                    throw new NullPointerException("Cannot load class from [null]!");
-                }
-                FileInputStream in = null;
-                try {
-                    in = new FileInputStream(input);
-                    return getClassPool(codeContext).makeClass(in);
-                } catch (IOException e) {
-                    throw new RuntimeException("Could not load class from [" + input + "]!", e);
-                } finally {
-                    IOUtils.closeQuietly(in);
-                }
-            }
-        }));
+        return codeContext.getOrCreateCacheEntry(ByteCodeAnalyzer.class, SUPPLIER);
     }
 
 }
