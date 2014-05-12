@@ -1,8 +1,8 @@
 package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.analyzer.javassist.ClassPathFilter;
 import de.is24.guava.NonNullFunction;
-import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;
 
@@ -11,7 +11,6 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Sets.newHashSet;
-import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
 import static java.util.Collections.disjoint;
 
 /**
@@ -24,29 +23,12 @@ public abstract class InterfacesAnalyzer extends ByteCodeAnalyzer {
 
     @Nonnull
     private final String dependerId;
-    @Nonnull
-    private final Set<String> interfaceClasses;
-    private final NonNullFunction<CodeContext, Set<String>> supplyInterfacesFoundInClassPath = new NonNullFunction<CodeContext, Set<String>>() {
-        @Nonnull
-        @Override
-        public Set<String> apply(@Nonnull CodeContext input) {
-            ClassPool classPool = classPoolAccessorFor(input).getClassPool();
-            Set<String> knownClasses = newHashSet();
-            for (String className : interfaceClasses) {
-                CtClass ctClass = classPool.getOrNull(className);
-                if (ctClass != null) {
-                    knownClasses.add(className);
-                }
-            }
-            logger.debug("Found those interfaces in the class path: {}", knownClasses);
-            return knownClasses;
-        }
-    };
+    private final NonNullFunction<CodeContext, Set<String>> supplyInterfacesFoundInClassPath;
 
     private InterfacesAnalyzer(@Nonnull String dependerId, @Nonnull Set<String> interfaceNames) {
+        checkArgument(!interfaceNames.isEmpty(), "interfaceNames cannot by empty!");
         this.dependerId = dependerId;
-        this.interfaceClasses = interfaceNames;
-        checkArgument(!this.interfaceClasses.isEmpty(), "interfaceNames cannot by empty!");
+        this.supplyInterfacesFoundInClassPath = new ClassPathFilter(interfaceNames);
     }
 
     /**
