@@ -48,7 +48,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
                     knownAnnotations.add(annotation);
                 }
             }
-            logger.debug("[{}] found those annotations in the class path: {}", AnnotationsAnalyzer.this, knownAnnotations);
+            logger.debug("Found those annotations in the class path: {}", knownAnnotations);
             return knownAnnotations;
         }
     };
@@ -72,7 +72,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
                     logger.debug("@Inherited is not available; we probably deal with Java < 5.");
                 }
             }
-            logger.debug("[{}] found those inheritable annotations: {}", AnnotationsAnalyzer.this, inheritedAnnotations);
+            logger.debug("Found those inheritable annotations: {}", inheritedAnnotations);
             return inheritedAnnotations;
         }
     };
