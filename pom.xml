@@ -169,6 +169,7 @@
                             <cloneClean>true</cloneClean>
                             <cloneProjectsTo>${project.build.directory}/it-projects</cloneProjectsTo>
                             <goals>
+                                <goal>clean</goal>
                                 <goal>${project.groupId}:${project.artifactId}:find</goal>
                             </goals>
                             <pomExcludes>
