@@ -70,14 +70,16 @@ class ModuleGenerator {
             @Nonnull
             @Override
             public Optional<File> apply(@Nonnull Artifact input) {
-                ArtifactResolutionRequest request = new ArtifactResolutionRequest();
-                request.setResolveRoot(true);
-                request.setResolveTransitively(false);
-                request.setArtifact(input);
-                ArtifactResolutionResult artifactResolutionResult = repositorySystem.resolve(request);
-                if (!artifactResolutionResult.isSuccess()) {
-                    logger.warn("  Failed to resolve [{}]; some analyzers may not work properly.", getVersionedKeyFor(input));
-                    return absent();
+                if (!input.isResolved()) {
+                    ArtifactResolutionRequest request = new ArtifactResolutionRequest();
+                    request.setResolveRoot(true);
+                    request.setResolveTransitively(false);
+                    request.setArtifact(input);
+                    ArtifactResolutionResult artifactResolutionResult = repositorySystem.resolve(request);
+                    if (!artifactResolutionResult.isSuccess()) {
+                        logger.warn("  Failed to resolve [{}]; some analyzers may not work properly.", getVersionedKeyFor(input));
+                        return absent();
+                    }
                 }
                 File classPathElement = input.getFile();
                 if (classPathElement == null) {
