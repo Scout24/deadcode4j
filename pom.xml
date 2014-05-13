@@ -208,6 +208,7 @@
                         </goals>
                         <configuration>
                             <tasks>
+                                <delete dir="${testScenarios.directory}"/>
                                 <copy toDir="${testScenarios.directory}">
                                     <fileset dir="${project.build.testOutputDirectory}" includes="*,META-INF/**">
                                         <type type="file"/>
