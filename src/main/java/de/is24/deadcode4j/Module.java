@@ -3,7 +3,6 @@ package de.is24.deadcode4j;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.Ordering;
-import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +11,6 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import static com.google.common.collect.Iterables.addAll;
 import static com.google.common.collect.Lists.newArrayList;
@@ -69,7 +67,7 @@ public class Module {
     @Nonnull
     public static Iterable<Module> sort(@Nonnull Iterable<Module> modules) {
         List<Module> unsortedModules = newArrayList(modules);
-        Set<Module> sortedModules = Sets.newHashSetWithExpectedSize(unsortedModules.size());
+        List<Module> sortedModules = newArrayListWithCapacity(unsortedModules.size());
         while (!unsortedModules.isEmpty()) {
             List<Module> modulesToAdd = newArrayList();
             for (Module module : unsortedModules) {
