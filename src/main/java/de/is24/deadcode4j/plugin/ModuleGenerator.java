@@ -2,8 +2,6 @@ package de.is24.deadcode4j.plugin;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import de.is24.deadcode4j.Module;
 import de.is24.deadcode4j.Repository;
@@ -14,6 +12,7 @@ import de.is24.deadcode4j.plugin.packaginghandler.PomPackagingHandler;
 import de.is24.deadcode4j.plugin.packaginghandler.WarPackagingHandler;
 import de.is24.guava.NonNullFunction;
 import de.is24.guava.NonNullFunctions;
+import de.is24.guava.SequentialLoadingCache;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
@@ -66,7 +65,7 @@ class ModuleGenerator {
     public ModuleGenerator(@Nonnull final RepositorySystem repositorySystem) {
         packagingHandlers.put("pom", new PomPackagingHandler());
         packagingHandlers.put("war", new WarPackagingHandler());
-        artifactResolverCache = CacheBuilder.newBuilder().concurrencyLevel(1).build(CacheLoader.from(NonNullFunctions.toFunction(new NonNullFunction<Artifact, Optional<File>>() {
+        artifactResolverCache = new SequentialLoadingCache<Artifact, File>(NonNullFunctions.toFunction(new NonNullFunction<Artifact, Optional<File>>() {
             @Nonnull
             @Override
             public Optional<File> apply(@Nonnull Artifact input) {
@@ -88,7 +87,7 @@ class ModuleGenerator {
                 }
                 return of(classPathElement);
             }
-        })));
+        }));
     }
 
     /**
