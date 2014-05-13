@@ -56,6 +56,20 @@ public final class A_SequentialLoadingCacheTest {
         assertThat(sequenceFunction.sequence, is(0));
     }
 
+    @Test
+    public void cachesOnlyOneValue() {
+        objectUnderTest = SequentialLoadingCache.createSingleValueCache(sequenceFunction);
+
+        objectUnderTest.getUnchecked("foo");
+        objectUnderTest.getUnchecked("foo");
+        objectUnderTest.getUnchecked("bar");
+        objectUnderTest.getUnchecked("bar");
+        Optional<Integer> result = objectUnderTest.getUnchecked("foo");
+
+        assertThat(result.isPresent(), is(true));
+        assertThat(result.get(), is(2));
+    }
+
     private static class SequenceFunction implements Function<Object, Optional<Integer>> {
         public int sequence = 0;
         @Nullable

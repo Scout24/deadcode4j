@@ -1,10 +1,10 @@
 package de.is24.deadcode4j.analyzer;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
+import com.google.common.base.Optional;
 import com.google.common.cache.LoadingCache;
 import de.is24.deadcode4j.CodeContext;
 import de.is24.guava.NonNullFunction;
+import de.is24.guava.SequentialLoadingCache;
 import javassist.CtClass;
 import javassist.CtField;
 import javassist.CtMethod;
@@ -21,6 +21,7 @@ import java.lang.annotation.ElementType;
 import java.util.Collections;
 import java.util.List;
 
+import static com.google.common.base.Optional.of;
 import static com.google.common.collect.Lists.newArrayList;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
 import static de.is24.guava.NonNullFunctions.toFunction;
@@ -37,29 +38,26 @@ import static java.util.Arrays.asList;
 @SuppressWarnings("PMD.TooManyStaticImports")
 public abstract class ByteCodeAnalyzer extends AnalyzerAdapter {
 
-    private static final NonNullFunction<CodeContext, LoadingCache<File, CtClass>> SUPPLIER =
-            new NonNullFunction<CodeContext, LoadingCache<File, CtClass>>() {
+    private static final NonNullFunction<CodeContext, LoadingCache<File, Optional<CtClass>>> SUPPLIER =
+            new NonNullFunction<CodeContext, LoadingCache<File, Optional<CtClass>>>() {
                 @Nonnull
                 @Override
-                public LoadingCache<File, CtClass> apply(@Nonnull final CodeContext codeContext) {
-                    return CacheBuilder.newBuilder().
-                            concurrencyLevel(1).
-                            maximumSize(1). // this is fine as long as we process files sequentially
-                            build(CacheLoader.from(toFunction(new NonNullFunction<File, CtClass>() {
+                public LoadingCache<File, Optional<CtClass>> apply(@Nonnull final CodeContext codeContext) {
+                    return SequentialLoadingCache.createSingleValueCache(toFunction(new NonNullFunction<File, Optional<CtClass>>() {
                         @Nonnull
                         @Override
-                        public CtClass apply(@Nonnull File file) {
+                        public Optional<CtClass> apply(@Nonnull File file) {
                             FileInputStream in = null;
                             try {
                                 in = new FileInputStream(file);
-                                return classPoolAccessorFor(codeContext).getClassPool().makeClass(in);
+                                return of(classPoolAccessorFor(codeContext).getClassPool().makeClass(in));
                             } catch (IOException e) {
                                 throw new RuntimeException("Could not load class from [" + file + "]!", e);
                             } finally {
                                 IOUtils.closeQuietly(in);
                             }
                         }
-                    })));
+                    }));
                 }
             };
 
@@ -117,12 +115,12 @@ public abstract class ByteCodeAnalyzer extends AnalyzerAdapter {
     protected abstract void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz);
 
     private void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull File clazz) {
-        CtClass ctClass = getOrCreateClassLoader(codeContext).getUnchecked(clazz);
+        CtClass ctClass = getOrCreateClassLoader(codeContext).getUnchecked(clazz).get();
         logger.debug("Analyzing class [{}]...", ctClass.getName());
         analyzeClass(codeContext, ctClass);
     }
 
-    private LoadingCache<File, CtClass> getOrCreateClassLoader(CodeContext codeContext) {
+    private LoadingCache<File, Optional<CtClass>> getOrCreateClassLoader(CodeContext codeContext) {
         return codeContext.getOrCreateCacheEntry(ByteCodeAnalyzer.class, SUPPLIER);
     }
 

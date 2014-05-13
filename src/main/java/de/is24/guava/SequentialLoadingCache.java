@@ -7,6 +7,7 @@ import com.google.common.collect.Maps;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -21,7 +22,7 @@ import java.util.concurrent.ExecutionException;
 public class SequentialLoadingCache<K, V> extends AbstractLoadingCache<K, Optional<V>> {
 
     @Nonnull
-    private final Map<K, Optional<V>> cache = Maps.newHashMap();
+    private final Map<K, Optional<V>> cache;
     @Nonnull
     private final Function<K, Optional<V>> cacheLoader;
 
@@ -30,8 +31,34 @@ public class SequentialLoadingCache<K, V> extends AbstractLoadingCache<K, Option
      *
      * @since 1.6
      */
-    public SequentialLoadingCache(@Nonnull Function<K, Optional<V>> cacheLoader) {
+    protected SequentialLoadingCache(@Nonnull Map<K, Optional<V>> cache, @Nonnull Function<K, Optional<V>> cacheLoader) {
+        this.cache = cache;
         this.cacheLoader = cacheLoader;
+    }
+
+    /**
+     * Creates a <code>SequentialLoadingCache</code> that uses the given function to load the values.
+     *
+     * @since 1.6
+     */
+    public SequentialLoadingCache(@Nonnull Function<K, Optional<V>> cacheLoader) {
+        this(Maps.<K, Optional<V>>newHashMap(), cacheLoader);
+    }
+
+    /**
+     * Creates a <code>SequentialLoadingCache</code> that only caches one value.
+     *
+     * @see #SequentialLoadingCache(com.google.common.base.Function)
+     * @since 1.6
+     */
+    public static <K, V> SequentialLoadingCache<K, V> createSingleValueCache(@Nonnull Function<K, Optional<V>> cacheLoader) {
+        return new SequentialLoadingCache<K, V>(new HashMap<K, Optional<V>>() {
+            @Override
+            public Optional<V> put(K key, Optional<V> value) {
+                super.clear();
+                return super.put(key, value);
+            }
+        }, cacheLoader);
     }
 
     @Nonnull
