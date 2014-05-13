@@ -1,6 +1,10 @@
 package de.is24.deadcode4j.plugin;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import de.is24.deadcode4j.Module;
 import de.is24.deadcode4j.Repository;
 import de.is24.deadcode4j.Resource;
@@ -8,6 +12,8 @@ import de.is24.deadcode4j.plugin.packaginghandler.DefaultPackagingHandler;
 import de.is24.deadcode4j.plugin.packaginghandler.PackagingHandler;
 import de.is24.deadcode4j.plugin.packaginghandler.PomPackagingHandler;
 import de.is24.deadcode4j.plugin.packaginghandler.WarPackagingHandler;
+import de.is24.guava.NonNullFunction;
+import de.is24.guava.NonNullFunctions;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
@@ -25,6 +31,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import static com.google.common.base.Optional.absent;
+import static com.google.common.base.Optional.of;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
@@ -46,7 +54,7 @@ class ModuleGenerator {
     @Nonnull
     private final Map<String, PackagingHandler> packagingHandlers = newHashMap();
     @Nonnull
-    private final RepositorySystem repositorySystem;
+    private final LoadingCache<Artifact, Optional<File>> artifactResolverCache;
 
     /**
      * Creates a new <code>ModuleGenerator</code>.
@@ -55,10 +63,30 @@ class ModuleGenerator {
      *                         examined maven projects
      * @since 1.6
      */
-    public ModuleGenerator(@Nonnull RepositorySystem repositorySystem) {
-        this.repositorySystem = repositorySystem;
+    public ModuleGenerator(@Nonnull final RepositorySystem repositorySystem) {
         packagingHandlers.put("pom", new PomPackagingHandler());
         packagingHandlers.put("war", new WarPackagingHandler());
+        artifactResolverCache = CacheBuilder.newBuilder().concurrencyLevel(1).build(CacheLoader.from(NonNullFunctions.toFunction(new NonNullFunction<Artifact, Optional<File>>() {
+            @Nonnull
+            @Override
+            public Optional<File> apply(@Nonnull Artifact input) {
+                ArtifactResolutionRequest request = new ArtifactResolutionRequest();
+                request.setResolveRoot(true);
+                request.setResolveTransitively(false);
+                request.setArtifact(input);
+                ArtifactResolutionResult artifactResolutionResult = repositorySystem.resolve(request);
+                if (!artifactResolutionResult.isSuccess()) {
+                    logger.warn("  Failed to resolve [{}]; some analyzers may not work properly.", getVersionedKeyFor(input));
+                    return absent();
+                }
+                File classPathElement = input.getFile();
+                if (classPathElement == null) {
+                    logger.warn("  No valid path to [{}] found; some analyzers may not work properly.", getVersionedKeyFor(input));
+                    return absent();
+                }
+                return of(classPathElement);
+            }
+        })));
     }
 
     /**
@@ -108,8 +136,12 @@ class ModuleGenerator {
             if (addKnownArtifact(dependencies, dependency, knownModules)) {
                 continue;
             }
-            resolveArtifact(dependency);
-            addArtifactPath(dependencies, dependency);
+            final Optional<File> artifactPath = this.artifactResolverCache.getUnchecked(dependency);
+            if (artifactPath.isPresent()) {
+                final File classPathElement = artifactPath.get();
+                dependencies.add(Resource.of(classPathElement));
+                logger.debug("  Added artifact: [{}]", classPathElement);
+            }
         }
         logger.debug("[{}] dependencies found for [{}].", dependencies.size(), getKeyFor(project));
         return dependencies;
@@ -138,30 +170,6 @@ class ModuleGenerator {
         resources.add(Resource.of(knownModule));
         logger.debug("  Added project: [{}]", knownModule);
         return true;
-    }
-
-    private void resolveArtifact(@Nonnull Artifact artifact) {
-        if (artifact.isResolved()) {
-            return;
-        }
-        ArtifactResolutionRequest request = new ArtifactResolutionRequest();
-        request.setArtifact(artifact);
-        ArtifactResolutionResult artifactResolutionResult = repositorySystem.resolve(request);
-        if (!artifactResolutionResult.isSuccess()) {
-            logger.warn("  Failed to resolve [{}]; some analyzers may not work properly.", getVersionedKeyFor(artifact));
-        }
-    }
-
-    private void addArtifactPath(
-            @Nonnull List<Resource> resources,
-            @Nonnull Artifact artifact) {
-        File classPathElement = artifact.getFile();
-        if (classPathElement == null) {
-            logger.warn("  No valid path to [{}] found; some analyzers may not work properly.", getVersionedKeyFor(artifact));
-            return;
-        }
-        resources.add(Resource.of(classPathElement));
-        logger.debug("  Added artifact: [{}]", classPathElement);
     }
 
 }
