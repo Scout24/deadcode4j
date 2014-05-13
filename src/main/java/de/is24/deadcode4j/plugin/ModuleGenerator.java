@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.google.common.collect.Iterables.filter;
-import static com.google.common.collect.Iterables.size;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static de.is24.deadcode4j.Utils.*;
@@ -73,19 +72,13 @@ class ModuleGenerator {
      */
     @Nonnull
     public Iterable<Module> getModulesFor(@Nonnull Iterable<MavenProject> projects) throws MojoExecutionException {
-        List<Module> modules = newArrayList();
         Map<String, Module> knownModules = newHashMap();
         for (MavenProject project : projects) {
             Module module = getModuleFor(project, knownModules);
             knownModules.put(module.getModuleId(), module);
-            if (size(module.getAllRepositories()) > 0) {
-                modules.add(module);
-                logger.debug("Added [{}] for [{}].", module, project);
-            } else {
-                logger.info("Project [{}] does not provide any repository, therefore it will be skipped.", module.getModuleId());
-            }
+            logger.debug("Added [{}] for [{}].", module, project);
         }
-        return modules;
+        return knownModules.values();
     }
 
     @Nonnull
