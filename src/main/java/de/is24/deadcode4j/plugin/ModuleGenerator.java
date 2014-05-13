@@ -1,6 +1,11 @@
 package de.is24.deadcode4j.plugin;
 
+import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import de.is24.deadcode4j.Module;
 import de.is24.deadcode4j.Repository;
 import de.is24.deadcode4j.Resource;
@@ -25,6 +30,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import static com.google.common.base.Optional.absent;
+import static com.google.common.base.Optional.of;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
@@ -46,7 +53,7 @@ class ModuleGenerator {
     @Nonnull
     private final Map<String, PackagingHandler> packagingHandlers = newHashMap();
     @Nonnull
-    private final RepositorySystem repositorySystem;
+    private final LoadingCache<Artifact, Optional<Artifact>> artifactCache;
 
     /**
      * Creates a new <code>ModuleGenerator</code>.
@@ -55,10 +62,28 @@ class ModuleGenerator {
      *                         examined maven projects
      * @since 1.6
      */
-    public ModuleGenerator(@Nonnull RepositorySystem repositorySystem) {
-        this.repositorySystem = repositorySystem;
+    public ModuleGenerator(@Nonnull final RepositorySystem repositorySystem) {
         packagingHandlers.put("pom", new PomPackagingHandler());
         packagingHandlers.put("war", new WarPackagingHandler());
+        artifactCache = CacheBuilder.newBuilder().concurrencyLevel(1).build(CacheLoader.from(new Function<Artifact, Optional<Artifact>>() {
+            @Nullable
+            @Override
+            public Optional<Artifact> apply(@Nullable Artifact input) {
+                if (input == null) {
+                    return absent();
+                }
+                ArtifactResolutionRequest request = new ArtifactResolutionRequest();
+                request.setResolveRoot(true);
+                request.setResolveTransitively(false);
+                request.setArtifact(input);
+                ArtifactResolutionResult artifactResolutionResult = repositorySystem.resolve(request);
+                if (!artifactResolutionResult.isSuccess()) {
+                    logger.warn("  Failed to resolve [{}]; some analyzers may not work properly.", getVersionedKeyFor(input));
+                    return absent();
+                }
+                return of(input);
+            }
+        }));
     }
 
     /**
@@ -140,16 +165,12 @@ class ModuleGenerator {
         return true;
     }
 
-    private void resolveArtifact(@Nonnull Artifact artifact) {
+    private Artifact resolveArtifact(@Nonnull Artifact artifact) {
         if (artifact.isResolved()) {
-            return;
+            return artifact;
         }
-        ArtifactResolutionRequest request = new ArtifactResolutionRequest();
-        request.setArtifact(artifact);
-        ArtifactResolutionResult artifactResolutionResult = repositorySystem.resolve(request);
-        if (!artifactResolutionResult.isSuccess()) {
-            logger.warn("  Failed to resolve [{}]; some analyzers may not work properly.", getVersionedKeyFor(artifact));
-        }
+        final Optional<Artifact> resolvedArtifact = artifactCache.getUnchecked(artifact);
+        return resolvedArtifact.isPresent() ? resolvedArtifact.get() : artifact;
     }
 
     private void addArtifactPath(
