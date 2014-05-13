@@ -1,12 +1,3 @@
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import java.util.Set;
-
+import de.is24.deadcode4j.junit.SomeInterface;
 @SuppressWarnings("UnusedDeclaration")
-public class SomeServletInitializer implements ServletContainerInitializer {
-    @Override
-    public void onStartup(Set<Class<?>> classes, ServletContext servletContext) throws ServletException {
-
-    }
-}
+public class SomeServletInitializer implements SomeInterface { }

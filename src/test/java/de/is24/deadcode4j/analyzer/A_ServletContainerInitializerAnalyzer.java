@@ -6,7 +6,8 @@ public class A_ServletContainerInitializerAnalyzer extends AnAnalyzer<ServletCon
 
     @Override
     protected ServletContainerInitializerAnalyzer createAnalyzer() {
-        return new ServletContainerInitializerAnalyzer();
+        return new ServletContainerInitializerAnalyzer("JUnit", "de.is24.deadcode4j.junit.SomeInterface") {
+        };
     }
 
     @Test
