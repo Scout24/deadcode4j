@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-public class An_XmlAnalyzer extends AnAnalyzer {
+public class An_XmlAnalyzer extends AnAnalyzer<XmlAnalyzer> {
 
     @Test
     public void parsesMatchingFile() {
