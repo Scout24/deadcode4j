@@ -2,12 +2,11 @@ package de.is24.deadcode4j.analyzer.javassist;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import de.is24.deadcode4j.CodeContext;
 import de.is24.deadcode4j.Repository;
 import de.is24.guava.NonNullFunction;
+import de.is24.guava.SequentialLoadingCache;
 import javassist.ClassPool;
 import javassist.NotFoundException;
 
@@ -97,7 +96,7 @@ public final class ClassPoolAccessor {
 
     @Nonnull
     private LoadingCache<String, Optional<String>> createResolverCache() {
-        return CacheBuilder.newBuilder().concurrencyLevel(1).build(CacheLoader.from(new Function<String, Optional<String>>() {
+        return new SequentialLoadingCache<String, String>(new Function<String, Optional<String>>() {
             @Nonnull
             private final Set<String> knownPackages = newHashSet();
 
@@ -139,7 +138,7 @@ public final class ClassPoolAccessor {
 
             }
 
-        }));
+        });
     }
 
 }
