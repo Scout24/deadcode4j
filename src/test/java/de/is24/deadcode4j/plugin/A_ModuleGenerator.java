@@ -27,6 +27,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
 import static org.apache.maven.artifact.Artifact.SCOPE_COMPILE_PLUS_RUNTIME;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Matchers.any;
@@ -64,12 +65,14 @@ public final class A_ModuleGenerator {
     }
 
     @Test
-    public void createsNoModuleForMavenProjectWithoutOutputDirectory() throws MojoExecutionException {
+    public void createsModuleForMavenProjectWithoutOutputDirectory() throws MojoExecutionException {
         mavenProject.getBuild().setOutputDirectory("/junit/foo/bar");
 
         Iterable<Module> modules = objectUnderTest.getModulesFor(asList(mavenProject));
 
-        assertThat(modules, is(Matchers.<Module>iterableWithSize(0)));
+        assertThat(modules, is(Matchers.<Module>iterableWithSize(1)));
+        Module module = Iterables.getOnlyElement(modules);
+        assertThat(module.getAllRepositories(), is(emptyIterable()));
     }
 
     @Test

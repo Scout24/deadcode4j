@@ -2,13 +2,15 @@ package de.is24.deadcode4j.analyzer;
 
 import com.google.common.collect.Sets;
 import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.analyzer.javassist.ClassPathFilter;
+import de.is24.guava.NonNullFunction;
 import javassist.CtClass;
 import javassist.NotFoundException;
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Lists.newArrayList;
@@ -22,12 +24,12 @@ import static com.google.common.collect.Lists.newArrayList;
 public abstract class SuperClassAnalyzer extends ByteCodeAnalyzer {
 
     private final String dependerId;
-    private final Collection<String> superClasses;
+    private final NonNullFunction<CodeContext, Set<String>> supplySuperClassesFoundInClassPath;
 
-    private SuperClassAnalyzer(@Nonnull String dependerId, @Nonnull Collection<String> classNames) {
+    private SuperClassAnalyzer(@Nonnull String dependerId, @Nonnull Set<String> classNames) {
+        checkArgument(!classNames.isEmpty(), "classNames cannot by empty!");
         this.dependerId = dependerId;
-        this.superClasses = classNames;
-        checkArgument(!this.superClasses.isEmpty(), "classNames cannot by empty!");
+        supplySuperClassesFoundInClassPath = new ClassPathFilter(classNames);
     }
 
     /**
@@ -56,6 +58,10 @@ public abstract class SuperClassAnalyzer extends ByteCodeAnalyzer {
 
     @Override
     protected final void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
+        Set<String> knownSuperClasses = getSuperClassesFoundInClassPath(codeContext);
+        if (knownSuperClasses.isEmpty()) {
+            return;
+        }
         String clazzName = clazz.getName();
         codeContext.addAnalyzedClass(clazzName);
         final List<String> classHierarchy;
@@ -65,7 +71,7 @@ public abstract class SuperClassAnalyzer extends ByteCodeAnalyzer {
             logger.warn("The class path is not correctly set up; could not load [{}]! Skipping superclass check for {}.", e.getMessage(), clazzName);
             return;
         }
-        if (!Collections.disjoint(this.superClasses, classHierarchy)) {
+        if (!Collections.disjoint(knownSuperClasses, classHierarchy)) {
             codeContext.addDependencies(this.dependerId, clazzName);
         }
     }
@@ -79,6 +85,11 @@ public abstract class SuperClassAnalyzer extends ByteCodeAnalyzer {
             loopClass = loopClass.getSuperclass();
         } while (loopClass != null && !"java.lang.Object".equals(loopClass.getName()));
         return classes;
+    }
+
+    @Nonnull
+    private Set<String> getSuperClassesFoundInClassPath(@Nonnull CodeContext codeContext) {
+        return codeContext.getOrCreateCacheEntry(getClass(), supplySuperClassesFoundInClassPath);
     }
 
 }

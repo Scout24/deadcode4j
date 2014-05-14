@@ -169,6 +169,7 @@
                             <cloneClean>true</cloneClean>
                             <cloneProjectsTo>${project.build.directory}/it-projects</cloneProjectsTo>
                             <goals>
+                                <goal>clean</goal>
                                 <goal>${project.groupId}:${project.artifactId}:find</goal>
                             </goals>
                             <pomExcludes>
@@ -207,6 +208,7 @@
                         </goals>
                         <configuration>
                             <tasks>
+                                <delete dir="${testScenarios.directory}"/>
                                 <copy toDir="${testScenarios.directory}">
                                     <fileset dir="${project.build.testOutputDirectory}" includes="*,META-INF/**">
                                         <type type="file"/>
