@@ -184,7 +184,7 @@ public final class IntermediateResults {
         @Nonnull
         @SuppressWarnings("unchecked")
         private IntermediateResult merge(@Nonnull IntermediateResult result) {
-            Map<K, V> mergedResults = newHashMap(this.results);
+            Map<K, V> mergedResults = newHashMap(getMap());
             for (Map.Entry<K, V> resultEntry : getResults(result).entrySet()) {
                 K key = resultEntry.getKey();
                 V value = resultEntry.getValue();
@@ -203,7 +203,7 @@ public final class IntermediateResults {
         @Nonnull
         @SuppressWarnings("unchecked")
         private Map<K, V> getResults(IntermediateResult result) {
-            return IntermediateResultMap.class.cast(result).results;
+            return IntermediateResultMap.class.cast(result).getMap();
         }
 
     }
