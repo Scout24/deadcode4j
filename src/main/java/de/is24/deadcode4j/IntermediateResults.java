@@ -218,7 +218,6 @@ public final class IntermediateResults {
         @Nonnull
         private final Map<K, V> results;
 
-
         /**
          * Creates an <code>IntermediateResultMap</code> to store the given <code>Map</code>.
          *
@@ -252,14 +251,14 @@ public final class IntermediateResults {
          * @since 1.6
          */
         @Nonnull
-        public Map<K, V> getMap() {
+        public Map<K, V> getResults() {
             return this.results;
         }
 
         @Nonnull
         @SuppressWarnings("unchecked")
         private IntermediateResult merge(@Nonnull IntermediateResult result) {
-            Map<K, V> mergedResults = newHashMap(getMap());
+            Map<K, V> mergedResults = newHashMap(getResults());
             for (Map.Entry<K, V> resultEntry : getResults(result).entrySet()) {
                 K key = resultEntry.getKey();
                 V value = resultEntry.getValue();
@@ -278,7 +277,7 @@ public final class IntermediateResults {
         @Nonnull
         @SuppressWarnings("unchecked")
         private Map<K, V> getResults(IntermediateResult result) {
-            return IntermediateResultMap.class.cast(result).getMap();
+            return IntermediateResultMap.class.cast(result).getResults();
         }
 
     }

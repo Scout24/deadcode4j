@@ -289,7 +289,7 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
         if (resultMap == null) {
             return this.generatorDefinitions;
         }
-        Map<String, String> inheritedDefinitions = resultMap.getMap();
+        Map<String, String> inheritedDefinitions = resultMap.getResults();
 
         Map<String, String> allDefinitions = newHashMap(this.generatorDefinitions);
         for (Map.Entry<String, String> inheritedDefinition : inheritedDefinitions.entrySet()) {
@@ -311,7 +311,7 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
         if (resultMap == null) {
             return this.typeDefinitions;
         }
-        Map<String, String> inheritedTypeDefinitions = resultMap.getMap();
+        Map<String, String> inheritedTypeDefinitions = resultMap.getResults();
 
         Map<String, String> allTypeDefinitions = newHashMap(this.typeDefinitions);
         for (Map.Entry<String, String> inheritedDefinition : inheritedTypeDefinitions.entrySet()) {
@@ -330,14 +330,14 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
     private Map<String, Set<String>> getExistingGeneratorUsages(@Nonnull CodeContext codeContext) {
         IntermediateResultMap<String, Set<String>> resultMap =
                 resultMapFrom(codeContext, getClass().getName() + "|generatorUsages");
-        return resultMap != null ? resultMap.getMap() : Collections.<String, Set<String>>emptyMap();
+        return resultMap != null ? resultMap.getResults() : Collections.<String, Set<String>>emptyMap();
     }
 
     @Nonnull
     private Map<String, Set<String>> getExistingTypeUsages(@Nonnull CodeContext codeContext) {
         IntermediateResultMap<String, Set<String>> resultMap =
                 resultMapFrom(codeContext, getClass().getName() + "|typeUsages");
-        return resultMap != null ? resultMap.getMap() : Collections.<String, Set<String>>emptyMap();
+        return resultMap != null ? resultMap.getResults() : Collections.<String, Set<String>>emptyMap();
     }
 
     private void storeIntermediateResults(@Nonnull CodeContext codeContext) {
