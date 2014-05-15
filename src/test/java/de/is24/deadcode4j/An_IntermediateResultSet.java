@@ -1,7 +1,6 @@
 package de.is24.deadcode4j;
 
 import de.is24.deadcode4j.junit.LoggingRule;
-import org.hamcrest.MatcherAssert;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -10,6 +9,7 @@ import java.util.Set;
 import static com.google.common.collect.Sets.newHashSet;
 import static de.is24.deadcode4j.IntermediateResults.IntermediateResultSet;
 import static de.is24.deadcode4j.IntermediateResults.resultSetFor;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
 
@@ -35,7 +35,7 @@ public final class An_IntermediateResultSet {
 
         results.clear();
 
-        MatcherAssert.assertThat(objectUnderTest.getResults(), hasItem("foo"));
+        assertThat(objectUnderTest.getResults(), hasItem("foo"));
     }
 
     @Test
@@ -45,7 +45,7 @@ public final class An_IntermediateResultSet {
         IntermediateResultSet<String> mergedResult =
                 mergeSibling(objectUnderTest, givenIntermediateResultSet("bar"));
 
-        MatcherAssert.assertThat(mergedResult.getResults(), hasItems("foo", "bar"));
+        assertThat(mergedResult.getResults(), hasItems("foo", "bar"));
     }
 
     @Test
@@ -55,7 +55,7 @@ public final class An_IntermediateResultSet {
         IntermediateResultSet<String> mergedResult =
                 mergeParent(objectUnderTest, givenIntermediateResultSet("bar"));
 
-        MatcherAssert.assertThat(mergedResult.getResults(), hasItems("foo", "bar"));
+        assertThat(mergedResult.getResults(), hasItems("foo", "bar"));
     }
 
     private IntermediateResultSet<String> givenIntermediateResultSet(String element) {
