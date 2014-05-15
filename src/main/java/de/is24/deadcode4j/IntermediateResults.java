@@ -34,7 +34,7 @@ public final class IntermediateResults {
      * @since 1.6
      */
     @Nonnull
-    public static <E> IntermediateResultSet<E> resultSetFor(@Nonnull Set<E> intermediateResults) {
+    public static <E> IntermediateResultSet<E> resultSetFor(@Nonnull Collection<E> intermediateResults) {
         return new IntermediateResultSet<E>(intermediateResults);
     }
 
@@ -164,7 +164,7 @@ public final class IntermediateResults {
          *
          * @since 1.6
          */
-        public IntermediateResultSet(@Nonnull Set<E> results) {
+        public IntermediateResultSet(@Nonnull Collection<E> results) {
             this.results = newHashSet(results);
         }
 

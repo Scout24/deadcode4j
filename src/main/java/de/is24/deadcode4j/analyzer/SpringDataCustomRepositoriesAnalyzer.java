@@ -7,15 +7,16 @@ import javassist.Modifier;
 import javassist.NotFoundException;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.Set;
 
-import static com.google.common.collect.Sets.newHashSet;
+import static com.google.common.collect.Lists.newArrayList;
 import static de.is24.deadcode4j.IntermediateResults.*;
 import static de.is24.deadcode4j.analyzer.javassist.CtClasses.getAllImplementedInterfaces;
 
 public class SpringDataCustomRepositoriesAnalyzer extends ByteCodeAnalyzer {
 
-    private Set<String> customRepositoryNames = newHashSet();
+    private List<String> customRepositoryNames = newArrayList();
 
     @Override
     protected void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
