@@ -7,8 +7,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 
 /**
  * Instances of <code>IntermediateResults</code> are used to keep track of and calculate the {@link IntermediateResult}s
@@ -23,6 +25,17 @@ public final class IntermediateResults {
     private final Map<Module, Map<Object, IntermediateResult>> intermediateResults = newHashMap();
 
     public IntermediateResults() {
+    }
+
+    /**
+     * Returns an <code>IntermediateResultSet</code> for the given <code>Set</code>.<br/>
+     * This method is defined for type inference, as it could simply be replaced with a constructor call.
+     *
+     * @since 1.6
+     */
+    @Nonnull
+    public static <E> IntermediateResultSet<E> resultSetFor(@Nonnull Set<E> intermediateResults) {
+        return new IntermediateResultSet<E>(intermediateResults);
     }
 
     /**
@@ -120,6 +133,68 @@ public final class IntermediateResults {
                             : intermediateResult.mergeParent(parentResult)
             );
         }
+    }
+
+    /**
+     * An <code>IntermediateResultSet</code> is an implementation of {@link de.is24.deadcode4j.IntermediateResult} using
+     * a <code>Set</code> to store the results. Concerning merging with siblings & parents, it simply adds both sets.
+     *
+     * @since 1.6
+     */
+    public static class IntermediateResultSet<E> implements IntermediateResult {
+
+        @Nonnull
+        private final Set<E> results;
+
+        /**
+         * Creates an <code>IntermediateResultSet</code> to store the given <code>Set</code>.
+         *
+         * @since 1.6
+         */
+        public IntermediateResultSet(@Nonnull Set<E> results) {
+            this.results = newHashSet(results);
+        }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + ": " + results;
+        }
+
+        @Nonnull
+        @Override
+        public IntermediateResult mergeSibling(@Nonnull IntermediateResult sibling) {
+            return merge(sibling);
+        }
+
+        @Nonnull
+        @Override
+        public IntermediateResult mergeParent(@Nonnull IntermediateResult parent) {
+            return merge(parent);
+        }
+
+        /**
+         * Returns the stored result <code>Set</code>.
+         *
+         * @since 1.6
+         */
+        @Nonnull
+        public Set<E> getResults() {
+            return results;
+        }
+
+        @Nonnull
+        private IntermediateResult merge(@Nonnull IntermediateResult result) {
+            Set<E> mergedResults = newHashSet(this.results);
+            mergedResults.addAll(getResults(result));
+            return new IntermediateResultSet<E>(mergedResults);
+        }
+
+        @Nonnull
+        @SuppressWarnings("unchecked")
+        private Set<E> getResults(@Nonnull IntermediateResult result) {
+            return IntermediateResultSet.class.cast(result).getResults();
+        }
+
     }
 
     /**

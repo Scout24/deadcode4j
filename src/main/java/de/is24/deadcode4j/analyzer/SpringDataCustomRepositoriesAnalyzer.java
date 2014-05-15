@@ -9,9 +9,13 @@ import javassist.NotFoundException;
 import javax.annotation.Nonnull;
 import java.util.Set;
 
+import static com.google.common.collect.Sets.newHashSet;
+import static de.is24.deadcode4j.IntermediateResults.resultSetFor;
 import static de.is24.deadcode4j.analyzer.javassist.CtClasses.getAllImplementedInterfaces;
 
 public class SpringDataCustomRepositoriesAnalyzer extends ByteCodeAnalyzer {
+
+    private Set<String> customRepositoryNames = newHashSet();
 
     @Override
     protected void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
@@ -35,7 +39,7 @@ public class SpringDataCustomRepositoriesAnalyzer extends ByteCodeAnalyzer {
         if (!implementedInterfaces.contains(nameOfCustomRepositoryInterface)) {
             return;
         }
-        // TODO we should store the custom interface as there may be implementations in other modules?!?
+        this.customRepositoryNames.add(nameOfCustomRepositoryInterface);
         final String nameOfCustomRepositoryImplementation = clazzName + "Impl";
         CtClass customImpl = ClassPoolAccessor.classPoolAccessorFor(codeContext).getClassPool().getOrNull(nameOfCustomRepositoryImplementation);
         if (customImpl == null) {
@@ -50,6 +54,13 @@ public class SpringDataCustomRepositoriesAnalyzer extends ByteCodeAnalyzer {
         if (implementedInterfaces.contains(nameOfCustomRepositoryInterface)) {
             codeContext.addDependencies(clazzName, nameOfCustomRepositoryImplementation);
         }
+    }
+
+    @Override
+    public void finishAnalysis(@Nonnull CodeContext codeContext) {
+        codeContext.getCache().put(SpringDataCustomRepositoriesAnalyzer.class,
+                resultSetFor(this.customRepositoryNames));
+        this.customRepositoryNames.clear();
     }
 
 }
