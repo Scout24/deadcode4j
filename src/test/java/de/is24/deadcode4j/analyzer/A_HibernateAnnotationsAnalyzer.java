@@ -20,7 +20,7 @@ import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer<HibernateAnnotationsAnalyzer> {
+public final class A_HibernateAnnotationsAnalyzer extends AByteCodeAnalyzer<HibernateAnnotationsAnalyzer> {
 
     private static <T> Matcher<T[]> hasVarArgItem(Matcher<? super T> elementMatcher) {
         return new MyVarArgsMatcher<T>(elementMatcher);
@@ -29,15 +29,6 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer<HibernateAn
     @Override
     protected HibernateAnnotationsAnalyzer createAnalyzer() {
         return new HibernateAnnotationsAnalyzer();
-    }
-
-    @Test
-    public void reportsExistenceOfClasses() {
-        analyzeFile("A.class");
-        assertThatClassesAreReported("A");
-
-        analyzeFile("B.class");
-        assertThatClassesAreReported("A", "B");
     }
 
     @Test

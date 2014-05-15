@@ -6,20 +6,11 @@ import static com.google.common.collect.Iterables.concat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assume.assumeThat;
 
-public final class A_ClassDependencyAnalyzer extends AnAnalyzer<ClassDependencyAnalyzer> {
+public final class A_ClassDependencyAnalyzer extends AByteCodeAnalyzer<ClassDependencyAnalyzer> {
 
     @Override
     protected ClassDependencyAnalyzer createAnalyzer() {
         return new ClassDependencyAnalyzer();
-    }
-
-    @Test
-    public void reportsExistenceOfClasses() {
-        analyzeFile("A.class");
-        assertThatClassesAreReported("A");
-
-        analyzeFile("B.class");
-        assertThatClassesAreReported("A", "B");
     }
 
     @Test

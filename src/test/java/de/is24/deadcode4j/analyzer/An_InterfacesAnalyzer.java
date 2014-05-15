@@ -2,21 +2,12 @@ package de.is24.deadcode4j.analyzer;
 
 import org.junit.Test;
 
-public final class An_InterfacesAnalyzer extends AnAnalyzer<InterfacesAnalyzer> {
+public final class An_InterfacesAnalyzer extends AByteCodeAnalyzer<InterfacesAnalyzer> {
 
     @Override
     protected InterfacesAnalyzer createAnalyzer() {
         return new InterfacesAnalyzer("junit", "java.lang.Cloneable") {
         };
-    }
-
-    @Test
-    public void reportsExistenceOfClasses() {
-        analyzeFile("A.class");
-        assertThatClassesAreReported("A");
-
-        analyzeFile("B.class");
-        assertThatClassesAreReported("A", "B");
     }
 
     @Test
