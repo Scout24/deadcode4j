@@ -50,6 +50,19 @@ public final class IntermediateResults {
     }
 
     /**
+     * Returns an <code>IntermediateResultSet</code> from the given <code>CodeContext</code> for the given key.<br/>
+     * This method is defined to handle the <i>unchecked</i> cast to a typed <code>IntermediateResultSet</code>,
+     * it could simply be replaced with {@link de.is24.deadcode4j.CodeContext#getIntermediateResult(Object)}.
+     *
+     * @since 1.6
+     */
+    @Nullable
+    @SuppressWarnings("unchecked")
+    public static <E> IntermediateResultSet<E> resultSetFrom(@Nonnull CodeContext codeContext, Object key) {
+        return (IntermediateResultSet<E>) codeContext.getIntermediateResult(key);
+    }
+
+    /**
      * Returns an <code>IntermediateResultMap</code> from the given <code>CodeContext</code> for the given key.<br/>
      * This method is defined to handle the <i>unchecked</i> cast to a typed <code>IntermediateResultMap</code>,
      * it could simply be replaced with {@link de.is24.deadcode4j.CodeContext#getIntermediateResult(Object)}.
