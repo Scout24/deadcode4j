@@ -11,6 +11,7 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Sets.newHashSet;
+import static de.is24.deadcode4j.analyzer.javassist.CtClasses.getAllImplementedInterfaces;
 import static java.util.Collections.disjoint;
 
 /**
@@ -76,20 +77,6 @@ public abstract class InterfacesAnalyzer extends ByteCodeAnalyzer {
         if (!disjoint(knownInterfaces, allImplementedInterfaces)) {
             codeContext.addDependencies(this.dependerId, clazzName);
         }
-    }
-
-    @Nonnull
-    private Set<String> getAllImplementedInterfaces(@Nonnull final CtClass clazz) throws NotFoundException {
-        Set<String> interfaces = newHashSet();
-        CtClass loopClass = clazz;
-        do {
-            for (CtClass anInterface : loopClass.getInterfaces()) {
-                interfaces.add(anInterface.getName());
-                interfaces.addAll(getAllImplementedInterfaces(anInterface));
-            }
-            loopClass = loopClass.getSuperclass();
-        } while (loopClass != null && !"java.lang.Object".equals(loopClass.getName()));
-        return interfaces;
     }
 
     @Nonnull
