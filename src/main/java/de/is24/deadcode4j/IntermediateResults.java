@@ -166,7 +166,7 @@ public final class IntermediateResults {
          * @since 1.6
          */
         public IntermediateResultSet(@Nonnull Collection<E> results) {
-            this.results = newHashSet(results);
+            this.results = Collections.unmodifiableSet(newHashSet(results));
         }
 
         @Override
@@ -193,7 +193,7 @@ public final class IntermediateResults {
          */
         @Nonnull
         public Set<E> getResults() {
-            return Collections.unmodifiableSet(results);
+            return this.results;
         }
 
         @Nonnull
@@ -238,7 +238,7 @@ public final class IntermediateResults {
          * @since 1.6
          */
         public IntermediateResultMap(@Nonnull Map<K, V> results) {
-            this.results = newHashMap(results);
+            this.results = Collections.unmodifiableMap(newHashMap(results));
         }
 
         @Nonnull
@@ -266,7 +266,7 @@ public final class IntermediateResults {
          */
         @Nonnull
         public Map<K, V> getResults() {
-            return Collections.unmodifiableMap(this.results);
+            return this.results;
         }
 
         @Nonnull
