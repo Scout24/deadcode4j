@@ -88,4 +88,9 @@ public abstract class AnAnalyzer<T extends Analyzer> {
         assertThat(codeDependencies.size(), is(0));
     }
 
+    protected void assertThatIntermediateResultIsStored() {
+        doFinishAnalysis();
+        assertThat(this.codeContext.getCache(), hasEntry(anything(), instanceOf(IntermediateResult.class)));
+    }
+
 }
