@@ -4,7 +4,6 @@ import de.is24.deadcode4j.CodeContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPathFilter;
 import de.is24.guava.NonNullFunction;
 import javassist.CtClass;
-import javassist.NotFoundException;
 
 import javax.annotation.Nonnull;
 import java.util.Set;
@@ -64,17 +63,10 @@ public abstract class InterfacesAnalyzer extends ByteCodeAnalyzer {
         if (knownInterfaces.isEmpty()) {
             return;
         }
+
         String clazzName = clazz.getName();
         codeContext.addAnalyzedClass(clazzName);
-
-        final Set<String> allImplementedInterfaces;
-        try {
-            allImplementedInterfaces = getAllImplementedInterfaces(clazz);
-        } catch (NotFoundException e) {
-            logger.warn("The class path is not correctly set up; could not load [{}]! Skipping interfaces check for {}.", e.getMessage(), clazz.getName());
-            return;
-        }
-        if (!disjoint(knownInterfaces, allImplementedInterfaces)) {
+        if (!disjoint(knownInterfaces, getAllImplementedInterfaces(clazz))) {
             codeContext.addDependencies(this.dependerId, clazzName);
         }
     }

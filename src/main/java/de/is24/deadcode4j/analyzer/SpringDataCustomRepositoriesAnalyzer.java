@@ -4,7 +4,6 @@ import de.is24.deadcode4j.CodeContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
 import javassist.CtClass;
 import javassist.Modifier;
-import javassist.NotFoundException;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -35,17 +34,11 @@ public class SpringDataCustomRepositoriesAnalyzer extends ByteCodeAnalyzer {
     }
 
     private void analyzeInterface(CodeContext codeContext, CtClass clazz) {
-        String clazzName = clazz.getName();
-        Set<String> implementedInterfaces;
-        try {
-            implementedInterfaces = getAllImplementedInterfaces(clazz);
-        } catch (NotFoundException e) {
-            logger.warn("The class path is not correctly set up; could not load [{}]! Skipping Spring Data custom repository check for {}.", e.getMessage(), clazzName);
-            return;
-        }
+        Set<String> implementedInterfaces = getAllImplementedInterfaces(clazz);
         if (!implementedInterfaces.contains("org.springframework.data.repository.Repository")) {
             return;
         }
+        final String clazzName = clazz.getName();
         final String nameOfCustomRepositoryInterface = clazzName + "Custom";
         if (!implementedInterfaces.contains(nameOfCustomRepositoryInterface)) {
             return;
@@ -56,12 +49,7 @@ public class SpringDataCustomRepositoriesAnalyzer extends ByteCodeAnalyzer {
         if (customImpl == null) {
             return;
         }
-        try {
-            implementedInterfaces = getAllImplementedInterfaces(customImpl);
-        } catch (NotFoundException e) {
-            logger.warn("The class path is not correctly set up; could not load [{}]! Skipping Spring Data custom repository check for {}.", e.getMessage(), clazz.getName());
-            return;
-        }
+        implementedInterfaces = getAllImplementedInterfaces(customImpl);
         if (implementedInterfaces.contains(nameOfCustomRepositoryInterface)) {
             codeContext.addDependencies(clazzName, nameOfCustomRepositoryImplementation);
         }
@@ -82,18 +70,13 @@ public class SpringDataCustomRepositoriesAnalyzer extends ByteCodeAnalyzer {
             return;
         }
 
-        String clazzName = clazz.getName();
         Set<String> existingCustomRepositories = intermediateResults.getResults();
-        Set<String> implementedInterfaces;
-        try {
-            implementedInterfaces = getAllImplementedInterfaces(clazz);
-        } catch (NotFoundException e) {
-            logger.warn("The class path is not correctly set up; could not load [{}]! Skipping Spring Data custom repository check for {}.", e.getMessage(), clazzName);
-            return;
-        }
+        Set<String> implementedInterfaces = getAllImplementedInterfaces(clazz);
         implementedInterfaces.retainAll(existingCustomRepositories);
         for (String customRepositoryName : implementedInterfaces) {
-            codeContext.addDependencies(customRepositoryName.substring(0, customRepositoryName.length() - "Custom".length()), clazzName);
+            codeContext.addDependencies(
+                    customRepositoryName.substring(0, customRepositoryName.length() - "Custom".length()),
+                    clazz.getName());
         }
     }
 
