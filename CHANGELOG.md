@@ -8,6 +8,8 @@
     * `SuperClassAnalyzer` now analyzes the whole class hierarchy
 * Introduced `TypeErasureAnalyzer` which finds references that are not found in the byte code due to type erasure
     * references to inner types defined by a superclass or an implemented interface are not recognized; as those types are marked as dependency of the defining *outer* class, they won't show up as false positive
+* Added analysis of [Spring Data custom repositories](http://docs.spring.io/spring-data/data-commons/docs/1.6.x/reference/html/repositories.html#repositories.custom-implementations): recognizing custom implementations as _live code_.
+    * only recognizes custom implementations following the default naming convention `RepositoryNameImpl`
 * made *deadcode4j* more resilient: failing to analyze a file does not lead to termination any longer
 
 ## Internal

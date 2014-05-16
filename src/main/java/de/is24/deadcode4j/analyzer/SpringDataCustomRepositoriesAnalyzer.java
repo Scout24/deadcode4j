@@ -13,6 +13,13 @@ import static com.google.common.collect.Lists.newArrayList;
 import static de.is24.deadcode4j.IntermediateResults.*;
 import static de.is24.deadcode4j.analyzer.javassist.CtClasses.getAllImplementedInterfaces;
 
+/**
+ * Analyzes class files: marks custom implementations of Spring Data repositories as being in use.<br/>
+ * Note that this analyzer only considers the default naming convention <code><i>RepositoryName</i>Impl</code> to
+ * identify custom implementations.
+ *
+ * @since 1.6
+ */
 public class SpringDataCustomRepositoriesAnalyzer extends ByteCodeAnalyzer {
 
     private List<String> customRepositoryNames = newArrayList();
