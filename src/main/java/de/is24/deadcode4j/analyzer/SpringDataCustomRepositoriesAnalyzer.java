@@ -38,19 +38,27 @@ public class SpringDataCustomRepositoriesAnalyzer extends ByteCodeAnalyzer {
         if (!implementedInterfaces.contains("org.springframework.data.repository.Repository")) {
             return;
         }
+
         final String clazzName = clazz.getName();
         final String nameOfCustomRepositoryInterface = clazzName + "Custom";
         if (!implementedInterfaces.contains(nameOfCustomRepositoryInterface)) {
             return;
         }
+
         this.customRepositoryNames.add(nameOfCustomRepositoryInterface);
+        reportImplementationOfNewCustomRepository(codeContext, clazzName);
+    }
+
+    private void reportImplementationOfNewCustomRepository(CodeContext codeContext, String clazzName) {
         final String nameOfCustomRepositoryImplementation = clazzName + "Impl";
-        CtClass customImpl = ClassPoolAccessor.classPoolAccessorFor(codeContext).getClassPool().getOrNull(nameOfCustomRepositoryImplementation);
+        CtClass customImpl = ClassPoolAccessor.classPoolAccessorFor(codeContext).getClassPool().
+                getOrNull(nameOfCustomRepositoryImplementation);
         if (customImpl == null) {
             return;
         }
-        implementedInterfaces = getAllImplementedInterfaces(customImpl);
-        if (implementedInterfaces.contains(nameOfCustomRepositoryInterface)) {
+
+        Set<String> implementedInterfaces = getAllImplementedInterfaces(customImpl);
+        if (implementedInterfaces.contains(clazzName + "Custom")) {
             codeContext.addDependencies(clazzName, nameOfCustomRepositoryImplementation);
         }
     }
