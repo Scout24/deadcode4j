@@ -2,7 +2,7 @@ package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.junit.LoggingRule;
 import org.apache.maven.plugin.logging.Log;
-import org.junit.Before;
+import org.junit.After;
 import org.junit.Test;
 import org.mockito.Matchers;
 
@@ -26,7 +26,7 @@ public final class A_CustomInterfacesAnalyzer extends AnAnalyzer<CustomInterface
         return new CustomInterfacesAnalyzer(Arrays.asList("foo.Bar"));
     }
 
-    @Before
+    @After
     public void resetMock() {
         reset(log);
     }
