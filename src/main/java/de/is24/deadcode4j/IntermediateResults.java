@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -186,13 +187,13 @@ public final class IntermediateResults {
         }
 
         /**
-         * Returns the stored result <code>Set</code>.
+         * Returns the stored read-only <code>Set</code>.
          *
          * @since 1.6
          */
         @Nonnull
         public Set<E> getResults() {
-            return results;
+            return Collections.unmodifiableSet(results);
         }
 
         @Nonnull
@@ -259,13 +260,13 @@ public final class IntermediateResults {
         }
 
         /**
-         * Returns the stored result <code>Map</code>.
+         * Returns the stored read-only <code>Map</code>.
          *
          * @since 1.6
          */
         @Nonnull
         public Map<K, V> getResults() {
-            return this.results;
+            return Collections.unmodifiableMap(this.results);
         }
 
         @Nonnull
