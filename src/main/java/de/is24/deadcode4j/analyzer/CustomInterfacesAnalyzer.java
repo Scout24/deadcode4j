@@ -1,6 +1,11 @@
 package de.is24.deadcode4j.analyzer;
 
+import de.is24.deadcode4j.CodeContext;
+
 import javax.annotation.Nonnull;
+import java.util.HashSet;
+
+import static com.google.common.collect.Sets.newHashSet;
 
 /**
  * Analyzes class files: marks a class as being in use if it explicitly implements one of the specified interfaces.
@@ -8,6 +13,9 @@ import javax.annotation.Nonnull;
  * @since 1.4
  */
 public final class CustomInterfacesAnalyzer extends InterfacesAnalyzer {
+
+    @Nonnull
+    private final HashSet<String> interfacesNotFoundInClassPath;
 
     /**
      * Creates a new <code>CustomInterfacesAnalyzer</code>.
@@ -17,6 +25,21 @@ public final class CustomInterfacesAnalyzer extends InterfacesAnalyzer {
      */
     public CustomInterfacesAnalyzer(@Nonnull Iterable<String> customInterfaces) {
         super("_custom-interfaces_", customInterfaces);
+        interfacesNotFoundInClassPath = newHashSet(customInterfaces);
+    }
+
+    @Override
+    public void finishAnalysis(@Nonnull CodeContext codeContext) {
+        super.finishAnalysis(codeContext);
+        interfacesNotFoundInClassPath.removeAll(getInterfacesFoundInClassPath(codeContext));
+    }
+
+    @Override
+    public void finishAnalysis() {
+        super.finishAnalysis();
+        for (String interfaceName : interfacesNotFoundInClassPath) {
+            logger.warn("Interface [{}] wasn't ever found in the class path. You should remove the configuration entry.", interfaceName);
+        }
     }
 
 }

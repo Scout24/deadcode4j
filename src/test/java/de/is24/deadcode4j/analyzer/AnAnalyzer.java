@@ -17,11 +17,14 @@ import static org.hamcrest.Matchers.*;
 
 public abstract class AnAnalyzer<T extends Analyzer> {
 
-    @Rule
-    public final LoggingRule enableLogging = new LoggingRule();
     protected T objectUnderTest;
     protected CodeContext codeContext;
     protected boolean analysisIsFinished;
+
+    @Rule
+    public LoggingRule enableLogging() {
+        return new LoggingRule();
+    }
 
     @Before
     public final void initAnalyzer() {
@@ -55,6 +58,7 @@ public abstract class AnAnalyzer<T extends Analyzer> {
 
     protected void finishAnalysis() {
         this.objectUnderTest.finishAnalysis(this.codeContext);
+        this.objectUnderTest.finishAnalysis();
         this.analysisIsFinished = true;
     }
 

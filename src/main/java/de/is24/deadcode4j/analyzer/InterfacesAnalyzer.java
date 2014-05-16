@@ -72,7 +72,7 @@ public abstract class InterfacesAnalyzer extends ByteCodeAnalyzer {
     }
 
     @Nonnull
-    private Set<String> getInterfacesFoundInClassPath(@Nonnull CodeContext codeContext) {
+    protected final Set<String> getInterfacesFoundInClassPath(@Nonnull CodeContext codeContext) {
         return codeContext.getOrCreateCacheEntry(getClass(), supplyInterfacesFoundInClassPath);
     }
 
