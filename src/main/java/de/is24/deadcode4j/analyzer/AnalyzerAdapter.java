@@ -25,4 +25,8 @@ public abstract class AnalyzerAdapter implements Analyzer {
     public void finishAnalysis(@Nonnull CodeContext codeContext) {
     }
 
+    @Override
+    public void finishAnalysis() {
+    }
+
 }
