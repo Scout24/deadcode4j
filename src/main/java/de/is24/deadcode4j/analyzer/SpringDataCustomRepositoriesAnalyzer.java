@@ -21,38 +21,17 @@ public class SpringDataCustomRepositoriesAnalyzer extends ByteCodeAnalyzer {
     @Override
     protected void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
         codeContext.addAnalyzedClass(clazz.getName());
-        int modifiers = clazz.getModifiers();
-        if (Modifier.isInterface(modifiers)) {
+        if (clazz.isInterface()) {
             analyzeInterface(codeContext, clazz);
-            return;
-        } else if (Modifier.isAbstract(modifiers)
-                || Modifier.isAnnotation(modifiers)
-                || Modifier.isEnum(modifiers)
-                || Modifier.isPrivate(modifiers)
-                || Modifier.isProtected(modifiers)) {
-            return;
+        } else if (isPublicOrPackageProtectedClass(clazz)) {
+            reportImplementationOfExistingCustomRepository(codeContext, clazz);
         }
-        reportImplementationOfExistingCustomRepository(codeContext, clazz);
     }
 
-    private void reportImplementationOfExistingCustomRepository(CodeContext codeContext, CtClass clazz) {
-        IntermediateResultSet<String> intermediateResults = resultSetFrom(codeContext, getClass());
-        if (intermediateResults == null) {
-            return;
-        }
-        String clazzName = clazz.getName();
-        Set<String> existingCustomRepositories = intermediateResults.getResults();
-        Set<String> implementedInterfaces;
-        try {
-            implementedInterfaces = getAllImplementedInterfaces(clazz);
-        } catch (NotFoundException e) {
-            logger.warn("The class path is not correctly set up; could not load [{}]! Skipping Spring Data custom repository check for {}.", e.getMessage(), clazzName);
-            return;
-        }
-        implementedInterfaces.retainAll(existingCustomRepositories);
-        for (String customRepositoryName : implementedInterfaces) {
-            codeContext.addDependencies(customRepositoryName.substring(0, customRepositoryName.length() - "Custom".length()), clazzName);
-        }
+    @Override
+    public void finishAnalysis(@Nonnull CodeContext codeContext) {
+        codeContext.getCache().put(getClass(), resultSetFor(this.customRepositoryNames));
+        this.customRepositoryNames.clear();
     }
 
     private void analyzeInterface(CodeContext codeContext, CtClass clazz) {
@@ -88,10 +67,34 @@ public class SpringDataCustomRepositoriesAnalyzer extends ByteCodeAnalyzer {
         }
     }
 
-    @Override
-    public void finishAnalysis(@Nonnull CodeContext codeContext) {
-        codeContext.getCache().put(getClass(), resultSetFor(this.customRepositoryNames));
-        this.customRepositoryNames.clear();
+    private boolean isPublicOrPackageProtectedClass(@Nonnull CtClass clazz) {
+        int modifiers = clazz.getModifiers();
+        return !Modifier.isAbstract(modifiers)
+                && !Modifier.isAnnotation(modifiers)
+                && !Modifier.isEnum(modifiers)
+                && !Modifier.isPrivate(modifiers)
+                && !Modifier.isProtected(modifiers);
+    }
+
+    private void reportImplementationOfExistingCustomRepository(CodeContext codeContext, CtClass clazz) {
+        IntermediateResultSet<String> intermediateResults = resultSetFrom(codeContext, getClass());
+        if (intermediateResults == null) {
+            return;
+        }
+
+        String clazzName = clazz.getName();
+        Set<String> existingCustomRepositories = intermediateResults.getResults();
+        Set<String> implementedInterfaces;
+        try {
+            implementedInterfaces = getAllImplementedInterfaces(clazz);
+        } catch (NotFoundException e) {
+            logger.warn("The class path is not correctly set up; could not load [{}]! Skipping Spring Data custom repository check for {}.", e.getMessage(), clazzName);
+            return;
+        }
+        implementedInterfaces.retainAll(existingCustomRepositories);
+        for (String customRepositoryName : implementedInterfaces) {
+            codeContext.addDependencies(customRepositoryName.substring(0, customRepositoryName.length() - "Custom".length()), clazzName);
+        }
     }
 
 }
