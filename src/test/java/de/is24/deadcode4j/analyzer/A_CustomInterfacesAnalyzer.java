@@ -35,6 +35,7 @@ public final class A_CustomInterfacesAnalyzer extends AnAnalyzer<CustomInterface
 
     @Test
     public void logsObsoleteInterfaceEntry() {
+        analyzeFile("SomeServletInitializer.class");
         doFinishAnalysis();
 
         verify(log).warn(Matchers.contains("foo.Bar"));
