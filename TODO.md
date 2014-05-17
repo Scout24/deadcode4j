@@ -2,7 +2,6 @@ Features
 --------
 * @dcsobral: possibility to ignore all classes with main method
 * create a report
-* log if custom stuff finds anything or may be removed
 * recognize cyclic dependencies
     * actually, better to report which parts of the code are really used
     * "really used" means either marked as such manually or because the application breaks if the class (and its minions) is removed, i.e. the class is listed in sth. like web.xml
