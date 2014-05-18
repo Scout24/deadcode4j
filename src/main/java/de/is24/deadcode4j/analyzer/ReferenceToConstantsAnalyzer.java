@@ -6,7 +6,6 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Sets;
 import de.is24.deadcode4j.CodeContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
-import japa.parser.JavaParser;
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
 import japa.parser.ast.PackageDeclaration;
@@ -22,7 +21,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.File;
 import java.util.*;
 
 import static com.google.common.base.Predicates.and;
@@ -34,7 +32,7 @@ import static de.is24.deadcode4j.Utils.emptyIfNull;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
 import static java.lang.Math.max;
 
-public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
+public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
     @Nonnull
     private static String getFirstElement(@Nonnull FieldAccessExpr fieldAccessExpr) {
@@ -49,21 +47,7 @@ public class ReferenceToConstantsAnalyzer extends AnalyzerAdapter {
     }
 
     @Override
-    public void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull File file) {
-        if (file.getName().endsWith(".java")) {
-            logger.debug("Analyzing Java file [{}]...", file);
-            analyzeJavaFile(codeContext, file);
-        }
-    }
-
-    private void analyzeJavaFile(final CodeContext codeContext, File file) {
-        CompilationUnit compilationUnit;
-        try {
-            compilationUnit = JavaParser.parse(file, null, false);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to parse [" + file + "]!", e);
-        }
-
+    protected void analyzeCompilationUnit(@Nonnull CodeContext codeContext, @Nonnull CompilationUnit compilationUnit) {
         compilationUnit.accept(new CompilationUnitVisitor(codeContext), null);
     }
 

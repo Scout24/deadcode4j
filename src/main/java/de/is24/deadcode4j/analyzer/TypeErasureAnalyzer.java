@@ -4,9 +4,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import de.is24.deadcode4j.CodeContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import japa.parser.JavaParser;
-import japa.parser.TokenMgrError;
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
 import japa.parser.ast.Node;
@@ -19,7 +16,6 @@ import japa.parser.ast.visitor.VoidVisitorAdapter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.*;
 import java.util.*;
 
 import static com.google.common.base.Optional.absent;
@@ -32,7 +28,6 @@ import static de.is24.deadcode4j.Utils.or;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
 import static java.util.Collections.emptySet;
 import static java.util.Map.Entry;
-import static org.apache.commons.io.IOUtils.closeQuietly;
 
 /**
  * Analyzes Java files and reports dependencies to classes that are not part of the byte code due to type erasure.
@@ -41,32 +36,9 @@ import static org.apache.commons.io.IOUtils.closeQuietly;
  * @since 1.6
  */
 @SuppressWarnings("PMD.TooManyStaticImports")
-public class TypeErasureAnalyzer extends AnalyzerAdapter {
+public class TypeErasureAnalyzer extends JavaFileAnalyzer {
 
-    @Override
-    @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "The MavenProject does not provide the proper encoding")
-    public void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull File file) {
-        if (file.getName().endsWith(".java")) {
-            logger.debug("Analyzing Java file [{}]...", file);
-            final CompilationUnit compilationUnit;
-            Reader reader = null;
-            try {
-                reader = codeContext.getModule().getEncoding() != null
-                        ? new InputStreamReader(new FileInputStream(file), codeContext.getModule().getEncoding())
-                        : new FileReader(file);
-                compilationUnit = JavaParser.parse(reader, false);
-            } catch (TokenMgrError e) {
-                throw new RuntimeException("Failed to parse [" + file + "]!", e);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to parse [" + file + "]!", e);
-            } finally {
-                closeQuietly(reader);
-            }
-            analyzeCompilationUnit(codeContext, compilationUnit);
-        }
-    }
-
-    private void analyzeCompilationUnit(@Nonnull final CodeContext codeContext, @Nonnull final CompilationUnit compilationUnit) {
+    protected void analyzeCompilationUnit(@Nonnull final CodeContext codeContext, @Nonnull final CompilationUnit compilationUnit) {
         compilationUnit.accept(new TypeRecordingVisitor() {
             private final ClassPoolAccessor classPoolAccessor = classPoolAccessorFor(codeContext);
             private final Deque<Set<String>> definedTypeParameters = newLinkedList();
@@ -146,7 +118,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 } else if (WildcardType.class.isInstance(type)) {
                     WildcardType wildcardType = WildcardType.class.cast(type);
                     ReferenceType referenceType = wildcardType.getExtends();
-                    if (referenceType == null){
+                    if (referenceType == null) {
                         referenceType = wildcardType.getSuper();
                     }
                     if (referenceType == null) {
