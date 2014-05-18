@@ -2,21 +2,12 @@ package de.is24.deadcode4j.analyzer;
 
 import org.junit.Test;
 
-public final class An_AnnotationsAnalyzer extends AnAnalyzer<AnnotationsAnalyzer> {
+public final class An_AnnotationsAnalyzer extends AByteCodeAnalyzer<AnnotationsAnalyzer> {
 
     @Override
     protected AnnotationsAnalyzer createAnalyzer() {
         return new AnnotationsAnalyzer("junit", "de.is24.deadcode4j.junit.Annotation") {
         };
-    }
-
-    @Test
-    public void reportsExistenceOfClass() {
-        analyzeFile("A.class");
-        assertThatClassesAreReported("A");
-
-        analyzeFile("B.class");
-        assertThatClassesAreReported("A", "B");
     }
 
     @Test

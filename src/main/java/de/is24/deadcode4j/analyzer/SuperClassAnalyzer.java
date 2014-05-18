@@ -88,7 +88,7 @@ public abstract class SuperClassAnalyzer extends ByteCodeAnalyzer {
     }
 
     @Nonnull
-    private Set<String> getSuperClassesFoundInClassPath(@Nonnull CodeContext codeContext) {
+    protected final Set<String> getSuperClassesFoundInClassPath(@Nonnull CodeContext codeContext) {
         return codeContext.getOrCreateCacheEntry(getClass(), supplySuperClassesFoundInClassPath);
     }
 

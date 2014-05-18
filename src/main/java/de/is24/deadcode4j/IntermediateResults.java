@@ -6,9 +6,12 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 
 /**
  * Instances of <code>IntermediateResults</code> are used to keep track of and calculate the {@link IntermediateResult}s
@@ -26,6 +29,17 @@ public final class IntermediateResults {
     }
 
     /**
+     * Returns an <code>IntermediateResultSet</code> for the given <code>Set</code>.<br/>
+     * This method is defined for type inference, as it could simply be replaced with a constructor call.
+     *
+     * @since 1.6
+     */
+    @Nonnull
+    public static <E> IntermediateResultSet<E> resultSetFor(@Nonnull Collection<E> intermediateResults) {
+        return new IntermediateResultSet<E>(intermediateResults);
+    }
+
+    /**
      * Returns an <code>IntermediateResultMap</code> for the given <code>Map</code>.<br/>
      * This method is defined for type inference, as it could simply be replaced with a constructor call.
      *
@@ -34,6 +48,19 @@ public final class IntermediateResults {
     @Nonnull
     public static <K, V> IntermediateResultMap<K, V> resultMapFor(@Nonnull Map<K, V> intermediateResults) {
         return new IntermediateResultMap<K, V>(intermediateResults);
+    }
+
+    /**
+     * Returns an <code>IntermediateResultSet</code> from the given <code>CodeContext</code> for the given key.<br/>
+     * This method is defined to handle the <i>unchecked</i> cast to a typed <code>IntermediateResultSet</code>,
+     * it could simply be replaced with {@link de.is24.deadcode4j.CodeContext#getIntermediateResult(Object)}.
+     *
+     * @since 1.6
+     */
+    @Nullable
+    @SuppressWarnings("unchecked")
+    public static <E> IntermediateResultSet<E> resultSetFrom(@Nonnull CodeContext codeContext, Object key) {
+        return (IntermediateResultSet<E>) codeContext.getIntermediateResult(key);
     }
 
     /**
@@ -123,6 +150,68 @@ public final class IntermediateResults {
     }
 
     /**
+     * An <code>IntermediateResultSet</code> is an implementation of {@link de.is24.deadcode4j.IntermediateResult} using
+     * a <code>Set</code> to store the results. Concerning merging with siblings & parents, it simply adds both sets.
+     *
+     * @since 1.6
+     */
+    public static class IntermediateResultSet<E> implements IntermediateResult {
+
+        @Nonnull
+        private final Set<E> results;
+
+        /**
+         * Creates an <code>IntermediateResultSet</code> to store the given <code>Set</code>.
+         *
+         * @since 1.6
+         */
+        public IntermediateResultSet(@Nonnull Collection<E> results) {
+            this.results = Collections.unmodifiableSet(newHashSet(results));
+        }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + ": " + results;
+        }
+
+        @Nonnull
+        @Override
+        public IntermediateResult mergeSibling(@Nonnull IntermediateResult sibling) {
+            return merge(sibling);
+        }
+
+        @Nonnull
+        @Override
+        public IntermediateResult mergeParent(@Nonnull IntermediateResult parent) {
+            return merge(parent);
+        }
+
+        /**
+         * Returns the stored read-only <code>Set</code>.
+         *
+         * @since 1.6
+         */
+        @Nonnull
+        public Set<E> getResults() {
+            return this.results;
+        }
+
+        @Nonnull
+        private IntermediateResult merge(@Nonnull IntermediateResult result) {
+            Set<E> mergedResults = newHashSet(this.results);
+            mergedResults.addAll(getResults(result));
+            return new IntermediateResultSet<E>(mergedResults);
+        }
+
+        @Nonnull
+        @SuppressWarnings("unchecked")
+        private Set<E> getResults(@Nonnull IntermediateResult result) {
+            return IntermediateResultSet.class.cast(result).getResults();
+        }
+
+    }
+
+    /**
      * An <code>IntermediateResultMap</code> is an implementation of {@link de.is24.deadcode4j.IntermediateResult} using
      * a <code>Map</code> to store the results. Concerning merging with siblings & parents, it
      * <ul>
@@ -143,14 +232,13 @@ public final class IntermediateResults {
         @Nonnull
         private final Map<K, V> results;
 
-
         /**
          * Creates an <code>IntermediateResultMap</code> to store the given <code>Map</code>.
          *
          * @since 1.6
          */
         public IntermediateResultMap(@Nonnull Map<K, V> results) {
-            this.results = newHashMap(results);
+            this.results = Collections.unmodifiableMap(newHashMap(results));
         }
 
         @Nonnull
@@ -172,19 +260,19 @@ public final class IntermediateResults {
         }
 
         /**
-         * Returns the stored result <code>Map</code>.
+         * Returns the stored read-only <code>Map</code>.
          *
          * @since 1.6
          */
         @Nonnull
-        public Map<K, V> getMap() {
+        public Map<K, V> getResults() {
             return this.results;
         }
 
         @Nonnull
         @SuppressWarnings("unchecked")
         private IntermediateResult merge(@Nonnull IntermediateResult result) {
-            Map<K, V> mergedResults = newHashMap(this.results);
+            Map<K, V> mergedResults = newHashMap(getResults());
             for (Map.Entry<K, V> resultEntry : getResults(result).entrySet()) {
                 K key = resultEntry.getKey();
                 V value = resultEntry.getValue();
@@ -203,7 +291,7 @@ public final class IntermediateResults {
         @Nonnull
         @SuppressWarnings("unchecked")
         private Map<K, V> getResults(IntermediateResult result) {
-            return IntermediateResultMap.class.cast(result).results;
+            return IntermediateResultMap.class.cast(result).getResults();
         }
 
     }

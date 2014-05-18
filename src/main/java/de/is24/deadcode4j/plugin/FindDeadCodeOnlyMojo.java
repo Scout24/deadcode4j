@@ -138,6 +138,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
                 new ReferenceToConstantsAnalyzer(),
                 new ServletContainerInitializerAnalyzer(),
                 new SpringAnnotationsAnalyzer(),
+                new SpringDataCustomRepositoriesAnalyzer(),
                 new SpringNamespaceHandlerAnalyzer(),
                 new SpringWebApplicationInitializerAnalyzer(),
                 new SpringWebFlowAnalyzer(),

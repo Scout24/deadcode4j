@@ -14,13 +14,12 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static de.is24.deadcode4j.CodeContextBuilder.givenCodeContext;
 import static de.is24.deadcode4j.IntermediateResultMapBuilder.givenIntermediateResultMap;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer<HibernateAnnotationsAnalyzer> {
+public final class A_HibernateAnnotationsAnalyzer extends AByteCodeAnalyzer<HibernateAnnotationsAnalyzer> {
 
     private static <T> Matcher<T[]> hasVarArgItem(Matcher<? super T> elementMatcher) {
         return new MyVarArgsMatcher<T>(elementMatcher);
@@ -29,15 +28,6 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer<HibernateAn
     @Override
     protected HibernateAnnotationsAnalyzer createAnalyzer() {
         return new HibernateAnnotationsAnalyzer();
-    }
-
-    @Test
-    public void reportsExistenceOfClasses() {
-        analyzeFile("A.class");
-        assertThatClassesAreReported("A");
-
-        analyzeFile("B.class");
-        assertThatClassesAreReported("A", "B");
     }
 
     @Test
@@ -133,15 +123,17 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer<HibernateAn
     }
 
     @Test
-    public void storesTypeDefinitionsAndUsagesAsIntermediateResults() {
-        analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/Entity.class");
+    public void storesTypeDefinitionsAsIntermediateResults() {
         analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/package-info.class");
-        doFinishAnalysis();
 
-        assertThat(this.codeContext.getCache().get(HibernateAnnotationsAnalyzer.class.getName() + "|typeDefinitions"),
-                is(instanceOf(IntermediateResult.class)));
-        assertThat(this.codeContext.getCache().get(HibernateAnnotationsAnalyzer.class.getName() + "|typeUsages"),
-                is(instanceOf(IntermediateResult.class)));
+        assertThatIntermediateResultIsStored();
+    }
+
+    @Test
+    public void storesTypeUsagesAsIntermediateResults() {
+        analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/Entity.class");
+
+        assertThatIntermediateResultIsStored();
     }
 
     @Test
@@ -198,15 +190,17 @@ public final class A_HibernateAnnotationsAnalyzer extends AnAnalyzer<HibernateAn
     }
 
     @Test
-    public void storesGeneratorDefinitionsAndUsagesAsIntermediateResults() {
-        analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/EntityWithGeneratedValue.class");
+    public void storesGeneratorDefinitionsAsIntermediateResults() {
         analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/package-info.class");
-        doFinishAnalysis();
 
-        assertThat(this.codeContext.getCache().get(HibernateAnnotationsAnalyzer.class.getName() + "|generatorDefinitions"),
-                is(instanceOf(IntermediateResult.class)));
-        assertThat(this.codeContext.getCache().get(HibernateAnnotationsAnalyzer.class.getName() + "|generatorUsages"),
-                is(instanceOf(IntermediateResult.class)));
+        assertThatIntermediateResultIsStored();
+    }
+
+    @Test
+    public void storesGeneratorUsagesAsIntermediateResults() {
+        analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/EntityWithGeneratedValue.class");
+
+        assertThatIntermediateResultIsStored();
     }
 
     @Test

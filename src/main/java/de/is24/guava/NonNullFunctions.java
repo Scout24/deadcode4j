@@ -1,6 +1,7 @@
 package de.is24.guava;
 
 import com.google.common.base.Function;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -25,6 +26,8 @@ public final class NonNullFunctions {
         return new Function<F, T>() {
             @Nullable
             @Override
+            @SuppressFBWarnings(value = "NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE",
+                    justification = "The null part is handled")
             public T apply(@Nullable F input) {
                 if (input == null) {
                     throw new NullPointerException();

@@ -1,11 +1,7 @@
 Features
 --------
 * @dcsobral: possibility to ignore all classes with main method
-* recognize [custom Spring Data repositories](http://docs.spring.io/spring-data/data-commons/docs/1.6.x/reference/html/repositories.html#repositories.custom-implementations)
-    * this requires to know if a class implements `Repository`, even recursively - which in turn means it is required to set up all dependencies
-    * as a workaround, one can define the custom implementation as a regular Spring bean (as suggested [here](http://docs.spring.io/spring-data/commons/docs/1.7.1.RELEASE/reference/htmlsingle/#repositories.single-repository-behaviour)), which should be recognized as _live code_ by deadcode4j for the moment
 * create a report
-* log if custom stuff finds anything or may be removed
 * recognize cyclic dependencies
     * actually, better to report which parts of the code are really used
     * "really used" means either marked as such manually or because the application breaks if the class (and its minions) is removed, i.e. the class is listed in sth. like web.xml

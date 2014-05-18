@@ -2,21 +2,12 @@ package de.is24.deadcode4j.analyzer;
 
 import org.junit.Test;
 
-public final class A_SuperClassAnalyzer extends AnAnalyzer<SuperClassAnalyzer> {
+public final class A_SuperClassAnalyzer extends AByteCodeAnalyzer<SuperClassAnalyzer> {
 
     @Override
     protected SuperClassAnalyzer createAnalyzer() {
         return new SuperClassAnalyzer("junit", "java.lang.Thread") {
         };
-    }
-
-    @Test
-    public void reportsExistenceOfClasses() {
-        analyzeFile("A.class");
-        assertThatClassesAreReported("A");
-
-        analyzeFile("B.class");
-        assertThatClassesAreReported("A", "B");
     }
 
     @Test

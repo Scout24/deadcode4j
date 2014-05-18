@@ -19,11 +19,20 @@ public interface Analyzer {
     void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull File fileName);
 
     /**
-     * Indicates that all files have been processed.
-     * This method offers <code>Analyzer</code>s the possibility to report dependencies based on the whole project.
+     * Indicates that all files of a module have been processed.
+     * This method offers <code>Analyzer</code>s the possibility to report dependencies based on a module or store
+     * {@link de.is24.deadcode4j.IntermediateResult}s.
      *
      * @since 1.4
      */
     void finishAnalysis(@Nonnull CodeContext codeContext);
+
+    /**
+     * Indicates that all modules have been processed.
+     * This method offers <code>Analyzer</code>s the possibility to report dependencies based on the whole project.
+     *
+     * @since 1.6
+     */
+    void finishAnalysis();
 
 }

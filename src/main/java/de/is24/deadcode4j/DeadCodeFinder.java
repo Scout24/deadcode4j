@@ -46,12 +46,18 @@ public class DeadCodeFinder {
                 analyzeRepository(codeContext, repository);
             }
             logger.debug("Finishing analysis of [{}]...", codeContext);
-            for (Analyzer analyzer : this.analyzers)
+            for (Analyzer analyzer : this.analyzers) {
                 analyzer.finishAnalysis(codeContext);
+            }
             logger.debug("Finished analysis of [{}].", codeContext);
             intermediateResults.add(codeContext);
             analyzedCode.add(codeContext.getAnalyzedCode());
         }
+        logger.debug("Finishing analysis of whole project...");
+        for (Analyzer analyzer : this.analyzers) {
+            analyzer.finishAnalysis();
+        }
+        logger.debug("Finished analysis of project.");
         return merge(analyzedCode);
     }
 

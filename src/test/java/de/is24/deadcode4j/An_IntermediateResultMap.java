@@ -1,7 +1,6 @@
 package de.is24.deadcode4j;
 
 import de.is24.deadcode4j.junit.LoggingRule;
-import org.hamcrest.MatcherAssert;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -14,6 +13,7 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static de.is24.deadcode4j.IntermediateResultMapBuilder.givenIntermediateResultMap;
 import static de.is24.deadcode4j.IntermediateResults.IntermediateResultMap;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 public final class An_IntermediateResultMap {
@@ -39,7 +39,7 @@ public final class An_IntermediateResultMap {
 
         results.clear();
 
-        MatcherAssert.assertThat(objectUnderTest.getMap(), hasEntry("foo", "bar"));
+        assertThat(objectUnderTest.getResults(), hasEntry("foo", "bar"));
     }
 
     @Test
@@ -49,8 +49,8 @@ public final class An_IntermediateResultMap {
         IntermediateResultMap<String, String> mergedResult =
                 mergeSibling(objectUnderTest, givenIntermediateResultMap("bar", "foo"));
 
-        MatcherAssert.assertThat(mergedResult.getMap(), hasEntry("foo", "bar"));
-        MatcherAssert.assertThat(mergedResult.getMap(), hasEntry("bar", "foo"));
+        assertThat(mergedResult.getResults(), hasEntry("foo", "bar"));
+        assertThat(mergedResult.getResults(), hasEntry("bar", "foo"));
     }
 
     @Test
@@ -60,8 +60,8 @@ public final class An_IntermediateResultMap {
         IntermediateResultMap<String, String> mergedResult =
                 mergeParent(objectUnderTest, givenIntermediateResultMap("bar", "foo"));
 
-        MatcherAssert.assertThat(mergedResult.getMap(), hasEntry("foo", "bar"));
-        MatcherAssert.assertThat(mergedResult.getMap(), hasEntry("bar", "foo"));
+        assertThat(mergedResult.getResults(), hasEntry("foo", "bar"));
+        assertThat(mergedResult.getResults(), hasEntry("bar", "foo"));
     }
 
     @Test
@@ -71,7 +71,7 @@ public final class An_IntermediateResultMap {
         IntermediateResultMap<String, String> mergedResult =
                 mergeSibling(objectUnderTest, givenIntermediateResultMap("foo", "foo"));
 
-        MatcherAssert.assertThat(mergedResult.getMap(), hasEntry("foo", "bar"));
+        assertThat(mergedResult.getResults(), hasEntry("foo", "bar"));
     }
 
     @Test
@@ -81,7 +81,7 @@ public final class An_IntermediateResultMap {
         IntermediateResultMap<String, String> mergedResult =
                 mergeParent(objectUnderTest, givenIntermediateResultMap("foo", "foo"));
 
-        MatcherAssert.assertThat(mergedResult.getMap(), hasEntry("foo", "bar"));
+        assertThat(mergedResult.getResults(), hasEntry("foo", "bar"));
     }
 
     @Test
@@ -92,7 +92,7 @@ public final class An_IntermediateResultMap {
         IntermediateResultMap<String, ArrayList<String>> mergedResult =
                 mergeSibling(objectUnderTest, givenIntermediateResultMap("foo", newArrayList("foo")));
 
-        MatcherAssert.assertThat(mergedResult.getMap(), hasEntry(is("foo"), contains("bar", "foo")));
+        assertThat(mergedResult.getResults(), hasEntry(is("foo"), contains("bar", "foo")));
     }
 
     @Test
@@ -103,7 +103,7 @@ public final class An_IntermediateResultMap {
         IntermediateResultMap<String, HashSet<String>> mergedResult =
                 mergeParent(objectUnderTest, givenIntermediateResultMap("foo", newHashSet("foo")));
 
-        MatcherAssert.assertThat(mergedResult.getMap(), hasEntry(is("foo"), containsInAnyOrder("bar", "foo")));
+        assertThat(mergedResult.getResults(), hasEntry(is("foo"), containsInAnyOrder("bar", "foo")));
     }
 
 }

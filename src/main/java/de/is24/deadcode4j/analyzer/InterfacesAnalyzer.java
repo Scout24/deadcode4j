@@ -4,13 +4,13 @@ import de.is24.deadcode4j.CodeContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPathFilter;
 import de.is24.guava.NonNullFunction;
 import javassist.CtClass;
-import javassist.NotFoundException;
 
 import javax.annotation.Nonnull;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Sets.newHashSet;
+import static de.is24.deadcode4j.analyzer.javassist.CtClasses.getAllImplementedInterfaces;
 import static java.util.Collections.disjoint;
 
 /**
@@ -63,37 +63,16 @@ public abstract class InterfacesAnalyzer extends ByteCodeAnalyzer {
         if (knownInterfaces.isEmpty()) {
             return;
         }
+
         String clazzName = clazz.getName();
         codeContext.addAnalyzedClass(clazzName);
-
-        final Set<String> allImplementedInterfaces;
-        try {
-            allImplementedInterfaces = getAllImplementedInterfaces(clazz);
-        } catch (NotFoundException e) {
-            logger.warn("The class path is not correctly set up; could not load [{}]! Skipping interfaces check for {}.", e.getMessage(), clazz.getName());
-            return;
-        }
-        if (!disjoint(knownInterfaces, allImplementedInterfaces)) {
+        if (!disjoint(knownInterfaces, getAllImplementedInterfaces(clazz))) {
             codeContext.addDependencies(this.dependerId, clazzName);
         }
     }
 
     @Nonnull
-    private Set<String> getAllImplementedInterfaces(@Nonnull final CtClass clazz) throws NotFoundException {
-        Set<String> interfaces = newHashSet();
-        CtClass loopClass = clazz;
-        do {
-            for (CtClass anInterface : loopClass.getInterfaces()) {
-                interfaces.add(anInterface.getName());
-                interfaces.addAll(getAllImplementedInterfaces(anInterface));
-            }
-            loopClass = loopClass.getSuperclass();
-        } while (loopClass != null && !"java.lang.Object".equals(loopClass.getName()));
-        return interfaces;
-    }
-
-    @Nonnull
-    private Set<String> getInterfacesFoundInClassPath(@Nonnull CodeContext codeContext) {
+    protected final Set<String> getInterfacesFoundInClassPath(@Nonnull CodeContext codeContext) {
         return codeContext.getOrCreateCacheEntry(getClass(), supplyInterfacesFoundInClassPath);
     }
 

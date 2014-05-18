@@ -145,7 +145,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
     }
 
     @Nonnull
-    private Set<String> getAnnotationsFoundInClassPath(@Nonnull CodeContext codeContext) {
+    protected final Set<String> getAnnotationsFoundInClassPath(@Nonnull CodeContext codeContext) {
         return codeContext.getOrCreateCacheEntry(getClass().getName() + "|knownAnnotations", supplyAnnotationsFoundInClassPath);
     }
 
