@@ -24,10 +24,10 @@ import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
 public class DeadCodeFinder {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final Set<? extends Analyzer> analyzers;
+    private final Iterable<? extends Analyzer> analyzers;
 
     public DeadCodeFinder(@Nonnull Set<? extends Analyzer> analyzers) {
-        this.analyzers = analyzers;
+        this.analyzers = newArrayList(analyzers);
     }
 
     @Nonnull
