@@ -18,14 +18,17 @@ import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
 import static java.util.Arrays.asList;
 
 /**
- * The <code>CodeContext</code> provides the capability to
+ * The <code>AnalysisContext</code> provides the capability to
  * {@link #addAnalyzedClass(String) report the existence of code} and
- * {@link #addDependencies(String, Iterable)}  the dependencies of it}.
+ * {@link #addDependencies(String, Iterable)}  the dependencies of it}, whilst providing access to the
+ * {@link #getModule() analyzed module} and {@link #getIntermediateResult(Object) the intermediate results} of the
+ * modules it depends on. Additionally, it provides a {@link #getCache() <em>cache</em>} to use for caching calculated
+ * data relevant for one context.
  *
  * @since 1.1.0
  */
 @SuppressWarnings("PMD.TooManyStaticImports")
-public class CodeContext {
+public class AnalysisContext {
     private final org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
     @Nonnull
     private final Set<String> analyzedClasses = newHashSet();
@@ -45,7 +48,7 @@ public class CodeContext {
      *
      * @since 1.6
      */
-    public CodeContext(@Nonnull Module module, @Nonnull Map<Object, IntermediateResult> intermediateResults) {
+    public AnalysisContext(@Nonnull Module module, @Nonnull Map<Object, IntermediateResult> intermediateResults) {
         this.module = module;
         this.intermediateResults = newHashMap(intermediateResults);
     }
@@ -76,7 +79,7 @@ public class CodeContext {
     }
 
     @Nonnull
-    public <T> T getOrCreateCacheEntry(Object key, NonNullFunction<CodeContext, T> supplier) {
+    public <T> T getOrCreateCacheEntry(Object key, NonNullFunction<AnalysisContext, T> supplier) {
         @SuppressWarnings("unchecked")
         T entry = (T) getCache().get(key);
         if (entry == null) {

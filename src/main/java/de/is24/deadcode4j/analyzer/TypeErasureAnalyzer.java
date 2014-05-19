@@ -2,7 +2,7 @@ package de.is24.deadcode4j.analyzer;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.AnalysisContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import japa.parser.JavaParser;
@@ -45,14 +45,14 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
 
     @Override
     @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "The MavenProject does not provide the proper encoding")
-    public void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull File file) {
+    public void doAnalysis(@Nonnull AnalysisContext analysisContext, @Nonnull File file) {
         if (file.getName().endsWith(".java")) {
             logger.debug("Analyzing Java file [{}]...", file);
             final CompilationUnit compilationUnit;
             Reader reader = null;
             try {
-                reader = codeContext.getModule().getEncoding() != null
-                        ? new InputStreamReader(new FileInputStream(file), codeContext.getModule().getEncoding())
+                reader = analysisContext.getModule().getEncoding() != null
+                        ? new InputStreamReader(new FileInputStream(file), analysisContext.getModule().getEncoding())
                         : new FileReader(file);
                 compilationUnit = JavaParser.parse(reader, false);
             } catch (TokenMgrError e) {
@@ -62,13 +62,13 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
             } finally {
                 closeQuietly(reader);
             }
-            analyzeCompilationUnit(codeContext, compilationUnit);
+            analyzeCompilationUnit(analysisContext, compilationUnit);
         }
     }
 
-    private void analyzeCompilationUnit(@Nonnull final CodeContext codeContext, @Nonnull final CompilationUnit compilationUnit) {
+    private void analyzeCompilationUnit(@Nonnull final AnalysisContext analysisContext, @Nonnull final CompilationUnit compilationUnit) {
         compilationUnit.accept(new TypeRecordingVisitor() {
-            private final ClassPoolAccessor classPoolAccessor = classPoolAccessorFor(codeContext);
+            private final ClassPoolAccessor classPoolAccessor = classPoolAccessorFor(analysisContext);
             private final Deque<Set<String>> definedTypeParameters = newLinkedList();
             private final Map<String, Set<String>> typeReferences = newHashMap();
 
@@ -221,7 +221,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                     assert resolvedClass != null;
                     if (resolvedClass.isPresent()) {
                         for (String depender : typeReference.getValue()) {
-                            codeContext.addDependencies(depender, resolvedClass.get());
+                            analysisContext.addDependencies(depender, resolvedClass.get());
                         }
                     } else {
                         logger.debug("Could not resolve Type Argument [{}] used by [{}].", referencedType, typeReference.getValue());

@@ -1,6 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.AnalysisContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
 import javassist.CtClass;
 import javassist.Modifier;
@@ -25,22 +25,22 @@ public class SpringDataCustomRepositoriesAnalyzer extends ByteCodeAnalyzer {
     private List<String> customRepositoryNames = newArrayList();
 
     @Override
-    protected void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
-        codeContext.addAnalyzedClass(clazz.getName());
+    protected void analyzeClass(@Nonnull AnalysisContext analysisContext, @Nonnull CtClass clazz) {
+        analysisContext.addAnalyzedClass(clazz.getName());
         if (clazz.isInterface()) {
-            analyzeInterface(codeContext, clazz);
+            analyzeInterface(analysisContext, clazz);
         } else if (isPublicOrPackageProtectedClass(clazz)) {
-            reportImplementationOfExistingCustomRepository(codeContext, clazz);
+            reportImplementationOfExistingCustomRepository(analysisContext, clazz);
         }
     }
 
     @Override
-    public void finishAnalysis(@Nonnull CodeContext codeContext) {
-        codeContext.getCache().put(getClass(), resultSetFor(this.customRepositoryNames));
+    public void finishAnalysis(@Nonnull AnalysisContext analysisContext) {
+        analysisContext.getCache().put(getClass(), resultSetFor(this.customRepositoryNames));
         this.customRepositoryNames.clear();
     }
 
-    private void analyzeInterface(CodeContext codeContext, CtClass clazz) {
+    private void analyzeInterface(AnalysisContext analysisContext, CtClass clazz) {
         Set<String> implementedInterfaces = getAllImplementedInterfaces(clazz);
         if (!implementedInterfaces.contains("org.springframework.data.repository.Repository")) {
             return;
@@ -53,12 +53,12 @@ public class SpringDataCustomRepositoriesAnalyzer extends ByteCodeAnalyzer {
         }
 
         this.customRepositoryNames.add(nameOfCustomRepositoryInterface);
-        reportImplementationOfNewCustomRepository(codeContext, clazzName);
+        reportImplementationOfNewCustomRepository(analysisContext, clazzName);
     }
 
-    private void reportImplementationOfNewCustomRepository(CodeContext codeContext, String clazzName) {
+    private void reportImplementationOfNewCustomRepository(AnalysisContext analysisContext, String clazzName) {
         final String nameOfCustomRepositoryImplementation = clazzName + "Impl";
-        CtClass customImpl = ClassPoolAccessor.classPoolAccessorFor(codeContext).getClassPool().
+        CtClass customImpl = ClassPoolAccessor.classPoolAccessorFor(analysisContext).getClassPool().
                 getOrNull(nameOfCustomRepositoryImplementation);
         if (customImpl == null) {
             return;
@@ -66,7 +66,7 @@ public class SpringDataCustomRepositoriesAnalyzer extends ByteCodeAnalyzer {
 
         Set<String> implementedInterfaces = getAllImplementedInterfaces(customImpl);
         if (implementedInterfaces.contains(clazzName + "Custom")) {
-            codeContext.addDependencies(clazzName, nameOfCustomRepositoryImplementation);
+            analysisContext.addDependencies(clazzName, nameOfCustomRepositoryImplementation);
         }
     }
 
@@ -79,8 +79,8 @@ public class SpringDataCustomRepositoriesAnalyzer extends ByteCodeAnalyzer {
                 && !Modifier.isProtected(modifiers);
     }
 
-    private void reportImplementationOfExistingCustomRepository(CodeContext codeContext, CtClass clazz) {
-        IntermediateResultSet<String> intermediateResults = resultSetFrom(codeContext, getClass());
+    private void reportImplementationOfExistingCustomRepository(AnalysisContext analysisContext, CtClass clazz) {
+        IntermediateResultSet<String> intermediateResults = resultSetFrom(analysisContext, getClass());
         if (intermediateResults == null) {
             return;
         }
@@ -89,7 +89,7 @@ public class SpringDataCustomRepositoriesAnalyzer extends ByteCodeAnalyzer {
         Set<String> implementedInterfaces = getAllImplementedInterfaces(clazz);
         implementedInterfaces.retainAll(existingCustomRepositories);
         for (String customRepositoryName : implementedInterfaces) {
-            codeContext.addDependencies(
+            analysisContext.addDependencies(
                     customRepositoryName.substring(0, customRepositoryName.length() - "Custom".length()),
                     clazz.getName());
         }

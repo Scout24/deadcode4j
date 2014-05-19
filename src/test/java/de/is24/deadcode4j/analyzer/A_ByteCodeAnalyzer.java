@@ -1,6 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.AnalysisContext;
 import javassist.CtClass;
 import org.junit.Test;
 
@@ -15,8 +15,8 @@ public final class A_ByteCodeAnalyzer extends AnAnalyzer<ByteCodeAnalyzer> {
     protected ByteCodeAnalyzer createAnalyzer() {
         return new ByteCodeAnalyzer() {
             @Override
-            protected void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
-                codeContext.addAnalyzedClass(clazz.getName());
+            protected void analyzeClass(@Nonnull AnalysisContext analysisContext, @Nonnull CtClass clazz) {
+                analysisContext.addAnalyzedClass(clazz.getName());
             }
         };
     }
@@ -33,7 +33,7 @@ public final class A_ByteCodeAnalyzer extends AnAnalyzer<ByteCodeAnalyzer> {
     public void doesNotAnalyzeNonClassFile() {
         analyzeFile("spring.xml");
 
-        assertThat("Should analyze no class", codeContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(0));
+        assertThat("Should analyze no class", analysisContext.getAnalyzedCode().getAnalyzedClasses(), hasSize(0));
         assertThatNoDependenciesAreReported();
     }
 }

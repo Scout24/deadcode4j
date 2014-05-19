@@ -1,6 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.AnalysisContext;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -33,7 +33,7 @@ public final class SpringWebXmlAnalyzer extends XmlAnalyzer {
 
     @Nonnull
     @Override
-    protected DefaultHandler createHandlerFor(@Nonnull final CodeContext codeContext) {
+    protected DefaultHandler createHandlerFor(@Nonnull final AnalysisContext analysisContext) {
         return new DefaultHandler() {
             private final Deque<String> deque = new ArrayDeque<String>();
             private StringBuilder buffer;
@@ -79,11 +79,11 @@ public final class SpringWebXmlAnalyzer extends XmlAnalyzer {
                     return;
                 }
                 if ("contextClass".equals(paramName)) {
-                    codeContext.addDependencies("_Spring-Context_", paramValue);
+                    analysisContext.addDependencies("_Spring-Context_", paramValue);
                 } else if ("contextInitializerClasses".equals(paramName)) {
                     for (String initializerClass : paramValue.split(",")) {
                         if (!isNullOrEmpty(initializerClass)) {
-                            codeContext.addDependencies("_Spring-ContextInitializer_", initializerClass.trim());
+                            analysisContext.addDependencies("_Spring-ContextInitializer_", initializerClass.trim());
                         }
                     }
                 }

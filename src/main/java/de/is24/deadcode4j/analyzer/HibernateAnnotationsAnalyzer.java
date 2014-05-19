@@ -3,7 +3,7 @@ package de.is24.deadcode4j.analyzer;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
-import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.AnalysisContext;
 import javassist.CtClass;
 import javassist.bytecode.annotation.*;
 
@@ -111,20 +111,20 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
     }
 
     @Override
-    protected void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
-        codeContext.addAnalyzedClass(clazz.getName());
+    protected void analyzeClass(@Nonnull AnalysisContext analysisContext, @Nonnull CtClass clazz) {
+        analysisContext.addAnalyzedClass(clazz.getName());
         processTypeDefAnnotation(clazz);
         processTypeDefsAnnotation(clazz);
         processTypeAnnotations(clazz);
-        processGenericGenerator(codeContext, clazz);
-        processGenericGenerators(codeContext, clazz);
+        processGenericGenerator(analysisContext, clazz);
+        processGenericGenerators(analysisContext, clazz);
         processGeneratedValueAnnotations(clazz);
     }
 
     @Override
-    public void finishAnalysis(@Nonnull CodeContext codeContext) {
-        reportDependencies(codeContext);
-        storeIntermediateResults(codeContext);
+    public void finishAnalysis(@Nonnull AnalysisContext analysisContext) {
+        reportDependencies(analysisContext);
+        storeIntermediateResults(analysisContext);
     }
 
     private void processTypeDefAnnotation(@Nonnull CtClass clazz) {
@@ -160,18 +160,18 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
         }
     }
 
-    private void processGenericGenerator(CodeContext codeContext, CtClass clazz) {
+    private void processGenericGenerator(AnalysisContext analysisContext, CtClass clazz) {
         for (Annotation annotation : getAnnotations(clazz, "org.hibernate.annotations.GenericGenerator", PACKAGE, TYPE, METHOD, FIELD)) {
-            processGenericGenerator(codeContext, clazz, annotation);
+            processGenericGenerator(analysisContext, clazz, annotation);
         }
     }
 
-    private void processGenericGenerator(CodeContext codeContext, CtClass clazz, Annotation annotation) {
+    private void processGenericGenerator(AnalysisContext analysisContext, CtClass clazz, Annotation annotation) {
         String className = clazz.getName();
-        Optional<String> resolvedStrategyClass = classPoolAccessorFor(codeContext).resolveClass(
+        Optional<String> resolvedStrategyClass = classPoolAccessorFor(analysisContext).resolveClass(
                 getMandatoryStringFrom(annotation, "strategy"));
         if (resolvedStrategyClass.isPresent()) {
-            codeContext.addDependencies(className, resolvedStrategyClass.get());
+            analysisContext.addDependencies(className, resolvedStrategyClass.get());
         }
         String generatorName = getMandatoryStringFrom(annotation, "name");
         String previousEntry = this.generatorDefinitions.put(generatorName, className);
@@ -181,10 +181,10 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
         }
     }
 
-    private void processGenericGenerators(CodeContext codeContext, CtClass clazz) {
+    private void processGenericGenerators(AnalysisContext analysisContext, CtClass clazz) {
         for (Annotation annotation : getAnnotations(clazz, "org.hibernate.annotations.GenericGenerators", PACKAGE, TYPE)) {
             for (Annotation childAnnotation : getAnnotationsFrom(annotation, "value")) {
-                processGenericGenerator(codeContext, clazz, childAnnotation);
+                processGenericGenerator(analysisContext, clazz, childAnnotation);
             }
         }
     }
@@ -198,34 +198,34 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
         }
     }
 
-    private void reportDependencies(@Nonnull CodeContext codeContext) {
-        reportNewGeneratorUsages(codeContext);
-        reportExistingGeneratorUsagesForNewDefinitions(codeContext);
-        reportNewTypeUsages(codeContext);
-        reportExistingTypeUsagesForNewDefinitions(codeContext);
+    private void reportDependencies(@Nonnull AnalysisContext analysisContext) {
+        reportNewGeneratorUsages(analysisContext);
+        reportExistingGeneratorUsagesForNewDefinitions(analysisContext);
+        reportNewTypeUsages(analysisContext);
+        reportExistingTypeUsagesForNewDefinitions(analysisContext);
     }
 
-    private void reportNewGeneratorUsages(CodeContext codeContext) {
+    private void reportNewGeneratorUsages(AnalysisContext analysisContext) {
         if (this.generatorUsages.isEmpty()) {
             return;
         }
-        Map<String, String> allGeneratorDefinitions = getAllGeneratorDefinitions(codeContext);
+        Map<String, String> allGeneratorDefinitions = getAllGeneratorDefinitions(analysisContext);
         for (Map.Entry<String, Set<String>> generatorUsage : this.generatorUsages.entrySet()) {
             String generatorName = generatorUsage.getKey();
             String classDefiningGenerator = allGeneratorDefinitions.get(generatorName);
             if (classDefiningGenerator != null) {
                 for (String classUsingGenerator : generatorUsage.getValue()) {
-                    codeContext.addDependencies(classUsingGenerator, classDefiningGenerator);
+                    analysisContext.addDependencies(classUsingGenerator, classDefiningGenerator);
                 }
             }
         }
     }
 
-    private void reportExistingGeneratorUsagesForNewDefinitions(CodeContext codeContext) {
+    private void reportExistingGeneratorUsagesForNewDefinitions(AnalysisContext analysisContext) {
         if (this.generatorDefinitions.isEmpty()) {
             return;
         }
-        for (Map.Entry<String, Set<String>> usage : getExistingGeneratorUsages(codeContext).entrySet()) {
+        for (Map.Entry<String, Set<String>> usage : getExistingGeneratorUsages(analysisContext).entrySet()) {
             String usageName = usage.getKey();
             String classDefiningType = this.generatorDefinitions.get(usageName);
             if (classDefiningType == null) {
@@ -233,16 +233,16 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
             }
             logger.debug("This module provides the generator definition [{}] for modules it depends on.", usageName);
             for (String classUsingType : usage.getValue()) {
-                codeContext.addDependencies(classUsingType, classDefiningType);
+                analysisContext.addDependencies(classUsingType, classDefiningType);
             }
         }
     }
 
-    private void reportNewTypeUsages(CodeContext codeContext) {
+    private void reportNewTypeUsages(AnalysisContext analysisContext) {
         if (this.typeUsages.isEmpty()) {
             return;
         }
-        Map<String, String> allTypeDefinitions = getAllTypeDefinitions(codeContext);
+        Map<String, String> allTypeDefinitions = getAllTypeDefinitions(analysisContext);
         for (Map.Entry<String, Set<String>> typeUsage : this.typeUsages.entrySet()) {
             String typeName = typeUsage.getKey();
             String classDefiningType = allTypeDefinitions.get(typeName);
@@ -251,7 +251,7 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
             if (classDefiningType != null) {
                 dependee = classDefiningType;
             } else {
-                Optional<String> resolvedTypeClass = classPoolAccessorFor(codeContext).resolveClass(typeName);
+                Optional<String> resolvedTypeClass = classPoolAccessorFor(analysisContext).resolveClass(typeName);
                 if (resolvedTypeClass.isPresent()) {
                     dependee = resolvedTypeClass.get();
                 } else {
@@ -260,16 +260,16 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
                 }
             }
             for (String classUsingType : typeUsage.getValue()) {
-                codeContext.addDependencies(classUsingType, dependee);
+                analysisContext.addDependencies(classUsingType, dependee);
             }
         }
     }
 
-    private void reportExistingTypeUsagesForNewDefinitions(CodeContext codeContext) {
+    private void reportExistingTypeUsagesForNewDefinitions(AnalysisContext analysisContext) {
         if (this.typeDefinitions.isEmpty()) {
             return;
         }
-        for (Map.Entry<String, Set<String>> typeUsage : getExistingTypeUsages(codeContext).entrySet()) {
+        for (Map.Entry<String, Set<String>> typeUsage : getExistingTypeUsages(analysisContext).entrySet()) {
             String typeName = typeUsage.getKey();
             String classDefiningType = this.typeDefinitions.get(typeName);
             if (classDefiningType == null) {
@@ -277,15 +277,15 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
             }
             logger.debug("This module provides the type definition [{}] for modules it depends on.", typeName);
             for (String classUsingType : typeUsage.getValue()) {
-                codeContext.addDependencies(classUsingType, classDefiningType);
+                analysisContext.addDependencies(classUsingType, classDefiningType);
             }
         }
     }
 
     @Nonnull
-    private Map<String, String> getAllGeneratorDefinitions(@Nonnull CodeContext codeContext) {
+    private Map<String, String> getAllGeneratorDefinitions(@Nonnull AnalysisContext analysisContext) {
         IntermediateResultMap<String, String> resultMap =
-                resultMapFrom(codeContext, getClass().getName() + "|generatorDefinitions");
+                resultMapFrom(analysisContext, getClass().getName() + "|generatorDefinitions");
         if (resultMap == null) {
             return this.generatorDefinitions;
         }
@@ -305,9 +305,9 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
     }
 
     @Nonnull
-    private Map<String, String> getAllTypeDefinitions(@Nonnull CodeContext codeContext) {
+    private Map<String, String> getAllTypeDefinitions(@Nonnull AnalysisContext analysisContext) {
         IntermediateResultMap<String, String> resultMap =
-                resultMapFrom(codeContext, getClass().getName() + "|typeDefinitions");
+                resultMapFrom(analysisContext, getClass().getName() + "|typeDefinitions");
         if (resultMap == null) {
             return this.typeDefinitions;
         }
@@ -327,34 +327,34 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
     }
 
     @Nonnull
-    private Map<String, Set<String>> getExistingGeneratorUsages(@Nonnull CodeContext codeContext) {
+    private Map<String, Set<String>> getExistingGeneratorUsages(@Nonnull AnalysisContext analysisContext) {
         IntermediateResultMap<String, Set<String>> resultMap =
-                resultMapFrom(codeContext, getClass().getName() + "|generatorUsages");
+                resultMapFrom(analysisContext, getClass().getName() + "|generatorUsages");
         return resultMap != null ? resultMap.getResults() : Collections.<String, Set<String>>emptyMap();
     }
 
     @Nonnull
-    private Map<String, Set<String>> getExistingTypeUsages(@Nonnull CodeContext codeContext) {
+    private Map<String, Set<String>> getExistingTypeUsages(@Nonnull AnalysisContext analysisContext) {
         IntermediateResultMap<String, Set<String>> resultMap =
-                resultMapFrom(codeContext, getClass().getName() + "|typeUsages");
+                resultMapFrom(analysisContext, getClass().getName() + "|typeUsages");
         return resultMap != null ? resultMap.getResults() : Collections.<String, Set<String>>emptyMap();
     }
 
-    private void storeIntermediateResults(@Nonnull CodeContext codeContext) {
+    private void storeIntermediateResults(@Nonnull AnalysisContext analysisContext) {
         if (!this.generatorDefinitions.isEmpty()) {
-            codeContext.getCache().put(getClass().getName() + "|generatorDefinitions", resultMapFor(this.generatorDefinitions));
+            analysisContext.getCache().put(getClass().getName() + "|generatorDefinitions", resultMapFor(this.generatorDefinitions));
             this.generatorDefinitions.clear();
         }
         if (!this.generatorUsages.isEmpty()) {
-            codeContext.getCache().put(getClass().getName() + "|generatorUsages", resultMapFor(this.generatorUsages));
+            analysisContext.getCache().put(getClass().getName() + "|generatorUsages", resultMapFor(this.generatorUsages));
             this.generatorUsages.clear();
         }
         if (!this.typeDefinitions.isEmpty()) {
-            codeContext.getCache().put(getClass().getName() + "|typeDefinitions", resultMapFor(this.typeDefinitions));
+            analysisContext.getCache().put(getClass().getName() + "|typeDefinitions", resultMapFor(this.typeDefinitions));
             this.typeDefinitions.clear();
         }
         if (!this.typeUsages.isEmpty()) {
-            codeContext.getCache().put(getClass().getName() + "|typeUsages", resultMapFor(this.typeUsages));
+            analysisContext.getCache().put(getClass().getName() + "|typeUsages", resultMapFor(this.typeUsages));
             this.typeUsages.clear();
         }
     }

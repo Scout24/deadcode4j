@@ -33,8 +33,8 @@ public class A_SpringDataCustomRepositoriesAnalyzer extends AByteCodeAnalyzer<Sp
 
     @Test
     public void reportsImplementationsOfIntermediateResults() {
-        this.codeContext = givenCodeContext(
-                this.codeContext.getModule(),
+        this.analysisContext = givenCodeContext(
+                this.analysisContext.getModule(),
                 this.objectUnderTest.getClass(),
                 resultSetFor(newHashSet("de.is24.deadcode4j.analyzer.customrepositories.FooRepositoryCustom")));
 

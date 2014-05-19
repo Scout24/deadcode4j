@@ -18,7 +18,7 @@ import static org.hamcrest.Matchers.*;
 public abstract class AnAnalyzer<T extends Analyzer> {
 
     protected T objectUnderTest;
-    protected CodeContext codeContext;
+    protected AnalysisContext analysisContext;
     protected boolean analysisIsFinished;
 
     @Rule
@@ -39,7 +39,7 @@ public abstract class AnAnalyzer<T extends Analyzer> {
                 Collections.<Resource>emptyList(),
                 null,
                 Collections.<Repository>emptyList());
-        codeContext = new CodeContext(dummyModule, Collections.<Object, IntermediateResult>emptyMap());
+        analysisContext = new AnalysisContext(dummyModule, Collections.<Object, IntermediateResult>emptyMap());
         analysisIsFinished = false;
     }
 
@@ -53,11 +53,11 @@ public abstract class AnAnalyzer<T extends Analyzer> {
     }
 
     protected void analyzeFile(String fileName) {
-        objectUnderTest.doAnalysis(codeContext, FileLoader.getFile(fileName));
+        objectUnderTest.doAnalysis(analysisContext, FileLoader.getFile(fileName));
     }
 
     protected void finishAnalysis() {
-        this.objectUnderTest.finishAnalysis(this.codeContext);
+        this.objectUnderTest.finishAnalysis(this.analysisContext);
         this.objectUnderTest.finishAnalysis();
         this.analysisIsFinished = true;
     }
@@ -69,32 +69,32 @@ public abstract class AnAnalyzer<T extends Analyzer> {
     }
 
     protected void assertThatClassesAreReported(String... classes) {
-        assertThat(codeContext.getAnalyzedCode().getAnalyzedClasses(), containsInAnyOrder(classes));
+        assertThat(analysisContext.getAnalyzedCode().getAnalyzedClasses(), containsInAnyOrder(classes));
     }
 
     protected void assertThatDependenciesAreReportedFor(String depender, String... dependee) {
         finishAnalysisIfNecessary();
-        Map<String, Set<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        Map<String, Set<String>> codeDependencies = analysisContext.getAnalyzedCode().getCodeDependencies();
         assertThat(codeDependencies, hasEntry(equalTo(depender), any(Set.class)));
         assertThat(codeDependencies.get(depender), containsInAnyOrder(dependee));
     }
 
     protected void assertThatDependenciesAreReported(String... dependee) {
         finishAnalysisIfNecessary();
-        Map<String, Set<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        Map<String, Set<String>> codeDependencies = analysisContext.getAnalyzedCode().getCodeDependencies();
         Iterable<String> allReportedDependees = concat(codeDependencies.values());
         assertThat(allReportedDependees, containsInAnyOrder(dependee));
     }
 
     protected void assertThatNoDependenciesAreReported() {
         finishAnalysisIfNecessary();
-        Map<String, Set<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        Map<String, Set<String>> codeDependencies = analysisContext.getAnalyzedCode().getCodeDependencies();
         assertThat(codeDependencies.size(), is(0));
     }
 
     protected void assertThatIntermediateResultIsStored() {
         doFinishAnalysis();
-        assertThat(this.codeContext.getCache(), hasEntry(anything(), instanceOf(IntermediateResult.class)));
+        assertThat(this.analysisContext.getCache(), hasEntry(anything(), instanceOf(IntermediateResult.class)));
     }
 
 }

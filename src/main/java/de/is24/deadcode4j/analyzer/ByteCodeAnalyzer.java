@@ -2,7 +2,7 @@ package de.is24.deadcode4j.analyzer;
 
 import com.google.common.base.Optional;
 import com.google.common.cache.LoadingCache;
-import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.AnalysisContext;
 import de.is24.guava.NonNullFunction;
 import de.is24.guava.SequentialLoadingCache;
 import javassist.CtClass;
@@ -38,11 +38,11 @@ import static java.util.Arrays.asList;
 @SuppressWarnings("PMD.TooManyStaticImports")
 public abstract class ByteCodeAnalyzer extends AnalyzerAdapter {
 
-    private static final NonNullFunction<CodeContext, LoadingCache<File, Optional<CtClass>>> SUPPLIER =
-            new NonNullFunction<CodeContext, LoadingCache<File, Optional<CtClass>>>() {
+    private static final NonNullFunction<AnalysisContext, LoadingCache<File, Optional<CtClass>>> SUPPLIER =
+            new NonNullFunction<AnalysisContext, LoadingCache<File, Optional<CtClass>>>() {
                 @Nonnull
                 @Override
-                public LoadingCache<File, Optional<CtClass>> apply(@Nonnull final CodeContext codeContext) {
+                public LoadingCache<File, Optional<CtClass>> apply(@Nonnull final AnalysisContext analysisContext) {
                     return SequentialLoadingCache.createSingleValueCache(toFunction(new NonNullFunction<File, Optional<CtClass>>() {
                         @Nonnull
                         @Override
@@ -50,7 +50,7 @@ public abstract class ByteCodeAnalyzer extends AnalyzerAdapter {
                             FileInputStream in = null;
                             try {
                                 in = new FileInputStream(file);
-                                return of(classPoolAccessorFor(codeContext).getClassPool().makeClass(in));
+                                return of(classPoolAccessorFor(analysisContext).getClassPool().makeClass(in));
                             } catch (IOException e) {
                                 throw new RuntimeException("Could not load class from [" + file + "]!", e);
                             } finally {
@@ -100,28 +100,28 @@ public abstract class ByteCodeAnalyzer extends AnalyzerAdapter {
     }
 
     @Override
-    public final void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull File file) {
+    public final void doAnalysis(@Nonnull AnalysisContext analysisContext, @Nonnull File file) {
         if (file.getName().endsWith(".class")) {
-            analyzeClass(codeContext, file);
+            analyzeClass(analysisContext, file);
         }
     }
 
     /**
      * Perform an analysis for the specified class.
-     * Results must be reported via the capabilities of the {@link CodeContext}.
+     * Results must be reported via the capabilities of the {@link de.is24.deadcode4j.AnalysisContext}.
      *
      * @since 1.3
      */
-    protected abstract void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz);
+    protected abstract void analyzeClass(@Nonnull AnalysisContext analysisContext, @Nonnull CtClass clazz);
 
-    private void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull File clazz) {
-        CtClass ctClass = getOrCreateClassLoader(codeContext).getUnchecked(clazz).get();
+    private void analyzeClass(@Nonnull AnalysisContext analysisContext, @Nonnull File clazz) {
+        CtClass ctClass = getOrCreateClassLoader(analysisContext).getUnchecked(clazz).get();
         logger.debug("Analyzing class [{}]...", ctClass.getName());
-        analyzeClass(codeContext, ctClass);
+        analyzeClass(analysisContext, ctClass);
     }
 
-    private LoadingCache<File, Optional<CtClass>> getOrCreateClassLoader(CodeContext codeContext) {
-        return codeContext.getOrCreateCacheEntry(ByteCodeAnalyzer.class, SUPPLIER);
+    private LoadingCache<File, Optional<CtClass>> getOrCreateClassLoader(AnalysisContext analysisContext) {
+        return analysisContext.getOrCreateCacheEntry(ByteCodeAnalyzer.class, SUPPLIER);
     }
 
 }

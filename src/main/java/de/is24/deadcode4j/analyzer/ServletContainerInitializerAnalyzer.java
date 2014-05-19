@@ -2,7 +2,7 @@ package de.is24.deadcode4j.analyzer;
 
 import com.google.common.collect.Maps;
 import de.is24.deadcode4j.Analyzer;
-import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.AnalysisContext;
 import de.is24.deadcode4j.IntermediateResult;
 import de.is24.deadcode4j.Module;
 import org.xml.sax.Attributes;
@@ -29,26 +29,26 @@ public class ServletContainerInitializerAnalyzer extends AnalyzerAdapter {
     private final Analyzer webXmlAnalyzer = new XmlAnalyzer("web.xml") {
         @Nonnull
         @Override
-        protected DefaultHandler createHandlerFor(@Nonnull final CodeContext codeContext) {
+        protected DefaultHandler createHandlerFor(@Nonnull final AnalysisContext analysisContext) {
             return new DefaultHandler() {
                 @Override
                 public void startElement(String uri, String localName, String qName, Attributes attributes)
                         throws StopParsing {
                     if ("web-app".equals(localName) && "true".equals(attributes.getValue("metadata-complete"))) {
-                        ((ServletContainerInitializerCodeContext) codeContext).setMetadataComplete();
+                        ((ServletContainerInitializerAnalysisContext) analysisContext).setMetadataComplete();
                     }
                     throw new StopParsing();
                 }
             };
         }
     };
-    private ServletContainerInitializerCodeContext context;
+    private ServletContainerInitializerAnalysisContext context;
 
     /**
      * Creates a new instance of <code>ServletContainerInitializerAnalyzer</code>.
      *
      * @param dependerId                 a description of the <i>depending entity</i> with which to
-     *                                   call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, Iterable)}
+     *                                   call {@link de.is24.deadcode4j.AnalysisContext#addDependencies(String, Iterable)}
      * @param fqcnOfInitializerInterface the fqcn of the interface whose implementations represent a
      *                                   <code>ServletContainerInitializer</code> or something comparable
      */
@@ -63,18 +63,18 @@ public class ServletContainerInitializerAnalyzer extends AnalyzerAdapter {
     }
 
     @Override
-    public void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull File fileName) {
+    public void doAnalysis(@Nonnull AnalysisContext analysisContext, @Nonnull File fileName) {
         if (this.context == null) {
-            this.context = new ServletContainerInitializerCodeContext(codeContext.getModule());
-            this.context.setOriginalContext(codeContext);
+            this.context = new ServletContainerInitializerAnalysisContext(analysisContext.getModule());
+            this.context.setOriginalContext(analysisContext);
         }
         this.webXmlAnalyzer.doAnalysis(this.context, fileName);
         this.classFinder.doAnalysis(this.context, fileName);
     }
 
     @Override
-    public void finishAnalysis(@Nonnull CodeContext codeContext) {
-        ServletContainerInitializerCodeContext localContext = this.context;
+    public void finishAnalysis(@Nonnull AnalysisContext analysisContext) {
+        ServletContainerInitializerAnalysisContext localContext = this.context;
         this.context = null;
         if (localContext == null) {
             return;
@@ -86,16 +86,16 @@ public class ServletContainerInitializerAnalyzer extends AnalyzerAdapter {
         }
         Iterable<String> initializerClasses = concat(localContext.getAnalyzedCode().getCodeDependencies().values());
         if (!isEmpty(initializerClasses)) {
-            codeContext.addDependencies(depender, initializerClasses);
+            analysisContext.addDependencies(depender, initializerClasses);
         }
     }
 
-    private static class ServletContainerInitializerCodeContext extends CodeContext {
+    private static class ServletContainerInitializerAnalysisContext extends AnalysisContext {
 
-        private CodeContext originalContext;
+        private AnalysisContext originalContext;
         private boolean metadataComplete = false;
 
-        private ServletContainerInitializerCodeContext(Module module) {
+        private ServletContainerInitializerAnalysisContext(Module module) {
             super(module, Maps.<Object, IntermediateResult>newHashMap());
         }
 
@@ -124,8 +124,8 @@ public class ServletContainerInitializerAnalyzer extends AnalyzerAdapter {
             return metadataComplete;
         }
 
-        public void setOriginalContext(CodeContext codeContext) {
-            this.originalContext = codeContext;
+        public void setOriginalContext(AnalysisContext analysisContext) {
+            this.originalContext = analysisContext;
         }
 
     }

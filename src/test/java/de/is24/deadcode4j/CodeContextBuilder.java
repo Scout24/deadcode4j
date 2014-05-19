@@ -10,15 +10,15 @@ public final class CodeContextBuilder {
 
     private CodeContextBuilder() { }
 
-    public static CodeContext givenCodeContext(Module module, Map<Object, IntermediateResult> intermediateResults) {
-        return new CodeContext(module, intermediateResults);
+    public static AnalysisContext givenCodeContext(Module module, Map<Object, IntermediateResult> intermediateResults) {
+        return new AnalysisContext(module, intermediateResults);
     }
 
-    public static CodeContext givenCodeContext(Module module) {
+    public static AnalysisContext givenCodeContext(Module module) {
         return givenCodeContext(module, Collections.<Object, IntermediateResult>emptyMap());
     }
 
-    public static CodeContext givenCodeContext(Module module, Object key, IntermediateResult intermediateResult) {
+    public static AnalysisContext givenCodeContext(Module module, Object key, IntermediateResult intermediateResult) {
         HashMap<Object, IntermediateResult> results = newHashMap();
         results.put(key, intermediateResult);
         return givenCodeContext(module, results);

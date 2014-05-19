@@ -3,7 +3,7 @@ package de.is24.deadcode4j.analyzer.javassist;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.cache.LoadingCache;
-import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.AnalysisContext;
 import de.is24.deadcode4j.Repository;
 import de.is24.guava.NonNullFunction;
 import de.is24.guava.SequentialLoadingCache;
@@ -27,10 +27,10 @@ import static com.google.common.collect.Sets.newHashSet;
  */
 public final class ClassPoolAccessor {
     @Nonnull
-    private static final NonNullFunction<CodeContext, ClassPoolAccessor> SUPPLIER = new NonNullFunction<CodeContext, ClassPoolAccessor>() {
+    private static final NonNullFunction<AnalysisContext, ClassPoolAccessor> SUPPLIER = new NonNullFunction<AnalysisContext, ClassPoolAccessor>() {
         @Nonnull
         @Override
-        public ClassPoolAccessor apply(@Nonnull CodeContext input) {
+        public ClassPoolAccessor apply(@Nonnull AnalysisContext input) {
             return new ClassPoolAccessor(input);
         }
     };
@@ -39,31 +39,31 @@ public final class ClassPoolAccessor {
     @Nonnull
     private final LoadingCache<String, Optional<String>> classResolver;
 
-    public ClassPoolAccessor(@Nonnull CodeContext codeContext) {
-        this.classPool = createClassPool(codeContext);
+    public ClassPoolAccessor(@Nonnull AnalysisContext analysisContext) {
+        this.classPool = createClassPool(analysisContext);
         this.classResolver = createResolverCache();
     }
 
     /**
-     * Creates or retrieves the <code>ClassPoolAccessor</code> for the given code context.<br/>
-     * A new instance will be put in the code context's cache and subsequently retrieved from there.
+     * Creates or retrieves the <code>ClassPoolAccessor</code> for the given analysis context.<br/>
+     * A new instance will be put in the analysis context's cache and subsequently retrieved from there.
      *
      * @since 1.6
      */
     @Nonnull
-    public static ClassPoolAccessor classPoolAccessorFor(@Nonnull CodeContext codeContext) {
-        return codeContext.getOrCreateCacheEntry(ClassPoolAccessor.class, SUPPLIER);
+    public static ClassPoolAccessor classPoolAccessorFor(@Nonnull AnalysisContext analysisContext) {
+        return analysisContext.getOrCreateCacheEntry(ClassPoolAccessor.class, SUPPLIER);
     }
 
     @Nonnull
-    private static ClassPool createClassPool(CodeContext codeContext) {
+    private static ClassPool createClassPool(AnalysisContext analysisContext) {
         ClassPool classPool = new ClassPool(true);
         try {
-            Repository outputRepository = codeContext.getModule().getOutputRepository();
+            Repository outputRepository = analysisContext.getModule().getOutputRepository();
             if (outputRepository != null) {
                 classPool.appendClassPath(outputRepository.getDirectory().getAbsolutePath());
             }
-            for (File file : codeContext.getModule().getClassPath()) {
+            for (File file : analysisContext.getModule().getClassPath()) {
                 classPool.appendClassPath(file.getAbsolutePath());
             }
         } catch (NotFoundException e) {

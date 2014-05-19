@@ -1,7 +1,7 @@
 package de.is24.deadcode4j.analyzer;
 
 import com.google.common.collect.Sets;
-import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.AnalysisContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPathFilter;
 import de.is24.guava.NonNullFunction;
 import javassist.CtClass;
@@ -24,7 +24,7 @@ import static com.google.common.collect.Lists.newArrayList;
 public abstract class SuperClassAnalyzer extends ByteCodeAnalyzer {
 
     private final String dependerId;
-    private final NonNullFunction<CodeContext, Set<String>> supplySuperClassesFoundInClassPath;
+    private final NonNullFunction<AnalysisContext, Set<String>> supplySuperClassesFoundInClassPath;
 
     private SuperClassAnalyzer(@Nonnull String dependerId, @Nonnull Set<String> classNames) {
         checkArgument(!classNames.isEmpty(), "classNames cannot by empty!");
@@ -36,7 +36,7 @@ public abstract class SuperClassAnalyzer extends ByteCodeAnalyzer {
      * Creates a new <code>SuperClassAnalyzer</code>.
      *
      * @param dependerId a description of the <i>depending entity</i> with which to
-     *                   call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, Iterable)}
+     *                   call {@link de.is24.deadcode4j.AnalysisContext#addDependencies(String, Iterable)}
      * @param classNames a list of fully qualified class names indicating that the extending class is still in use
      * @since 1.4
      */
@@ -48,7 +48,7 @@ public abstract class SuperClassAnalyzer extends ByteCodeAnalyzer {
      * Creates a new <code>SuperClassAnalyzer</code>.
      *
      * @param dependerId a description of the <i>depending entity</i> with which to
-     *                   call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, Iterable)}
+     *                   call {@link de.is24.deadcode4j.AnalysisContext#addDependencies(String, Iterable)}
      * @param classNames a list of fully qualified class names indicating that the extending class is still in use
      * @since 1.4
      */
@@ -57,13 +57,13 @@ public abstract class SuperClassAnalyzer extends ByteCodeAnalyzer {
     }
 
     @Override
-    protected final void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
-        Set<String> knownSuperClasses = getSuperClassesFoundInClassPath(codeContext);
+    protected final void analyzeClass(@Nonnull AnalysisContext analysisContext, @Nonnull CtClass clazz) {
+        Set<String> knownSuperClasses = getSuperClassesFoundInClassPath(analysisContext);
         if (knownSuperClasses.isEmpty()) {
             return;
         }
         String clazzName = clazz.getName();
-        codeContext.addAnalyzedClass(clazzName);
+        analysisContext.addAnalyzedClass(clazzName);
         final List<String> classHierarchy;
         try {
             classHierarchy = getClassHierarchy(clazz);
@@ -72,7 +72,7 @@ public abstract class SuperClassAnalyzer extends ByteCodeAnalyzer {
             return;
         }
         if (!Collections.disjoint(knownSuperClasses, classHierarchy)) {
-            codeContext.addDependencies(this.dependerId, clazzName);
+            analysisContext.addDependencies(this.dependerId, clazzName);
         }
     }
 
@@ -88,8 +88,8 @@ public abstract class SuperClassAnalyzer extends ByteCodeAnalyzer {
     }
 
     @Nonnull
-    protected final Set<String> getSuperClassesFoundInClassPath(@Nonnull CodeContext codeContext) {
-        return codeContext.getOrCreateCacheEntry(getClass(), supplySuperClassesFoundInClassPath);
+    protected final Set<String> getSuperClassesFoundInClassPath(@Nonnull AnalysisContext analysisContext) {
+        return analysisContext.getOrCreateCacheEntry(getClass(), supplySuperClassesFoundInClassPath);
     }
 
 }

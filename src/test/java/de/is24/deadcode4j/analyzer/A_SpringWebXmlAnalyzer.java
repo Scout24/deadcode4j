@@ -18,7 +18,7 @@ public final class A_SpringWebXmlAnalyzer extends AnAnalyzer<SpringWebXmlAnalyze
     public void shouldParseWebXmlFiles() {
         analyzeFile("de/is24/deadcode4j/analyzer/spring.web.xml");
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        Map<String, ? extends Iterable<String>> codeDependencies = analysisContext.getAnalyzedCode().getCodeDependencies();
         assertThat("Should have analyzed the web.xml file!", codeDependencies.size(), greaterThan(1));
 
         assertThatDependenciesAreReported(

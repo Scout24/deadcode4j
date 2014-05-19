@@ -1,6 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.AnalysisContext;
 
 import javax.annotation.Nonnull;
 import java.util.HashSet;
@@ -29,9 +29,9 @@ public final class CustomSuperClassAnalyzer extends SuperClassAnalyzer {
     }
 
     @Override
-    public void finishAnalysis(@Nonnull CodeContext codeContext) {
-        super.finishAnalysis(codeContext);
-        superClassesNotFoundInClassPath.removeAll(getSuperClassesFoundInClassPath(codeContext));
+    public void finishAnalysis(@Nonnull AnalysisContext analysisContext) {
+        super.finishAnalysis(analysisContext);
+        superClassesNotFoundInClassPath.removeAll(getSuperClassesFoundInClassPath(analysisContext));
     }
 
     @Override

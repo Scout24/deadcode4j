@@ -66,12 +66,12 @@ public final class A_DeadCodeFinder {
         final List<Module> reportedModules = newArrayList();
         objectUnderTest = new DeadCodeFinder(newHashSet(new AnalyzerAdapter() {
             @Override
-            public void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull File fileName) {
+            public void doAnalysis(@Nonnull AnalysisContext analysisContext, @Nonnull File fileName) {
             }
 
             @Override
-            public void finishAnalysis(@Nonnull CodeContext codeContext) {
-                reportedModules.add(codeContext.getModule());
+            public void finishAnalysis(@Nonnull AnalysisContext analysisContext) {
+                reportedModules.add(analysisContext.getModule());
             }
         }));
         Module a = givenModule("A");
@@ -87,7 +87,7 @@ public final class A_DeadCodeFinder {
         final AtomicBoolean finishAnalysisWasCalled = new AtomicBoolean(false);
         objectUnderTest = new DeadCodeFinder(newHashSet(new AnalyzerAdapter() {
             @Override
-            public void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull File fileName) {
+            public void doAnalysis(@Nonnull AnalysisContext analysisContext, @Nonnull File fileName) {
             }
 
             @Override

@@ -1,6 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.AnalysisContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPathFilter;
 import de.is24.guava.NonNullFunction;
 import javassist.CtClass;
@@ -23,7 +23,7 @@ public abstract class InterfacesAnalyzer extends ByteCodeAnalyzer {
 
     @Nonnull
     private final String dependerId;
-    private final NonNullFunction<CodeContext, Set<String>> supplyInterfacesFoundInClassPath;
+    private final NonNullFunction<AnalysisContext, Set<String>> supplyInterfacesFoundInClassPath;
 
     private InterfacesAnalyzer(@Nonnull String dependerId, @Nonnull Set<String> interfaceNames) {
         checkArgument(!interfaceNames.isEmpty(), "interfaceNames cannot by empty!");
@@ -35,7 +35,7 @@ public abstract class InterfacesAnalyzer extends ByteCodeAnalyzer {
      * Creates a new <code>InterfacesAnalyzer</code>.
      *
      * @param dependerId     a description of the <i>depending entity</i> with which to
-     *                       call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, Iterable)}
+     *                       call {@link de.is24.deadcode4j.AnalysisContext#addDependencies(String, Iterable)}
      * @param interfaceNames a list of fully qualified interface names indicating that the implementing class is still
      *                       in use
      * @since 1.4
@@ -48,7 +48,7 @@ public abstract class InterfacesAnalyzer extends ByteCodeAnalyzer {
      * Creates a new <code>InterfacesAnalyzer</code>.
      *
      * @param dependerId     a description of the <i>depending entity</i> with which to
-     *                       call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, Iterable)}
+     *                       call {@link de.is24.deadcode4j.AnalysisContext#addDependencies(String, Iterable)}
      * @param interfaceNames a list of fully qualified interface names indicating that the implementing class is still
      *                       in use
      * @since 1.4
@@ -58,22 +58,22 @@ public abstract class InterfacesAnalyzer extends ByteCodeAnalyzer {
     }
 
     @Override
-    protected final void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
-        Set<String> knownInterfaces = getInterfacesFoundInClassPath(codeContext);
+    protected final void analyzeClass(@Nonnull AnalysisContext analysisContext, @Nonnull CtClass clazz) {
+        Set<String> knownInterfaces = getInterfacesFoundInClassPath(analysisContext);
         if (knownInterfaces.isEmpty()) {
             return;
         }
 
         String clazzName = clazz.getName();
-        codeContext.addAnalyzedClass(clazzName);
+        analysisContext.addAnalyzedClass(clazzName);
         if (!disjoint(knownInterfaces, getAllImplementedInterfaces(clazz))) {
-            codeContext.addDependencies(this.dependerId, clazzName);
+            analysisContext.addDependencies(this.dependerId, clazzName);
         }
     }
 
     @Nonnull
-    protected final Set<String> getInterfacesFoundInClassPath(@Nonnull CodeContext codeContext) {
-        return codeContext.getOrCreateCacheEntry(getClass(), supplyInterfacesFoundInClassPath);
+    protected final Set<String> getInterfacesFoundInClassPath(@Nonnull AnalysisContext analysisContext) {
+        return analysisContext.getOrCreateCacheEntry(getClass(), supplyInterfacesFoundInClassPath);
     }
 
 }

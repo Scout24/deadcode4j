@@ -1,6 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.AnalysisContext;
 import org.apache.commons.io.IOUtils;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -44,10 +44,10 @@ public abstract class XmlAnalyzer extends AnalyzerAdapter {
     }
 
     @Override
-    public final void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull File file) {
+    public final void doAnalysis(@Nonnull AnalysisContext analysisContext, @Nonnull File file) {
         if (file.getName().endsWith(endOfFileName)) {
             logger.debug("Analyzing XML file [{}]...", file);
-            analyzeXmlFile(codeContext, file);
+            analyzeXmlFile(analysisContext, file);
         }
     }
 
@@ -57,14 +57,14 @@ public abstract class XmlAnalyzer extends AnalyzerAdapter {
      * @since 1.4
      */
     @Nonnull
-    protected abstract DefaultHandler createHandlerFor(@Nonnull CodeContext codeContext);
+    protected abstract DefaultHandler createHandlerFor(@Nonnull AnalysisContext analysisContext);
 
     @SuppressWarnings("PMD.EmptyCatchBlock")
-    private void analyzeXmlFile(@Nonnull CodeContext codeContext, @Nonnull File file) {
+    private void analyzeXmlFile(@Nonnull AnalysisContext analysisContext, @Nonnull File file) {
         InputStream in = null;
         try {
             in = new FileInputStream(file);
-            parser.parse(in, createHandlerFor(codeContext));
+            parser.parse(in, createHandlerFor(analysisContext));
         } catch (StopParsing command) {
             // just do nothing
         } catch (Exception e) {
