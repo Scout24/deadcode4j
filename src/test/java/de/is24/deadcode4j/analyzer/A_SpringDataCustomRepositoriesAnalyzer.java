@@ -3,7 +3,7 @@ package de.is24.deadcode4j.analyzer;
 import org.junit.Test;
 
 import static com.google.common.collect.Sets.newHashSet;
-import static de.is24.deadcode4j.CodeContextBuilder.givenCodeContext;
+import static de.is24.deadcode4j.AnalysisContextBuilder.givenAnalysisContext;
 import static de.is24.deadcode4j.IntermediateResults.resultSetFor;
 
 public class A_SpringDataCustomRepositoriesAnalyzer extends AByteCodeAnalyzer<SpringDataCustomRepositoriesAnalyzer> {
@@ -33,8 +33,8 @@ public class A_SpringDataCustomRepositoriesAnalyzer extends AByteCodeAnalyzer<Sp
 
     @Test
     public void reportsImplementationsOfIntermediateResults() {
-        this.codeContext = givenCodeContext(
-                this.codeContext.getModule(),
+        this.analysisContext = givenAnalysisContext(
+                this.analysisContext.getModule(),
                 this.objectUnderTest.getClass(),
                 resultSetFor(newHashSet("de.is24.deadcode4j.analyzer.customrepositories.FooRepositoryCustom")));
 

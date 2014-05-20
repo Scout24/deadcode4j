@@ -3,8 +3,8 @@ package de.is24.deadcode4j;
 import javax.annotation.Nonnull;
 
 /**
- * If an <code>IntermediateResult</code> is put into a {@link CodeContext#getCache() code context's cache},
- * it will be made available to the code context of those modules depending on the module the result belongs to.
+ * If an <code>IntermediateResult</code> is put into an {@link AnalysisContext#getCache() analysis context's cache},
+ * it will be made available to the analysis context of those modules depending on the module the result belongs to.
  *
  * @since 1.6
  */

@@ -1,6 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.AnalysisContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPathFilter;
 import de.is24.guava.NonNullFunction;
 import javassist.ClassPool;
@@ -35,14 +35,14 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
             "java.lang.annotation.Retention",
             "java.lang.annotation.Target");
     private final String dependerId;
-    private final NonNullFunction<CodeContext, Set<String>> supplyAnnotationsFoundInClassPath;
-    private final NonNullFunction<CodeContext, List<String>> supplyAnnotationsMarkedAsInherited = new NonNullFunction<CodeContext, List<String>>() {
+    private final NonNullFunction<AnalysisContext, Set<String>> supplyAnnotationsFoundInClassPath;
+    private final NonNullFunction<AnalysisContext, List<String>> supplyAnnotationsMarkedAsInherited = new NonNullFunction<AnalysisContext, List<String>>() {
         @Nonnull
         @Override
-        public List<String> apply(@Nonnull CodeContext codeContext) {
+        public List<String> apply(@Nonnull AnalysisContext analysisContext) {
             List<String> inheritedAnnotations = newArrayList();
-            ClassPool classPool = classPoolAccessorFor(codeContext).getClassPool();
-            for (String annotation : getAnnotationsFoundInClassPath(codeContext)) {
+            ClassPool classPool = classPoolAccessorFor(analysisContext).getClassPool();
+            for (String annotation : getAnnotationsFoundInClassPath(analysisContext)) {
                 CtClass annotationClazz = classPool.getOrNull(annotation);
                 if (annotationClazz == null) {
                     logger.debug("Annotation [{}] cannot be found on the class path; skipping detection", annotation);
@@ -71,7 +71,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
      * Creates a new <code>AnnotationsAnalyzer</code>.
      *
      * @param dependerId  a description of the <i>depending entity</i> with which to
-     *                    call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, Iterable)}
+     *                    call {@link de.is24.deadcode4j.AnalysisContext#addDependencies(String, Iterable)}
      * @param annotations a list of fully qualified (annotation) class names indicating a class is still in use
      * @since 1.3
      */
@@ -83,7 +83,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
      * Creates a new <code>AnnotationsAnalyzer</code>.
      *
      * @param dependerId  a description of the <i>depending entity</i> with which to
-     *                    call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, Iterable)}
+     *                    call {@link de.is24.deadcode4j.AnalysisContext#addDependencies(String, Iterable)}
      * @param annotations a list of fully qualified (annotation) class names indicating a class is still in use
      * @since 1.4
      */
@@ -92,44 +92,44 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
     }
 
     @Override
-    protected final void analyzeClass(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz) {
-        Set<String> availableAnnotations = getAnnotationsFoundInClassPath(codeContext);
+    protected final void analyzeClass(@Nonnull AnalysisContext analysisContext, @Nonnull CtClass clazz) {
+        Set<String> availableAnnotations = getAnnotationsFoundInClassPath(analysisContext);
         if (availableAnnotations.isEmpty()) {
             return;
         }
 
         String className = clazz.getName();
-        codeContext.addAnalyzedClass(className);
+        analysisContext.addAnalyzedClass(className);
 
         Set<String> allAnnotations = newHashSet();
         try {
-            addAnnotations(codeContext, clazz, allAnnotations);
-            allAnnotations.addAll(getInheritedAnnotations(codeContext, clazz));
+            addAnnotations(analysisContext, clazz, allAnnotations);
+            allAnnotations.addAll(getInheritedAnnotations(analysisContext, clazz));
         } catch (NotFoundException e) {
             logger.warn("The class path is not correctly set up; could not load [{}]! Skipping interfaces check for {}.", e.getMessage(), clazz.getName());
             return;
         }
 
         if (!disjoint(availableAnnotations, allAnnotations)) {
-            codeContext.addDependencies(this.dependerId, className);
+            analysisContext.addDependencies(this.dependerId, className);
         }
     }
 
-    private void addAnnotations(@Nonnull CodeContext codeContext, @Nonnull CtClass clazz, Set<String> knownAnnotations) throws NotFoundException {
+    private void addAnnotations(@Nonnull AnalysisContext analysisContext, @Nonnull CtClass clazz, Set<String> knownAnnotations) throws NotFoundException {
         for (Annotation annotation : getAnnotations(clazz, PACKAGE, TYPE)) {
             String annotationClassName = annotation.getTypeName();
             if (!knownAnnotations.add(annotationClassName))
                 continue;
             if (DEAD_ENDS.contains(annotationClassName))
                 continue;
-            CtClass annotationClazz = classPoolAccessorFor(codeContext).getClassPool().get(annotationClassName);
-            addAnnotations(codeContext, annotationClazz, knownAnnotations);
+            CtClass annotationClazz = classPoolAccessorFor(analysisContext).getClassPool().get(annotationClassName);
+            addAnnotations(analysisContext, annotationClazz, knownAnnotations);
         }
     }
 
     @Nonnull
-    private Set<String> getInheritedAnnotations(@Nonnull final CodeContext codeContext, @Nonnull final CtClass clazz) throws NotFoundException {
-        List<String> annotationsMarkedAsInherited = getAnnotationsMarkedAsInherited(codeContext);
+    private Set<String> getInheritedAnnotations(@Nonnull final AnalysisContext analysisContext, @Nonnull final CtClass clazz) throws NotFoundException {
+        List<String> annotationsMarkedAsInherited = getAnnotationsMarkedAsInherited(analysisContext);
         if (annotationsMarkedAsInherited.isEmpty()) {
             return emptySet();
         }
@@ -145,13 +145,13 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
     }
 
     @Nonnull
-    protected final Set<String> getAnnotationsFoundInClassPath(@Nonnull CodeContext codeContext) {
-        return codeContext.getOrCreateCacheEntry(getClass().getName() + "|knownAnnotations", supplyAnnotationsFoundInClassPath);
+    protected final Set<String> getAnnotationsFoundInClassPath(@Nonnull AnalysisContext analysisContext) {
+        return analysisContext.getOrCreateCacheEntry(getClass().getName() + "|knownAnnotations", supplyAnnotationsFoundInClassPath);
     }
 
     @Nonnull
-    private List<String> getAnnotationsMarkedAsInherited(@Nonnull CodeContext codeContext) {
-        return codeContext.getOrCreateCacheEntry(getClass().getName() + "|inheritableAnnotations", supplyAnnotationsMarkedAsInherited);
+    private List<String> getAnnotationsMarkedAsInherited(@Nonnull AnalysisContext analysisContext) {
+        return analysisContext.getOrCreateCacheEntry(getClass().getName() + "|inheritableAnnotations", supplyAnnotationsMarkedAsInherited);
     }
 
 }

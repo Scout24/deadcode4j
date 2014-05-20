@@ -22,7 +22,7 @@ public final class A_SimpleXmlAnalyzer extends AnAnalyzer<SimpleXmlAnalyzer> {
 
         analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
 
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        Map<String, ? extends Iterable<String>> codeDependencies = analysisContext.getAnalyzedCode().getCodeDependencies();
         assertThat("Should have analyzed the XML file!", codeDependencies.size(), is(1));
         assertThat(codeDependencies.keySet(), contains("junit"));
     }

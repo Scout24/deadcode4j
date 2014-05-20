@@ -24,10 +24,10 @@ import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
 public class DeadCodeFinder {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final Set<? extends Analyzer> analyzers;
+    private final Iterable<? extends Analyzer> analyzers;
 
     public DeadCodeFinder(@Nonnull Set<? extends Analyzer> analyzers) {
-        this.analyzers = analyzers;
+        this.analyzers = newArrayList(analyzers);
     }
 
     @Nonnull
@@ -41,17 +41,17 @@ public class DeadCodeFinder {
         List<AnalyzedCode> analyzedCode = newArrayList();
         IntermediateResults intermediateResults = new IntermediateResults();
         for (Module module : sort(modules)) {
-            CodeContext codeContext = new CodeContext(module, intermediateResults.calculateIntermediateResultsFor(module));
+            AnalysisContext analysisContext = new AnalysisContext(module, intermediateResults.calculateIntermediateResultsFor(module));
             for (Repository repository : module.getAllRepositories()) {
-                analyzeRepository(codeContext, repository);
+                analyzeRepository(analysisContext, repository);
             }
-            logger.debug("Finishing analysis of [{}]...", codeContext);
+            logger.debug("Finishing analysis of [{}]...", analysisContext);
             for (Analyzer analyzer : this.analyzers) {
-                analyzer.finishAnalysis(codeContext);
+                analyzer.finishAnalysis(analysisContext);
             }
-            logger.debug("Finished analysis of [{}].", codeContext);
-            intermediateResults.add(codeContext);
-            analyzedCode.add(codeContext.getAnalyzedCode());
+            logger.debug("Finished analysis of [{}].", analysisContext);
+            intermediateResults.add(analysisContext);
+            analyzedCode.add(analysisContext.getAnalyzedCode());
         }
         logger.debug("Finishing analysis of whole project...");
         for (Analyzer analyzer : this.analyzers) {
@@ -67,8 +67,8 @@ public class DeadCodeFinder {
         return new DeadCode(analyzedCode.getStagesWithExceptions(), analyzedCode.getAnalyzedClasses(), deadClasses);
     }
 
-    private void analyzeRepository(@Nonnull CodeContext codeContext, @Nonnull Repository repository) {
-        RepositoryAnalyzer repositoryAnalyzer = new RepositoryAnalyzer(codeContext, repository, this.analyzers);
+    private void analyzeRepository(@Nonnull AnalysisContext analysisContext, @Nonnull Repository repository) {
+        RepositoryAnalyzer repositoryAnalyzer = new RepositoryAnalyzer(analysisContext, repository, this.analyzers);
         try {
             repositoryAnalyzer.analyze();
         } catch (IOException e) {
@@ -108,14 +108,14 @@ public class DeadCodeFinder {
     private static class RepositoryAnalyzer extends DirectoryWalker<Void> {
 
         private final Logger logger = LoggerFactory.getLogger(getClass());
-        private final CodeContext codeContext;
+        private final AnalysisContext analysisContext;
         private final Repository repository;
         private final Iterable<? extends Analyzer> analyzers;
 
-        public RepositoryAnalyzer(@Nonnull CodeContext codeContext, @Nonnull Repository repository, @Nonnull Iterable<? extends Analyzer> analyzers) {
+        public RepositoryAnalyzer(@Nonnull AnalysisContext analysisContext, @Nonnull Repository repository, @Nonnull Iterable<? extends Analyzer> analyzers) {
             super(repository.getFileFilter(), -1);
             this.repository = repository;
-            this.codeContext = codeContext;
+            this.analysisContext = analysisContext;
             this.analyzers = analyzers;
         }
 
@@ -129,10 +129,10 @@ public class DeadCodeFinder {
             logger.debug("Analyzing file [{}]...", file);
             for (Analyzer analyzer : this.analyzers) {
                 try {
-                    analyzer.doAnalysis(this.codeContext, file);
+                    analyzer.doAnalysis(this.analysisContext, file);
                 } catch (RuntimeException rE) {
                     logger.warn("Analyzer [{}] failed to analyze file [{}]!", analyzer, file, rE);
-                    codeContext.addException(AnalysisStage.FILE_ANALYSIS);
+                    analysisContext.addException(AnalysisStage.FILE_ANALYSIS);
                 }
             }
         }

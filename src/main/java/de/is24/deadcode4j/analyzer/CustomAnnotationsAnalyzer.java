@@ -1,6 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.AnalysisContext;
 
 import javax.annotation.Nonnull;
 import java.util.HashSet;
@@ -29,9 +29,9 @@ public final class CustomAnnotationsAnalyzer extends AnnotationsAnalyzer {
     }
 
     @Override
-    public void finishAnalysis(@Nonnull CodeContext codeContext) {
-        super.finishAnalysis(codeContext);
-        annotationsNotFoundInClassPath.removeAll(getAnnotationsFoundInClassPath(codeContext));
+    public void finishAnalysis(@Nonnull AnalysisContext analysisContext) {
+        super.finishAnalysis(analysisContext);
+        annotationsNotFoundInClassPath.removeAll(getAnnotationsFoundInClassPath(analysisContext));
     }
 
     @Override

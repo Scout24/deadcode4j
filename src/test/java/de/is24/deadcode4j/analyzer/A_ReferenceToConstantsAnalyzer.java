@@ -1,6 +1,5 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.analyzer.constants.ClassWithInnerClassNamedLikePotentialTarget;
 import org.junit.After;
 import org.junit.Before;
@@ -24,8 +23,8 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer<ReferenceTo
 
     @Before
     public void setUp() throws Exception {
-        codeContext.addAnalyzedClass(FQ_CONSTANTS); // make this class known to the context
-        codeContext.addAnalyzedClass(FQ_CONSTANTS + ".More");
+        analysisContext.addAnalyzedClass(FQ_CONSTANTS); // make this class known to the context
+        analysisContext.addAnalyzedClass(FQ_CONSTANTS + ".More");
 
         dependers.clear();
         dependees.clear();
@@ -33,7 +32,7 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer<ReferenceTo
 
     @After
     public void assertNoOtherDependenciesExist() {
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        Map<String, ? extends Iterable<String>> codeDependencies = analysisContext.getAnalyzedCode().getCodeDependencies();
         assertThat(codeDependencies.keySet(), equalTo(this.dependers));
 
         List<String> allReportedClasses = newArrayList(concat(codeDependencies.values()));
@@ -449,11 +448,11 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer<ReferenceTo
     }
 
     private void triggerFinishAnalysisEvent() {
-        objectUnderTest.finishAnalysis(codeContext);
+        objectUnderTest.finishAnalysis(analysisContext);
     }
 
     private void assertDependencyExists(String depender, String dependee) {
-        Map<String, ? extends Iterable<String>> codeDependencies = codeContext.getAnalyzedCode().getCodeDependencies();
+        Map<String, ? extends Iterable<String>> codeDependencies = analysisContext.getAnalyzedCode().getCodeDependencies();
         assertThat(codeDependencies.keySet(), hasItem(depender));
 
         Iterable<String> allReportedClasses = concat(codeDependencies.values());

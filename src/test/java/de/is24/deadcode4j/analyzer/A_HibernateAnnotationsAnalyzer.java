@@ -1,5 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
+import de.is24.deadcode4j.AnalysisContextBuilder;
 import de.is24.deadcode4j.IntermediateResult;
 import org.codehaus.plexus.util.ReflectionUtils;
 import org.hamcrest.Matcher;
@@ -12,7 +13,7 @@ import java.util.Map;
 
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
-import static de.is24.deadcode4j.CodeContextBuilder.givenCodeContext;
+import static de.is24.deadcode4j.AnalysisContextBuilder.givenAnalysisContext;
 import static de.is24.deadcode4j.IntermediateResultMapBuilder.givenIntermediateResultMap;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.argThat;
@@ -138,8 +139,8 @@ public final class A_HibernateAnnotationsAnalyzer extends AByteCodeAnalyzer<Hibe
 
     @Test
     public void considersTypeDefinitionsFromIntermediateResults() {
-        this.codeContext = givenCodeContext(
-                this.codeContext.getModule(),
+        this.analysisContext = givenAnalysisContext(
+                this.analysisContext.getModule(),
                 HibernateAnnotationsAnalyzer.class.getName() + "|typeDefinitions",
                 givenIntermediateResultMap("byteClass", "Foo"));
 
@@ -150,8 +151,8 @@ public final class A_HibernateAnnotationsAnalyzer extends AByteCodeAnalyzer<Hibe
 
     @Test
     public void prefersOwnTypeDefinitionsOverIntermediateResults() {
-        this.codeContext = givenCodeContext(
-                this.codeContext.getModule(),
+        this.analysisContext = givenAnalysisContext(
+                this.analysisContext.getModule(),
                 HibernateAnnotationsAnalyzer.class.getName() + "|typeDefinitions",
                 givenIntermediateResultMap("byteClass", "Foo"));
 
@@ -164,8 +165,8 @@ public final class A_HibernateAnnotationsAnalyzer extends AByteCodeAnalyzer<Hibe
 
     @Test
     public void considersTypeUsagesFromIntermediateResults() {
-        this.codeContext = givenCodeContext(
-                this.codeContext.getModule(),
+        this.analysisContext = givenAnalysisContext(
+                this.analysisContext.getModule(),
                 HibernateAnnotationsAnalyzer.class.getName() + "|typeUsages",
                 givenIntermediateResultMap("byteClass", newHashSet("Foo", "Bar")));
 
@@ -182,7 +183,7 @@ public final class A_HibernateAnnotationsAnalyzer extends AByteCodeAnalyzer<Hibe
                 givenIntermediateResultMap("byteClass", newHashSet("Bar")));
         intermediateResults.put(HibernateAnnotationsAnalyzer.class.getName() + "|typeDefinitions",
                 givenIntermediateResultMap("byteClass", "Foo"));
-        this.codeContext = givenCodeContext(this.codeContext.getModule(), intermediateResults);
+        this.analysisContext = AnalysisContextBuilder.givenAnalysisContext(this.analysisContext.getModule(), intermediateResults);
 
         analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/EntityWithGeneratedValue.class");
 
@@ -205,8 +206,8 @@ public final class A_HibernateAnnotationsAnalyzer extends AByteCodeAnalyzer<Hibe
 
     @Test
     public void considersGeneratorDefinitionsFromIntermediateResults() {
-        this.codeContext = givenCodeContext(
-                this.codeContext.getModule(),
+        this.analysisContext = givenAnalysisContext(
+                this.analysisContext.getModule(),
                 HibernateAnnotationsAnalyzer.class.getName() + "|generatorDefinitions",
                 givenIntermediateResultMap("generatorOne", "Foo"));
 
@@ -218,8 +219,8 @@ public final class A_HibernateAnnotationsAnalyzer extends AByteCodeAnalyzer<Hibe
 
     @Test
     public void prefersOwnGeneratorDefinitionsOverIntermediateResults() {
-        this.codeContext = givenCodeContext(
-                this.codeContext.getModule(),
+        this.analysisContext = givenAnalysisContext(
+                this.analysisContext.getModule(),
                 HibernateAnnotationsAnalyzer.class.getName() + "|generatorDefinitions",
                 givenIntermediateResultMap("generatorOne", "Foo"));
 
@@ -232,8 +233,8 @@ public final class A_HibernateAnnotationsAnalyzer extends AByteCodeAnalyzer<Hibe
 
     @Test
     public void considersGeneratorUsagesFromIntermediateResults() {
-        this.codeContext = givenCodeContext(
-                this.codeContext.getModule(),
+        this.analysisContext = givenAnalysisContext(
+                this.analysisContext.getModule(),
                 HibernateAnnotationsAnalyzer.class.getName() + "|generatorUsages",
                 givenIntermediateResultMap("generatorOne", newHashSet("Foo", "Bar")));
 
@@ -250,7 +251,7 @@ public final class A_HibernateAnnotationsAnalyzer extends AByteCodeAnalyzer<Hibe
                 givenIntermediateResultMap("generatorOne", newHashSet("Bar")));
         intermediateResults.put(HibernateAnnotationsAnalyzer.class.getName() + "|generatorDefinitions",
                 givenIntermediateResultMap("generatorOne", "Foo"));
-        this.codeContext = givenCodeContext(this.codeContext.getModule(), intermediateResults);
+        this.analysisContext = AnalysisContextBuilder.givenAnalysisContext(this.analysisContext.getModule(), intermediateResults);
 
         analyzeFile("de/is24/deadcode4j/analyzer/hibernateannotations/Entity.class");
 

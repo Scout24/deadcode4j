@@ -33,7 +33,7 @@ public final class A_ClassDependencyAnalyzer extends AByteCodeAnalyzer<ClassDepe
     public void recognizesDependenciesToInnerClass() {
         analyzeFile("de/is24/deadcode4j/analyzer/classdependency/ClassWithInnerClasses.class");
 
-        Iterable<String> allDependencies = concat(codeContext.getAnalyzedCode().getCodeDependencies().values());
+        Iterable<String> allDependencies = concat(analysisContext.getAnalyzedCode().getCodeDependencies().values());
         assumeThat("Inner classes are only defined, but not used by the parent class!", allDependencies, containsInAnyOrder("java.lang.Object", "de.is24.deadcode4j.analyzer.classdependency.ClassWithInnerClasses$UsedStaticInnerClass"));
     }
 
@@ -51,7 +51,7 @@ public final class A_ClassDependencyAnalyzer extends AByteCodeAnalyzer<ClassDepe
     public void recognizesNoDependencyOfStaticInnerClassToParentClass() {
         analyzeFile("de/is24/deadcode4j/analyzer/classdependency/ClassWithInnerClasses$UnusedStaticInnerClass.class");
 
-        Iterable<String> allDependencies = concat(codeContext.getAnalyzedCode().getCodeDependencies().values());
+        Iterable<String> allDependencies = concat(analysisContext.getAnalyzedCode().getCodeDependencies().values());
         assumeThat("Although technically correct (to keep up the namespace, the parent class is required), the static inner class does not access the parent class!", allDependencies, containsInAnyOrder("java.lang.Object"));
     }
 

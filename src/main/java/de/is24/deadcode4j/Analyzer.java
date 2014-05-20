@@ -12,11 +12,11 @@ public interface Analyzer {
 
     /**
      * Perform an analysis for the specified file.
-     * Results must be reported via the capabilities of the {@link CodeContext}.
+     * Results must be reported via the capabilities of the {@link AnalysisContext}.
      *
      * @since 1.1.0
      */
-    void doAnalysis(@Nonnull CodeContext codeContext, @Nonnull File fileName);
+    void doAnalysis(@Nonnull AnalysisContext analysisContext, @Nonnull File fileName);
 
     /**
      * Indicates that all files of a module have been processed.
@@ -25,7 +25,7 @@ public interface Analyzer {
      *
      * @since 1.4
      */
-    void finishAnalysis(@Nonnull CodeContext codeContext);
+    void finishAnalysis(@Nonnull AnalysisContext analysisContext);
 
     /**
      * Indicates that all modules have been processed.

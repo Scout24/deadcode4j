@@ -4,7 +4,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Sets;
-import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.AnalysisContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
@@ -47,20 +47,20 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
     }
 
     @Override
-    protected void analyzeCompilationUnit(@Nonnull CodeContext codeContext, @Nonnull CompilationUnit compilationUnit) {
-        compilationUnit.accept(new CompilationUnitVisitor(codeContext), null);
+    protected void analyzeCompilationUnit(@Nonnull AnalysisContext AnalysisContext, @Nonnull CompilationUnit compilationUnit) {
+        compilationUnit.accept(new CompilationUnitVisitor(AnalysisContext), null);
     }
 
     private static class CompilationUnitVisitor extends GenericVisitorAdapter<Analysis, Analysis> {
 
         private final Logger logger = LoggerFactory.getLogger(getClass());
         private final ClassPoolAccessor classPoolAccessor;
-        private final CodeContext codeContext;
+        private final AnalysisContext AnalysisContext;
         private final Deque<Set<String>> localVariables = newLinkedList();
 
-        public CompilationUnitVisitor(CodeContext codeContext) {
-            this.classPoolAccessor = classPoolAccessorFor(codeContext);
-            this.codeContext = codeContext;
+        public CompilationUnitVisitor(AnalysisContext AnalysisContext) {
+            this.classPoolAccessor = classPoolAccessorFor(AnalysisContext);
+            this.AnalysisContext = AnalysisContext;
         }
 
         @Override
@@ -289,7 +289,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
         private boolean isFullyQualifiedReference(FieldAccessExpr fieldAccessExpr, Analysis analysis) {
             Optional<String> resolvedClass = resolveClass(fieldAccessExpr.toString());
             if (resolvedClass.isPresent()) {
-                codeContext.addDependencies(analysis.getTypeName(), resolvedClass.get());
+                AnalysisContext.addDependencies(analysis.getTypeName(), resolvedClass.get());
                 return true;
             }
             return FieldAccessExpr.class.isInstance(fieldAccessExpr.getScope())
@@ -380,7 +380,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
         private boolean refersToClass(@Nonnull FieldAccessExpr fieldAccessExpr, @Nonnull Analysis analysis, @Nonnull String qualifierPrefix) {
             Optional<String> resolvedClass = resolveClass(qualifierPrefix + fieldAccessExpr.toString());
             if (resolvedClass.isPresent()) {
-                codeContext.addDependencies(analysis.getTypeName(), resolvedClass.get());
+                AnalysisContext.addDependencies(analysis.getTypeName(), resolvedClass.get());
                 return true;
             }
             if (FieldAccessExpr.class.isInstance(fieldAccessExpr.getScope())) {
@@ -389,7 +389,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
             resolvedClass = resolveClass(qualifierPrefix + NameExpr.class.cast(fieldAccessExpr.getScope()).getName());
             if (resolvedClass.isPresent()) {
-                codeContext.addDependencies(analysis.getTypeName(), resolvedClass.get());
+                AnalysisContext.addDependencies(analysis.getTypeName(), resolvedClass.get());
                 return true;
             }
             return false;
@@ -403,7 +403,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                 String staticImport = analysis.getStaticImport(referenceName);
                 if (staticImport != null) {
                     // TODO this should probably be resolved
-                    codeContext.addDependencies(analysis.getTypeName(), staticImport);
+                    AnalysisContext.addDependencies(analysis.getTypeName(), staticImport);
                     continue;
                 }
                 // TODO handle asterisk static imports

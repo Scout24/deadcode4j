@@ -1,6 +1,6 @@
 package de.is24.deadcode4j.analyzer.javassist;
 
-import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.AnalysisContext;
 import de.is24.guava.NonNullFunction;
 import javassist.ClassPool;
 import org.slf4j.Logger;
@@ -15,11 +15,11 @@ import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolA
 /**
  * This function returns a set containing only those classes that exist within the class path of the specified context.
  * It is intended to be used in conjunction with
- * {@link de.is24.deadcode4j.CodeContext#getOrCreateCacheEntry(Object, de.is24.guava.NonNullFunction)}.
+ * {@link de.is24.deadcode4j.AnalysisContext#getOrCreateCacheEntry(Object, de.is24.guava.NonNullFunction)}.
  *
  * @since 1.6
  */
-public class ClassPathFilter implements NonNullFunction<CodeContext, Set<String>> {
+public class ClassPathFilter implements NonNullFunction<AnalysisContext, Set<String>> {
     @Nonnull
     private final Logger logger = LoggerFactory.getLogger(getClass());
     @Nonnull
@@ -36,7 +36,7 @@ public class ClassPathFilter implements NonNullFunction<CodeContext, Set<String>
 
     @Nonnull
     @Override
-    public Set<String> apply(@Nonnull CodeContext input) {
+    public Set<String> apply(@Nonnull AnalysisContext input) {
         ClassPool classPool = classPoolAccessorFor(input).getClassPool();
         Set<String> knownClasses = newHashSet();
         for (String className : this.classes) {

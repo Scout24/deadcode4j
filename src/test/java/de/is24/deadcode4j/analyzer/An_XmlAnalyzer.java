@@ -1,6 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.AnalysisContext;
 import org.junit.Assert;
 import org.junit.Test;
 import org.xml.sax.helpers.DefaultHandler;
@@ -20,7 +20,7 @@ public class An_XmlAnalyzer extends AnAnalyzer<XmlAnalyzer> {
         objectUnderTest = new XmlAnalyzer(".xml") {
             @Nonnull
             @Override
-            protected DefaultHandler createHandlerFor(@Nonnull CodeContext codeContext) {
+            protected DefaultHandler createHandlerFor(@Nonnull AnalysisContext analysisContext) {
                 fileIsParsed.set(true);
                 return new DefaultHandler();
             }
@@ -36,7 +36,7 @@ public class An_XmlAnalyzer extends AnAnalyzer<XmlAnalyzer> {
         objectUnderTest = new XmlAnalyzer(".foo") {
             @Nonnull
             @Override
-            protected DefaultHandler createHandlerFor(@Nonnull CodeContext codeContext) {
+            protected DefaultHandler createHandlerFor(@Nonnull AnalysisContext analysisContext) {
                 Assert.fail("Should NOT have analyzed the XML file!");
                 return new DefaultHandler();
             }

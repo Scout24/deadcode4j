@@ -15,7 +15,7 @@ import static com.google.common.collect.Sets.newHashSet;
 
 /**
  * Instances of <code>IntermediateResults</code> are used to keep track of and calculate the {@link IntermediateResult}s
- * produced by and being made available to {@link CodeContext} instances, respectively.
+ * produced by and being made available to {@link AnalysisContext} instances, respectively.
  *
  * @since 1.6
  */
@@ -51,38 +51,38 @@ public final class IntermediateResults {
     }
 
     /**
-     * Returns an <code>IntermediateResultSet</code> from the given <code>CodeContext</code> for the given key.<br/>
+     * Returns an <code>IntermediateResultSet</code> from the given <code>AnalysisContext</code> for the given key.<br/>
      * This method is defined to handle the <i>unchecked</i> cast to a typed <code>IntermediateResultSet</code>,
-     * it could simply be replaced with {@link de.is24.deadcode4j.CodeContext#getIntermediateResult(Object)}.
+     * it could simply be replaced with {@link AnalysisContext#getIntermediateResult(Object)}.
      *
      * @since 1.6
      */
     @Nullable
     @SuppressWarnings("unchecked")
-    public static <E> IntermediateResultSet<E> resultSetFrom(@Nonnull CodeContext codeContext, Object key) {
-        return (IntermediateResultSet<E>) codeContext.getIntermediateResult(key);
+    public static <E> IntermediateResultSet<E> resultSetFrom(@Nonnull AnalysisContext analysisContext, Object key) {
+        return (IntermediateResultSet<E>) analysisContext.getIntermediateResult(key);
     }
 
     /**
-     * Returns an <code>IntermediateResultMap</code> from the given <code>CodeContext</code> for the given key.<br/>
+     * Returns an <code>IntermediateResultMap</code> from the given <code>AnalysisContext</code> for the given key.<br/>
      * This method is defined to handle the <i>unchecked</i> cast to a typed <code>IntermediateResultMap</code>,
-     * it could simply be replaced with {@link de.is24.deadcode4j.CodeContext#getIntermediateResult(Object)}.
+     * it could simply be replaced with {@link AnalysisContext#getIntermediateResult(Object)}.
      *
      * @since 1.6
      */
     @Nullable
     @SuppressWarnings("unchecked")
-    public static <K, V> IntermediateResultMap<K, V> resultMapFrom(@Nonnull CodeContext codeContext, Object key) {
-        return (IntermediateResultMap<K, V>) codeContext.getIntermediateResult(key);
+    public static <K, V> IntermediateResultMap<K, V> resultMapFrom(@Nonnull AnalysisContext analysisContext, Object key) {
+        return (IntermediateResultMap<K, V>) analysisContext.getIntermediateResult(key);
     }
 
     /**
-     * Adds the intermediate results of the given code context's cache.
+     * Adds the intermediate results of the given analysis context's cache.
      *
      * @since 1.6
      */
-    public void add(@Nonnull CodeContext codeContext) {
-        intermediateResults.put(codeContext.getModule(), getIntermediateResultsOf(codeContext));
+    public void add(@Nonnull AnalysisContext analysisContext) {
+        intermediateResults.put(analysisContext.getModule(), getIntermediateResultsOf(analysisContext));
     }
 
     /**
@@ -96,12 +96,12 @@ public final class IntermediateResults {
     }
 
     @Nonnull
-    private Map<Object, IntermediateResult> getIntermediateResultsOf(@Nonnull CodeContext codeContext) {
+    private Map<Object, IntermediateResult> getIntermediateResultsOf(@Nonnull AnalysisContext analysisContext) {
         Map<Object, IntermediateResult> intermediateResults = newHashMap();
-        for (Map.Entry<Object, Object> cachedEntry : codeContext.getCache().entrySet()) {
+        for (Map.Entry<Object, Object> cachedEntry : analysisContext.getCache().entrySet()) {
             Object cachedValue = cachedEntry.getValue();
             if (IntermediateResult.class.isInstance(cachedValue)) {
-                logger.debug("{} stored [{}].", codeContext.getModule(), cachedValue);
+                logger.debug("{} stored [{}].", analysisContext.getModule(), cachedValue);
                 intermediateResults.put(cachedEntry.getKey(), IntermediateResult.class.cast(cachedValue));
             }
         }

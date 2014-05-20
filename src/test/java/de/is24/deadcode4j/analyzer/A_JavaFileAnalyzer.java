@@ -1,6 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.AnalysisContext;
 import japa.parser.ast.CompilationUnit;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,7 +24,7 @@ public final class A_JavaFileAnalyzer extends AnAnalyzer<JavaFileAnalyzer> {
     protected JavaFileAnalyzer createAnalyzer() {
         return new JavaFileAnalyzer() {
             @Override
-            protected void analyzeCompilationUnit(@Nonnull CodeContext codeContext, @Nonnull CompilationUnit compilationUnit) {
+            protected void analyzeCompilationUnit(@Nonnull AnalysisContext analysisContext, @Nonnull CompilationUnit compilationUnit) {
                 didAnalyzeFile.set(true);
             }
         };

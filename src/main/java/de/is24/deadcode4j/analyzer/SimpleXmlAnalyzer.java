@@ -1,6 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.AnalysisContext;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -31,7 +31,7 @@ public abstract class SimpleXmlAnalyzer extends XmlAnalyzer {
      * constructor.
      *
      * @param dependerId    a description of the <i>depending entity</i> with which to
-     *                      call {@link de.is24.deadcode4j.CodeContext#addDependencies(String, Iterable)}
+     *                      call {@link de.is24.deadcode4j.AnalysisContext#addDependencies(String, Iterable)}
      * @param endOfFileName the file suffix used to determine if a file should be analyzed; this can be a mere file
      *                      extension like <tt>.xml</tt> or a partial path like <tt>WEB-INF/web.xml</tt>
      * @param rootElement   the expected XML root element or <code>null</code> if such an element does not exist;
@@ -46,8 +46,8 @@ public abstract class SimpleXmlAnalyzer extends XmlAnalyzer {
 
     @Override
     @Nonnull
-    protected final DefaultHandler createHandlerFor(@Nonnull CodeContext codeContext) {
-        return new XmlHandler(codeContext);
+    protected final DefaultHandler createHandlerFor(@Nonnull AnalysisContext analysisContext) {
+        return new XmlHandler(analysisContext);
     }
 
     /**
@@ -148,12 +148,12 @@ public abstract class SimpleXmlAnalyzer extends XmlAnalyzer {
      * @since 1.2.0
      */
     private class XmlHandler extends DefaultHandler {
-        private final CodeContext codeContext;
+        private final AnalysisContext analysisContext;
         private boolean firstElement = true;
         private StringBuilder buffer;
 
-        public XmlHandler(CodeContext codeContext) {
-            this.codeContext = codeContext;
+        public XmlHandler(AnalysisContext analysisContext) {
+            this.analysisContext = analysisContext;
         }
 
         @Override
@@ -172,7 +172,7 @@ public abstract class SimpleXmlAnalyzer extends XmlAnalyzer {
                     if (attributeToReportAsClass != null) {
                         String className = attributes.getValue(attributeToReportAsClass);
                         if (className != null) {
-                            codeContext.addDependencies(dependerId, className.trim());
+                            analysisContext.addDependencies(dependerId, className.trim());
                         }
                     }
                 }
@@ -190,7 +190,7 @@ public abstract class SimpleXmlAnalyzer extends XmlAnalyzer {
         @Override
         public void endElement(String uri, String localName, String qName) {
             if (buffer != null && buffer.length() > 0) {
-                codeContext.addDependencies(dependerId, buffer.toString());
+                analysisContext.addDependencies(dependerId, buffer.toString());
                 buffer = null;
             }
         }

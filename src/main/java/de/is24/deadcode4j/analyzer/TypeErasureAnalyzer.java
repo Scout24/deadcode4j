@@ -2,8 +2,11 @@ package de.is24.deadcode4j.analyzer;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import de.is24.deadcode4j.CodeContext;
+import de.is24.deadcode4j.AnalysisContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import japa.parser.JavaParser;
+import japa.parser.TokenMgrError;
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
 import japa.parser.ast.Node;
@@ -16,6 +19,7 @@ import japa.parser.ast.visitor.VoidVisitorAdapter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.*;
 import java.util.*;
 
 import static com.google.common.base.Optional.absent;
@@ -28,6 +32,7 @@ import static de.is24.deadcode4j.Utils.or;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
 import static java.util.Collections.emptySet;
 import static java.util.Map.Entry;
+import static org.apache.commons.io.IOUtils.closeQuietly;
 
 /**
  * Analyzes Java files and reports dependencies to classes that are not part of the byte code due to type erasure.
@@ -38,9 +43,10 @@ import static java.util.Map.Entry;
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class TypeErasureAnalyzer extends JavaFileAnalyzer {
 
-    protected void analyzeCompilationUnit(@Nonnull final CodeContext codeContext, @Nonnull final CompilationUnit compilationUnit) {
+    @Override
+    protected void analyzeCompilationUnit(@Nonnull final AnalysisContext analysisContext, @Nonnull final CompilationUnit compilationUnit) {
         compilationUnit.accept(new TypeRecordingVisitor() {
-            private final ClassPoolAccessor classPoolAccessor = classPoolAccessorFor(codeContext);
+            private final ClassPoolAccessor classPoolAccessor = classPoolAccessorFor(analysisContext);
             private final Deque<Set<String>> definedTypeParameters = newLinkedList();
             private final Map<String, Set<String>> typeReferences = newHashMap();
 
@@ -118,7 +124,7 @@ public class TypeErasureAnalyzer extends JavaFileAnalyzer {
                 } else if (WildcardType.class.isInstance(type)) {
                     WildcardType wildcardType = WildcardType.class.cast(type);
                     ReferenceType referenceType = wildcardType.getExtends();
-                    if (referenceType == null) {
+                    if (referenceType == null){
                         referenceType = wildcardType.getSuper();
                     }
                     if (referenceType == null) {
@@ -193,7 +199,7 @@ public class TypeErasureAnalyzer extends JavaFileAnalyzer {
                     assert resolvedClass != null;
                     if (resolvedClass.isPresent()) {
                         for (String depender : typeReference.getValue()) {
-                            codeContext.addDependencies(depender, resolvedClass.get());
+                            analysisContext.addDependencies(depender, resolvedClass.get());
                         }
                     } else {
                         logger.debug("Could not resolve Type Argument [{}] used by [{}].", referencedType, typeReference.getValue());
