@@ -7,7 +7,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,14 +31,9 @@ public abstract class AnAnalyzer<T extends Analyzer> {
     }
 
     @Before
-    public final void initCodeContext() {
-        Module dummyModule = new Module(
-                "de.is24:deadcode4j-junit",
-                "UTF-8",
-                Collections.<Resource>emptyList(),
-                null,
-                Collections.<Repository>emptyList());
-        analysisContext = new AnalysisContext(dummyModule, Collections.<Object, IntermediateResult>emptyMap());
+    public final void initAnalysisContext() {
+        analysisContext = AnalysisContextBuilder.givenAnalysisContext(
+                ModuleBuilder.givenModule("de.is24:deadcode4j-junit"));
         analysisIsFinished = false;
     }
 

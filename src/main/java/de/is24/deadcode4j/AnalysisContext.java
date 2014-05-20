@@ -44,7 +44,7 @@ public class AnalysisContext {
     private final EnumSet<AnalysisStage> stagesWithExceptions = EnumSet.noneOf(AnalysisStage.class);
 
     /**
-     * Creates a new instance of <code>CodeContext</code> for the specified module.
+     * Creates a new instance of <code>AnalysisContext</code> for the specified module.
      *
      * @since 1.6
      */
@@ -55,7 +55,7 @@ public class AnalysisContext {
 
     @Override
     public String toString() {
-        return "CodeContext for [" + this.module + "]";
+        return "AnalysisContext for [" + this.module + "]";
     }
 
     /**
