@@ -8,7 +8,6 @@ import org.junit.Test;
 import javax.annotation.Nonnull;
 import java.util.Map;
 
-import static de.is24.deadcode4j.CodeContextBuilder.givenCodeContext;
 import static de.is24.deadcode4j.ModuleBuilder.givenModule;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -27,7 +26,7 @@ public final class An_IntermediateResults {
     @Test
     public void transfersIntermediateResultsForDependingModule() {
         Object key = getClass();
-        AnalysisContext parentContext = givenCodeContext(givenModule("A"));
+        AnalysisContext parentContext = AnalysisContextBuilder.givenAnalysisContext(givenModule("A"));
         parentContext.getCache().put(key, new AnIntermediateResult("ForA"));
 
         objectUnderTest.add(parentContext);
@@ -40,7 +39,7 @@ public final class An_IntermediateResults {
     @Test
     public void transfersIntermediateResultsForDependingModuleOfDependingModule() {
         Object key = getClass();
-        AnalysisContext parentContext = givenCodeContext(givenModule("A"));
+        AnalysisContext parentContext = AnalysisContextBuilder.givenAnalysisContext(givenModule("A"));
         parentContext.getCache().put(key, new AnIntermediateResult("ForA"));
 
         objectUnderTest.add(parentContext);
@@ -53,9 +52,9 @@ public final class An_IntermediateResults {
     @Test
     public void mergesIntermediateResultsOnSiblingLevel() {
         Object key = getClass();
-        AnalysisContext parentContext = givenCodeContext(givenModule("A"));
+        AnalysisContext parentContext = AnalysisContextBuilder.givenAnalysisContext(givenModule("A"));
         parentContext.getCache().put(key, new AnIntermediateResult("ForA"));
-        AnalysisContext secondParentContext = givenCodeContext(givenModule("B"));
+        AnalysisContext secondParentContext = AnalysisContextBuilder.givenAnalysisContext(givenModule("B"));
         secondParentContext.getCache().put(key, new AnIntermediateResult("ForB"));
 
         objectUnderTest.add(parentContext);
@@ -69,9 +68,9 @@ public final class An_IntermediateResults {
     @Test
     public void mergesIntermediateResultsOnParentLevel() {
         Object key = getClass();
-        AnalysisContext rootContext = givenCodeContext(givenModule("A"));
+        AnalysisContext rootContext = AnalysisContextBuilder.givenAnalysisContext(givenModule("A"));
         rootContext.getCache().put(key, new AnIntermediateResult("ForA"));
-        AnalysisContext parentContext = givenCodeContext(givenModule("B", rootContext.getModule()));
+        AnalysisContext parentContext = AnalysisContextBuilder.givenAnalysisContext(givenModule("B", rootContext.getModule()));
         parentContext.getCache().put(key, new AnIntermediateResult("ForB"));
 
         objectUnderTest.add(rootContext);
@@ -85,19 +84,19 @@ public final class An_IntermediateResults {
     @Test
     public void nowAllTogether() {
         Object key = getClass();
-        AnalysisContext rootContext = givenCodeContext(givenModule("A"));
+        AnalysisContext rootContext = AnalysisContextBuilder.givenAnalysisContext(givenModule("A"));
         rootContext.getCache().put(key, new AnIntermediateResult("ForA"));
-        AnalysisContext secondRootContext = givenCodeContext(givenModule("Z"));
+        AnalysisContext secondRootContext = AnalysisContextBuilder.givenAnalysisContext(givenModule("Z"));
         secondRootContext.getCache().put(key, new AnIntermediateResult("ForZ"));
-        AnalysisContext parentContext = givenCodeContext(givenModule("B", rootContext.getModule()));
+        AnalysisContext parentContext = AnalysisContextBuilder.givenAnalysisContext(givenModule("B", rootContext.getModule()));
         parentContext.getCache().put(key, new AnIntermediateResult("ForB"));
-        AnalysisContext secondParentContext = givenCodeContext(givenModule("C", rootContext.getModule(), secondRootContext.getModule()));
+        AnalysisContext secondParentContext = AnalysisContextBuilder.givenAnalysisContext(givenModule("C", rootContext.getModule(), secondRootContext.getModule()));
         secondParentContext.getCache().put(key, new AnIntermediateResult("ForC"));
-        AnalysisContext thirdParentContext = givenCodeContext(givenModule("D"));
+        AnalysisContext thirdParentContext = AnalysisContextBuilder.givenAnalysisContext(givenModule("D"));
         thirdParentContext.getCache().put(key, new AnIntermediateResult("ForD"));
-        AnalysisContext fourthParentContext = givenCodeContext(givenModule("Y", secondRootContext.getModule()));
+        AnalysisContext fourthParentContext = AnalysisContextBuilder.givenAnalysisContext(givenModule("Y", secondRootContext.getModule()));
         fourthParentContext.getCache().put(key, new AnIntermediateResult("ForY"));
-        AnalysisContext childContext = givenCodeContext(givenModule("X", fourthParentContext.getModule()));
+        AnalysisContext childContext = AnalysisContextBuilder.givenAnalysisContext(givenModule("X", fourthParentContext.getModule()));
         childContext.getCache().put(key, new AnIntermediateResult("ForX"));
 
         objectUnderTest.add(rootContext);
