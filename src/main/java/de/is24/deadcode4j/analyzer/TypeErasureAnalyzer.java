@@ -4,9 +4,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import de.is24.deadcode4j.AnalysisContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import japa.parser.JavaParser;
-import japa.parser.TokenMgrError;
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
 import japa.parser.ast.Node;
@@ -19,7 +16,6 @@ import japa.parser.ast.visitor.VoidVisitorAdapter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.*;
 import java.util.*;
 
 import static com.google.common.base.Optional.absent;
@@ -32,7 +28,6 @@ import static de.is24.deadcode4j.Utils.or;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
 import static java.util.Collections.emptySet;
 import static java.util.Map.Entry;
-import static org.apache.commons.io.IOUtils.closeQuietly;
 
 /**
  * Analyzes Java files and reports dependencies to classes that are not part of the byte code due to type erasure.
@@ -124,7 +119,7 @@ public class TypeErasureAnalyzer extends JavaFileAnalyzer {
                 } else if (WildcardType.class.isInstance(type)) {
                     WildcardType wildcardType = WildcardType.class.cast(type);
                     ReferenceType referenceType = wildcardType.getExtends();
-                    if (referenceType == null){
+                    if (referenceType == null) {
                         referenceType = wildcardType.getSuper();
                     }
                     if (referenceType == null) {
