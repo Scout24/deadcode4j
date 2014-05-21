@@ -51,12 +51,11 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
         compilationUnit.accept(new CompilationUnitVisitor(AnalysisContext), null);
     }
 
-    private static class CompilationUnitVisitor extends GenericVisitorAdapter<Analysis, Analysis> {
+    private static class CompilationUnitVisitor extends LocalVariableRecordingVisitor<Analysis, Analysis> {
 
         private final Logger logger = LoggerFactory.getLogger(getClass());
         private final ClassPoolAccessor classPoolAccessor;
         private final AnalysisContext AnalysisContext;
-        private final Deque<Set<String>> localVariables = newLinkedList();
 
         public CompilationUnitVisitor(AnalysisContext AnalysisContext) {
             this.classPoolAccessor = classPoolAccessorFor(AnalysisContext);
@@ -110,107 +109,6 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
         public Analysis visit(FieldDeclaration n, Analysis arg) {
             for (VariableDeclarator variableDeclarator : n.getVariables()) {
                 arg.addFieldName(variableDeclarator.getId().getName());
-            }
-            return super.visit(n, arg);
-        }
-
-        @Override
-        public Analysis visit(ConstructorDeclaration n, Analysis arg) {
-            HashSet<String> blockVariables = newHashSet();
-            this.localVariables.addLast(blockVariables);
-            try {
-                for (Parameter parameter : emptyIfNull(n.getParameters())) {
-                    blockVariables.add(parameter.getId().getName());
-                }
-                for (AnnotationExpr annotationExpr : emptyIfNull(n.getAnnotations())) {
-                    annotationExpr.accept(this, arg);
-                }
-                BlockStmt body = n.getBlock();
-                if (body != null) {
-                    visit(body, arg);
-                }
-            } finally {
-                this.localVariables.removeLast();
-            }
-            return null;
-        }
-
-        @Override
-        public Analysis visit(MethodDeclaration n, Analysis arg) {
-            HashSet<String> blockVariables = newHashSet();
-            this.localVariables.addLast(blockVariables);
-            try {
-                for (Parameter parameter : emptyIfNull(n.getParameters())) {
-                    blockVariables.add(parameter.getId().getName());
-                }
-                for (AnnotationExpr annotationExpr : emptyIfNull(n.getAnnotations())) {
-                    annotationExpr.accept(this, arg);
-                }
-                BlockStmt body = n.getBody();
-                if (body != null) {
-                    visit(body, arg);
-                }
-            } finally {
-                this.localVariables.removeLast();
-            }
-            return null;
-        }
-
-        @Override
-        public Analysis visit(CatchClause n, Analysis arg) {
-            MultiTypeParameter multiTypeParameter = n.getExcept();
-            HashSet<String> blockVariables = newHashSet();
-            this.localVariables.addLast(blockVariables);
-            try {
-                blockVariables.add(multiTypeParameter.getId().getName());
-                for (AnnotationExpr annotationExpr : emptyIfNull(multiTypeParameter.getAnnotations())) {
-                    annotationExpr.accept(this, arg);
-                }
-                BlockStmt body = n.getCatchBlock();
-                if (body != null) {
-                    visit(body, arg);
-                }
-            } finally {
-                this.localVariables.removeLast();
-            }
-            return null;
-        }
-
-        @Override
-        public Analysis visit(BlockStmt n, Analysis arg) {
-            this.localVariables.addLast(Sets.<String>newHashSet());
-            try {
-                return super.visit(n, arg);
-            } finally {
-                this.localVariables.removeLast();
-            }
-        }
-
-        @Override
-        public Analysis visit(ForeachStmt n, Analysis arg) {
-            this.localVariables.addLast(Sets.<String>newHashSet());
-            try {
-                return super.visit(n, arg);
-            } finally {
-                this.localVariables.removeLast();
-            }
-        }
-
-        @Override
-        public Analysis visit(ForStmt n, Analysis arg) {
-            this.localVariables.addLast(Sets.<String>newHashSet());
-            try {
-                return super.visit(n, arg);
-            } finally {
-                this.localVariables.removeLast();
-            }
-        }
-
-        @Override
-        public Analysis visit(VariableDeclarationExpr n, Analysis arg) {
-            Set<String> blockVariables = this.localVariables.getLast();
-            for (VariableDeclarator variableDeclarator : n.getVars()) {
-                blockVariables.add(variableDeclarator.getId().getName());
             }
             return super.visit(n, arg);
         }
@@ -321,10 +219,6 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             return AssignExpr.class.isInstance(n.getParentNode()) && n == AssignExpr.class.cast(n.getParentNode()).getTarget();
         }
 
-        private boolean aLocalVariableExists(@Nonnull String name) {
-            return contains(concat(this.localVariables), name);
-        }
-
         private void resolveFieldReferences(Analysis analysis) {
             for (FieldAccessExpr fieldAccessExpr : analysis.getFieldReferences()) {
                 if (analysis.isFieldDefined(getFirstElement(fieldAccessExpr))
@@ -409,6 +303,132 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                 // TODO handle asterisk static imports
                 logger.debug("Could not resolve name reference [{}] defined within [{}].", referenceName, analysis.getTypeName());
             }
+        }
+
+    }
+
+    private static class LocalVariableRecordingVisitor<R, A> extends GenericVisitorAdapter<R, A> {
+
+        @Nonnull
+        private final Deque<Set<String>> localVariables = newLinkedList();
+
+        @Override
+        public R visit(ConstructorDeclaration n, A arg) {
+            HashSet<String> blockVariables = newHashSet();
+            this.localVariables.addLast(blockVariables);
+            try {
+                for (Parameter parameter : emptyIfNull(n.getParameters())) {
+                    blockVariables.add(parameter.getId().getName());
+                }
+                for (AnnotationExpr annotationExpr : emptyIfNull(n.getAnnotations())) {
+                    annotationExpr.accept(this, arg);
+                }
+                BlockStmt body = n.getBlock();
+                if (body != null) {
+                    visit(body, arg);
+                }
+            } finally {
+                this.localVariables.removeLast();
+            }
+            return null;
+        }
+
+        @Override
+        public R visit(MethodDeclaration n, A arg) {
+            HashSet<String> blockVariables = newHashSet();
+            this.localVariables.addLast(blockVariables);
+            try {
+                for (Parameter parameter : emptyIfNull(n.getParameters())) {
+                    blockVariables.add(parameter.getId().getName());
+                }
+                for (AnnotationExpr annotationExpr : emptyIfNull(n.getAnnotations())) {
+                    annotationExpr.accept(this, arg);
+                }
+                BlockStmt body = n.getBody();
+                if (body != null) {
+                    visit(body, arg);
+                }
+            } finally {
+                this.localVariables.removeLast();
+            }
+            return null;
+        }
+
+        @Override
+        public R visit(CatchClause n, A arg) {
+            MultiTypeParameter multiTypeParameter = n.getExcept();
+            HashSet<String> blockVariables = newHashSet();
+            this.localVariables.addLast(blockVariables);
+            try {
+                blockVariables.add(multiTypeParameter.getId().getName());
+                for (AnnotationExpr annotationExpr : emptyIfNull(multiTypeParameter.getAnnotations())) {
+                    annotationExpr.accept(this, arg);
+                }
+                BlockStmt body = n.getCatchBlock();
+                if (body != null) {
+                    visit(body, arg);
+                }
+            } finally {
+                this.localVariables.removeLast();
+            }
+            return null;
+        }
+
+        @Override
+        public R visit(BlockStmt n, A arg) {
+            this.localVariables.addLast(Sets.<String>newHashSet());
+            try {
+                return super.visit(n, arg);
+            } finally {
+                this.localVariables.removeLast();
+            }
+        }
+
+        @Override
+        public R visit(ForeachStmt n, A arg) {
+            HashSet<String> blockVariables = newHashSet();
+            this.localVariables.addLast(blockVariables);
+            try {
+                for (VariableDeclarator variableDeclarator : emptyIfNull(n.getVariable().getVars())) {
+                    blockVariables.add(variableDeclarator.getId().getName());
+                }
+                n.getIterable().accept(this, arg);
+                n.getBody().accept(this, arg);
+            } finally {
+                this.localVariables.removeLast();
+            }
+            return null;
+        }
+
+        @Override
+        public R visit(ForStmt n, A arg) {
+            this.localVariables.addLast(Sets.<String>newHashSet());
+            try {
+                return super.visit(n, arg);
+            } finally {
+                this.localVariables.removeLast();
+            }
+        }
+
+        @Override
+        public R visit(VariableDeclarationExpr n, A arg) {
+            for (AnnotationExpr annotationExpr : emptyIfNull(n.getAnnotations())) {
+                annotationExpr.accept(this, arg);
+            }
+            n.getType().accept(this, arg);
+            Set<String> blockVariables = this.localVariables.getLast();
+            for (VariableDeclarator variableDeclarator : n.getVars()) {
+                Expression expr = variableDeclarator.getInit();
+                if (expr != null) {
+                    expr.accept(this, arg);
+                }
+                blockVariables.add(variableDeclarator.getId().getName());
+            }
+            return null;
+        }
+
+        protected final boolean aLocalVariableExists(@Nonnull String name) {
+            return contains(concat(this.localVariables), name);
         }
 
     }
