@@ -222,8 +222,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                         || refersToImport(fieldAccessExpr, analysis)
                         || refersToPackageType(fieldAccessExpr, analysis)
                         || refersToAsteriskImport(fieldAccessExpr, analysis)
-                        || refersToJavaLang(fieldAccessExpr)
-                        || refersToDefaultPackage(fieldAccessExpr, analysis)) {
+                        || refersToJavaLang(fieldAccessExpr)) {
                     continue;
                 }
                 logger.debug("Could not resolve reference [{}] defined within [{}].", fieldAccessExpr.toString(), getTypeName(fieldAccessExpr));
@@ -317,10 +316,6 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
         private boolean refersToJavaLang(FieldAccessExpr fieldAccessExpr) {
             return refersToClass(fieldAccessExpr, "java.lang.");
-        }
-
-        private boolean refersToDefaultPackage(FieldAccessExpr fieldAccessExpr, Analysis analysis) {
-            return analysis.packageName != null && refersToClass(fieldAccessExpr, "");
         }
 
         private boolean refersToClass(@Nonnull FieldAccessExpr fieldAccessExpr, @Nonnull String qualifierPrefix) {
