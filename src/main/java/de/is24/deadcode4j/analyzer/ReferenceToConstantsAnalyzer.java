@@ -19,7 +19,10 @@ import japa.parser.ast.stmt.ForeachStmt;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static com.google.common.base.Predicates.and;
 import static com.google.common.base.Predicates.not;
@@ -29,6 +32,8 @@ import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Sets.newHashSet;
 import static de.is24.deadcode4j.Utils.emptyIfNull;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
+import static de.is24.javaparser.ImportDeclarations.isAsterisk;
+import static de.is24.javaparser.ImportDeclarations.isStatic;
 import static java.lang.Math.max;
 import static java.util.Arrays.asList;
 
@@ -58,6 +63,31 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
         throw new RuntimeException("Should not have reached this point!");
     }
 
+    private static Predicate<? super ImportDeclaration> refersTo(final String name) {
+        return new Predicate<ImportDeclaration>() {
+            @Override
+            public boolean apply(@Nullable ImportDeclaration input) {
+                return input != null && input.getName().getName().equals(name);
+            }
+        };
+    }
+
+    private static Function<? super ImportDeclaration, ? extends String> toImportedType() {
+        return new Function<ImportDeclaration, String>() {
+            @Nullable
+            @Override
+            public String apply(@Nullable ImportDeclaration input) {
+                if (input == null)
+                    return null;
+                NameExpr name = input.getName();
+                if (input.isStatic()) {
+                    name = QualifiedNameExpr.class.cast(name).getQualifier();
+                }
+                return name.toString();
+            }
+        };
+    }
+
     @Override
     protected void analyzeCompilationUnit(@Nonnull final AnalysisContext analysisContext,
                                           @Nonnull final CompilationUnit compilationUnit) {
@@ -66,14 +96,13 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
             @Override
             public Analysis visit(CompilationUnit n, Analysis arg) {
-                Analysis rootAnalysis = new Analysis(n.getImports());
-                super.visit(n, rootAnalysis);
+                super.visit(n, new Analysis());
                 return null;
             }
 
             @Override
             public Analysis visit(AnnotationDeclaration n, Analysis arg) {
-                Analysis nestedAnalysis = new Analysis(arg);
+                Analysis nestedAnalysis = new Analysis();
                 super.visit(n, nestedAnalysis);
                 resolveFieldReferences(nestedAnalysis);
                 resolveNameReferences(nestedAnalysis);
@@ -82,7 +111,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
             @Override
             public Analysis visit(ClassOrInterfaceDeclaration n, Analysis arg) {
-                Analysis nestedAnalysis = new Analysis(arg);
+                Analysis nestedAnalysis = new Analysis();
                 super.visit(n, nestedAnalysis);
                 resolveFieldReferences(nestedAnalysis);
                 resolveNameReferences(nestedAnalysis);
@@ -91,7 +120,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
             @Override
             public Analysis visit(EnumDeclaration n, Analysis arg) {
-                Analysis nestedAnalysis = new Analysis(arg);
+                Analysis nestedAnalysis = new Analysis();
                 super.visit(n, nestedAnalysis);
                 resolveFieldReferences(nestedAnalysis);
                 resolveNameReferences(nestedAnalysis);
@@ -206,9 +235,9 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             private void resolveFieldReferences(Analysis analysis) {
                 for (FieldAccessExpr fieldAccessExpr : analysis.getFieldReferences()) {
                     if (refersToInnerType(fieldAccessExpr)
-                            || refersToImport(fieldAccessExpr, analysis)
+                            || refersToImport(fieldAccessExpr)
                             || refersToPackageType(fieldAccessExpr)
-                            || refersToAsteriskImport(fieldAccessExpr, analysis)
+                            || refersToAsteriskImport(fieldAccessExpr)
                             || refersToJavaLang(fieldAccessExpr)) {
                         continue;
                     }
@@ -276,14 +305,14 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                 return getTypeName(typeDeclaration);
             }
 
-            private boolean refersToImport(FieldAccessExpr fieldAccessExpr, Analysis analysis) {
+            private boolean refersToImport(FieldAccessExpr fieldAccessExpr) {
                 String firstElement = getFirstElement(fieldAccessExpr);
-                String anImport = analysis.getImport(firstElement);
+                String anImport = getImport(firstElement);
                 if (anImport != null) {
                     return
                             refersToClass(fieldAccessExpr, anImport.substring(0, max(0, anImport.lastIndexOf('.') + 1)));
                 }
-                anImport = analysis.getStaticImport(firstElement);
+                anImport = getStaticImport(firstElement);
                 return anImport != null &&
                         refersToClass(fieldAccessExpr, anImport + ".");
             }
@@ -294,8 +323,8 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                 return refersToClass(fieldAccessExpr, packagePrefix);
             }
 
-            private boolean refersToAsteriskImport(FieldAccessExpr fieldAccessExpr, Analysis analysis) {
-                for (String asteriskImport : analysis.getAsteriskImports()) {
+            private boolean refersToAsteriskImport(FieldAccessExpr fieldAccessExpr) {
+                for (String asteriskImport : getAsteriskImports()) {
                     if (refersToClass(fieldAccessExpr, asteriskImport + "."))
                         return true;
                 }
@@ -327,7 +356,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             private void resolveNameReferences(Analysis analysis) {
                 for (NameExpr reference : analysis.getNameReferences()) {
                     final String referenceName = getTypeName(reference);
-                    String staticImport = analysis.getStaticImport(reference.getName());
+                    String staticImport = getStaticImport(reference.getName());
                     if (staticImport != null) {
                         // TODO this should probably be resolved
                         analysisContext.addDependencies(referenceName, staticImport);
@@ -336,6 +365,26 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                     // TODO handle asterisk static imports
                     logger.debug("Could not resolve name reference [{}] defined within [{}].", reference, referenceName);
                 }
+            }
+
+            @Nullable
+            @SuppressWarnings("unchecked")
+            private String getImport(String typeName) {
+                return getOnlyElement(transform(filter(emptyIfNull(compilationUnit.getImports()),
+                        and(refersTo(typeName), not(isAsterisk()), not(isStatic()))), toImportedType()), null);
+            }
+
+            @Nullable
+            @SuppressWarnings("unchecked")
+            private String getStaticImport(String referenceName) {
+                return getOnlyElement(transform(filter(emptyIfNull(compilationUnit.getImports()),
+                        and(refersTo(referenceName), not(isAsterisk()), isStatic())), toImportedType()), null);
+            }
+
+            @Nonnull
+            private Iterable<String> getAsteriskImports() {
+                return transform(filter(emptyIfNull(compilationUnit.getImports()),
+                        and(isAsterisk(), not(isStatic()))), toImportedType());
             }
 
         }, null);
@@ -522,60 +571,8 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
     private static class Analysis {
 
-        private final List<ImportDeclaration> imports;
         private final List<FieldAccessExpr> fieldReferences = newArrayList();
         private final List<NameExpr> nameReferences = newArrayList();
-
-        public Analysis(Analysis arg) {
-            this.imports = arg.imports;
-        }
-
-        public Analysis(List<ImportDeclaration> imports) {
-            this.imports = imports != null ? imports : Collections.<ImportDeclaration>emptyList();
-        }
-
-        private static Predicate<? super ImportDeclaration> isAsterisk() {
-            return new Predicate<ImportDeclaration>() {
-                @Override
-                public boolean apply(@Nullable ImportDeclaration input) {
-                    return input != null && input.isAsterisk();
-                }
-            };
-        }
-
-        private static Predicate<? super ImportDeclaration> isStatic() {
-            return new Predicate<ImportDeclaration>() {
-                @Override
-                public boolean apply(@Nullable ImportDeclaration input) {
-                    return input != null && input.isStatic();
-                }
-            };
-        }
-
-        private static Predicate<? super ImportDeclaration> refersTo(final String name) {
-            return new Predicate<ImportDeclaration>() {
-                @Override
-                public boolean apply(@Nullable ImportDeclaration input) {
-                    return input != null && input.getName().getName().equals(name);
-                }
-            };
-        }
-
-        private static Function<? super ImportDeclaration, ? extends String> toImportedType() {
-            return new Function<ImportDeclaration, String>() {
-                @Nullable
-                @Override
-                public String apply(@Nullable ImportDeclaration input) {
-                    if (input == null)
-                        return null;
-                    NameExpr name = input.getName();
-                    if (input.isStatic()) {
-                        name = QualifiedNameExpr.class.cast(name).getQualifier();
-                    }
-                    return name.toString();
-                }
-            };
-        }
 
         public void addFieldReference(FieldAccessExpr fieldAccessExpression) {
             this.fieldReferences.add(fieldAccessExpression);
@@ -591,20 +588,6 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
         public Iterable<NameExpr> getNameReferences() {
             return this.nameReferences;
-        }
-
-        @SuppressWarnings("unchecked")
-        public String getImport(String typeName) {
-            return getOnlyElement(transform(filter(this.imports, and(refersTo(typeName), not(isAsterisk()), not(isStatic()))), toImportedType()), null);
-        }
-
-        @SuppressWarnings("unchecked")
-        public String getStaticImport(String referenceName) {
-            return getOnlyElement(transform(filter(this.imports, and(refersTo(referenceName), not(isAsterisk()), isStatic())), toImportedType()), null);
-        }
-
-        public Iterable<String> getAsteriskImports() {
-            return transform(filter(this.imports, and(isAsterisk(), not(isStatic()))), toImportedType());
         }
 
     }
