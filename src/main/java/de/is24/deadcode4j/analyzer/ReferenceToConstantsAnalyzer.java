@@ -6,6 +6,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Sets;
 import de.is24.deadcode4j.AnalysisContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
+import de.is24.javaparser.FixedGenericVisitorAdapter;
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
 import japa.parser.ast.Node;
@@ -16,7 +17,6 @@ import japa.parser.ast.stmt.BlockStmt;
 import japa.parser.ast.stmt.CatchClause;
 import japa.parser.ast.stmt.ForStmt;
 import japa.parser.ast.stmt.ForeachStmt;
-import japa.parser.ast.visitor.GenericVisitorAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -150,7 +150,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             // finally java.lang
             if (FieldAccessExpr.class.isInstance(n.getScope())) {
                 FieldAccessExpr nestedFieldAccessExpr = FieldAccessExpr.class.cast(n.getScope());
-                if (isFullyQualifiedReference(nestedFieldAccessExpr, analysis)) {
+                if (isFullyQualifiedReference(nestedFieldAccessExpr)) {
                     return null;
                 }
                 if (aLocalVariableExists(getFirstElement(nestedFieldAccessExpr))) {
@@ -184,14 +184,14 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                             && isRegularFieldAccessExpr(FieldAccessExpr.class.cast(scope));
         }
 
-        private boolean isFullyQualifiedReference(FieldAccessExpr fieldAccessExpr, Analysis analysis) {
+        private boolean isFullyQualifiedReference(FieldAccessExpr fieldAccessExpr) {
             Optional<String> resolvedClass = resolveClass(fieldAccessExpr.toString());
             if (resolvedClass.isPresent()) {
-                analysisContext.addDependencies(analysis.getTypeName(), resolvedClass.get());
+                analysisContext.addDependencies(getTypeName(fieldAccessExpr), resolvedClass.get());
                 return true;
             }
             return FieldAccessExpr.class.isInstance(fieldAccessExpr.getScope())
-                    && isFullyQualifiedReference(FieldAccessExpr.class.cast(fieldAccessExpr.getScope()), analysis);
+                    && isFullyQualifiedReference(FieldAccessExpr.class.cast(fieldAccessExpr.getScope()));
         }
 
         private Optional<String> resolveClass(String qualifier) {
@@ -225,11 +225,11 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                         || refersToImport(fieldAccessExpr, analysis)
                         || refersToPackageType(fieldAccessExpr, analysis)
                         || refersToAsteriskImport(fieldAccessExpr, analysis)
-                        || refersToJavaLang(fieldAccessExpr, analysis)
+                        || refersToJavaLang(fieldAccessExpr)
                         || refersToDefaultPackage(fieldAccessExpr, analysis)) {
                     continue;
                 }
-                logger.debug("Could not resolve reference [{}] defined within [{}].", fieldAccessExpr.toString(), analysis.getTypeName());
+                logger.debug("Could not resolve reference [{}] defined within [{}].", fieldAccessExpr.toString(), getTypeName(fieldAccessExpr));
             }
         }
 
@@ -298,47 +298,47 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             String anImport = analysis.getImport(firstElement);
             if (anImport != null) {
                 return
-                        refersToClass(fieldAccessExpr, analysis, anImport.substring(0, max(0, anImport.lastIndexOf('.') + 1)));
+                        refersToClass(fieldAccessExpr, anImport.substring(0, max(0, anImport.lastIndexOf('.') + 1)));
             }
             anImport = analysis.getStaticImport(firstElement);
             return anImport != null &&
-                    refersToClass(fieldAccessExpr, analysis, anImport + ".");
+                    refersToClass(fieldAccessExpr, anImport + ".");
         }
 
         private boolean refersToPackageType(FieldAccessExpr fieldAccessExpr, Analysis analysis) {
             String packagePrefix = analysis.packageName != null ? analysis.packageName + "." : "";
-            return refersToClass(fieldAccessExpr, analysis, packagePrefix);
+            return refersToClass(fieldAccessExpr, packagePrefix);
         }
 
         private boolean refersToAsteriskImport(FieldAccessExpr fieldAccessExpr, Analysis analysis) {
             for (String asteriskImport : analysis.getAsteriskImports()) {
-                if (refersToClass(fieldAccessExpr, analysis, asteriskImport + "."))
+                if (refersToClass(fieldAccessExpr, asteriskImport + "."))
                     return true;
             }
             return false;
         }
 
-        private boolean refersToJavaLang(FieldAccessExpr fieldAccessExpr, Analysis analysis) {
-            return refersToClass(fieldAccessExpr, analysis, "java.lang.");
+        private boolean refersToJavaLang(FieldAccessExpr fieldAccessExpr) {
+            return refersToClass(fieldAccessExpr, "java.lang.");
         }
 
         private boolean refersToDefaultPackage(FieldAccessExpr fieldAccessExpr, Analysis analysis) {
-            return analysis.packageName != null && refersToClass(fieldAccessExpr, analysis, "");
+            return analysis.packageName != null && refersToClass(fieldAccessExpr, "");
         }
 
-        private boolean refersToClass(@Nonnull FieldAccessExpr fieldAccessExpr, @Nonnull Analysis analysis, @Nonnull String qualifierPrefix) {
+        private boolean refersToClass(@Nonnull FieldAccessExpr fieldAccessExpr, @Nonnull String qualifierPrefix) {
             Optional<String> resolvedClass = resolveClass(qualifierPrefix + fieldAccessExpr.toString());
             if (resolvedClass.isPresent()) {
-                analysisContext.addDependencies(analysis.getTypeName(), resolvedClass.get());
+                analysisContext.addDependencies(getTypeName(fieldAccessExpr), resolvedClass.get());
                 return true;
             }
             if (FieldAccessExpr.class.isInstance(fieldAccessExpr.getScope())) {
-                return refersToClass(FieldAccessExpr.class.cast(fieldAccessExpr.getScope()), analysis, qualifierPrefix);
+                return refersToClass(FieldAccessExpr.class.cast(fieldAccessExpr.getScope()), qualifierPrefix);
             }
 
             resolvedClass = resolveClass(qualifierPrefix + NameExpr.class.cast(fieldAccessExpr.getScope()).getName());
             if (resolvedClass.isPresent()) {
-                analysisContext.addDependencies(analysis.getTypeName(), resolvedClass.get());
+                analysisContext.addDependencies(getTypeName(fieldAccessExpr), resolvedClass.get());
                 return true;
             }
             return false;
@@ -359,7 +359,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
     }
 
-    private static class LocalVariableRecordingVisitor<R, A> extends GenericVisitorAdapter<R, A> {
+    private static class LocalVariableRecordingVisitor<R, A> extends FixedGenericVisitorAdapter<R, A> {
 
         @Nonnull
         private final Deque<Set<String>> localVariables = newLinkedList();
