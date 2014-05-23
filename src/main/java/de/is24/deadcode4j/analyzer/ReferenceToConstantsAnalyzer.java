@@ -8,6 +8,7 @@ import de.is24.deadcode4j.AnalysisContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
+import japa.parser.ast.Node;
 import japa.parser.ast.PackageDeclaration;
 import japa.parser.ast.body.*;
 import japa.parser.ast.expr.*;
@@ -31,6 +32,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import static de.is24.deadcode4j.Utils.emptyIfNull;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
 import static java.lang.Math.max;
+import static java.util.Arrays.asList;
 
 public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
@@ -46,6 +48,18 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
         throw new RuntimeException("Should not have reached this point!");
     }
 
+    @Nonnull
+    private static NameExpr getFirstNode(@Nonnull FieldAccessExpr fieldAccessExpr) {
+        Expression scope = fieldAccessExpr.getScope();
+        if (NameExpr.class.isInstance(scope)) {
+            return NameExpr.class.cast(scope);
+        }
+        if (FieldAccessExpr.class.isInstance(scope)) {
+            return getFirstNode(FieldAccessExpr.class.cast(scope));
+        }
+        throw new RuntimeException("Should not have reached this point!");
+    }
+
     @Override
     protected void analyzeCompilationUnit(@Nonnull AnalysisContext AnalysisContext, @Nonnull CompilationUnit compilationUnit) {
         compilationUnit.accept(new CompilationUnitVisitor(AnalysisContext), null);
@@ -55,11 +69,11 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
         private final Logger logger = LoggerFactory.getLogger(getClass());
         private final ClassPoolAccessor classPoolAccessor;
-        private final AnalysisContext AnalysisContext;
+        private final AnalysisContext analysisContext;
 
         public CompilationUnitVisitor(AnalysisContext AnalysisContext) {
             this.classPoolAccessor = classPoolAccessorFor(AnalysisContext);
-            this.AnalysisContext = AnalysisContext;
+            this.analysisContext = AnalysisContext;
         }
 
         @Override
@@ -187,7 +201,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
         private boolean isFullyQualifiedReference(FieldAccessExpr fieldAccessExpr, Analysis analysis) {
             Optional<String> resolvedClass = resolveClass(fieldAccessExpr.toString());
             if (resolvedClass.isPresent()) {
-                AnalysisContext.addDependencies(analysis.getTypeName(), resolvedClass.get());
+                analysisContext.addDependencies(analysis.getTypeName(), resolvedClass.get());
                 return true;
             }
             return FieldAccessExpr.class.isInstance(fieldAccessExpr.getScope())
@@ -222,7 +236,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
         private void resolveFieldReferences(Analysis analysis) {
             for (FieldAccessExpr fieldAccessExpr : analysis.getFieldReferences()) {
                 if (analysis.isFieldDefined(getFirstElement(fieldAccessExpr))
-                        || refersToInnerType(fieldAccessExpr, analysis)
+                        || refersToInnerType(fieldAccessExpr)
                         || refersToImport(fieldAccessExpr, analysis)
                         || refersToPackageType(fieldAccessExpr, analysis)
                         || refersToAsteriskImport(fieldAccessExpr, analysis)
@@ -234,8 +248,64 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             }
         }
 
-        private boolean refersToInnerType(@Nonnull FieldAccessExpr fieldAccessExpr, @Nonnull Analysis analysis) {
-            return refersToClass(fieldAccessExpr, analysis, analysis.getParentTypeName() + "$");
+        private boolean refersToInnerType(@Nonnull FieldAccessExpr fieldAccessExpr) {
+            NameExpr firstQualifier = getFirstNode(fieldAccessExpr);
+            Node loopNode = fieldAccessExpr;
+            for (; ; ) {
+                if (TypeDeclaration.class.isInstance(loopNode)) {
+                    TypeDeclaration typeDeclaration = TypeDeclaration.class.cast(loopNode);
+                    if (resolveInnerReference(firstQualifier, asList(typeDeclaration))) {
+                        return true;
+                    }
+                    if (resolveInnerReference(firstQualifier, emptyIfNull(typeDeclaration.getMembers()))) {
+                        return true;
+                    }
+                } else if (CompilationUnit.class.isInstance(loopNode)
+                        && resolveInnerReference(firstQualifier, CompilationUnit.class.cast(loopNode).getTypes())) {
+                    return true;
+                }
+                loopNode = loopNode.getParentNode();
+                if (loopNode == null) {
+                    break;
+                }
+            }
+
+            return false;
+        }
+
+        private boolean resolveInnerReference(@Nonnull NameExpr firstQualifier,
+                                              @Nonnull Iterable<? extends BodyDeclaration> bodyDeclarations) {
+            for (BodyDeclaration bodyDeclaration : bodyDeclarations) {
+                if (!TypeDeclaration.class.isInstance(bodyDeclaration)) {
+                    continue;
+                }
+                final TypeDeclaration typeDeclaration = TypeDeclaration.class.cast(bodyDeclaration);
+                if (firstQualifier.getName().equals(typeDeclaration.getName())) {
+                    String referencedClass = resolveReferencedType(firstQualifier, typeDeclaration);
+                    analysisContext.addDependencies(getTypeName(firstQualifier), referencedClass);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Nonnull
+        private String resolveReferencedType(@Nonnull NameExpr firstQualifier,
+                                             @Nonnull TypeDeclaration typeDeclaration) {
+            if (FieldAccessExpr.class.isInstance(firstQualifier.getParentNode())) {
+                NameExpr nextQualifier = FieldAccessExpr.class.cast(firstQualifier.getParentNode()).getFieldExpr();
+                for (BodyDeclaration bodyDeclaration : emptyIfNull(typeDeclaration.getMembers())) {
+                    if (!TypeDeclaration.class.isInstance(bodyDeclaration)) {
+                        continue;
+                    }
+                    TypeDeclaration nextTypeDeclaration = TypeDeclaration.class.cast(bodyDeclaration);
+                    if (nextQualifier.getName().equals(nextTypeDeclaration.getName())) {
+                        return resolveReferencedType(nextQualifier, nextTypeDeclaration);
+                    }
+                }
+            }
+
+            return getTypeName(typeDeclaration);
         }
 
         private boolean refersToImport(FieldAccessExpr fieldAccessExpr, Analysis analysis) {
@@ -274,7 +344,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
         private boolean refersToClass(@Nonnull FieldAccessExpr fieldAccessExpr, @Nonnull Analysis analysis, @Nonnull String qualifierPrefix) {
             Optional<String> resolvedClass = resolveClass(qualifierPrefix + fieldAccessExpr.toString());
             if (resolvedClass.isPresent()) {
-                AnalysisContext.addDependencies(analysis.getTypeName(), resolvedClass.get());
+                analysisContext.addDependencies(analysis.getTypeName(), resolvedClass.get());
                 return true;
             }
             if (FieldAccessExpr.class.isInstance(fieldAccessExpr.getScope())) {
@@ -283,7 +353,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
             resolvedClass = resolveClass(qualifierPrefix + NameExpr.class.cast(fieldAccessExpr.getScope()).getName());
             if (resolvedClass.isPresent()) {
-                AnalysisContext.addDependencies(analysis.getTypeName(), resolvedClass.get());
+                analysisContext.addDependencies(analysis.getTypeName(), resolvedClass.get());
                 return true;
             }
             return false;
@@ -297,7 +367,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                 String staticImport = analysis.getStaticImport(referenceName);
                 if (staticImport != null) {
                     // TODO this should probably be resolved
-                    AnalysisContext.addDependencies(analysis.getTypeName(), staticImport);
+                    analysisContext.addDependencies(analysis.getTypeName(), staticImport);
                     continue;
                 }
                 // TODO handle asterisk static imports
@@ -544,16 +614,6 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             }
 
             return buffy.length() > 0 ? buffy.toString() : null;
-        }
-
-        public String getParentTypeName() {
-            String fullTypeName = getTypeName();
-            if (fullTypeName == null)
-                return null;
-            int beginNestedType = fullTypeName.lastIndexOf("$");
-            if (beginNestedType < 0)
-                return fullTypeName;
-            return fullTypeName.substring(0, beginNestedType);
         }
 
         @SuppressWarnings("unchecked")
