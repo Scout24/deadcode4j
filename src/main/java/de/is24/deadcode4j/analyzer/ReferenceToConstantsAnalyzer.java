@@ -21,13 +21,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Deque;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import static com.google.common.base.Predicates.and;
 import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.*;
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Sets.newHashSet;
 import static de.is24.deadcode4j.Utils.emptyIfNull;
@@ -91,50 +89,17 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
     @Override
     protected void analyzeCompilationUnit(@Nonnull final AnalysisContext analysisContext,
                                           @Nonnull final CompilationUnit compilationUnit) {
-        compilationUnit.accept(new LocalVariableRecordingVisitor<Analysis, Analysis>() {
+        compilationUnit.accept(new LocalVariableRecordingVisitor<Void, Void>() {
             private final ClassPoolAccessor classPoolAccessor = classPoolAccessorFor(analysisContext);
 
             @Override
-            public Analysis visit(CompilationUnit n, Analysis arg) {
-                super.visit(n, new Analysis());
-                return null;
-            }
-
-            @Override
-            public Analysis visit(AnnotationDeclaration n, Analysis arg) {
-                Analysis nestedAnalysis = new Analysis();
-                super.visit(n, nestedAnalysis);
-                resolveFieldReferences(nestedAnalysis);
-                resolveNameReferences(nestedAnalysis);
-                return null;
-            }
-
-            @Override
-            public Analysis visit(ClassOrInterfaceDeclaration n, Analysis arg) {
-                Analysis nestedAnalysis = new Analysis();
-                super.visit(n, nestedAnalysis);
-                resolveFieldReferences(nestedAnalysis);
-                resolveNameReferences(nestedAnalysis);
-                return null;
-            }
-
-            @Override
-            public Analysis visit(EnumDeclaration n, Analysis arg) {
-                Analysis nestedAnalysis = new Analysis();
-                super.visit(n, nestedAnalysis);
-                resolveFieldReferences(nestedAnalysis);
-                resolveNameReferences(nestedAnalysis);
-                return null;
-            }
-
-            @Override
-            public Analysis visit(MarkerAnnotationExpr n, Analysis arg) {
+            public Void visit(MarkerAnnotationExpr n, Void arg) {
                 // performance
                 return null;
             }
 
             @Override
-            public Analysis visit(NormalAnnotationExpr n, Analysis arg) {
+            public Void visit(NormalAnnotationExpr n, Void arg) {
                 // performance
                 for (final MemberValuePair m : emptyIfNull(n.getPairs())) {
                     m.accept(this, arg);
@@ -143,13 +108,13 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             }
 
             @Override
-            public Analysis visit(SingleMemberAnnotationExpr n, Analysis arg) {
+            public Void visit(SingleMemberAnnotationExpr n, Void arg) {
                 // performance
                 return n.getMemberValue().accept(this, arg);
             }
 
             @Override
-            public Analysis visit(FieldAccessExpr n, Analysis analysis) {
+            public Void visit(FieldAccessExpr n, Void analysis) {
                 if (isTargetOfAnAssignment(n) || isScopeOfAMethodCall(n) || isScopeOfThisExpression(n)) {
                     return null;
                 }
@@ -170,13 +135,13 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                     if (aLocalVariableExists(getFirstElement(nestedFieldAccessExpr))) {
                         return null;
                     }
-                    analysis.addFieldReference(nestedFieldAccessExpr);
+                    resolveFieldReference(nestedFieldAccessExpr);
                 } else if (NameExpr.class.isInstance(n.getScope())) {
                     String typeName = NameExpr.class.cast(n.getScope()).getName();
                     if (aLocalVariableExists(typeName))
                         return null;
 
-                    analysis.addFieldReference(n);
+                    resolveFieldReference(n);
                 }
                 return null;
             }
@@ -213,14 +178,14 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             }
 
             @Override
-            public Analysis visit(NameExpr n, Analysis analysis) {
+            public Void visit(NameExpr n, Void analysis) {
                 if (isTargetOfAnAssignment(n) || isScopeOfAMethodCall(n) || isScopeOfThisExpression(n)) {
                     return null;
                 }
                 if (aLocalVariableExists(n.getName())) {
                     return null;
                 }
-                analysis.addNameReference(n);
+                resolveNameReference(n);
                 return null;
             }
 
@@ -232,15 +197,12 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                 return AssignExpr.class.isInstance(n.getParentNode()) && n == AssignExpr.class.cast(n.getParentNode()).getTarget();
             }
 
-            private void resolveFieldReferences(Analysis analysis) {
-                for (FieldAccessExpr fieldAccessExpr : analysis.getFieldReferences()) {
-                    if (refersToInnerType(fieldAccessExpr)
-                            || refersToImport(fieldAccessExpr)
-                            || refersToPackageType(fieldAccessExpr)
-                            || refersToAsteriskImport(fieldAccessExpr)
-                            || refersToJavaLang(fieldAccessExpr)) {
-                        continue;
-                    }
+            private void resolveFieldReference(FieldAccessExpr fieldAccessExpr) {
+                if (!(refersToInnerType(fieldAccessExpr)
+                        || refersToImport(fieldAccessExpr)
+                        || refersToPackageType(fieldAccessExpr)
+                        || refersToAsteriskImport(fieldAccessExpr)
+                        || refersToJavaLang(fieldAccessExpr))) {
                     logger.debug("Could not resolve reference [{}] defined within [{}].", fieldAccessExpr.toString(), getTypeName(fieldAccessExpr));
                 }
             }
@@ -258,7 +220,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                             return true;
                         }
                     } else if (CompilationUnit.class.isInstance(loopNode)
-                            && resolveInnerReference(firstQualifier, CompilationUnit.class.cast(loopNode).getTypes())) {
+                            && resolveInnerReference(firstQualifier, emptyIfNull(CompilationUnit.class.cast(loopNode).getTypes()))) {
                         return true;
                     }
                     loopNode = loopNode.getParentNode();
@@ -353,18 +315,16 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                 return false;
             }
 
-            private void resolveNameReferences(Analysis analysis) {
-                for (NameExpr reference : analysis.getNameReferences()) {
-                    final String referenceName = getTypeName(reference);
-                    String staticImport = getStaticImport(reference.getName());
-                    if (staticImport != null) {
-                        // TODO this should probably be resolved
-                        analysisContext.addDependencies(referenceName, staticImport);
-                        continue;
-                    }
-                    // TODO handle asterisk static imports
-                    logger.debug("Could not resolve name reference [{}] defined within [{}].", reference, referenceName);
+            private void resolveNameReference(NameExpr reference) {
+                final String referenceName = getTypeName(reference);
+                String staticImport = getStaticImport(reference.getName());
+                if (staticImport != null) {
+                    // TODO this should probably be resolved
+                    analysisContext.addDependencies(referenceName, staticImport);
+                    return;
                 }
+                // TODO handle asterisk static imports
+                logger.debug("Could not resolve name reference [{}] defined within [{}].", reference, referenceName);
             }
 
             @Nullable
@@ -565,29 +525,6 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                     }
                 }
             }
-        }
-
-    }
-
-    private static class Analysis {
-
-        private final List<FieldAccessExpr> fieldReferences = newArrayList();
-        private final List<NameExpr> nameReferences = newArrayList();
-
-        public void addFieldReference(FieldAccessExpr fieldAccessExpression) {
-            this.fieldReferences.add(fieldAccessExpression);
-        }
-
-        public void addNameReference(NameExpr namedReference) {
-            this.nameReferences.add(namedReference);
-        }
-
-        public Iterable<FieldAccessExpr> getFieldReferences() {
-            return this.fieldReferences;
-        }
-
-        public Iterable<NameExpr> getNameReferences() {
-            return this.nameReferences;
         }
 
     }
