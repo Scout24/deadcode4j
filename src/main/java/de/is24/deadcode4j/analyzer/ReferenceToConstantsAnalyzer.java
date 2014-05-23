@@ -139,9 +139,6 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                 if (isTargetOfAnAssignment(n) || isScopeOfAMethodCall(n) || isScopeOfThisExpression(n)) {
                     return;
                 }
-                if (aLocalVariableExists(n.getName())) {
-                    return;
-                }
                 resolveNameReference(n);
             }
 
@@ -280,6 +277,9 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
             private void resolveNameReference(NameExpr reference) {
                 final String referenceName = getTypeName(reference);
+                if (aLocalVariableExists(referenceName)) {
+                    return;
+                }
                 String staticImport = getStaticImport(reference.getName());
                 if (staticImport != null) {
                     // TODO this should probably be resolved
