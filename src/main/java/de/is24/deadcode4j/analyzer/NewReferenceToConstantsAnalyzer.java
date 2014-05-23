@@ -8,7 +8,6 @@ import de.is24.deadcode4j.AnalysisContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
-import japa.parser.ast.Node;
 import japa.parser.ast.PackageDeclaration;
 import japa.parser.ast.body.*;
 import japa.parser.ast.expr.*;
@@ -89,20 +88,6 @@ public class NewReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
         return false;
     }
 
-    private static StringBuilder prepend(NameExpr nameExpr, StringBuilder buffy) {
-        for (; ; ) {
-            if (buffy.length() > 0) {
-                buffy.insert(0, '.');
-            }
-            buffy.insert(0, nameExpr.getName());
-            if (!QualifiedNameExpr.class.isInstance(nameExpr)) {
-                break;
-            }
-            nameExpr = QualifiedNameExpr.class.cast(nameExpr).getQualifier();
-        }
-        return buffy;
-    }
-
     @Override
     protected void analyzeCompilationUnit(@Nonnull final AnalysisContext analysisContext, @Nonnull final CompilationUnit compilationUnit) {
         compilationUnit.accept(new LocalVariableRecordingVisitor<AnalysisContext>() {
@@ -169,28 +154,6 @@ public class NewReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                 }
                 return FieldAccessExpr.class.isInstance(fieldAccessExpr.getScope())
                         && isFullyQualifiedReference(FieldAccessExpr.class.cast(fieldAccessExpr.getScope()), arg);
-            }
-
-            @Nonnull
-            private String getTypeName(@Nonnull Node node) {
-                StringBuilder buffy = new StringBuilder();
-                while ((node = node.getParentNode()) != null) {
-                    if (!TypeDeclaration.class.isInstance(node)) {
-                        continue;
-                    }
-                    if (buffy.length() > 0)
-                        buffy.insert(0, '$');
-                    buffy.insert(0, TypeDeclaration.class.cast(node).getName());
-                }
-                return prependPackageName(buffy).toString();
-            }
-
-            @Nonnull
-            private StringBuilder prependPackageName(@Nonnull StringBuilder buffy) {
-                if (compilationUnit.getPackage() == null) {
-                    return buffy;
-                }
-                return prepend(compilationUnit.getPackage().getName(), buffy);
             }
 
             @Override

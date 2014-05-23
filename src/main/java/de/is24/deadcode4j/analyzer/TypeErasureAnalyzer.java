@@ -6,11 +6,8 @@ import de.is24.deadcode4j.AnalysisContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
-import japa.parser.ast.Node;
 import japa.parser.ast.TypeParameter;
 import japa.parser.ast.body.*;
-import japa.parser.ast.expr.NameExpr;
-import japa.parser.ast.expr.QualifiedNameExpr;
 import japa.parser.ast.type.*;
 import japa.parser.ast.visitor.VoidVisitorAdapter;
 
@@ -152,21 +149,6 @@ public class TypeErasureAnalyzer extends JavaFileAnalyzer {
                     }
                 }
                 return false;
-            }
-
-            @Nonnull
-            private String getTypeName(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
-                StringBuilder buffy = new StringBuilder();
-                Node node = classOrInterfaceType;
-                while ((node = node.getParentNode()) != null) {
-                    if (!TypeDeclaration.class.isInstance(node)) {
-                        continue;
-                    }
-                    if (buffy.length() > 0)
-                        buffy.insert(0, '$');
-                    buffy.insert(0, TypeDeclaration.class.cast(node).getName());
-                }
-                return prependPackageName(buffy).toString();
             }
 
             @Nonnull
@@ -312,21 +294,6 @@ public class TypeErasureAnalyzer extends JavaFileAnalyzer {
                 }
                 return prepend(compilationUnit.getPackage().getName(), buffy);
             }
-
-            private StringBuilder prepend(NameExpr nameExpr, StringBuilder buffy) {
-                for (; ; ) {
-                    if (buffy.length() > 0) {
-                        buffy.insert(0, '.');
-                    }
-                    buffy.insert(0, nameExpr.getName());
-                    if (!QualifiedNameExpr.class.isInstance(nameExpr)) {
-                        break;
-                    }
-                    nameExpr = QualifiedNameExpr.class.cast(nameExpr).getQualifier();
-                }
-                return buffy;
-            }
-
 
         }, null);
     }
