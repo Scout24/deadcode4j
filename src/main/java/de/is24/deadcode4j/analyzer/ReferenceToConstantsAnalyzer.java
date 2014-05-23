@@ -61,6 +61,38 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
         throw new RuntimeException("Should not have reached this point!");
     }
 
+    private static boolean isRegularFieldAccessExpr(@Nonnull FieldAccessExpr fieldAccessExpr) {
+        for (; ; ) {
+            Expression scope = fieldAccessExpr.getScope();
+            if (NameExpr.class.isInstance(scope)) {
+                return true;
+            } else if (!FieldAccessExpr.class.isInstance(scope)) {
+                return false;
+            }
+            fieldAccessExpr = FieldAccessExpr.class.cast(scope);
+        }
+
+    }
+
+    /**
+     * This is not entirely correct: while we want to filter calls like
+     * <code>org.slf4j.LoggerFactory.getLogger("foo")</code>, we want to analyze
+     * <code>foo.bar.FOO.substring(1)</code>.
+     */
+    private static boolean isScopeOfAMethodCall(@Nonnull Expression expression) {
+        return MethodCallExpr.class.isInstance(expression.getParentNode())
+                && expression == MethodCallExpr.class.cast(expression.getParentNode()).getScope();
+    }
+
+    private static boolean isScopeOfThisExpression(@Nonnull Expression expression) {
+        return ThisExpr.class.isInstance(expression.getParentNode());
+    }
+
+    private static boolean isTargetOfAnAssignment(@Nonnull Expression expression) {
+        return AssignExpr.class.isInstance(expression.getParentNode())
+                && expression == AssignExpr.class.cast(expression.getParentNode()).getTarget();
+    }
+
     private static Predicate<? super ImportDeclaration> refersTo(final String name) {
         return new Predicate<ImportDeclaration>() {
             @Override
@@ -136,23 +168,6 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                 resolveNameReference(n);
             }
 
-            /**
-             * This is not entirely correct: while we want to filter calls like
-             * <code>org.slf4j.LoggerFactory.getLogger("foo")</code>, we want to analyze
-             * <code>foo.bar.FOO.substring(1)</code>.
-             */
-            private boolean isScopeOfAMethodCall(Expression expression) {
-                return MethodCallExpr.class.isInstance(expression.getParentNode())
-                        && expression == MethodCallExpr.class.cast(expression.getParentNode()).getScope();
-            }
-
-            private boolean isRegularFieldAccessExpr(FieldAccessExpr fieldAccessExpr) {
-                Expression scope = fieldAccessExpr.getScope();
-                return NameExpr.class.isInstance(scope) ||
-                        FieldAccessExpr.class.isInstance(scope)
-                                && isRegularFieldAccessExpr(FieldAccessExpr.class.cast(scope));
-            }
-
             private boolean isFullyQualifiedReference(FieldAccessExpr fieldAccessExpr) {
                 Optional<String> resolvedClass = resolveClass(fieldAccessExpr.toString());
                 if (resolvedClass.isPresent()) {
@@ -165,14 +180,6 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
             private Optional<String> resolveClass(String qualifier) {
                 return this.classPoolAccessor.resolveClass(qualifier);
-            }
-
-            private boolean isScopeOfThisExpression(Expression n) {
-                return ThisExpr.class.isInstance(n.getParentNode());
-            }
-
-            private boolean isTargetOfAnAssignment(Expression n) {
-                return AssignExpr.class.isInstance(n.getParentNode()) && n == AssignExpr.class.cast(n.getParentNode()).getTarget();
             }
 
             private void resolveFieldReference(FieldAccessExpr fieldAccessExpr) {
