@@ -27,6 +27,7 @@ import java.util.*;
 import static com.google.common.base.Predicates.and;
 import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.*;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Sets.newHashSet;
 import static de.is24.deadcode4j.Utils.emptyIfNull;
@@ -85,8 +86,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
         @Override
         public Analysis visit(AnnotationDeclaration n, Analysis arg) {
-            String name = n.getName();
-            Analysis nestedAnalysis = new Analysis(arg, name);
+            Analysis nestedAnalysis = new Analysis(arg);
             super.visit(n, nestedAnalysis);
             resolveFieldReferences(nestedAnalysis);
             resolveNameReferences(nestedAnalysis);
@@ -95,8 +95,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
         @Override
         public Analysis visit(ClassOrInterfaceDeclaration n, Analysis arg) {
-            String name = n.getName();
-            Analysis nestedAnalysis = new Analysis(arg, name);
+            Analysis nestedAnalysis = new Analysis(arg);
             super.visit(n, nestedAnalysis);
             resolveFieldReferences(nestedAnalysis);
             resolveNameReferences(nestedAnalysis);
@@ -105,8 +104,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
         @Override
         public Analysis visit(EnumDeclaration n, Analysis arg) {
-            String name = n.getName();
-            Analysis nestedAnalysis = new Analysis(arg, name);
+            Analysis nestedAnalysis = new Analysis(arg);
             super.visit(n, nestedAnalysis);
             resolveFieldReferences(nestedAnalysis);
             resolveNameReferences(nestedAnalysis);
@@ -203,11 +201,10 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             if (isTargetOfAnAssignment(n) || isScopeOfAMethodCall(n) || isScopeOfThisExpression(n)) {
                 return null;
             }
-            String namedReference = n.getName();
-            if (aLocalVariableExists(namedReference)) {
+            if (aLocalVariableExists(n.getName())) {
                 return null;
             }
-            analysis.addNameReference(namedReference);
+            analysis.addNameReference(n);
             return null;
         }
 
@@ -345,15 +342,16 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
         }
 
         private void resolveNameReferences(Analysis analysis) {
-            for (String referenceName : analysis.getNameReferences()) {
-                String staticImport = analysis.getStaticImport(referenceName);
+            for (NameExpr reference : analysis.getNameReferences()) {
+                final String referenceName = getTypeName(reference);
+                String staticImport = analysis.getStaticImport(reference.getName());
                 if (staticImport != null) {
                     // TODO this should probably be resolved
-                    analysisContext.addDependencies(analysis.getTypeName(), staticImport);
+                    analysisContext.addDependencies(referenceName, staticImport);
                     continue;
                 }
                 // TODO handle asterisk static imports
-                logger.debug("Could not resolve name reference [{}] defined within [{}].", referenceName, analysis.getTypeName());
+                logger.debug("Could not resolve name reference [{}] defined within [{}].", reference, referenceName);
             }
         }
 
@@ -541,15 +539,11 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
     private static class Analysis {
 
         public final String packageName;
-        private final Analysis parent;
-        private final String typeName;
         private final List<ImportDeclaration> imports;
-        private final Set<FieldAccessExpr> fieldReferences = newHashSet();
-        private final Set<String> nameReferences = newHashSet(); // reduce duplicate calls to one
+        private final List<FieldAccessExpr> fieldReferences = newArrayList();
+        private final List<NameExpr> nameReferences = newArrayList();
 
-        public Analysis(Analysis arg, String typeName) {
-            this.parent = arg;
-            this.typeName = typeName;
+        public Analysis(Analysis arg) {
             this.packageName = arg.packageName;
             this.imports = arg.imports;
         }
@@ -557,8 +551,6 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
         public Analysis(PackageDeclaration packageName, List<ImportDeclaration> imports) {
             this.packageName = packageName == null ? null : packageName.getName().toString();
             this.imports = imports != null ? imports : Collections.<ImportDeclaration>emptyList();
-            this.parent = null;
-            this.typeName = null;
         }
 
         private static Predicate<? super ImportDeclaration> isAsterisk() {
@@ -608,7 +600,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             this.fieldReferences.add(fieldAccessExpression);
         }
 
-        public void addNameReference(String namedReference) {
+        public void addNameReference(NameExpr namedReference) {
             this.nameReferences.add(namedReference);
         }
 
@@ -616,30 +608,8 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             return this.fieldReferences;
         }
 
-        public Iterable<String> getNameReferences() {
+        public Iterable<NameExpr> getNameReferences() {
             return this.nameReferences;
-        }
-
-        public String getTypeName() {
-            boolean isNested = false;
-            StringBuilder buffy = new StringBuilder();
-            if (hasParent()) {
-                String parentTypeName = parent.getTypeName();
-                if (parentTypeName != null) {
-                    buffy.append(parentTypeName);
-                    isNested = true;
-                }
-            }
-            if (this.typeName != null) {
-                if (isNested) {
-                    buffy.append("$");
-                } else {
-                    buffy.append(this.packageName).append('.');
-                }
-                buffy.append(this.typeName);
-            }
-
-            return buffy.length() > 0 ? buffy.toString() : null;
         }
 
         @SuppressWarnings("unchecked")
@@ -656,9 +626,6 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             return transform(filter(this.imports, and(isAsterisk(), not(isStatic()))), toImportedType());
         }
 
-        private boolean hasParent() {
-            return this.parent != null;
-        }
     }
 
 }
