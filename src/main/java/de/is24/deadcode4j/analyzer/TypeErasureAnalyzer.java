@@ -4,6 +4,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import de.is24.deadcode4j.AnalysisContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
+import de.is24.javaparser.FixedVoidVisitorAdapter;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import japa.parser.JavaParser;
 import japa.parser.TokenMgrError;
@@ -15,7 +16,6 @@ import japa.parser.ast.body.*;
 import japa.parser.ast.expr.NameExpr;
 import japa.parser.ast.expr.QualifiedNameExpr;
 import japa.parser.ast.type.*;
-import japa.parser.ast.visitor.VoidVisitorAdapter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -350,7 +350,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
         }, null);
     }
 
-    private static class TypeRecordingVisitor extends VoidVisitorAdapter<Void> {
+    private static class TypeRecordingVisitor extends FixedVoidVisitorAdapter<Void> {
 
         private final LinkedList<String> typeHierarchy = newLinkedList();
         private final Set<String> typeNames = newHashSet();
