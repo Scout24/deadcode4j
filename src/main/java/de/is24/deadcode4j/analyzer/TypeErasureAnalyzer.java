@@ -17,12 +17,16 @@ import java.util.*;
 
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
+import static com.google.common.base.Predicates.and;
+import static com.google.common.base.Predicates.not;
+import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
-import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
-import static de.is24.deadcode4j.Utils.or;
+import static de.is24.deadcode4j.Utils.*;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
+import static de.is24.javaparser.ImportDeclarations.isAsterisk;
+import static de.is24.javaparser.ImportDeclarations.isStatic;
 import static java.util.Collections.emptySet;
 import static java.util.Map.Entry;
 
@@ -80,11 +84,7 @@ public class TypeErasureAnalyzer extends JavaFileAnalyzer {
 
             @Override
             public void visit(ClassOrInterfaceType n, Void arg) {
-                List<Type> typeArguments = n.getTypeArgs();
-                if (typeArguments == null) {
-                    return;
-                }
-                for (Type type : typeArguments) {
+                for (Type type : emptyIfNull(n.getTypeArgs())) {
                     ClassOrInterfaceType referencedType = getReferencedType(type);
                     if (referencedType == null) {
                         continue;
@@ -221,12 +221,8 @@ public class TypeErasureAnalyzer extends JavaFileAnalyzer {
                     @Nonnull
                     @Override
                     public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull String typeReference) {
-                        if (compilationUnit.getImports() == null)
-                            return absent();
-                        for (ImportDeclaration importDeclaration : compilationUnit.getImports()) {
-                            if (importDeclaration.isAsterisk()) {
-                                continue;
-                            }
+                        for (ImportDeclaration importDeclaration :
+                                filter(emptyIfNull(compilationUnit.getImports()), not(isAsterisk()))) {
                             String importedClass = importDeclaration.getName().getName();
                             if (importedClass.equals(typeReference) || typeReference.startsWith(importedClass + ".")) {
                                 StringBuilder buffy = prepend(importDeclaration.getName(), new StringBuilder());
@@ -258,12 +254,8 @@ public class TypeErasureAnalyzer extends JavaFileAnalyzer {
                     @Nonnull
                     @Override
                     public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull String typeReference) {
-                        if (compilationUnit.getImports() == null)
-                            return absent();
-                        for (ImportDeclaration importDeclaration : compilationUnit.getImports()) {
-                            if (!importDeclaration.isAsterisk() || importDeclaration.isStatic()) {
-                                continue;
-                            }
+                        for (ImportDeclaration importDeclaration :
+                                filter(emptyIfNull(compilationUnit.getImports()), and(isAsterisk(), not(isStatic())))) {
                             StringBuilder buffy = new StringBuilder(typeReference);
                             prepend(importDeclaration.getName(), buffy);
                             Optional<String> resolvedClass = classPoolAccessor.resolveClass(buffy);
