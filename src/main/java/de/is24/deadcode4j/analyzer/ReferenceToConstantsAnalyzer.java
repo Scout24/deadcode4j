@@ -16,6 +16,7 @@ import japa.parser.ast.stmt.BlockStmt;
 import japa.parser.ast.stmt.CatchClause;
 import japa.parser.ast.stmt.ForStmt;
 import japa.parser.ast.stmt.ForeachStmt;
+import japa.parser.ast.type.ClassOrInterfaceType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -319,6 +320,10 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             private Iterable<String> getAsteriskImports() {
                 return transform(filter(emptyIfNull(compilationUnit.getImports()),
                         and(isAsterisk(), not(isStatic()))), toImportedType());
+            }
+
+            @Override public void visit(ClassOrInterfaceType n, Void arg) {
+                // performance
             }
 
             @Override
