@@ -39,26 +39,20 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
     @Nonnull
     private static String getFirstElement(@Nonnull FieldAccessExpr fieldAccessExpr) {
-        Expression scope = fieldAccessExpr.getScope();
-        if (NameExpr.class.isInstance(scope)) {
-            return NameExpr.class.cast(scope).getName();
-        }
-        if (FieldAccessExpr.class.isInstance(scope)) {
-            return getFirstElement(FieldAccessExpr.class.cast(scope));
-        }
-        throw new RuntimeException("Should not have reached this point!");
+        return getFirstNode(fieldAccessExpr).getName();
     }
 
     @Nonnull
     private static NameExpr getFirstNode(@Nonnull FieldAccessExpr fieldAccessExpr) {
-        Expression scope = fieldAccessExpr.getScope();
-        if (NameExpr.class.isInstance(scope)) {
-            return NameExpr.class.cast(scope);
+        for (; ; ) {
+            Expression scope = fieldAccessExpr.getScope();
+            if (NameExpr.class.isInstance(scope)) {
+                return NameExpr.class.cast(scope);
+            } else if (!FieldAccessExpr.class.isInstance(scope)) {
+                throw new RuntimeException("Should not have reached this point!");
+            }
+            fieldAccessExpr = FieldAccessExpr.class.cast(scope);
         }
-        if (FieldAccessExpr.class.isInstance(scope)) {
-            return getFirstNode(FieldAccessExpr.class.cast(scope));
-        }
-        throw new RuntimeException("Should not have reached this point!");
     }
 
     private static boolean isRegularFieldAccessExpr(@Nonnull FieldAccessExpr fieldAccessExpr) {
@@ -71,7 +65,6 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             }
             fieldAccessExpr = FieldAccessExpr.class.cast(scope);
         }
-
     }
 
     /**
