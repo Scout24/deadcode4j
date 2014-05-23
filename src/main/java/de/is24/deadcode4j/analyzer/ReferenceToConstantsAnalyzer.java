@@ -123,26 +123,13 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                     super.visit(n, analysis);
                     return;
                 }
-                // FQ beats all
-                // then local variables & fields
-                // now imports
-                // then package access
-                // then asterisk imports
-                // finally java.lang
                 if (FieldAccessExpr.class.isInstance(n.getScope())) {
                     FieldAccessExpr nestedFieldAccessExpr = FieldAccessExpr.class.cast(n.getScope());
-                    if (isFullyQualifiedReference(nestedFieldAccessExpr)) {
-                        return;
-                    }
-                    if (aLocalVariableExists(getFirstElement(nestedFieldAccessExpr))) {
+                    if (isFullyQualifiedReference(nestedFieldAccessExpr)) { // fq beats all
                         return;
                     }
                     resolveFieldReference(nestedFieldAccessExpr);
                 } else if (NameExpr.class.isInstance(n.getScope())) {
-                    String typeName = NameExpr.class.cast(n.getScope()).getName();
-                    if (aLocalVariableExists(typeName))
-                        return;
-
                     resolveFieldReference(n);
                 }
             }
@@ -173,7 +160,8 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             }
 
             private void resolveFieldReference(FieldAccessExpr fieldAccessExpr) {
-                if (!(refersToInnerType(fieldAccessExpr)
+                if (!(aLocalVariableExists(getFirstElement(fieldAccessExpr))
+                        || refersToInnerType(fieldAccessExpr)
                         || refersToImport(fieldAccessExpr)
                         || refersToPackageType(fieldAccessExpr)
                         || refersToAsteriskImport(fieldAccessExpr)
@@ -322,7 +310,8 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                         and(isAsterisk(), not(isStatic()))), toImportedType());
             }
 
-            @Override public void visit(ClassOrInterfaceType n, Void arg) {
+            @Override
+            public void visit(ClassOrInterfaceType n, Void arg) {
                 // performance
             }
 
