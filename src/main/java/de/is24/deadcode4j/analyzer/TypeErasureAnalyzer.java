@@ -27,6 +27,7 @@ import static com.google.common.base.Optional.of;
 import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
+import static de.is24.deadcode4j.Utils.emptyIfNull;
 import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
 import static de.is24.deadcode4j.Utils.or;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
@@ -110,11 +111,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
 
             @Override
             public void visit(ClassOrInterfaceType n, Void arg) {
-                List<Type> typeArguments = n.getTypeArgs();
-                if (typeArguments == null) {
-                    return;
-                }
-                for (Type type : typeArguments) {
+                for (Type type : emptyIfNull(n.getTypeArgs())) {
                     ClassOrInterfaceType referencedType = getReferencedType(type);
                     if (referencedType == null) {
                         continue;
@@ -266,9 +263,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                     @Nonnull
                     @Override
                     public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull String typeReference) {
-                        if (compilationUnit.getImports() == null)
-                            return absent();
-                        for (ImportDeclaration importDeclaration : compilationUnit.getImports()) {
+                        for (ImportDeclaration importDeclaration : emptyIfNull(compilationUnit.getImports())) {
                             if (importDeclaration.isAsterisk()) {
                                 continue;
                             }
@@ -303,9 +298,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                     @Nonnull
                     @Override
                     public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull String typeReference) {
-                        if (compilationUnit.getImports() == null)
-                            return absent();
-                        for (ImportDeclaration importDeclaration : compilationUnit.getImports()) {
+                        for (ImportDeclaration importDeclaration : emptyIfNull(compilationUnit.getImports())) {
                             if (!importDeclaration.isAsterisk() || importDeclaration.isStatic()) {
                                 continue;
                             }
