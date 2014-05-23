@@ -24,13 +24,16 @@ import java.util.*;
 
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
+import static com.google.common.base.Predicates.and;
+import static com.google.common.base.Predicates.not;
+import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
-import static de.is24.deadcode4j.Utils.emptyIfNull;
-import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
-import static de.is24.deadcode4j.Utils.or;
+import static de.is24.deadcode4j.Utils.*;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
+import static de.is24.javaparser.ImportDeclarations.isAsterisk;
+import static de.is24.javaparser.ImportDeclarations.isStatic;
 import static java.util.Collections.emptySet;
 import static java.util.Map.Entry;
 import static org.apache.commons.io.IOUtils.closeQuietly;
@@ -143,7 +146,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 } else if (WildcardType.class.isInstance(type)) {
                     WildcardType wildcardType = WildcardType.class.cast(type);
                     ReferenceType referenceType = wildcardType.getExtends();
-                    if (referenceType == null){
+                    if (referenceType == null) {
                         referenceType = wildcardType.getSuper();
                     }
                     if (referenceType == null) {
@@ -263,10 +266,8 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                     @Nonnull
                     @Override
                     public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull String typeReference) {
-                        for (ImportDeclaration importDeclaration : emptyIfNull(compilationUnit.getImports())) {
-                            if (importDeclaration.isAsterisk()) {
-                                continue;
-                            }
+                        for (ImportDeclaration importDeclaration :
+                                filter(emptyIfNull(compilationUnit.getImports()), not(isAsterisk()))) {
                             String importedClass = importDeclaration.getName().getName();
                             if (importedClass.equals(typeReference) || typeReference.startsWith(importedClass + ".")) {
                                 StringBuilder buffy = prepend(importDeclaration.getName(), new StringBuilder());
@@ -298,10 +299,8 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                     @Nonnull
                     @Override
                     public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull String typeReference) {
-                        for (ImportDeclaration importDeclaration : emptyIfNull(compilationUnit.getImports())) {
-                            if (!importDeclaration.isAsterisk() || importDeclaration.isStatic()) {
-                                continue;
-                            }
+                        for (ImportDeclaration importDeclaration :
+                                filter(emptyIfNull(compilationUnit.getImports()), and(isAsterisk(), not(isStatic())))) {
                             StringBuilder buffy = new StringBuilder(typeReference);
                             prepend(importDeclaration.getName(), buffy);
                             Optional<String> resolvedClass = classPoolAccessor.resolveClass(buffy);
