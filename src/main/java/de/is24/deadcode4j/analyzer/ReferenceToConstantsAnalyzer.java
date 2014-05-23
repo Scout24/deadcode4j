@@ -114,20 +114,6 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
         }
 
         @Override
-        public Analysis visit(EnumConstantDeclaration n, Analysis arg) {
-            arg.addFieldName(n.getName());
-            return super.visit(n, arg);
-        }
-
-        @Override
-        public Analysis visit(FieldDeclaration n, Analysis arg) {
-            for (VariableDeclarator variableDeclarator : n.getVariables()) {
-                arg.addFieldName(variableDeclarator.getId().getName());
-            }
-            return super.visit(n, arg);
-        }
-
-        @Override
         public Analysis visit(MarkerAnnotationExpr n, Analysis arg) {
             // performance
             return null;
@@ -235,8 +221,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
         private void resolveFieldReferences(Analysis analysis) {
             for (FieldAccessExpr fieldAccessExpr : analysis.getFieldReferences()) {
-                if (analysis.isFieldDefined(getFirstElement(fieldAccessExpr))
-                        || refersToInnerType(fieldAccessExpr)
+                if (refersToInnerType(fieldAccessExpr)
                         || refersToImport(fieldAccessExpr, analysis)
                         || refersToPackageType(fieldAccessExpr, analysis)
                         || refersToAsteriskImport(fieldAccessExpr, analysis)
@@ -361,9 +346,6 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
         private void resolveNameReferences(Analysis analysis) {
             for (String referenceName : analysis.getNameReferences()) {
-                if (analysis.isFieldDefined(referenceName)) {
-                    continue;
-                }
                 String staticImport = analysis.getStaticImport(referenceName);
                 if (staticImport != null) {
                     // TODO this should probably be resolved
@@ -381,6 +363,45 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
         @Nonnull
         private final Deque<Set<String>> localVariables = newLinkedList();
+
+        @Override
+        public R visit(ClassOrInterfaceDeclaration n, A arg) {
+            HashSet<String> fields = newHashSet();
+            this.localVariables.addLast(fields);
+            try {
+                addFieldVariables(n, fields);
+                return super.visit(n, arg);
+            } finally {
+                this.localVariables.removeLast();
+            }
+        }
+
+        @Override
+        public R visit(EnumDeclaration n, A arg) {
+            HashSet<String> fieldsAndEnums = newHashSet();
+            this.localVariables.addLast(fieldsAndEnums);
+            try {
+                for (EnumConstantDeclaration enumConstantDeclaration : emptyIfNull(n.getEntries())) {
+                    fieldsAndEnums.add(enumConstantDeclaration.getName());
+                }
+                addFieldVariables(n, fieldsAndEnums);
+                return super.visit(n, arg);
+            } finally {
+                this.localVariables.removeLast();
+            }
+        }
+
+        @Override
+        public R visit(ObjectCreationExpr n, A arg) {
+            HashSet<String> fields = newHashSet();
+            this.localVariables.addLast(fields);
+            try {
+                addFieldVariables(n.getAnonymousClassBody(), fields);
+                return super.visit(n, arg);
+            } finally {
+                this.localVariables.removeLast();
+            }
+        }
 
         @Override
         public R visit(ConstructorDeclaration n, A arg) {
@@ -501,6 +522,20 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             return contains(concat(this.localVariables), name);
         }
 
+        private void addFieldVariables(@Nonnull TypeDeclaration typeDeclaration, @Nonnull Set<String> variables) {
+            addFieldVariables(typeDeclaration.getMembers(), variables);
+        }
+
+        private void addFieldVariables(@Nullable Iterable<? extends BodyDeclaration> declarations, @Nonnull Set<String> variables) {
+            for (BodyDeclaration bodyDeclaration : emptyIfNull(declarations)) {
+                if (FieldDeclaration.class.isInstance(bodyDeclaration)) {
+                    for (VariableDeclarator variableDeclarator : FieldDeclaration.class.cast(bodyDeclaration).getVariables()) {
+                        variables.add(variableDeclarator.getId().getName());
+                    }
+                }
+            }
+        }
+
     }
 
     private static class Analysis {
@@ -509,7 +544,6 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
         private final Analysis parent;
         private final String typeName;
         private final List<ImportDeclaration> imports;
-        private final Set<String> fieldNames = newHashSet();
         private final Set<FieldAccessExpr> fieldReferences = newHashSet();
         private final Set<String> nameReferences = newHashSet(); // reduce duplicate calls to one
 
@@ -568,14 +602,6 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                     return name.toString();
                 }
             };
-        }
-
-        public void addFieldName(String name) {
-            this.fieldNames.add(name);
-        }
-
-        public boolean isFieldDefined(String referenceName) {
-            return this.fieldNames.contains(referenceName) || hasParent() && this.parent.isFieldDefined(referenceName);
         }
 
         public void addFieldReference(FieldAccessExpr fieldAccessExpression) {
