@@ -322,6 +322,14 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             }
 
             @Override
+            public void visit(CompilationUnit n, Void arg) {
+                // performance
+                for (final TypeDeclaration typeDeclaration : emptyIfNull(n.getTypes())) {
+                    typeDeclaration.accept(this, arg);
+                }
+            }
+
+            @Override
             public void visit(MarkerAnnotationExpr n, Void arg) {
                 // performance
             }
