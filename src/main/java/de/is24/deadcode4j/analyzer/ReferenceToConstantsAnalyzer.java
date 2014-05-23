@@ -177,7 +177,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                         || refersToPackageType(fieldAccessExpr)
                         || refersToAsteriskImport(fieldAccessExpr)
                         || refersToJavaLang(fieldAccessExpr))) {
-                    logger.debug("Could not resolve reference [{}] defined within [{}].", fieldAccessExpr.toString(), getTypeName(fieldAccessExpr));
+                    logger.debug("Could not resolve reference [{}] found within [{}].", fieldAccessExpr, getTypeName(fieldAccessExpr));
                 }
             }
 
@@ -298,7 +298,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                     return;
                 }
                 // TODO handle asterisk static imports
-                logger.debug("Could not resolve name reference [{}] defined within [{}].", reference, referenceName);
+                logger.debug("Could not resolve name reference [{}] found within [{}].", reference, referenceName);
             }
 
             @Nullable
