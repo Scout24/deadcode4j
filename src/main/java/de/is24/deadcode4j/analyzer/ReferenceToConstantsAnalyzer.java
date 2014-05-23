@@ -6,7 +6,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Sets;
 import de.is24.deadcode4j.AnalysisContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
-import de.is24.javaparser.FixedGenericVisitorAdapter;
+import de.is24.javaparser.FixedVoidVisitorAdapter;
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
 import japa.parser.ast.Node;
@@ -89,37 +89,17 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
     @Override
     protected void analyzeCompilationUnit(@Nonnull final AnalysisContext analysisContext,
                                           @Nonnull final CompilationUnit compilationUnit) {
-        compilationUnit.accept(new LocalVariableRecordingVisitor<Void, Void>() {
+        compilationUnit.accept(new LocalVariableRecordingVisitor<Void>() {
             private final ClassPoolAccessor classPoolAccessor = classPoolAccessorFor(analysisContext);
 
             @Override
-            public Void visit(MarkerAnnotationExpr n, Void arg) {
-                // performance
-                return null;
-            }
-
-            @Override
-            public Void visit(NormalAnnotationExpr n, Void arg) {
-                // performance
-                for (final MemberValuePair m : emptyIfNull(n.getPairs())) {
-                    m.accept(this, arg);
-                }
-                return null;
-            }
-
-            @Override
-            public Void visit(SingleMemberAnnotationExpr n, Void arg) {
-                // performance
-                return n.getMemberValue().accept(this, arg);
-            }
-
-            @Override
-            public Void visit(FieldAccessExpr n, Void analysis) {
+            public void visit(FieldAccessExpr n, Void analysis) {
                 if (isTargetOfAnAssignment(n) || isScopeOfAMethodCall(n) || isScopeOfThisExpression(n)) {
-                    return null;
+                    return;
                 }
                 if (!isRegularFieldAccessExpr(n)) {
-                    return super.visit(n, analysis);
+                    super.visit(n, analysis);
+                    return;
                 }
                 // FQ beats all
                 // then local variables & fields
@@ -130,20 +110,30 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                 if (FieldAccessExpr.class.isInstance(n.getScope())) {
                     FieldAccessExpr nestedFieldAccessExpr = FieldAccessExpr.class.cast(n.getScope());
                     if (isFullyQualifiedReference(nestedFieldAccessExpr)) {
-                        return null;
+                        return;
                     }
                     if (aLocalVariableExists(getFirstElement(nestedFieldAccessExpr))) {
-                        return null;
+                        return;
                     }
                     resolveFieldReference(nestedFieldAccessExpr);
                 } else if (NameExpr.class.isInstance(n.getScope())) {
                     String typeName = NameExpr.class.cast(n.getScope()).getName();
                     if (aLocalVariableExists(typeName))
-                        return null;
+                        return;
 
                     resolveFieldReference(n);
                 }
-                return null;
+            }
+
+            @Override
+            public void visit(NameExpr n, Void analysis) {
+                if (isTargetOfAnAssignment(n) || isScopeOfAMethodCall(n) || isScopeOfThisExpression(n)) {
+                    return;
+                }
+                if (aLocalVariableExists(n.getName())) {
+                    return;
+                }
+                resolveNameReference(n);
             }
 
             /**
@@ -175,18 +165,6 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
             private Optional<String> resolveClass(String qualifier) {
                 return this.classPoolAccessor.resolveClass(qualifier);
-            }
-
-            @Override
-            public Void visit(NameExpr n, Void analysis) {
-                if (isTargetOfAnAssignment(n) || isScopeOfAMethodCall(n) || isScopeOfThisExpression(n)) {
-                    return null;
-                }
-                if (aLocalVariableExists(n.getName())) {
-                    return null;
-                }
-                resolveNameReference(n);
-                return null;
             }
 
             private boolean isScopeOfThisExpression(Expression n) {
@@ -347,28 +325,47 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                         and(isAsterisk(), not(isStatic()))), toImportedType());
             }
 
+            @Override
+            public void visit(MarkerAnnotationExpr n, Void arg) {
+                // performance
+            }
+
+            @Override
+            public void visit(NormalAnnotationExpr n, Void arg) {
+                // performance
+                for (final MemberValuePair m : emptyIfNull(n.getPairs())) {
+                    m.accept(this, arg);
+                }
+            }
+
+            @Override
+            public void visit(SingleMemberAnnotationExpr n, Void arg) {
+                // performance
+                n.getMemberValue().accept(this, arg);
+            }
+
         }, null);
     }
 
-    private static class LocalVariableRecordingVisitor<R, A> extends FixedGenericVisitorAdapter<R, A> {
+    private static class LocalVariableRecordingVisitor<A> extends FixedVoidVisitorAdapter<A> {
 
         @Nonnull
         private final Deque<Set<String>> localVariables = newLinkedList();
 
         @Override
-        public R visit(ClassOrInterfaceDeclaration n, A arg) {
+        public void visit(ClassOrInterfaceDeclaration n, A arg) {
             HashSet<String> fields = newHashSet();
             this.localVariables.addLast(fields);
             try {
                 addFieldVariables(n, fields);
-                return super.visit(n, arg);
+                super.visit(n, arg);
             } finally {
                 this.localVariables.removeLast();
             }
         }
 
         @Override
-        public R visit(EnumDeclaration n, A arg) {
+        public void visit(EnumDeclaration n, A arg) {
             HashSet<String> fieldsAndEnums = newHashSet();
             this.localVariables.addLast(fieldsAndEnums);
             try {
@@ -376,26 +373,26 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                     fieldsAndEnums.add(enumConstantDeclaration.getName());
                 }
                 addFieldVariables(n, fieldsAndEnums);
-                return super.visit(n, arg);
+                super.visit(n, arg);
             } finally {
                 this.localVariables.removeLast();
             }
         }
 
         @Override
-        public R visit(ObjectCreationExpr n, A arg) {
+        public void visit(ObjectCreationExpr n, A arg) {
             HashSet<String> fields = newHashSet();
             this.localVariables.addLast(fields);
             try {
                 addFieldVariables(n.getAnonymousClassBody(), fields);
-                return super.visit(n, arg);
+                super.visit(n, arg);
             } finally {
                 this.localVariables.removeLast();
             }
         }
 
         @Override
-        public R visit(ConstructorDeclaration n, A arg) {
+        public void visit(ConstructorDeclaration n, A arg) {
             HashSet<String> blockVariables = newHashSet();
             this.localVariables.addLast(blockVariables);
             try {
@@ -412,11 +409,10 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             } finally {
                 this.localVariables.removeLast();
             }
-            return null;
         }
 
         @Override
-        public R visit(MethodDeclaration n, A arg) {
+        public void visit(MethodDeclaration n, A arg) {
             HashSet<String> blockVariables = newHashSet();
             this.localVariables.addLast(blockVariables);
             try {
@@ -433,11 +429,10 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             } finally {
                 this.localVariables.removeLast();
             }
-            return null;
         }
 
         @Override
-        public R visit(CatchClause n, A arg) {
+        public void visit(CatchClause n, A arg) {
             MultiTypeParameter multiTypeParameter = n.getExcept();
             HashSet<String> blockVariables = newHashSet();
             this.localVariables.addLast(blockVariables);
@@ -453,21 +448,20 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             } finally {
                 this.localVariables.removeLast();
             }
-            return null;
         }
 
         @Override
-        public R visit(BlockStmt n, A arg) {
+        public void visit(BlockStmt n, A arg) {
             this.localVariables.addLast(Sets.<String>newHashSet());
             try {
-                return super.visit(n, arg);
+                super.visit(n, arg);
             } finally {
                 this.localVariables.removeLast();
             }
         }
 
         @Override
-        public R visit(ForeachStmt n, A arg) {
+        public void visit(ForeachStmt n, A arg) {
             HashSet<String> blockVariables = newHashSet();
             this.localVariables.addLast(blockVariables);
             try {
@@ -479,21 +473,20 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             } finally {
                 this.localVariables.removeLast();
             }
-            return null;
         }
 
         @Override
-        public R visit(ForStmt n, A arg) {
+        public void visit(ForStmt n, A arg) {
             this.localVariables.addLast(Sets.<String>newHashSet());
             try {
-                return super.visit(n, arg);
+                super.visit(n, arg);
             } finally {
                 this.localVariables.removeLast();
             }
         }
 
         @Override
-        public R visit(VariableDeclarationExpr n, A arg) {
+        public void visit(VariableDeclarationExpr n, A arg) {
             for (AnnotationExpr annotationExpr : emptyIfNull(n.getAnnotations())) {
                 annotationExpr.accept(this, arg);
             }
@@ -506,7 +499,6 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                 }
                 blockVariables.add(variableDeclarator.getId().getName());
             }
-            return null;
         }
 
         protected final boolean aLocalVariableExists(@Nonnull String name) {
