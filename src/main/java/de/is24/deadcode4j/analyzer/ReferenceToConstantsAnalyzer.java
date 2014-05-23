@@ -276,18 +276,19 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             }
 
             private void resolveNameReference(NameExpr reference) {
-                final String referenceName = getTypeName(reference);
+                String referenceName = reference.getName();
                 if (aLocalVariableExists(referenceName)) {
                     return;
                 }
-                String staticImport = getStaticImport(reference.getName());
+                String typeName = getTypeName(reference);
+                String staticImport = getStaticImport(referenceName);
                 if (staticImport != null) {
                     // TODO this should probably be resolved
-                    analysisContext.addDependencies(referenceName, staticImport);
+                    analysisContext.addDependencies(typeName, staticImport);
                     return;
                 }
                 // TODO handle asterisk static imports
-                logger.debug("Could not resolve name reference [{}] found within [{}].", reference, referenceName);
+                logger.debug("Could not resolve name reference [{}] found within [{}].", reference, typeName);
             }
 
             @Nullable
