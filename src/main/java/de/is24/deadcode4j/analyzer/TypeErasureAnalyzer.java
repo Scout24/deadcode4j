@@ -129,51 +129,9 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
     }
 
     private void analyzeCompilationUnit(@Nonnull final AnalysisContext analysisContext, @Nonnull final CompilationUnit compilationUnit) {
-        compilationUnit.accept(new FixedVoidVisitorAdapter<Void>() {
+        compilationUnit.accept(new TypeParameterRecordingVisitor<Void>() {
             private final ClassPoolAccessor classPoolAccessor = classPoolAccessorFor(analysisContext);
-            private final Deque<Set<String>> definedTypeParameters = newLinkedList();
             private final Map<String, Set<String>> processedReferences = newHashMap();
-
-            @Override
-            public void visit(ClassOrInterfaceDeclaration n, Void arg) {
-                this.definedTypeParameters.addLast(getTypeParameterNames(n.getTypeParameters()));
-                try {
-                    super.visit(n, arg);
-                } finally {
-                    this.definedTypeParameters.removeLast();
-                }
-            }
-
-            @Override
-            public void visit(ConstructorDeclaration n, Void arg) {
-                this.definedTypeParameters.addLast(getTypeParameterNames(n.getTypeParameters()));
-                try {
-                    super.visit(n, arg);
-                } finally {
-                    this.definedTypeParameters.removeLast();
-                }
-            }
-
-            @Override
-            public void visit(MethodDeclaration n, Void arg) {
-                this.definedTypeParameters.addLast(getTypeParameterNames(n.getTypeParameters()));
-                try {
-                    super.visit(n, arg);
-                } finally {
-                    this.definedTypeParameters.removeLast();
-                }
-            }
-
-            @Nonnull
-            private Set<String> getTypeParameterNames(@Nullable List<TypeParameter> typeParameters) {
-                if (typeParameters == null)
-                    return emptySet();
-                Set<String> parameters = newHashSet();
-                for (TypeParameter typeParameter : typeParameters) {
-                    parameters.add(typeParameter.getName());
-                }
-                return parameters;
-            }
 
             @Override
             public void visit(ClassOrInterfaceType n, Void arg) {
@@ -222,18 +180,6 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                     return null;
                 }
                 return ClassOrInterfaceType.class.cast(nestedType);
-            }
-
-            private boolean typeParameterWithSameNameIsDefined(@Nonnull ClassOrInterfaceType nestedClassOrInterface) {
-                if (nestedClassOrInterface.getScope() != null) {
-                    return false;
-                }
-                for (Set<String> definedTypeNames : this.definedTypeParameters) {
-                    if (definedTypeNames.contains(nestedClassOrInterface.getName())) {
-                        return true;
-                    }
-                }
-                return false;
             }
 
             private boolean typeReferenceHasAlreadyBeenProcessed(ClassOrInterfaceType referencedType) {
@@ -422,6 +368,64 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
 
 
         }, null);
+    }
+
+    private static class TypeParameterRecordingVisitor<A> extends FixedVoidVisitorAdapter<A> {
+        private final Deque<Set<String>> definedTypeParameters = newLinkedList();
+
+        @Override
+        public void visit(ClassOrInterfaceDeclaration n, A arg) {
+            this.definedTypeParameters.addLast(getTypeParameterNames(n.getTypeParameters()));
+            try {
+                super.visit(n, arg);
+            } finally {
+                this.definedTypeParameters.removeLast();
+            }
+        }
+
+        @Override
+        public void visit(ConstructorDeclaration n, A arg) {
+            this.definedTypeParameters.addLast(getTypeParameterNames(n.getTypeParameters()));
+            try {
+                super.visit(n, arg);
+            } finally {
+                this.definedTypeParameters.removeLast();
+            }
+        }
+
+        @Override
+        public void visit(MethodDeclaration n, A arg) {
+            this.definedTypeParameters.addLast(getTypeParameterNames(n.getTypeParameters()));
+            try {
+                super.visit(n, arg);
+            } finally {
+                this.definedTypeParameters.removeLast();
+            }
+        }
+
+        protected boolean typeParameterWithSameNameIsDefined(@Nonnull ClassOrInterfaceType nestedClassOrInterface) {
+            if (nestedClassOrInterface.getScope() != null) {
+                return false;
+            }
+            for (Set<String> definedTypeNames : this.definedTypeParameters) {
+                if (definedTypeNames.contains(nestedClassOrInterface.getName())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Nonnull
+        private Set<String> getTypeParameterNames(@Nullable List<TypeParameter> typeParameters) {
+            if (typeParameters == null)
+                return emptySet();
+            Set<String> parameters = newHashSet();
+            for (TypeParameter typeParameter : typeParameters) {
+                parameters.add(typeParameter.getName());
+            }
+            return parameters;
+        }
+
     }
 
 }
