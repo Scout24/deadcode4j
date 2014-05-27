@@ -51,13 +51,23 @@ import static org.apache.commons.io.IOUtils.closeQuietly;
 public class TypeErasureAnalyzer extends AnalyzerAdapter {
 
     @Nonnull
-    private static ClassOrInterfaceType getFirstNode(@Nonnull ClassOrInterfaceType fieldAccessExpr) {
-        ClassOrInterfaceType scope = fieldAccessExpr.getScope();
-        return scope == null ? fieldAccessExpr : getFirstNode(scope);
+    private static ClassOrInterfaceType getFirstQualifier(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
+        ClassOrInterfaceType scope = classOrInterfaceType.getScope();
+        return scope == null ? classOrInterfaceType : getFirstQualifier(scope);
+    }
+
+    @Nullable
+    private static ClassOrInterfaceType getParentQualifier(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
+        Node parentNode = classOrInterfaceType.getParentNode();
+        if (!ClassOrInterfaceType.class.isInstance(parentNode)) {
+            return null;
+        }
+        ClassOrInterfaceType parent = ClassOrInterfaceType.class.cast(parentNode);
+        return parent.getScope() == classOrInterfaceType ? parent : null;
     }
 
     @Nonnull
-    private static String getQualifier(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
+    private static String getFullQualifier(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
         StringBuilder buffy = new StringBuilder(classOrInterfaceType.getName());
         while ((classOrInterfaceType = classOrInterfaceType.getScope()) != null) {
             buffy.insert(0, '.');
@@ -184,7 +194,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
 
             private boolean typeReferenceHasAlreadyBeenProcessed(ClassOrInterfaceType referencedType) {
                 Set<String> references = this.processedReferences.get(getTypeName(referencedType));
-                return references != null && references.contains(getQualifier(referencedType));
+                return references != null && references.contains(getFullQualifier(referencedType));
             }
 
             private void resolveTypeReference(ClassOrInterfaceType referencedType) {
@@ -199,7 +209,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 ).apply(referencedType);
                 assert resolvedClass != null;
                 String depender = getTypeName(referencedType);
-                String referencedTypeQualifier = getQualifier(referencedType);
+                String referencedTypeQualifier = getFullQualifier(referencedType);
                 if (resolvedClass.isPresent()) {
                     analysisContext.addDependencies(depender, resolvedClass.get());
                 } else {
@@ -217,7 +227,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                         if (typeReference.getScope() == null) {
                             return absent();
                         }
-                        return classPoolAccessor.resolveClass(getQualifier(typeReference));
+                        return classPoolAccessor.resolveClass(getFullQualifier(typeReference));
                     }
                 };
             }
@@ -228,42 +238,39 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                     @Nonnull
                     @Override
                     public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull ClassOrInterfaceType typeReference) {
-                        ClassOrInterfaceType firstQualifier = getFirstNode(typeReference);
+                        ClassOrInterfaceType firstQualifier = getFirstQualifier(typeReference);
                         Node loopNode = typeReference;
                         for (; ; ) {
+                            Optional<String> reference;
                             if (TypeDeclaration.class.isInstance(loopNode)) {
                                 TypeDeclaration typeDeclaration = TypeDeclaration.class.cast(loopNode);
-                                Optional<String> reference = resolveInnerReference(firstQualifier, asList(typeDeclaration));
+                                reference = resolveInnerReference(firstQualifier, asList(typeDeclaration));
                                 if (reference.isPresent()) {
                                     return reference;
                                 }
-                                reference = resolveInnerReference(firstQualifier, emptyIfNull(typeDeclaration.getMembers()));
+                                reference = resolveInnerReference(firstQualifier, typeDeclaration.getMembers());
                                 if (reference.isPresent()) {
                                     return reference;
                                 }
                             } else if (CompilationUnit.class.isInstance(loopNode)) {
-                                Optional<String> reference = resolveInnerReference(firstQualifier, emptyIfNull(CompilationUnit.class.cast(loopNode).getTypes()));
+                                reference = resolveInnerReference(firstQualifier, CompilationUnit.class.cast(loopNode).getTypes());
                                 if (reference.isPresent())
                                     return reference;
                             }
                             loopNode = loopNode.getParentNode();
                             if (loopNode == null) {
-                                break;
+                                return absent();
                             }
                         }
-
-                        return absent();
                     }
                 };
             }
 
-            private Optional<String> resolveInnerReference(@Nonnull ClassOrInterfaceType firstQualifier,
-                                                           @Nonnull Iterable<? extends BodyDeclaration> bodyDeclarations) {
-                for (BodyDeclaration bodyDeclaration : bodyDeclarations) {
-                    if (!TypeDeclaration.class.isInstance(bodyDeclaration)) {
-                        continue;
-                    }
-                    final TypeDeclaration typeDeclaration = TypeDeclaration.class.cast(bodyDeclaration);
+            @Nonnull
+            private Optional<String> resolveInnerReference(
+                    @Nonnull ClassOrInterfaceType firstQualifier,
+                    @Nullable Iterable<? extends BodyDeclaration> bodyDeclarations) {
+                for (TypeDeclaration typeDeclaration : filter(emptyIfNull(bodyDeclarations), TypeDeclaration.class)) {
                     if (firstQualifier.getName().equals(typeDeclaration.getName())) {
                         return of(resolveReferencedType(firstQualifier, typeDeclaration));
                     }
@@ -272,24 +279,18 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
             }
 
             @Nonnull
-            private String resolveReferencedType(@Nonnull ClassOrInterfaceType firstQualifier,
-                                                 @Nonnull TypeDeclaration typeDeclaration) {
-                if (ClassOrInterfaceType.class.isInstance(firstQualifier.getParentNode())) {
-                    ClassOrInterfaceType nextQualifier = ClassOrInterfaceType.class.cast(firstQualifier.getParentNode());
-                    if (nextQualifier.getScope() == firstQualifier) {
-                        for (BodyDeclaration bodyDeclaration : emptyIfNull(typeDeclaration.getMembers())) {
-                            if (!TypeDeclaration.class.isInstance(bodyDeclaration)) {
-                                continue;
-                            }
-                            TypeDeclaration nextTypeDeclaration = TypeDeclaration.class.cast(bodyDeclaration);
-                            if (nextQualifier.getName().equals(nextTypeDeclaration.getName())) {
-                                return resolveReferencedType(nextQualifier, nextTypeDeclaration);
-                            }
+            private String resolveReferencedType(@Nonnull ClassOrInterfaceType qualifier,
+                                                 @Nonnull TypeDeclaration type) {
+                ClassOrInterfaceType parentQualifier = getParentQualifier(qualifier);
+                if (parentQualifier != null) {
+                    for (TypeDeclaration innerType : filter(emptyIfNull(type.getMembers()), TypeDeclaration.class)) {
+                        if (parentQualifier.getName().equals(innerType.getName())) {
+                            return resolveReferencedType(parentQualifier, innerType);
                         }
                     }
                 }
 
-                return getTypeName(typeDeclaration);
+                return getTypeName(type);
             }
 
             @Nonnull
@@ -301,8 +302,8 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                         for (ImportDeclaration importDeclaration :
                                 filter(emptyIfNull(compilationUnit.getImports()), not(isAsterisk()))) {
                             String importedClass = importDeclaration.getName().getName();
-                            String typeReferenceQualifier = getQualifier(typeReference);
-                            if (importedClass.equals(typeReferenceQualifier)
+                            String typeReferenceQualifier = getFullQualifier(typeReference);
+                            if (typeReferenceQualifier.equals(importedClass)
                                     || typeReferenceQualifier.startsWith(importedClass + ".")) {
                                 StringBuilder buffy = prepend(importDeclaration.getName(), new StringBuilder());
                                 buffy.append(typeReferenceQualifier.substring(importedClass.length()));
@@ -320,7 +321,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                     @Nonnull
                     @Override
                     public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull ClassOrInterfaceType typeReference) {
-                        StringBuilder buffy = new StringBuilder(getQualifier(typeReference));
+                        StringBuilder buffy = new StringBuilder(getFullQualifier(typeReference));
                         prependPackageName(buffy);
                         return classPoolAccessor.resolveClass(buffy);
                     }
@@ -335,7 +336,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                     public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull ClassOrInterfaceType typeReference) {
                         for (ImportDeclaration importDeclaration :
                                 filter(emptyIfNull(compilationUnit.getImports()), and(isAsterisk(), not(isStatic())))) {
-                            StringBuilder buffy = new StringBuilder(getQualifier(typeReference));
+                            StringBuilder buffy = new StringBuilder(getFullQualifier(typeReference));
                             prepend(importDeclaration.getName(), buffy);
                             Optional<String> resolvedClass = classPoolAccessor.resolveClass(buffy);
                             if (resolvedClass.isPresent()) {
@@ -353,17 +354,16 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                     @Nonnull
                     @Override
                     public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull ClassOrInterfaceType typeReference) {
-                        return classPoolAccessor.resolveClass("java.lang." + getQualifier(typeReference));
+                        return classPoolAccessor.resolveClass("java.lang." + getFullQualifier(typeReference));
                     }
                 };
             }
 
             @Nonnull
             private StringBuilder prependPackageName(@Nonnull StringBuilder buffy) {
-                if (compilationUnit.getPackage() == null) {
-                    return buffy;
-                }
-                return prepend(compilationUnit.getPackage().getName(), buffy);
+                return compilationUnit.getPackage() == null
+                        ? buffy
+                        : prepend(compilationUnit.getPackage().getName(), buffy);
             }
 
 
