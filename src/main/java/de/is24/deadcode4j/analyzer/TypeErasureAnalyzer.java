@@ -20,7 +20,10 @@ import japa.parser.ast.visitor.VoidVisitorAdapter;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.*;
-import java.util.*;
+import java.util.Deque;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
@@ -34,8 +37,8 @@ import static de.is24.deadcode4j.Utils.*;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
 import static de.is24.javaparser.ImportDeclarations.isAsterisk;
 import static de.is24.javaparser.ImportDeclarations.isStatic;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
-import static java.util.Map.Entry;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 
 /**
@@ -46,6 +49,61 @@ import static org.apache.commons.io.IOUtils.closeQuietly;
  */
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class TypeErasureAnalyzer extends AnalyzerAdapter {
+
+    @Nonnull
+    private static ClassOrInterfaceType getFirstNode(@Nonnull ClassOrInterfaceType fieldAccessExpr) {
+        ClassOrInterfaceType scope = fieldAccessExpr.getScope();
+        return scope == null ? fieldAccessExpr : getFirstNode(scope);
+    }
+
+    @Nonnull
+    private static String getQualifier(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
+        StringBuilder buffy = new StringBuilder(classOrInterfaceType.getName());
+        while ((classOrInterfaceType = classOrInterfaceType.getScope()) != null) {
+            buffy.insert(0, '.');
+            buffy.insert(0, classOrInterfaceType.getName());
+        }
+        return buffy.toString();
+    }
+
+    @Nonnull
+    private static String getTypeName(@Nonnull Node node) {
+        StringBuilder buffy = new StringBuilder();
+        for (; ; ) {
+            if (TypeDeclaration.class.isInstance(node)) {
+                if (buffy.length() > 0) {
+                    buffy.insert(0, '$');
+                }
+                buffy.insert(0, TypeDeclaration.class.cast(node).getName());
+            } else if (CompilationUnit.class.isInstance(node)) {
+                final CompilationUnit compilationUnit = CompilationUnit.class.cast(node);
+                if (compilationUnit.getPackage() != null) {
+                    prepend(compilationUnit.getPackage().getName(), buffy);
+                }
+            }
+            node = node.getParentNode();
+            //noinspection ConstantConditions
+            if (node == null) {
+                break;
+            }
+        }
+        return buffy.toString();
+    }
+
+    @Nonnull
+    private static StringBuilder prepend(@Nonnull NameExpr nameExpr, @Nonnull StringBuilder buffy) {
+        for (; ; ) {
+            if (buffy.length() > 0) {
+                buffy.insert(0, '.');
+            }
+            buffy.insert(0, nameExpr.getName());
+            if (!QualifiedNameExpr.class.isInstance(nameExpr)) {
+                break;
+            }
+            nameExpr = QualifiedNameExpr.class.cast(nameExpr).getQualifier();
+        }
+        return buffy;
+    }
 
     @Override
     @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "The MavenProject does not provide the proper encoding")
@@ -71,16 +129,10 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
     }
 
     private void analyzeCompilationUnit(@Nonnull final AnalysisContext analysisContext, @Nonnull final CompilationUnit compilationUnit) {
-        compilationUnit.accept(new TypeRecordingVisitor() {
+        compilationUnit.accept(new VoidVisitorAdapter<Void>() {
             private final ClassPoolAccessor classPoolAccessor = classPoolAccessorFor(analysisContext);
             private final Deque<Set<String>> definedTypeParameters = newLinkedList();
-            private final Map<String, Set<String>> typeReferences = newHashMap();
-
-            @Override
-            public void visit(CompilationUnit n, Void arg) {
-                super.visit(n, arg);
-                resolveTypeReferences();
-            }
+            private final Map<String, Set<String>> processedReferences = newHashMap();
 
             @Override
             public void visit(ClassOrInterfaceDeclaration n, Void arg) {
@@ -112,6 +164,17 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 }
             }
 
+            @Nonnull
+            private Set<String> getTypeParameterNames(@Nullable List<TypeParameter> typeParameters) {
+                if (typeParameters == null)
+                    return emptySet();
+                Set<String> parameters = newHashSet();
+                for (TypeParameter typeParameter : typeParameters) {
+                    parameters.add(typeParameter.getName());
+                }
+                return parameters;
+            }
+
             @Override
             public void visit(ClassOrInterfaceType n, Void arg) {
                 for (Type type : emptyIfNull(n.getTypeArgs())) {
@@ -122,20 +185,12 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                     if (typeParameterWithSameNameIsDefined(referencedType)) {
                         continue;
                     }
-                    getOrAddMappedSet(this.typeReferences, getQualifier(referencedType)).add(getTypeName(n));
+                    if (typeReferenceHasAlreadyBeenProcessed(referencedType)) {
+                        continue;
+                    }
+                    resolveTypeReference(referencedType);
                     this.visit(referencedType, arg); // resolve nested type arguments
                 }
-            }
-
-            @Nonnull
-            private Set<String> getTypeParameterNames(@Nullable List<TypeParameter> typeParameters) {
-                if (typeParameters == null)
-                    return emptySet();
-                Set<String> parameters = newHashSet();
-                for (TypeParameter typeParameter : typeParameters) {
-                    parameters.add(typeParameter.getName());
-                }
-                return parameters;
             }
 
             @Nullable
@@ -181,97 +236,130 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 return false;
             }
 
+            private boolean typeReferenceHasAlreadyBeenProcessed(ClassOrInterfaceType referencedType) {
+                Set<String> references = this.processedReferences.get(getTypeName(referencedType));
+                return references != null && references.contains(getQualifier(referencedType));
+            }
+
+            private void resolveTypeReference(ClassOrInterfaceType referencedType) {
+                @SuppressWarnings("unchecked")
+                Optional<String> resolvedClass = or(
+                        resolveFullyQualifiedClass(),
+                        resolveInnerType(),
+                        resolveImport(),
+                        resolvePackageType(),
+                        resolveAsteriskImports(),
+                        resolveJavaLangType()
+                ).apply(referencedType);
+                assert resolvedClass != null;
+                String depender = getTypeName(referencedType);
+                String referencedTypeQualifier = getQualifier(referencedType);
+                if (resolvedClass.isPresent()) {
+                    analysisContext.addDependencies(depender, resolvedClass.get());
+                } else {
+                    logger.debug("Could not resolve Type Argument [{}] used by [{}].", referencedTypeQualifier, depender);
+                }
+                getOrAddMappedSet(this.processedReferences, depender).add(referencedTypeQualifier);
+            }
+
             @Nonnull
-            private String getTypeName(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
-                StringBuilder buffy = new StringBuilder();
-                Node node = classOrInterfaceType;
-                while ((node = node.getParentNode()) != null) {
-                    if (!TypeDeclaration.class.isInstance(node)) {
+            private Function<ClassOrInterfaceType, Optional<String>> resolveFullyQualifiedClass() {
+                return new Function<ClassOrInterfaceType, Optional<String>>() {
+                    @Nonnull
+                    @Override
+                    public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull ClassOrInterfaceType typeReference) {
+                        if (typeReference.getScope() == null) {
+                            return absent();
+                        }
+                        return classPoolAccessor.resolveClass(getQualifier(typeReference));
+                    }
+                };
+            }
+
+            @Nonnull
+            private Function<ClassOrInterfaceType, Optional<String>> resolveInnerType() {
+                return new Function<ClassOrInterfaceType, Optional<String>>() {
+                    @Nonnull
+                    @Override
+                    public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull ClassOrInterfaceType typeReference) {
+                        ClassOrInterfaceType firstQualifier = getFirstNode(typeReference);
+                        Node loopNode = typeReference;
+                        for (; ; ) {
+                            if (TypeDeclaration.class.isInstance(loopNode)) {
+                                TypeDeclaration typeDeclaration = TypeDeclaration.class.cast(loopNode);
+                                Optional<String> reference = resolveInnerReference(firstQualifier, asList(typeDeclaration));
+                                if (reference.isPresent()) {
+                                    return reference;
+                                }
+                                reference = resolveInnerReference(firstQualifier, emptyIfNull(typeDeclaration.getMembers()));
+                                if (reference.isPresent()) {
+                                    return reference;
+                                }
+                            } else if (CompilationUnit.class.isInstance(loopNode)) {
+                                Optional<String> reference = resolveInnerReference(firstQualifier, emptyIfNull(CompilationUnit.class.cast(loopNode).getTypes()));
+                                if (reference.isPresent())
+                                    return reference;
+                            }
+                            loopNode = loopNode.getParentNode();
+                            if (loopNode == null) {
+                                break;
+                            }
+                        }
+
+                        return absent();
+                    }
+                };
+            }
+
+            private Optional<String> resolveInnerReference(@Nonnull ClassOrInterfaceType firstQualifier,
+                                                           @Nonnull Iterable<? extends BodyDeclaration> bodyDeclarations) {
+                for (BodyDeclaration bodyDeclaration : bodyDeclarations) {
+                    if (!TypeDeclaration.class.isInstance(bodyDeclaration)) {
                         continue;
                     }
-                    if (buffy.length() > 0)
-                        buffy.insert(0, '$');
-                    buffy.insert(0, TypeDeclaration.class.cast(node).getName());
-                }
-                return prependPackageName(buffy).toString();
-            }
-
-            @Nonnull
-            private String getQualifier(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
-                StringBuilder buffy = new StringBuilder(classOrInterfaceType.getName());
-                while ((classOrInterfaceType = classOrInterfaceType.getScope()) != null) {
-                    buffy.insert(0, '.');
-                    buffy.insert(0, classOrInterfaceType.getName());
-                }
-                return buffy.toString();
-            }
-
-            private void resolveTypeReferences() {
-                for (Entry<String, Set<String>> typeReference : this.typeReferences.entrySet()) {
-                    String referencedType = typeReference.getKey();
-                    @SuppressWarnings("unchecked")
-                    Optional<String> resolvedClass = or(
-                            resolveFullyQualifiedClass(),
-                            resolveInnerType(),
-                            resolveImport(),
-                            resolvePackageType(),
-                            resolveAsteriskImports(),
-                            resolveJavaLangType()
-                    ).apply(referencedType);
-                    assert resolvedClass != null;
-                    if (resolvedClass.isPresent()) {
-                        for (String depender : typeReference.getValue()) {
-                            analysisContext.addDependencies(depender, resolvedClass.get());
-                        }
-                    } else {
-                        logger.debug("Could not resolve Type Argument [{}] used by [{}].", referencedType, typeReference.getValue());
+                    final TypeDeclaration typeDeclaration = TypeDeclaration.class.cast(bodyDeclaration);
+                    if (firstQualifier.getName().equals(typeDeclaration.getName())) {
+                        return of(resolveReferencedType(firstQualifier, typeDeclaration));
                     }
                 }
+                return absent();
             }
 
             @Nonnull
-            private Function<String, Optional<String>> resolveFullyQualifiedClass() {
-                return new Function<String, Optional<String>>() {
-                    @Nonnull
-                    @Override
-                    public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull String typeReference) {
-                        if (typeReference.indexOf('.') < 0) {
-                            return absent();
+            private String resolveReferencedType(@Nonnull ClassOrInterfaceType firstQualifier,
+                                                 @Nonnull TypeDeclaration typeDeclaration) {
+                if (ClassOrInterfaceType.class.isInstance(firstQualifier.getParentNode())) {
+                    ClassOrInterfaceType nextQualifier = ClassOrInterfaceType.class.cast(firstQualifier.getParentNode());
+                    if (nextQualifier.getScope() == firstQualifier) {
+                        for (BodyDeclaration bodyDeclaration : emptyIfNull(typeDeclaration.getMembers())) {
+                            if (!TypeDeclaration.class.isInstance(bodyDeclaration)) {
+                                continue;
+                            }
+                            TypeDeclaration nextTypeDeclaration = TypeDeclaration.class.cast(bodyDeclaration);
+                            if (nextQualifier.getName().equals(nextTypeDeclaration.getName())) {
+                                return resolveReferencedType(nextQualifier, nextTypeDeclaration);
+                            }
                         }
-                        return classPoolAccessor.resolveClass(typeReference);
                     }
-                };
+                }
+
+                return getTypeName(typeDeclaration);
             }
 
             @Nonnull
-            private Function<String, Optional<String>> resolveInnerType() {
-                return new Function<String, Optional<String>>() {
+            private Function<ClassOrInterfaceType, Optional<String>> resolveImport() {
+                return new Function<ClassOrInterfaceType, Optional<String>>() {
                     @Nonnull
                     @Override
-                    public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull String typeReference) {
-                        String potentialInnerType = getOuterMostType() + "$" + typeReference.replace('.', '$');
-                        if (!getTypeNames().contains(potentialInnerType)) {
-                            return absent();
-                        }
-                        StringBuilder buffy = new StringBuilder(potentialInnerType);
-                        prependPackageName(buffy);
-                        return of(buffy.toString());
-                    }
-                };
-            }
-
-            @Nonnull
-            private Function<String, Optional<String>> resolveImport() {
-                return new Function<String, Optional<String>>() {
-                    @Nonnull
-                    @Override
-                    public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull String typeReference) {
+                    public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull ClassOrInterfaceType typeReference) {
                         for (ImportDeclaration importDeclaration :
                                 filter(emptyIfNull(compilationUnit.getImports()), not(isAsterisk()))) {
                             String importedClass = importDeclaration.getName().getName();
-                            if (importedClass.equals(typeReference) || typeReference.startsWith(importedClass + ".")) {
+                            String typeReferenceQualifier = getQualifier(typeReference);
+                            if (importedClass.equals(typeReferenceQualifier)
+                                    || typeReferenceQualifier.startsWith(importedClass + ".")) {
                                 StringBuilder buffy = prepend(importDeclaration.getName(), new StringBuilder());
-                                buffy.append(typeReference.substring(importedClass.length()));
+                                buffy.append(typeReferenceQualifier.substring(importedClass.length()));
                                 return classPoolAccessor.resolveClass(buffy);
                             }
                         }
@@ -281,12 +369,12 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
             }
 
             @Nonnull
-            private Function<String, Optional<String>> resolvePackageType() {
-                return new Function<String, Optional<String>>() {
+            private Function<ClassOrInterfaceType, Optional<String>> resolvePackageType() {
+                return new Function<ClassOrInterfaceType, Optional<String>>() {
                     @Nonnull
                     @Override
-                    public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull String typeReference) {
-                        StringBuilder buffy = new StringBuilder(typeReference);
+                    public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull ClassOrInterfaceType typeReference) {
+                        StringBuilder buffy = new StringBuilder(getQualifier(typeReference));
                         prependPackageName(buffy);
                         return classPoolAccessor.resolveClass(buffy);
                     }
@@ -294,14 +382,14 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
             }
 
             @Nonnull
-            private Function<String, Optional<String>> resolveAsteriskImports() {
-                return new Function<String, Optional<String>>() {
+            private Function<ClassOrInterfaceType, Optional<String>> resolveAsteriskImports() {
+                return new Function<ClassOrInterfaceType, Optional<String>>() {
                     @Nonnull
                     @Override
-                    public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull String typeReference) {
+                    public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull ClassOrInterfaceType typeReference) {
                         for (ImportDeclaration importDeclaration :
                                 filter(emptyIfNull(compilationUnit.getImports()), and(isAsterisk(), not(isStatic())))) {
-                            StringBuilder buffy = new StringBuilder(typeReference);
+                            StringBuilder buffy = new StringBuilder(getQualifier(typeReference));
                             prepend(importDeclaration.getName(), buffy);
                             Optional<String> resolvedClass = classPoolAccessor.resolveClass(buffy);
                             if (resolvedClass.isPresent()) {
@@ -314,12 +402,12 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
             }
 
             @Nonnull
-            private Function<String, Optional<String>> resolveJavaLangType() {
-                return new Function<String, Optional<String>>() {
+            private Function<ClassOrInterfaceType, Optional<String>> resolveJavaLangType() {
+                return new Function<ClassOrInterfaceType, Optional<String>>() {
                     @Nonnull
                     @Override
-                    public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull String typeReference) {
-                        return classPoolAccessor.resolveClass("java.lang." + typeReference);
+                    public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull ClassOrInterfaceType typeReference) {
+                        return classPoolAccessor.resolveClass("java.lang." + getQualifier(typeReference));
                     }
                 };
             }
@@ -332,87 +420,8 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 return prepend(compilationUnit.getPackage().getName(), buffy);
             }
 
-            private StringBuilder prepend(NameExpr nameExpr, StringBuilder buffy) {
-                for (; ; ) {
-                    if (buffy.length() > 0) {
-                        buffy.insert(0, '.');
-                    }
-                    buffy.insert(0, nameExpr.getName());
-                    if (!QualifiedNameExpr.class.isInstance(nameExpr)) {
-                        break;
-                    }
-                    nameExpr = QualifiedNameExpr.class.cast(nameExpr).getQualifier();
-                }
-                return buffy;
-            }
-
 
         }, null);
-    }
-
-    private static class TypeRecordingVisitor extends VoidVisitorAdapter<Void> {
-
-        private final LinkedList<String> typeHierarchy = newLinkedList();
-        private final Set<String> typeNames = newHashSet();
-        private String outerMostType;
-
-        @Override
-        public void visit(AnnotationDeclaration n, Void arg) {
-            visitTypeDefinition(n);
-            try {
-                super.visit(n, arg);
-            } finally {
-                unVisitTypeDefinition();
-            }
-        }
-
-        @Override
-        public void visit(ClassOrInterfaceDeclaration n, Void arg) {
-            visitTypeDefinition(n);
-            try {
-                super.visit(n, arg);
-            } finally {
-                unVisitTypeDefinition();
-            }
-        }
-
-        @Override
-        public void visit(EnumDeclaration n, Void arg) {
-            visitTypeDefinition(n);
-            try {
-                super.visit(n, arg);
-            } finally {
-                unVisitTypeDefinition();
-            }
-        }
-
-        private void visitTypeDefinition(TypeDeclaration typeDeclaration) {
-            String typeName = typeDeclaration.getName();
-            if (this.outerMostType == null) {
-                this.outerMostType = typeName;
-            }
-            this.typeHierarchy.add(typeName);
-            StringBuilder buffy = new StringBuilder();
-            for (String type : typeHierarchy) {
-                if (buffy.length() > 0) {
-                    buffy.append('$');
-                }
-                buffy.append(type);
-            }
-            this.typeNames.add(buffy.toString());
-        }
-
-        private void unVisitTypeDefinition() {
-            this.typeHierarchy.removeLast();
-        }
-
-        public String getOuterMostType() {
-            return this.outerMostType;
-        }
-
-        public Set<String> getTypeNames() {
-            return typeNames;
-        }
     }
 
 }
