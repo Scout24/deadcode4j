@@ -4,6 +4,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import de.is24.deadcode4j.AnalysisContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
+import de.is24.javaparser.FixedVoidVisitorAdapter;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import japa.parser.JavaParser;
 import japa.parser.TokenMgrError;
@@ -15,7 +16,6 @@ import japa.parser.ast.body.*;
 import japa.parser.ast.expr.NameExpr;
 import japa.parser.ast.expr.QualifiedNameExpr;
 import japa.parser.ast.type.*;
-import japa.parser.ast.visitor.VoidVisitorAdapter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -129,7 +129,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
     }
 
     private void analyzeCompilationUnit(@Nonnull final AnalysisContext analysisContext, @Nonnull final CompilationUnit compilationUnit) {
-        compilationUnit.accept(new VoidVisitorAdapter<Void>() {
+        compilationUnit.accept(new FixedVoidVisitorAdapter<Void>() {
             private final ClassPoolAccessor classPoolAccessor = classPoolAccessorFor(analysisContext);
             private final Deque<Set<String>> definedTypeParameters = newLinkedList();
             private final Map<String, Set<String>> processedReferences = newHashMap();
