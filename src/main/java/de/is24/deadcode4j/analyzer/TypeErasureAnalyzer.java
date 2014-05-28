@@ -16,6 +16,8 @@ import japa.parser.ast.body.*;
 import japa.parser.ast.expr.NameExpr;
 import japa.parser.ast.expr.QualifiedNameExpr;
 import japa.parser.ast.type.*;
+import javassist.CtClass;
+import javassist.NotFoundException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -56,16 +58,6 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
         return scope == null ? classOrInterfaceType : getFirstQualifier(scope);
     }
 
-    @Nullable
-    private static ClassOrInterfaceType getParentQualifier(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
-        Node parentNode = classOrInterfaceType.getParentNode();
-        if (!ClassOrInterfaceType.class.isInstance(parentNode)) {
-            return null;
-        }
-        ClassOrInterfaceType parent = ClassOrInterfaceType.class.cast(parentNode);
-        return parent.getScope() == classOrInterfaceType ? parent : null;
-    }
-
     @Nonnull
     private static String getFullQualifier(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
         StringBuilder buffy = new StringBuilder(classOrInterfaceType.getName());
@@ -74,6 +66,22 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
             buffy.insert(0, classOrInterfaceType.getName());
         }
         return buffy.toString();
+    }
+
+    @Nonnull
+    private static ClassOrInterfaceType getLastQualifier(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
+        ClassOrInterfaceType parentQualifier = getParentQualifier(classOrInterfaceType);
+        return parentQualifier == null ? classOrInterfaceType : getLastQualifier(parentQualifier);
+    }
+
+    @Nullable
+    private static ClassOrInterfaceType getParentQualifier(@Nonnull ClassOrInterfaceType classOrInterfaceType) {
+        Node parentNode = classOrInterfaceType.getParentNode();
+        if (!ClassOrInterfaceType.class.isInstance(parentNode)) {
+            return null;
+        }
+        ClassOrInterfaceType parent = ClassOrInterfaceType.class.cast(parentNode);
+        return parent.getScope() == classOrInterfaceType ? parent : null;
     }
 
     @Nonnull
@@ -205,6 +213,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 Optional<String> resolvedClass = or(
                         resolveFullyQualifiedClass(),
                         resolveInnerType(),
+                        resolveInheritedType(),
                         resolveImport(),
                         resolvePackageType(),
                         resolveAsteriskImports(),
@@ -294,6 +303,63 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 }
 
                 return getTypeName(type);
+            }
+
+            @Nonnull
+            private Function<ClassOrInterfaceType, Optional<String>> resolveInheritedType() {
+                return new Function<ClassOrInterfaceType, Optional<String>>() {
+                    @Nonnull
+                    @Override
+                    public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull ClassOrInterfaceType typeReference) {
+                        String typeName = getTypeName(typeReference);
+                        CtClass clazz = classPoolAccessor.getClassPool().getOrNull(typeName);
+                        if (clazz == null) {
+                            logger.warn("Failed to load [{}]; TypeErasureAnalyzer may not find all references!", typeName);
+                            return absent();
+                        }
+                        try {
+                            return resolveInheritedType(clazz, getFirstQualifier(typeReference));
+                        } catch (NotFoundException e) {
+                            logger.warn("The class path is not correctly set up; could not load [{}]! Skipping type erasure check for {}.", e.getMessage(), typeName);
+                            return absent();
+                        }
+                    }
+                };
+            }
+
+            @Nonnull
+            private Optional<String> resolveInheritedType(
+                    @Nonnull CtClass clazz,
+                    @Nonnull ClassOrInterfaceType firstQualifier) throws NotFoundException {
+                Optional<String> result = checkNestedClasses(clazz.getSuperclass(), firstQualifier);
+                if (result.isPresent()) {
+                    return result;
+                }
+                for (CtClass interfaceClazz : clazz.getInterfaces()) {
+                    result = checkNestedClasses(interfaceClazz, firstQualifier);
+                    if (result.isPresent()) {
+                        return result;
+                    }
+                }
+                return absent();
+            }
+
+            @Nonnull
+            private Optional<String> checkNestedClasses(
+                    @Nullable CtClass clazz,
+                    @Nonnull ClassOrInterfaceType firstQualifier) throws NotFoundException {
+                if (clazz == null || "java.lang.Object".equals(clazz.getName())) {
+                    return absent();
+                }
+                for (CtClass nestedClass : clazz.getNestedClasses()) {
+                    String simpleName = nestedClass.getSimpleName();
+                    simpleName = simpleName.substring(simpleName.lastIndexOf('$') + 1);
+                    if (firstQualifier.getName().equals(simpleName)) {
+                        return of(nestedClass.getName().substring(0, nestedClass.getName().length() - simpleName.length())
+                                + getFullQualifier(getLastQualifier(firstQualifier)));
+                    }
+                }
+                return resolveInheritedType(clazz, firstQualifier);
             }
 
             @Nonnull

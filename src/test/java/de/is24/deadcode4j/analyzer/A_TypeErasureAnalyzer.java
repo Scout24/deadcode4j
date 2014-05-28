@@ -50,4 +50,12 @@ public final class A_TypeErasureAnalyzer extends AnAnalyzer<TypeErasureAnalyzer>
                 "java.util.Collection");
     }
 
+    @Test
+    public void recognizesInheritedType() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/typeerasure/ClassWithInheritedType.java");
+
+        assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.ClassWithInheritedType",
+                "de.is24.deadcode4j.analyzer.typeerasure.TypedArrayList$InnerClass");
+    }
+
 }
