@@ -81,10 +81,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
         StringBuilder buffy = new StringBuilder();
         for (; ; ) {
             if (TypeDeclaration.class.isInstance(node)) {
-                if (buffy.length() > 0) {
-                    buffy.insert(0, '$');
-                }
-                buffy.insert(0, TypeDeclaration.class.cast(node).getName());
+                prependSeparatorIfNecessary('$', buffy).insert(0, TypeDeclaration.class.cast(node).getName());
             } else if (CompilationUnit.class.isInstance(node)) {
                 final CompilationUnit compilationUnit = CompilationUnit.class.cast(node);
                 if (compilationUnit.getPackage() != null) {
@@ -94,23 +91,26 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
             node = node.getParentNode();
             //noinspection ConstantConditions
             if (node == null) {
-                break;
+                return buffy.toString();
             }
         }
-        return buffy.toString();
     }
 
     @Nonnull
     private static StringBuilder prepend(@Nonnull NameExpr nameExpr, @Nonnull StringBuilder buffy) {
         for (; ; ) {
-            if (buffy.length() > 0) {
-                buffy.insert(0, '.');
-            }
-            buffy.insert(0, nameExpr.getName());
+            prependSeparatorIfNecessary('.', buffy).insert(0, nameExpr.getName());
             if (!QualifiedNameExpr.class.isInstance(nameExpr)) {
-                break;
+                return buffy;
             }
             nameExpr = QualifiedNameExpr.class.cast(nameExpr).getQualifier();
+        }
+    }
+
+    @Nonnull
+    private static StringBuilder prependSeparatorIfNecessary(char character, @Nonnull StringBuilder buffy) {
+        if (buffy.length() > 0) {
+            buffy.insert(0, character);
         }
         return buffy;
     }
