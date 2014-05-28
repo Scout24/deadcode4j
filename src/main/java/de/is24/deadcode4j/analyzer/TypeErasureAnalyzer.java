@@ -83,6 +83,9 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
             if (TypeDeclaration.class.isInstance(node)) {
                 prependSeparatorIfNecessary('$', buffy).insert(0, TypeDeclaration.class.cast(node).getName());
             } else if (CompilationUnit.class.isInstance(node)) {
+                if (buffy.length() == 0) {
+                    buffy.append("package-info");
+                }
                 final CompilationUnit compilationUnit = CompilationUnit.class.cast(node);
                 if (compilationUnit.getPackage() != null) {
                     prepend(compilationUnit.getPackage().getName(), buffy);
