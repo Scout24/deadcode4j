@@ -38,6 +38,10 @@ public class LoggerForMavenLog extends MarkerIgnoringBase {
         doDebug(message, null);
     }
 
+    private void doDebug(FormattingTuple tuple) {
+        doDebug(tuple.getMessage(), tuple.getThrowable());
+    }
+
     @Override
     public boolean isTraceEnabled() {
         return log.isDebugEnabled();
@@ -53,23 +57,21 @@ public class LoggerForMavenLog extends MarkerIgnoringBase {
     @Override
     public void trace(String format, Object arg) {
         if (log.isDebugEnabled()) {
-            doDebug(format(format, arg).getMessage());
+            doDebug(format(format, arg));
         }
     }
 
     @Override
     public void trace(String format, Object arg1, Object arg2) {
         if (log.isDebugEnabled()) {
-            FormattingTuple tuple = format(format, arg1, arg2);
-            doDebug(tuple.getMessage(), tuple.getThrowable());
+            doDebug(format(format, arg1, arg2));
         }
     }
 
     @Override
     public void trace(String format, Object... arguments) {
         if (log.isDebugEnabled()) {
-            FormattingTuple tuple = arrayFormat(format, arguments);
-            doDebug(tuple.getMessage(), tuple.getThrowable());
+            doDebug(arrayFormat(format, arguments));
         }
     }
 
@@ -95,23 +97,21 @@ public class LoggerForMavenLog extends MarkerIgnoringBase {
     @Override
     public void debug(String format, Object arg) {
         if (log.isDebugEnabled()) {
-            doDebug(format(format, arg).getMessage());
+            doDebug(format(format, arg));
         }
     }
 
     @Override
     public void debug(String format, Object arg1, Object arg2) {
         if (log.isDebugEnabled()) {
-            FormattingTuple tuple = format(format, arg1, arg2);
-            doDebug(tuple.getMessage(), tuple.getThrowable());
+            doDebug(format(format, arg1, arg2));
         }
     }
 
     @Override
     public void debug(String format, Object... arguments) {
         if (log.isDebugEnabled()) {
-            FormattingTuple tuple = arrayFormat(format, arguments);
-            doDebug(tuple.getMessage(), tuple.getThrowable());
+            doDebug(arrayFormat(format, arguments));
         }
     }
 
@@ -134,26 +134,35 @@ public class LoggerForMavenLog extends MarkerIgnoringBase {
         }
     }
 
+    @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
+    private void doInfo(FormattingTuple tuple) {
+        if (tuple.getMessage() == null) {
+            log.info(tuple.getThrowable());
+        } else if (tuple.getThrowable() == null) {
+            log.info(tuple.getMessage());
+        } else {
+            log.info(tuple.getMessage(), tuple.getThrowable());
+        }
+    }
+
     @Override
     public void info(String format, Object arg) {
         if (log.isInfoEnabled()) {
-            log.info(format(format, arg).getMessage());
+            doInfo(format(format, arg));
         }
     }
 
     @Override
     public void info(String format, Object arg1, Object arg2) {
         if (log.isInfoEnabled()) {
-            FormattingTuple tuple = format(format, arg1, arg2);
-            log.info(tuple.getMessage(), tuple.getThrowable());
+            doInfo(format(format, arg1, arg2));
         }
     }
 
     @Override
     public void info(String format, Object... arguments) {
         if (log.isInfoEnabled()) {
-            FormattingTuple tuple = arrayFormat(format, arguments);
-            log.info(tuple.getMessage(), tuple.getThrowable());
+            doInfo(arrayFormat(format, arguments));
         }
     }
 
@@ -176,26 +185,35 @@ public class LoggerForMavenLog extends MarkerIgnoringBase {
         }
     }
 
+    @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
+    private void doWarn(FormattingTuple tuple) {
+        if (tuple.getMessage() == null) {
+            log.warn(tuple.getThrowable());
+        } else if (tuple.getThrowable() == null) {
+            log.warn(tuple.getMessage());
+        } else {
+            log.warn(tuple.getMessage(), tuple.getThrowable());
+        }
+    }
+
     @Override
     public void warn(String format, Object arg) {
         if (log.isWarnEnabled()) {
-            log.warn(format(format, arg).getMessage());
+            doWarn(format(format, arg));
         }
     }
 
     @Override
     public void warn(String format, Object arg1, Object arg2) {
         if (log.isWarnEnabled()) {
-            FormattingTuple tuple = format(format, arg1, arg2);
-            log.warn(tuple.getMessage(), tuple.getThrowable());
+            doWarn( format(format, arg1, arg2));
         }
     }
 
     @Override
     public void warn(String format, Object... arguments) {
         if (log.isWarnEnabled()) {
-            FormattingTuple tuple = arrayFormat(format, arguments);
-            log.warn(tuple.getMessage(), tuple.getThrowable());
+            doWarn(arrayFormat(format, arguments));
         }
     }
 
@@ -216,21 +234,30 @@ public class LoggerForMavenLog extends MarkerIgnoringBase {
         log.error(msg);
     }
 
+    @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
+    private void doError(FormattingTuple tuple) {
+        if (tuple.getMessage() == null) {
+            log.error(tuple.getThrowable());
+        } else if (tuple.getThrowable() == null) {
+            log.error(tuple.getMessage());
+        } else {
+            log.error(tuple.getMessage(), tuple.getThrowable());
+        }
+    }
+
     @Override
     public void error(String format, Object arg) {
-        log.error(format(format, arg).getMessage());
+        doError(format(format, arg));
     }
 
     @Override
     public void error(String format, Object arg1, Object arg2) {
-        FormattingTuple tuple = format(format, arg1, arg2);
-        log.error(tuple.getMessage(), tuple.getThrowable());
+        doError(format(format, arg1, arg2));
     }
 
     @Override
     public void error(String format, Object... arguments) {
-        FormattingTuple tuple = arrayFormat(format, arguments);
-        log.error(tuple.getMessage(), tuple.getThrowable());
+        doError(arrayFormat(format, arguments));
     }
 
     @Override
