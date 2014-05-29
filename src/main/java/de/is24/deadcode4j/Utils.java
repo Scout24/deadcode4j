@@ -2,6 +2,7 @@ package de.is24.deadcode4j;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.FluentIterable;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
@@ -24,6 +25,18 @@ public final class Utils {
 
     private Utils() {
         super();
+    }
+
+    /**
+     * Delegates to {@link com.google.common.base.Preconditions#checkNotNull(Object)}.
+     * In contrast to guava, this method is annotated with {@code @Nonnull}.
+     *
+     * @since 1.6
+     */
+    @Nonnull
+    @SuppressWarnings("ConstantConditions")
+    public static <T> T checkNotNull(@Nullable T value) {
+        return Preconditions.checkNotNull(value);
     }
 
     /**
