@@ -24,6 +24,7 @@ import static org.apache.commons.io.filefilter.DirectoryFileFilter.DIRECTORY;
  *
  * @since 1.2.0
  */
+@SuppressWarnings("PMD.TooManyStaticImports")
 public abstract class PackagingHandler {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
