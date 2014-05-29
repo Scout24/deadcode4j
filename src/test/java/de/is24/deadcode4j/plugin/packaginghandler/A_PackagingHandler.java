@@ -2,12 +2,14 @@ package de.is24.deadcode4j.plugin.packaginghandler;
 
 import de.is24.deadcode4j.Repository;
 import de.is24.deadcode4j.junit.FileLoader;
+import de.is24.deadcode4j.junit.LoggingRule;
 import org.apache.commons.io.DirectoryWalker;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.apache.maven.project.MavenProject;
 import org.hamcrest.Matchers;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
@@ -20,8 +22,10 @@ import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-public class A_PackagingHandler {
+public final class A_PackagingHandler {
 
+    @Rule
+    public final LoggingRule enableLogging = new LoggingRule();
     private PackagingHandler objectUnderTest;
 
     @Before
@@ -67,7 +71,7 @@ public class A_PackagingHandler {
     @Test
     public void addsCompileSourceRootsOnlyIfTheyExist() throws MojoExecutionException, IOException {
         MavenProject mavenProject = new MavenProject();
-        mavenProject.getCompileSourceRoots().add("thisDirectory/is/so/never/gone/exist");
+        mavenProject.getCompileSourceRoots().add("thisDirectory/is/so/never/going/to/exist");
 
         Iterable<Repository> repositories = objectUnderTest.getAdditionalRepositoriesFor(mavenProject);
 
