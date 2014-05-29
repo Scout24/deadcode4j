@@ -6,7 +6,7 @@ import japa.parser.ast.ImportDeclaration;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import static de.is24.deadcode4j.Utils.checkNotNull;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Provides convenience methods for dealing with {@link japa.parser.ast.ImportDeclaration}s.
@@ -27,6 +27,7 @@ public final class ImportDeclarations {
     public static Predicate<? super ImportDeclaration> isAsterisk() {
         return new Predicate<ImportDeclaration>() {
             @Override
+            @SuppressWarnings("ConstantConditions")
             public boolean apply(@Nullable ImportDeclaration input) {
                 return checkNotNull(input).isAsterisk();
             }
@@ -43,6 +44,7 @@ public final class ImportDeclarations {
     public static Predicate<? super ImportDeclaration> isStatic() {
         return new Predicate<ImportDeclaration>() {
             @Override
+            @SuppressWarnings("ConstantConditions")
             public boolean apply(@Nullable ImportDeclaration input) {
                 return checkNotNull(input).isStatic();
             }
