@@ -38,8 +38,8 @@ import static de.is24.deadcode4j.Utils.*;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
 import static de.is24.javaparser.ImportDeclarations.isAsterisk;
 import static de.is24.javaparser.ImportDeclarations.isStatic;
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 
 /**
@@ -255,7 +255,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                             Optional<String> reference;
                             if (TypeDeclaration.class.isInstance(loopNode)) {
                                 TypeDeclaration typeDeclaration = TypeDeclaration.class.cast(loopNode);
-                                reference = resolveInnerReference(firstQualifier, asList(typeDeclaration));
+                                reference = resolveInnerReference(firstQualifier, singleton(typeDeclaration));
                                 if (reference.isPresent()) {
                                     return reference;
                                 }

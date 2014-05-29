@@ -6,8 +6,7 @@ import org.junit.After;
 import org.junit.Test;
 import org.mockito.Matchers;
 
-import java.util.Arrays;
-
+import static java.util.Collections.singleton;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -23,7 +22,7 @@ public final class A_CustomAnnotationsAnalyzer extends AnAnalyzer<CustomAnnotati
 
     @Override
     protected CustomAnnotationsAnalyzer createAnalyzer() {
-        return new CustomAnnotationsAnalyzer(Arrays.asList("foo.Bar"));
+        return new CustomAnnotationsAnalyzer(singleton("foo.Bar"));
     }
 
     @After
@@ -41,7 +40,7 @@ public final class A_CustomAnnotationsAnalyzer extends AnAnalyzer<CustomAnnotati
 
     @Test
     public void doesNotLogInterfaceEntryFoundInClassPath() {
-        this.objectUnderTest = new CustomAnnotationsAnalyzer(Arrays.asList("de.is24.deadcode4j.junit.Annotation"));
+        this.objectUnderTest = new CustomAnnotationsAnalyzer(singleton("de.is24.deadcode4j.junit.Annotation"));
 
         analyzeFile("AnnotatedClass.class");
         doFinishAnalysis();

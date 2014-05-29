@@ -6,12 +6,9 @@ import org.junit.After;
 import org.junit.Test;
 import org.mockito.Matchers;
 
-import java.util.Arrays;
-
+import static java.util.Collections.singleton;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 public final class A_CustomInterfacesAnalyzer extends AnAnalyzer<CustomInterfacesAnalyzer> {
 
@@ -25,7 +22,7 @@ public final class A_CustomInterfacesAnalyzer extends AnAnalyzer<CustomInterface
 
     @Override
     protected CustomInterfacesAnalyzer createAnalyzer() {
-        return new CustomInterfacesAnalyzer(Arrays.asList("foo.Bar"));
+        return new CustomInterfacesAnalyzer(singleton("foo.Bar"));
     }
 
     @After
@@ -43,7 +40,7 @@ public final class A_CustomInterfacesAnalyzer extends AnAnalyzer<CustomInterface
 
     @Test
     public void doesNotLogInterfaceEntryFoundInClassPath() {
-        this.objectUnderTest = new CustomInterfacesAnalyzer(Arrays.asList("de.is24.deadcode4j.junit.SomeInterface"));
+        this.objectUnderTest = new CustomInterfacesAnalyzer(singleton("de.is24.deadcode4j.junit.SomeInterface"));
 
         analyzeFile("SomeServletInitializer.class");
         doFinishAnalysis();

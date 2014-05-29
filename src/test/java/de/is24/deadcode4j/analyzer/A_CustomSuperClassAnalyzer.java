@@ -6,8 +6,7 @@ import org.junit.After;
 import org.junit.Test;
 import org.mockito.Matchers;
 
-import java.util.Arrays;
-
+import static java.util.Collections.singleton;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -23,7 +22,7 @@ public final class A_CustomSuperClassAnalyzer extends AnAnalyzer<CustomSuperClas
 
     @Override
     protected CustomSuperClassAnalyzer createAnalyzer() {
-        return new CustomSuperClassAnalyzer(Arrays.asList("foo.Bar"));
+        return new CustomSuperClassAnalyzer(singleton("foo.Bar"));
     }
 
     @After
@@ -41,7 +40,7 @@ public final class A_CustomSuperClassAnalyzer extends AnAnalyzer<CustomSuperClas
 
     @Test
     public void doesNotLogSuperClassEntryFoundInClassPath() {
-        this.objectUnderTest = new CustomSuperClassAnalyzer(Arrays.asList("java.lang.Thread"));
+        this.objectUnderTest = new CustomSuperClassAnalyzer(singleton("java.lang.Thread"));
 
         analyzeFile("SubClassThatShouldBeLive.class");
         doFinishAnalysis();

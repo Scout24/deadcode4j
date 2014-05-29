@@ -25,6 +25,7 @@ import java.io.File;
 
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singleton;
 import static org.apache.maven.artifact.Artifact.SCOPE_COMPILE_PLUS_RUNTIME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyIterable;
@@ -53,7 +54,7 @@ public final class A_ModuleGenerator {
     @Test
     @SuppressWarnings("ConstantConditions")
     public void createsModuleForMavenProjectWithOutputDirectory() throws MojoExecutionException {
-        Iterable<Module> modules = objectUnderTest.getModulesFor(asList(mavenProject));
+        Iterable<Module> modules = objectUnderTest.getModulesFor(singleton(mavenProject));
 
         assertThat(modules, is(Matchers.<Module>iterableWithSize(1)));
         Module module = Iterables.getOnlyElement(modules);
@@ -68,7 +69,7 @@ public final class A_ModuleGenerator {
     public void createsModuleForMavenProjectWithoutOutputDirectory() throws MojoExecutionException {
         mavenProject.getBuild().setOutputDirectory("/junit/foo/bar");
 
-        Iterable<Module> modules = objectUnderTest.getModulesFor(asList(mavenProject));
+        Iterable<Module> modules = objectUnderTest.getModulesFor(singleton(mavenProject));
 
         assertThat(modules, is(Matchers.<Module>iterableWithSize(1)));
         Module module = Iterables.getOnlyElement(modules);
@@ -96,7 +97,7 @@ public final class A_ModuleGenerator {
     public void createsClassPathEntryForResolvedDependency() throws MojoExecutionException {
         addResolvedArtifact(mavenProject);
 
-        Iterable<Module> modules = objectUnderTest.getModulesFor(asList(mavenProject));
+        Iterable<Module> modules = objectUnderTest.getModulesFor(singleton(mavenProject));
 
         assertThat(modules, is(Matchers.<Module>iterableWithSize(1)));
         Module module = Iterables.getOnlyElement(modules);
@@ -108,7 +109,7 @@ public final class A_ModuleGenerator {
         addUnresolvedArtifact(mavenProject);
         enableArtifactResolving();
 
-        Iterable<Module> modules = objectUnderTest.getModulesFor(asList(mavenProject));
+        Iterable<Module> modules = objectUnderTest.getModulesFor(singleton(mavenProject));
 
         assertThat(modules, is(Matchers.<Module>iterableWithSize(1)));
         Module module = Iterables.getOnlyElement(modules);
