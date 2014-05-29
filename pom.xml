@@ -234,6 +234,18 @@
         </plugins>
     </build>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <!-- This is needed to fix a compatibility issue between maven-plugin-api and guava -->
+                <groupId>org.sonatype.sisu</groupId>
+                <artifactId>sisu-guice</artifactId>
+                <classifier>no_aop</classifier>
+                <version>3.2.2</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
@@ -260,13 +272,6 @@
             <version>${version.maven}</version>
         </dependency>
         <dependency>
-            <!-- This is needed to fix a compatibility issue between maven-plugin-api and guava -->
-            <groupId>org.sonatype.sisu</groupId>
-            <artifactId>sisu-guice</artifactId>
-            <classifier>no_aop</classifier>
-            <version>3.2.2</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-core</artifactId>
             <version>${version.maven}</version>
@@ -274,6 +279,11 @@
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-model</artifactId>
+            <version>${version.maven}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-artifact</artifactId>
             <version>${version.maven}</version>
         </dependency>
         <dependency>
@@ -338,6 +348,7 @@
             <version>3.1.0</version>
             <scope>test</scope>
         </dependency>
+        <!-- required to make @MojoRule work -->
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-compat</artifactId>
