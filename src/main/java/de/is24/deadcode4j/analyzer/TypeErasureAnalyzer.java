@@ -31,7 +31,6 @@ import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 import static com.google.common.base.Predicates.and;
 import static com.google.common.base.Predicates.not;
-import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
@@ -282,7 +281,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
             private Optional<String> resolveInnerReference(
                     @Nonnull ClassOrInterfaceType firstQualifier,
                     @Nullable Iterable<? extends BodyDeclaration> bodyDeclarations) {
-                for (TypeDeclaration typeDeclaration : filter(emptyIfNull(bodyDeclarations), TypeDeclaration.class)) {
+                for (TypeDeclaration typeDeclaration : emptyIfNull(bodyDeclarations).filter(TypeDeclaration.class)) {
                     if (firstQualifier.getName().equals(typeDeclaration.getName())) {
                         return of(resolveReferencedType(firstQualifier, typeDeclaration));
                     }
@@ -295,7 +294,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                                                  @Nonnull TypeDeclaration type) {
                 ClassOrInterfaceType parentQualifier = getParentQualifier(qualifier);
                 if (parentQualifier != null) {
-                    for (TypeDeclaration innerType : filter(emptyIfNull(type.getMembers()), TypeDeclaration.class)) {
+                    for (TypeDeclaration innerType : emptyIfNull(type.getMembers()).filter(TypeDeclaration.class)) {
                         if (parentQualifier.getName().equals(innerType.getName())) {
                             return resolveReferencedType(parentQualifier, innerType);
                         }
@@ -369,7 +368,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                     @Override
                     public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull ClassOrInterfaceType typeReference) {
                         for (ImportDeclaration importDeclaration :
-                                filter(emptyIfNull(compilationUnit.getImports()), not(isAsterisk()))) {
+                                emptyIfNull(compilationUnit.getImports()).filter(not(isAsterisk()))) {
                             String importedClass = importDeclaration.getName().getName();
                             String typeReferenceQualifier = getFullQualifier(typeReference);
                             if (typeReferenceQualifier.equals(importedClass)
@@ -404,7 +403,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                     @Override
                     public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull ClassOrInterfaceType typeReference) {
                         for (ImportDeclaration importDeclaration :
-                                filter(emptyIfNull(compilationUnit.getImports()), and(isAsterisk(), not(isStatic())))) {
+                                emptyIfNull(compilationUnit.getImports()).filter(and(isAsterisk(), not(isStatic())))) {
                             StringBuilder buffy = new StringBuilder(getFullQualifier(typeReference));
                             prepend(importDeclaration.getName(), buffy);
                             Optional<String> resolvedClass = classPoolAccessor.resolveClass(buffy);
