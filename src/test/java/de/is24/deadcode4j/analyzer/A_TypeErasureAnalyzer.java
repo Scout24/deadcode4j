@@ -72,13 +72,4 @@ public final class A_TypeErasureAnalyzer extends AnAnalyzer<TypeErasureAnalyzer>
                 "de.is24.deadcode4j.junit.SomeInterface");
     }
 
-    @Test
-    public void foo() {
-        //analyzeFile("../../../../is24/legacy/importer/application/src/main/java/de/is24/imexp/ngimporter/mementoComparator/SimpleMementoComparator.java");
-        analyzeFile("../../../../is24/legacy/importer/application/src/main/java/de/is24/imexp/ngimporter/ActionHandler.java");
-
-        assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.ClassWithInheritedType",
-                "de.is24.deadcode4j.analyzer.typeerasure.TypedArrayList$InnerClass");
-    }
-
 }
