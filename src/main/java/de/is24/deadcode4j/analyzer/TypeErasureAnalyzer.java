@@ -4,6 +4,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import de.is24.deadcode4j.AnalysisContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
+import de.is24.javaparser.FixedGenericVisitorAdapter;
 import de.is24.javaparser.FixedVoidVisitorAdapter;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import japa.parser.JavaParser;
@@ -14,6 +15,7 @@ import japa.parser.ast.Node;
 import japa.parser.ast.TypeParameter;
 import japa.parser.ast.body.*;
 import japa.parser.ast.expr.NameExpr;
+import japa.parser.ast.expr.ObjectCreationExpr;
 import japa.parser.ast.expr.QualifiedNameExpr;
 import japa.parser.ast.type.*;
 import javassist.CtClass;
@@ -31,6 +33,7 @@ import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 import static com.google.common.base.Predicates.and;
 import static com.google.common.base.Predicates.not;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
@@ -85,10 +88,18 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
 
     @Nonnull
     private static String getTypeName(@Nonnull Node node) {
+        List<Node> anonymousClasses = newArrayList();
         StringBuilder buffy = new StringBuilder();
         for (; ; ) {
-            if (TypeDeclaration.class.isInstance(node)) {
-                prependSeparatorIfNecessary('$', buffy).insert(0, TypeDeclaration.class.cast(node).getName());
+            if (ObjectCreationExpr.class.isInstance(node)) {
+                if (!isEmpty(ObjectCreationExpr.class.cast(node).getAnonymousClassBody())) {
+                    anonymousClasses.add(node);
+                }
+                // TypeDeclarationStmt
+            } else if (TypeDeclaration.class.isInstance(node)) {
+                TypeDeclaration typeDeclaration = TypeDeclaration.class.cast(node);
+                prependSeparatorIfNecessary('$', buffy).insert(0, typeDeclaration.getName());
+                appendAnonymousClasses(anonymousClasses, typeDeclaration, buffy);
             } else if (CompilationUnit.class.isInstance(node)) {
                 if (buffy.length() == 0) {
                     buffy.append("package-info");
@@ -104,6 +115,45 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 return buffy.toString();
             }
         }
+    }
+
+    private static void appendAnonymousClasses(@Nonnull final List<Node> anonymousClasses,
+                                               @Nonnull TypeDeclaration typeDeclaration,
+                                               @Nonnull StringBuilder buffy) {
+        if (anonymousClasses.isEmpty()) {
+            return;
+        }
+        String clazzName = typeDeclaration.accept(new FixedGenericVisitorAdapter<String, Void>() {
+            private Deque<Integer> indexOfAnonymousClasses = newLinkedList(singleton(0));
+            private int indexOfNodeToFind = anonymousClasses.size() - 1;
+
+            @Override
+            public String visit(ObjectCreationExpr n, Void arg) {
+                if (isEmpty(n.getAnonymousClassBody())) {
+                    return super.visit(n, arg);
+                }
+                int currentIndex = indexOfAnonymousClasses.removeLast() + 1;
+                indexOfAnonymousClasses.addLast(currentIndex);
+                if (anonymousClasses.get(indexOfNodeToFind) == n) {
+                    if (indexOfNodeToFind == 0) {
+                        StringBuilder clazzName = new StringBuilder();
+                        for (Integer anonymousClassIndex : indexOfAnonymousClasses) {
+                            clazzName.append('$').append(anonymousClassIndex);
+                        }
+                        return clazzName.toString();
+                    }
+                    indexOfNodeToFind--;
+                }
+                indexOfAnonymousClasses.addLast(0);
+                try {
+                    return super.visit(n, arg);
+                } finally {
+                    indexOfAnonymousClasses.removeLast();
+                }
+            }
+        }, null);
+        assert clazzName != null : "Failed to locate anonymous class definition!";
+        buffy.append(clazzName);
     }
 
     @Nonnull

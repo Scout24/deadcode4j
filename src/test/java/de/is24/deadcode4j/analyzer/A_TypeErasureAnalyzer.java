@@ -58,4 +58,27 @@ public final class A_TypeErasureAnalyzer extends AnAnalyzer<TypeErasureAnalyzer>
                 "de.is24.deadcode4j.analyzer.typeerasure.TypedArrayList$InnerClass");
     }
 
+    @Test
+    public void recognizesAnonymousClasses() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/typeerasure/ClassWithAnonymousClasses.java");
+
+        assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.ClassWithAnonymousClasses$1",
+                "java.lang.String");
+        assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.ClassWithAnonymousClasses$2",
+                "java.util.Set");
+        assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.ClassWithAnonymousClasses$1$1",
+                "java.lang.Integer");
+        assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.ClassWithAnonymousClasses$1$2",
+                "de.is24.deadcode4j.junit.SomeInterface");
+    }
+
+    @Test
+    public void foo() {
+        //analyzeFile("../../../../is24/legacy/importer/application/src/main/java/de/is24/imexp/ngimporter/mementoComparator/SimpleMementoComparator.java");
+        analyzeFile("../../../../is24/legacy/importer/application/src/main/java/de/is24/imexp/ngimporter/ActionHandler.java");
+
+        assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.ClassWithInheritedType",
+                "de.is24.deadcode4j.analyzer.typeerasure.TypedArrayList$InnerClass");
+    }
+
 }
