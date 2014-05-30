@@ -74,6 +74,15 @@ public final class Utils {
     }
 
     /**
+     * Returns {@code true} if the given collection is {@code null} or empty.
+     *
+     * @since 1.6
+     */
+    public static boolean isEmpty(Collection<?> collection) {
+        return collection == null || collection.isEmpty();
+    }
+
+    /**
      * Adds the given element to a collection if the element is not <code>null</code>.
      *
      * @since 1.2.0
