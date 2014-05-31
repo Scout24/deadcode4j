@@ -24,6 +24,9 @@ public class ClassWithAnonymousClasses {
                     return super.toString();
                 }
             };
+            class AnonymousInner {
+                private ArrayList<String> aList;
+            }
         }
     };
     private Runnable runnable2 = new Runnable() {

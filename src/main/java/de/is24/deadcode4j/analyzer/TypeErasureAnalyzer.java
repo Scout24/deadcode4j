@@ -17,6 +17,7 @@ import japa.parser.ast.body.*;
 import japa.parser.ast.expr.NameExpr;
 import japa.parser.ast.expr.ObjectCreationExpr;
 import japa.parser.ast.expr.QualifiedNameExpr;
+import japa.parser.ast.stmt.TypeDeclarationStmt;
 import japa.parser.ast.type.*;
 import javassist.CtClass;
 import javassist.NotFoundException;
@@ -95,8 +96,10 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                 if (!isEmpty(ObjectCreationExpr.class.cast(node).getAnonymousClassBody())) {
                     anonymousClasses.add(node);
                 }
-                // TypeDeclarationStmt
-            } else if (TypeDeclaration.class.isInstance(node)) {
+            } else if (TypeDeclarationStmt.class.isInstance(node)) {
+                anonymousClasses.add(node);
+            } else if (TypeDeclaration.class.isInstance(node)
+                    && !TypeDeclarationStmt.class.isInstance(node.getParentNode())) {
                 TypeDeclaration typeDeclaration = TypeDeclaration.class.cast(node);
                 prependSeparatorIfNecessary('$', buffy).insert(0, typeDeclaration.getName());
                 appendAnonymousClasses(anonymousClasses, typeDeclaration, buffy);
@@ -119,41 +122,59 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
 
     private static void appendAnonymousClasses(@Nonnull final List<Node> anonymousClasses,
                                                @Nonnull TypeDeclaration typeDeclaration,
-                                               @Nonnull StringBuilder buffy) {
+                                               @Nonnull final StringBuilder buffy) {
         if (anonymousClasses.isEmpty()) {
             return;
         }
-        String clazzName = typeDeclaration.accept(new FixedGenericVisitorAdapter<String, Void>() {
+        Boolean typeResolved = typeDeclaration.accept(new FixedGenericVisitorAdapter<Boolean, Void>() {
             private Deque<Integer> indexOfAnonymousClasses = newLinkedList(singleton(0));
             private int indexOfNodeToFind = anonymousClasses.size() - 1;
 
             @Override
-            public String visit(ObjectCreationExpr n, Void arg) {
-                if (isEmpty(n.getAnonymousClassBody())) {
-                    return super.visit(n, arg);
+            public Boolean visit(ObjectCreationExpr node, Void arg) {
+                if (isEmpty(node.getAnonymousClassBody())) {
+                    return super.visit(node, arg);
                 }
                 int currentIndex = indexOfAnonymousClasses.removeLast() + 1;
                 indexOfAnonymousClasses.addLast(currentIndex);
-                if (anonymousClasses.get(indexOfNodeToFind) == n) {
-                    if (indexOfNodeToFind == 0) {
-                        StringBuilder clazzName = new StringBuilder();
-                        for (Integer anonymousClassIndex : indexOfAnonymousClasses) {
-                            clazzName.append('$').append(anonymousClassIndex);
-                        }
-                        return clazzName.toString();
+                if (anonymousClasses.get(indexOfNodeToFind) == node) {
+                    appendTypeName("");
+                    if (indexOfNodeToFind-- == 0) {
+                        return Boolean.TRUE;
                     }
-                    indexOfNodeToFind--;
                 }
                 indexOfAnonymousClasses.addLast(0);
                 try {
-                    return super.visit(n, arg);
+                    return super.visit(node, null);
                 } finally {
                     indexOfAnonymousClasses.removeLast();
                 }
             }
+
+            @Override
+            public Boolean visit(TypeDeclarationStmt node, Void arg) {
+                int currentIndex = indexOfAnonymousClasses.removeLast() + 1;
+                indexOfAnonymousClasses.addLast(currentIndex);
+                if (anonymousClasses.get(indexOfNodeToFind) == node) {
+                    appendTypeName(node.getTypeDeclaration().getName());
+                    if (indexOfNodeToFind-- == 0) {
+                        return Boolean.TRUE;
+                    }
+                }
+                indexOfAnonymousClasses.addLast(0);
+                try {
+                    return super.visit(node, null);
+                } finally {
+                    indexOfAnonymousClasses.removeLast();
+                }
+            }
+
+            private void appendTypeName(String typeSuffix) {
+                buffy.append('$').append(indexOfAnonymousClasses.getLast()).append(typeSuffix);
+            }
+
         }, null);
-        assert clazzName != null : "Failed to locate anonymous class definition!";
-        buffy.append(clazzName);
+        assert typeResolved : "Failed to locate anonymous class definition!";
     }
 
     @Nonnull
