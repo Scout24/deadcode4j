@@ -22,11 +22,12 @@ public final class A_SpringWebXmlAnalyzer extends AnAnalyzer<SpringWebXmlAnalyze
         assertThat("Should have analyzed the web.xml file!", codeDependencies.size(), greaterThan(1));
 
         assertThatDependenciesAreReported(
-                "servlet.contextClass",
-                "servlet.initializerClass",
                 "root.contextClass",
                 "root.initializerClass",
-                "root.secondInitializerClass");
+                "root.secondInitializerClass",
+                "servlet.contextClass",
+                "servlet.initializerClass",
+                "SpringXmlBean");
     }
 
 }

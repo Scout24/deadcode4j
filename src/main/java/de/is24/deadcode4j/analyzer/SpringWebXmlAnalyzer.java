@@ -1,5 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
+import com.google.common.base.Optional;
 import de.is24.deadcode4j.AnalysisContext;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
@@ -11,6 +12,7 @@ import java.util.Deque;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.collect.Iterables.elementsEqual;
+import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
 import static java.util.Arrays.asList;
 
 
@@ -82,8 +84,21 @@ public final class SpringWebXmlAnalyzer extends XmlAnalyzer {
                     analysisContext.addDependencies("_Spring-Context_", paramValue);
                 } else if ("contextInitializerClasses".equals(paramName)) {
                     for (String initializerClass : paramValue.split(",")) {
+                        initializerClass=initializerClass.trim();
                         if (!isNullOrEmpty(initializerClass)) {
-                            analysisContext.addDependencies("_Spring-ContextInitializer_", initializerClass.trim());
+                            analysisContext.addDependencies("_Spring-ContextInitializer_", initializerClass);
+                        }
+                    }
+                } else if ("contextConfigLocation".equals(paramName)) {
+                    for (String configLocation : paramValue.split(",")) {
+                        configLocation=configLocation.trim();
+                        if (isNullOrEmpty(configLocation)) {
+                            continue;
+                        }
+                        Optional<String> referencedClass =
+                                classPoolAccessorFor(analysisContext).resolveClass(configLocation);
+                        if (referencedClass.isPresent()) {
+                            analysisContext.addDependencies("_Spring-ContextInitializer_", referencedClass.get());
                         }
                     }
                 }
