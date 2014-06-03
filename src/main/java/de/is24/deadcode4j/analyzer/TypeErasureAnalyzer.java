@@ -4,7 +4,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import de.is24.deadcode4j.AnalysisContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
-import de.is24.javaparser.FixedGenericVisitorAdapter;
 import de.is24.javaparser.FixedVoidVisitorAdapter;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import japa.parser.JavaParser;
@@ -14,10 +13,6 @@ import japa.parser.ast.ImportDeclaration;
 import japa.parser.ast.Node;
 import japa.parser.ast.TypeParameter;
 import japa.parser.ast.body.*;
-import japa.parser.ast.expr.NameExpr;
-import japa.parser.ast.expr.ObjectCreationExpr;
-import japa.parser.ast.expr.QualifiedNameExpr;
-import japa.parser.ast.stmt.TypeDeclarationStmt;
 import japa.parser.ast.type.*;
 import javassist.CtClass;
 import javassist.NotFoundException;
@@ -34,7 +29,6 @@ import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 import static com.google.common.base.Predicates.and;
 import static com.google.common.base.Predicates.not;
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
@@ -42,6 +36,8 @@ import static de.is24.deadcode4j.Utils.*;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
 import static de.is24.javaparser.ImportDeclarations.isAsterisk;
 import static de.is24.javaparser.ImportDeclarations.isStatic;
+import static de.is24.javaparser.Nodes.getTypeName;
+import static de.is24.javaparser.Nodes.prepend;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static org.apache.commons.io.IOUtils.closeQuietly;
@@ -85,115 +81,6 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
         }
         ClassOrInterfaceType parent = ClassOrInterfaceType.class.cast(parentNode);
         return parent.getScope() == classOrInterfaceType ? parent : null;
-    }
-
-    @Nonnull
-    private static String getTypeName(@Nonnull Node node) {
-        List<Node> anonymousClasses = newArrayList();
-        StringBuilder buffy = new StringBuilder();
-        for (; ; ) {
-            if (ObjectCreationExpr.class.isInstance(node)) {
-                if (!isEmpty(ObjectCreationExpr.class.cast(node).getAnonymousClassBody())) {
-                    anonymousClasses.add(node);
-                }
-            } else if (TypeDeclarationStmt.class.isInstance(node)) {
-                anonymousClasses.add(node);
-            } else if (TypeDeclaration.class.isInstance(node)
-                    && !TypeDeclarationStmt.class.isInstance(node.getParentNode())) {
-                TypeDeclaration typeDeclaration = TypeDeclaration.class.cast(node);
-                prependSeparatorIfNecessary('$', buffy).insert(0, typeDeclaration.getName());
-                appendAnonymousClasses(anonymousClasses, typeDeclaration, buffy);
-            } else if (CompilationUnit.class.isInstance(node)) {
-                if (buffy.length() == 0) {
-                    buffy.append("package-info");
-                }
-                final CompilationUnit compilationUnit = CompilationUnit.class.cast(node);
-                if (compilationUnit.getPackage() != null) {
-                    prepend(compilationUnit.getPackage().getName(), buffy);
-                }
-            }
-            node = node.getParentNode();
-            //noinspection ConstantConditions
-            if (node == null) {
-                return buffy.toString();
-            }
-        }
-    }
-
-    private static void appendAnonymousClasses(@Nonnull final List<Node> anonymousClasses,
-                                               @Nonnull TypeDeclaration typeDeclaration,
-                                               @Nonnull final StringBuilder buffy) {
-        if (anonymousClasses.isEmpty()) {
-            return;
-        }
-        Boolean typeResolved = typeDeclaration.accept(new FixedGenericVisitorAdapter<Boolean, Void>() {
-            private Deque<Integer> indexOfAnonymousClasses = newLinkedList(singleton(0));
-            private int indexOfNodeToFind = anonymousClasses.size() - 1;
-
-            @Override
-            public Boolean visit(ObjectCreationExpr node, Void arg) {
-                if (isEmpty(node.getAnonymousClassBody())) {
-                    return super.visit(node, arg);
-                }
-                int currentIndex = indexOfAnonymousClasses.removeLast() + 1;
-                indexOfAnonymousClasses.addLast(currentIndex);
-                if (anonymousClasses.get(indexOfNodeToFind) == node) {
-                    appendTypeName("");
-                    if (indexOfNodeToFind-- == 0) {
-                        return Boolean.TRUE;
-                    }
-                }
-                indexOfAnonymousClasses.addLast(0);
-                try {
-                    return super.visit(node, null);
-                } finally {
-                    indexOfAnonymousClasses.removeLast();
-                }
-            }
-
-            @Override
-            public Boolean visit(TypeDeclarationStmt node, Void arg) {
-                int currentIndex = indexOfAnonymousClasses.removeLast() + 1;
-                indexOfAnonymousClasses.addLast(currentIndex);
-                if (anonymousClasses.get(indexOfNodeToFind) == node) {
-                    appendTypeName(node.getTypeDeclaration().getName());
-                    if (indexOfNodeToFind-- == 0) {
-                        return Boolean.TRUE;
-                    }
-                }
-                indexOfAnonymousClasses.addLast(0);
-                try {
-                    return super.visit(node, null);
-                } finally {
-                    indexOfAnonymousClasses.removeLast();
-                }
-            }
-
-            private void appendTypeName(String typeSuffix) {
-                buffy.append('$').append(indexOfAnonymousClasses.getLast()).append(typeSuffix);
-            }
-
-        }, null);
-        assert typeResolved : "Failed to locate anonymous class definition!";
-    }
-
-    @Nonnull
-    private static StringBuilder prepend(@Nonnull NameExpr nameExpr, @Nonnull StringBuilder buffy) {
-        for (; ; ) {
-            prependSeparatorIfNecessary('.', buffy).insert(0, nameExpr.getName());
-            if (!QualifiedNameExpr.class.isInstance(nameExpr)) {
-                return buffy;
-            }
-            nameExpr = QualifiedNameExpr.class.cast(nameExpr).getQualifier();
-        }
-    }
-
-    @Nonnull
-    private static StringBuilder prependSeparatorIfNecessary(char character, @Nonnull StringBuilder buffy) {
-        if (buffy.length() > 0) {
-            buffy.insert(0, character);
-        }
-        return buffy;
     }
 
     @Override
