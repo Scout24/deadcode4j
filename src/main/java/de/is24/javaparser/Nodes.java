@@ -65,6 +65,7 @@ public class Nodes {
         }
         Boolean typeResolved = typeDeclaration.accept(new FixedGenericVisitorAdapter<Boolean, Void>() {
             private Deque<Integer> indexOfAnonymousClasses = newLinkedList(singleton(0));
+            private Deque<Integer> indexOfNamedAnonymousClasses = newLinkedList(singleton(0));
             private int indexOfNodeToFind = anonymousClasses.size() - 1;
 
             @Override
@@ -75,7 +76,7 @@ public class Nodes {
                 int currentIndex = indexOfAnonymousClasses.removeLast() + 1;
                 indexOfAnonymousClasses.addLast(currentIndex);
                 if (anonymousClasses.get(indexOfNodeToFind) == node) {
-                    appendTypeName("");
+                    buffy.append('$').append(indexOfAnonymousClasses.getLast());
                     if (indexOfNodeToFind-- == 0) {
                         return Boolean.TRUE;
                     }
@@ -90,28 +91,25 @@ public class Nodes {
 
             @Override
             public Boolean visit(TypeDeclarationStmt node, Void arg) {
-                int currentIndex = indexOfAnonymousClasses.removeLast() + 1;
-                indexOfAnonymousClasses.addLast(currentIndex);
+                int currentIndex = indexOfNamedAnonymousClasses.removeLast() + 1;
+                indexOfNamedAnonymousClasses.addLast(currentIndex);
                 if (anonymousClasses.get(indexOfNodeToFind) == node) {
-                    appendTypeName(node.getTypeDeclaration().getName());
+                    buffy.append('$').append(indexOfNamedAnonymousClasses.getLast()).append(node.getTypeDeclaration().getName());
                     if (indexOfNodeToFind-- == 0) {
                         return Boolean.TRUE;
                     }
                 }
-                indexOfAnonymousClasses.addLast(0);
+                indexOfNamedAnonymousClasses.addLast(0);
                 try {
                     return super.visit(node, null);
                 } finally {
-                    indexOfAnonymousClasses.removeLast();
+                    indexOfNamedAnonymousClasses.removeLast();
                 }
-            }
-
-            private void appendTypeName(String typeSuffix) {
-                buffy.append('$').append(indexOfAnonymousClasses.getLast()).append(typeSuffix);
             }
 
         }, null);
         assert typeResolved : "Failed to locate anonymous class definition!";
+        anonymousClasses.clear();
     }
 
     @Nonnull
