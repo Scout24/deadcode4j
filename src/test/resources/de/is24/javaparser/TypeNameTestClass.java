@@ -32,10 +32,21 @@ public class TypeNameTestClass {
         String s = "de.is24.javaparser.TypeNameTestClass$InnerClass";
         private Object object = new Object() {
             String s = "de.is24.javaparser.TypeNameTestClass$InnerClass$1";
+            private void foo() {
+                class AnonymousInnerInAnonymous {
+                    String s = "de.is24.javaparser.TypeNameTestClass$InnerClass$1$1AnonymousInnerInAnonymous";
+                }
+            }
         };
         public void foo() {
             class FirstAnonymousInner {
                 String s = "de.is24.javaparser.TypeNameTestClass$InnerClass$1FirstAnonymousInner";
+                private Object object1 = new Object() {
+                    String s = "de.is24.javaparser.TypeNameTestClass$InnerClass$1FirstAnonymousInner$1";
+                };
+                private Object object2 = new Object() {
+                    String s = "de.is24.javaparser.TypeNameTestClass$InnerClass$1FirstAnonymousInner$2";
+                };
             }
         }
         public void bar() {

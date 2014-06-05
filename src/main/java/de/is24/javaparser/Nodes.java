@@ -82,10 +82,12 @@ public class Nodes {
                     }
                 }
                 indexOfAnonymousClasses.addLast(0);
+                indexOfNamedAnonymousClasses.addLast(0);
                 try {
                     return super.visit(node, null);
                 } finally {
                     indexOfAnonymousClasses.removeLast();
+                    indexOfNamedAnonymousClasses.removeLast();
                 }
             }
 
@@ -99,10 +101,12 @@ public class Nodes {
                         return Boolean.TRUE;
                     }
                 }
+                indexOfAnonymousClasses.addLast(0);
                 indexOfNamedAnonymousClasses.addLast(0);
                 try {
                     return super.visit(node, null);
                 } finally {
+                    indexOfAnonymousClasses.removeLast();
                     indexOfNamedAnonymousClasses.removeLast();
                 }
             }
