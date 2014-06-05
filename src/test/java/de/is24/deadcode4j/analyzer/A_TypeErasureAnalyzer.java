@@ -69,7 +69,7 @@ public final class A_TypeErasureAnalyzer extends AnAnalyzer<TypeErasureAnalyzer>
         assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.ClassWithAnonymousClasses$1$2",
                 "de.is24.deadcode4j.junit.SomeInterface");
         assertThatDependenciesAreReportedFor(
-                "de.is24.deadcode4j.analyzer.typeerasure.ClassWithAnonymousClasses$1$3AnonymousInner",
+                "de.is24.deadcode4j.analyzer.typeerasure.ClassWithAnonymousClasses$1$1AnonymousInner",
                 "java.lang.String");
         assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.ClassWithAnonymousClasses$2",
                 "java.util.Set");
