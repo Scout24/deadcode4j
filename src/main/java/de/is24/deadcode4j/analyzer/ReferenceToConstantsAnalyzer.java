@@ -35,7 +35,7 @@ import static de.is24.javaparser.ImportDeclarations.isAsterisk;
 import static de.is24.javaparser.ImportDeclarations.isStatic;
 import static de.is24.javaparser.Nodes.getTypeName;
 import static java.lang.Math.max;
-import static java.util.Arrays.asList;
+import static java.util.Collections.singleton;
 
 public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
@@ -176,7 +176,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                 for (; ; ) {
                     if (TypeDeclaration.class.isInstance(loopNode)) {
                         TypeDeclaration typeDeclaration = TypeDeclaration.class.cast(loopNode);
-                        if (resolveInnerReference(firstQualifier, asList(typeDeclaration))) {
+                        if (resolveInnerReference(firstQualifier, singleton(typeDeclaration))) {
                             return true;
                         }
                         if (resolveInnerReference(firstQualifier, emptyIfNull(typeDeclaration.getMembers()))) {
@@ -197,11 +197,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
             private boolean resolveInnerReference(@Nonnull NameExpr firstQualifier,
                                                   @Nonnull Iterable<? extends BodyDeclaration> bodyDeclarations) {
-                for (BodyDeclaration bodyDeclaration : bodyDeclarations) {
-                    if (!TypeDeclaration.class.isInstance(bodyDeclaration)) {
-                        continue;
-                    }
-                    final TypeDeclaration typeDeclaration = TypeDeclaration.class.cast(bodyDeclaration);
+                for (TypeDeclaration typeDeclaration : emptyIfNull(bodyDeclarations).filter(TypeDeclaration.class)) {
                     if (firstQualifier.getName().equals(typeDeclaration.getName())) {
                         String referencedClass = resolveReferencedType(firstQualifier, typeDeclaration);
                         analysisContext.addDependencies(getTypeName(firstQualifier), referencedClass);
@@ -216,11 +212,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                                                  @Nonnull TypeDeclaration typeDeclaration) {
                 if (FieldAccessExpr.class.isInstance(firstQualifier.getParentNode())) {
                     NameExpr nextQualifier = FieldAccessExpr.class.cast(firstQualifier.getParentNode()).getFieldExpr();
-                    for (BodyDeclaration bodyDeclaration : emptyIfNull(typeDeclaration.getMembers())) {
-                        if (!TypeDeclaration.class.isInstance(bodyDeclaration)) {
-                            continue;
-                        }
-                        TypeDeclaration nextTypeDeclaration = TypeDeclaration.class.cast(bodyDeclaration);
+                    for (TypeDeclaration nextTypeDeclaration : emptyIfNull(typeDeclaration.getMembers()).filter(TypeDeclaration.class)) {
                         if (nextQualifier.getName().equals(nextTypeDeclaration.getName())) {
                             return resolveReferencedType(nextQualifier, nextTypeDeclaration);
                         }
