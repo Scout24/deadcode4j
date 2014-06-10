@@ -69,6 +69,30 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer<ReferenceTo
     }
 
     @Test
+    public void recognizesDependencyToConstantOfImplementedInterfaceUsedByInnerClassInExpression() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/InnerClassUsingConstantOfImplementedInterfaceInExpression.java");
+        triggerFinishAnalysisEvent();
+
+        assertDependencyToConstantsExists("de.is24.deadcode4j.analyzer.constants.InnerClassUsingConstantOfImplementedInterfaceInExpression$InnerClass");
+    }
+
+    @Test
+    public void recognizesDependencyToConstantOfImplementedInterfaceInField() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingConstantOfImplementedInterfaceInField.java");
+        triggerFinishAnalysisEvent();
+
+        assertDependencyToConstantsExists("de.is24.deadcode4j.analyzer.constants.ClassUsingConstantOfImplementedInterfaceInField");
+    }
+
+    @Test
+    public void recognizesDependencyToConstantOfSuperclassInMethod() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingConstantOfSuperclassInMethod.java");
+        triggerFinishAnalysisEvent();
+
+        assertDependencyToConstantsExists("de.is24.deadcode4j.analyzer.constants.ClassUsingConstantOfSuperclassInMethod");
+    }
+
+    @Test
     public void recognizesDependencyToFullyQualifiedConstantInExpression() {
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingFQConstantInExpression.java");
         triggerFinishAnalysisEvent();
