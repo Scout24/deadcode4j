@@ -1,7 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.AnalysisContext;
-import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
 import javassist.CtClass;
 import javassist.Modifier;
 
@@ -40,26 +39,26 @@ public class SpringDataCustomRepositoriesAnalyzer extends ByteCodeAnalyzer {
         this.customRepositoryNames.clear();
     }
 
-    private void analyzeInterface(AnalysisContext analysisContext, CtClass clazz) {
+    private void analyzeInterface(@Nonnull AnalysisContext analysisContext, @Nonnull CtClass clazz) {
         Set<String> implementedInterfaces = getAllImplementedInterfaces(clazz);
         if (!implementedInterfaces.contains("org.springframework.data.repository.Repository")) {
             return;
         }
 
-        final String clazzName = clazz.getName();
-        final String nameOfCustomRepositoryInterface = clazzName + "Custom";
+        final String nameOfCustomRepositoryInterface = clazz.getName() + "Custom";
         if (!implementedInterfaces.contains(nameOfCustomRepositoryInterface)) {
             return;
         }
 
         this.customRepositoryNames.add(nameOfCustomRepositoryInterface);
-        reportImplementationOfNewCustomRepository(analysisContext, clazzName);
+        reportImplementationOfNewCustomRepository(analysisContext, clazz);
     }
 
-    private void reportImplementationOfNewCustomRepository(AnalysisContext analysisContext, String clazzName) {
+    private void reportImplementationOfNewCustomRepository(@Nonnull AnalysisContext analysisContext,
+                                                           @Nonnull CtClass clazz) {
+        final String clazzName = clazz.getName();
         final String nameOfCustomRepositoryImplementation = clazzName + "Impl";
-        CtClass customImpl = ClassPoolAccessor.classPoolAccessorFor(analysisContext).getClassPool().
-                getOrNull(nameOfCustomRepositoryImplementation);
+        CtClass customImpl = clazz.getClassPool().getOrNull(nameOfCustomRepositoryImplementation);
         if (customImpl == null) {
             return;
         }
@@ -79,7 +78,8 @@ public class SpringDataCustomRepositoriesAnalyzer extends ByteCodeAnalyzer {
                 && !Modifier.isProtected(modifiers);
     }
 
-    private void reportImplementationOfExistingCustomRepository(AnalysisContext analysisContext, CtClass clazz) {
+    private void reportImplementationOfExistingCustomRepository(@Nonnull AnalysisContext analysisContext,
+                                                                @Nonnull CtClass clazz) {
         IntermediateResultSet<String> intermediateResults = resultSetFrom(analysisContext, getClass());
         if (intermediateResults == null) {
             return;
