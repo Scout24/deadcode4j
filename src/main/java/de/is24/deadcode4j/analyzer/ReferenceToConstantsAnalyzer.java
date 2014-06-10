@@ -116,12 +116,12 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             private final ClassPoolAccessor classPoolAccessor = classPoolAccessorFor(analysisContext);
 
             @Override
-            public void visit(FieldAccessExpr n, Void analysis) {
+            public void visit(FieldAccessExpr n, Void arg) {
                 if (isTargetOfAnAssignment(n) || isScopeOfAMethodCall(n) || isScopeOfThisExpression(n)) {
                     return;
                 }
                 if (!isRegularFieldAccessExpr(n)) {
-                    super.visit(n, analysis);
+                    super.visit(n, arg);
                     return;
                 }
                 if (FieldAccessExpr.class.isInstance(n.getScope())) {
@@ -136,7 +136,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             }
 
             @Override
-            public void visit(NameExpr n, Void analysis) {
+            public void visit(NameExpr n, Void arg) {
                 if (isTargetOfAnAssignment(n) || isScopeOfAMethodCall(n) || isScopeOfThisExpression(n)) {
                     return;
                 }
