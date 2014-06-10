@@ -51,14 +51,20 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
                 }
             };
 
+    private static LoadingCache<File, Optional<CompilationUnit>> getJavaFileParser(AnalysisContext analysisContext) {
+        return analysisContext.getOrCreateCacheEntry(JavaFileAnalyzer.class, SUPPLIER);
+    }
+
+
     @Override
     @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "The MavenProject does not provide the proper encoding")
     public final void doAnalysis(@Nonnull AnalysisContext analysisContext, @Nonnull File file) {
         if (file.getName().endsWith(".java")) {
-            analyzeJavaFile(analysisContext, file);
+            CompilationUnit compilationUnit = getJavaFileParser(analysisContext).getUnchecked(file).get();
+            logger.debug("Analyzing Java file [{}]...", file);
+            analyzeCompilationUnit(analysisContext, compilationUnit);
         }
     }
-
 
     /**
      * Perform an analysis for the specified java file.
@@ -67,11 +73,5 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
      * @since 1.6
      */
     protected abstract void analyzeCompilationUnit(@Nonnull AnalysisContext analysisContext, @Nonnull CompilationUnit compilationUnit);
-
-    private void analyzeJavaFile(@Nonnull AnalysisContext analysisContextntext, @Nonnull File javaFile) {
-        CompilationUnit compilationUnit = analysisContextntext.getOrCreateCacheEntry(JavaFileAnalyzer.class, SUPPLIER).getUnchecked(javaFile).get();
-        logger.debug("Analyzing Java file [{}]...", javaFile);
-        analyzeCompilationUnit(analysisContextntext, compilationUnit);
-    }
 
 }
