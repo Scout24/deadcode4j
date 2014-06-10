@@ -179,11 +179,11 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                         if (resolveInnerReference(firstQualifier, singleton(typeDeclaration))) {
                             return true;
                         }
-                        if (resolveInnerReference(firstQualifier, emptyIfNull(typeDeclaration.getMembers()))) {
+                        if (resolveInnerReference(firstQualifier, typeDeclaration.getMembers())) {
                             return true;
                         }
                     } else if (CompilationUnit.class.isInstance(loopNode)
-                            && resolveInnerReference(firstQualifier, emptyIfNull(CompilationUnit.class.cast(loopNode).getTypes()))) {
+                            && resolveInnerReference(firstQualifier, CompilationUnit.class.cast(loopNode).getTypes())) {
                         return true;
                     }
                     loopNode = loopNode.getParentNode();
@@ -196,7 +196,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             }
 
             private boolean resolveInnerReference(@Nonnull NameExpr firstQualifier,
-                                                  @Nonnull Iterable<? extends BodyDeclaration> bodyDeclarations) {
+                                                  @Nullable Iterable<? extends BodyDeclaration> bodyDeclarations) {
                 for (TypeDeclaration typeDeclaration : emptyIfNull(bodyDeclarations).filter(TypeDeclaration.class)) {
                     if (firstQualifier.getName().equals(typeDeclaration.getName())) {
                         String referencedClass = resolveReferencedType(firstQualifier, typeDeclaration);
