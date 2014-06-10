@@ -34,12 +34,21 @@ public final class CtClasses {
      * @since 1.6
      */
     @Nullable
-    public static CtClass getCtClass(@Nonnull ClassPool classPool,@Nonnull String className) {
+    public static CtClass getCtClass(@Nonnull ClassPool classPool, @Nonnull String className) {
         CtClass clazz = classPool.getOrNull(className);
         if (clazz == null) {
             handleMissingClass(className);
         }
         return clazz;
+    }
+
+    /**
+     * Returns {@code true} if the specified class refers to {@link java.lang.Object}.
+     *
+     * @since 1.6
+     */
+    public static boolean isJavaLangObject(@Nullable CtClass loopClass) {
+        return loopClass != null && "java.lang.Object".equals(loopClass.getName());
     }
 
     /**
@@ -59,7 +68,7 @@ public final class CtClasses {
                 interfaces.addAll(getAllImplementedInterfaces(anInterface));
             }
             loopClass = getSuperclassOf(loopClass);
-        } while (loopClass != null && !"java.lang.Object".equals(loopClass.getName()));
+        } while (loopClass != null && !isJavaLangObject(loopClass));
         return interfaces;
     }
 
@@ -120,7 +129,7 @@ public final class CtClasses {
     }
 
     @Nullable
-    private static CtClass getCtClass(@Nonnull CtClass classProvidingPool,@Nonnull String className) {
+    private static CtClass getCtClass(@Nonnull CtClass classProvidingPool, @Nonnull String className) {
         return getCtClass(classProvidingPool.getClassPool(), className);
     }
 

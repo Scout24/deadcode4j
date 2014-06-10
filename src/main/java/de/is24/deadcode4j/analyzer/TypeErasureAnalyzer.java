@@ -299,7 +299,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
             private Optional<String> checkNestedClasses(
                     @Nullable CtClass clazz,
                     @Nonnull ClassOrInterfaceType firstQualifier) {
-                if (clazz == null || "java.lang.Object".equals(clazz.getName())) {
+                if (clazz == null || isJavaLangObject(clazz)) {
                     return absent();
                 }
                 for (CtClass nestedClass : getNestedClassesOf(clazz)) {

@@ -18,6 +18,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
 import static de.is24.deadcode4j.analyzer.javassist.CtClasses.getCtClass;
 import static de.is24.deadcode4j.analyzer.javassist.CtClasses.getSuperclassOf;
+import static de.is24.deadcode4j.analyzer.javassist.CtClasses.isJavaLangObject;
 import static java.lang.annotation.ElementType.PACKAGE;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.util.Collections.disjoint;
@@ -133,7 +134,7 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
         }
         Set<String> inheritedAnnotations = newHashSet();
         CtClass loopClass = getSuperclassOf(clazz);
-        while (loopClass != null && !"java.lang.Object".equals(loopClass.getName())) {
+        while (loopClass != null && !isJavaLangObject(loopClass)) {
             for (Annotation annotation : getAnnotations(loopClass, PACKAGE, TYPE)) {
                 inheritedAnnotations.add(annotation.getTypeName());
             }
