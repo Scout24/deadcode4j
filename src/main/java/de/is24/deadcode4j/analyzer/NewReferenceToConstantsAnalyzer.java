@@ -31,6 +31,7 @@ import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Sets.newHashSet;
 import static de.is24.deadcode4j.Utils.emptyIfNull;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
+import static de.is24.javaparser.Nodes.getTypeName;
 import static java.lang.Math.max;
 
 public class NewReferenceToConstantsAnalyzer extends JavaFileAnalyzer {

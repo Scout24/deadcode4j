@@ -234,11 +234,23 @@
         </plugins>
     </build>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <!-- This is needed to fix a compatibility issue between maven-plugin-api and guava -->
+                <groupId>org.sonatype.sisu</groupId>
+                <artifactId>sisu-guice</artifactId>
+                <classifier>no_aop</classifier>
+                <version>3.2.2</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
             <artifactId>maven-plugin-annotations</artifactId>
-            <version>3.2</version>
+            <version>3.3</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -260,13 +272,6 @@
             <version>${version.maven}</version>
         </dependency>
         <dependency>
-            <!-- This is needed to fix a compatibility issue between maven-plugin-api and guava -->
-            <groupId>org.sonatype.sisu</groupId>
-            <artifactId>sisu-guice</artifactId>
-            <classifier>no_aop</classifier>
-            <version>3.2.0</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-core</artifactId>
             <version>${version.maven}</version>
@@ -274,6 +279,11 @@
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-model</artifactId>
+            <version>${version.maven}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-artifact</artifactId>
             <version>${version.maven}</version>
         </dependency>
         <dependency>
@@ -290,7 +300,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>17.0-rc2</version>
+            <version>17.0</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -300,7 +310,7 @@
         <dependency>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
-            <version>3.18.1-GA</version>
+            <version>3.18.2-GA</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.javaparser</groupId>
@@ -338,6 +348,7 @@
             <version>3.1.0</version>
             <scope>test</scope>
         </dependency>
+        <!-- required to make @MojoRule work -->
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-compat</artifactId>
@@ -373,7 +384,7 @@
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-commons</artifactId>
-            <version>1.6.2.RELEASE</version>
+            <version>1.8.0.RELEASE</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

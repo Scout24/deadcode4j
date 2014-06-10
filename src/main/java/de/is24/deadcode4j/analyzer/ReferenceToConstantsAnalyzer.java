@@ -33,6 +33,7 @@ import static de.is24.deadcode4j.Utils.emptyIfNull;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
 import static de.is24.javaparser.ImportDeclarations.isAsterisk;
 import static de.is24.javaparser.ImportDeclarations.isStatic;
+import static de.is24.javaparser.Nodes.getTypeName;
 import static java.lang.Math.max;
 import static java.util.Arrays.asList;
 

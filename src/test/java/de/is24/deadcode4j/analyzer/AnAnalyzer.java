@@ -69,8 +69,10 @@ public abstract class AnAnalyzer<T extends Analyzer> {
     protected void assertThatDependenciesAreReportedFor(String depender, String... dependee) {
         finishAnalysisIfNecessary();
         Map<String, Set<String>> codeDependencies = analysisContext.getAnalyzedCode().getCodeDependencies();
-        assertThat(codeDependencies, hasEntry(equalTo(depender), any(Set.class)));
-        assertThat(codeDependencies.get(depender), containsInAnyOrder(dependee));
+        assertThat("No dependencies were reported for [" + depender + "]!",
+                codeDependencies, hasEntry(equalTo(depender), any(Set.class)));
+        assertThat("Incorrect dependencies reported for [" + depender + "]!",
+                codeDependencies.get(depender), containsInAnyOrder(dependee));
     }
 
     protected void assertThatDependenciesAreReported(String... dependee) {

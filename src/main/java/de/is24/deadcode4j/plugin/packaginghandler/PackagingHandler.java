@@ -12,9 +12,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.util.Collection;
-import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static de.is24.deadcode4j.Utils.emptyIfNull;
 import static java.util.Collections.emptyList;
 import static org.apache.commons.io.IOCase.INSENSITIVE;
 import static org.apache.commons.io.filefilter.DirectoryFileFilter.DIRECTORY;
@@ -24,6 +24,7 @@ import static org.apache.commons.io.filefilter.DirectoryFileFilter.DIRECTORY;
  *
  * @since 1.2.0
  */
+@SuppressWarnings("PMD.TooManyStaticImports")
 public abstract class PackagingHandler {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -54,13 +55,8 @@ public abstract class PackagingHandler {
      */
     @Nonnull
     protected Collection<Repository> getJavaFilesOfCompileSourceRootsAsRepositories(@Nonnull MavenProject project) {
-        List<String> compileSourceRoots = project.getCompileSourceRoots();
-        if (compileSourceRoots == null) {
-            return emptyList();
-        }
-
         Collection<Repository> codeRepositories = newArrayList();
-        for (String compileSourceRoot : compileSourceRoots) {
+        for (String compileSourceRoot : emptyIfNull(project.getCompileSourceRoots())) {
             File compileSourceDirectory = new File(compileSourceRoot);
             if (!compileSourceDirectory.exists()) {
                 logger.debug("  Compile Source Directory [{}] does not exist?", compileSourceDirectory);

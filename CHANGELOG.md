@@ -11,6 +11,7 @@
 * Added analysis of [Spring Data custom repositories](http://docs.spring.io/spring-data/data-commons/docs/1.6.x/reference/html/repositories.html#repositories.custom-implementations): recognizing custom implementations as _live code_.
     * only recognizes custom implementations following the default naming convention `RepositoryNameImpl`
 * Custom analyzers now report if a configured annotation, interface or super class isn't found in the class path and thus could be removed
+* SpringWebXmlAnalyzer now recognizes classes listed within the `contextConfigLocation` init-parameter 
 * made *deadcode4j* more resilient: failing to analyze a file does not lead to termination any longer
 
 ## Internal

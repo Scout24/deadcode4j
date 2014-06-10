@@ -2,6 +2,7 @@ package de.is24.deadcode4j;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.collect.FluentIterable;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 
@@ -73,6 +74,15 @@ public final class Utils {
     }
 
     /**
+     * Returns {@code true} if the given collection is {@code null} or empty.
+     *
+     * @since 1.6
+     */
+    public static boolean isEmpty(Collection<?> collection) {
+        return collection == null || collection.isEmpty();
+    }
+
+    /**
      * Adds the given element to a collection if the element is not <code>null</code>.
      *
      * @since 1.2.0
@@ -130,13 +140,13 @@ public final class Utils {
     }
 
     /**
-     * Returns the given <code>Iterable</code> or an empty list if it is <code>null</code>.
+     * Returns the given <code>Iterable</code> or an empty list if it is <code>null</code> as a {@link FluentIterable}.
      *
      * @since 1.6
      */
     @Nonnull
-    public static <E> Iterable<E> emptyIfNull(@Nullable Iterable<E> iterable) {
-        return iterable == null ? Collections.<E>emptyList() : iterable;
+    public static <E> FluentIterable<E> emptyIfNull(@Nullable Iterable<E> iterable) {
+        return FluentIterable.from(iterable == null ? Collections.<E>emptyList() : iterable);
     }
 
 }

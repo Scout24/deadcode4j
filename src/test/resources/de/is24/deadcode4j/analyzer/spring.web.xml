@@ -14,6 +14,10 @@
         <param-value>root.initializerClass,root.secondInitializerClass</param-value>
     </context-param>
     <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>root.contextConfigLocation,SpringXmlBean</param-value>
+    </context-param>
+    <context-param>
         <param-name>shouldBeIgnored</param-name>
         <param-value>root.someValue</param-value>
     </context-param>

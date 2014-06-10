@@ -35,7 +35,7 @@ public final class An_IntermediateResultMap {
     public void createsCopyOfProvidedMap() {
         Map<String, String> results = newHashMap();
         results.put("foo", "bar");
-        IntermediateResultMap<String, String> objectUnderTest = IntermediateResultMapBuilder.givenIntermediateResultMap(results);
+        IntermediateResultMap<String, String> objectUnderTest = IntermediateResults.resultMapFor(results);
 
         results.clear();
 

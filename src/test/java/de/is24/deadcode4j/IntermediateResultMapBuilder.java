@@ -8,10 +8,6 @@ public final class IntermediateResultMapBuilder {
 
     private IntermediateResultMapBuilder() { }
 
-    public static <K, V> IntermediateResults.IntermediateResultMap<K, V> givenIntermediateResultMap(Map<K, V> results) {
-        return new IntermediateResults.IntermediateResultMap<K, V>(results);
-    }
-
     public static <K, V> IntermediateResults.IntermediateResultMap<K, V> givenIntermediateResultMap(K key, V value) {
         Map<K, V> results = newHashMap();
         results.put(key, value);
