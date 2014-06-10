@@ -22,11 +22,14 @@ public final class A_CtClasses {
         assertThat(implementedInterfaces, containsInAnyOrder("java.io.Externalizable", "java.io.Serializable"));
     }
 
-    @Test(expected = RuntimeException.class)
-    public void failsIfClassCannotBeLoaded() throws NotFoundException {
+    @Test
+    public void handlesClassLoadingIssuesSilently() throws NotFoundException {
         CtClass clazz = loadCtClass(false, "de.is24.deadcode4j.analyzer.customrepositories.FooRepository");
 
-        CtClasses.getAllImplementedInterfaces(clazz);
+        Set<String> implementedInterfaces = CtClasses.getAllImplementedInterfaces(clazz);
+
+        assertThat(implementedInterfaces,
+                containsInAnyOrder("de.is24.deadcode4j.analyzer.customrepositories.FooRepositoryCustom"));
     }
 
     private CtClass loadCtClass(boolean useSystemClassPath, String className) throws NotFoundException {

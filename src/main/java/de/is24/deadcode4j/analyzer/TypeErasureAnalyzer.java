@@ -15,7 +15,6 @@ import japa.parser.ast.TypeParameter;
 import japa.parser.ast.body.*;
 import japa.parser.ast.type.*;
 import javassist.CtClass;
-import javassist.NotFoundException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -34,6 +33,7 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static de.is24.deadcode4j.Utils.*;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
+import static de.is24.deadcode4j.analyzer.javassist.CtClasses.*;
 import static de.is24.javaparser.ImportDeclarations.isAsterisk;
 import static de.is24.javaparser.ImportDeclarations.isStatic;
 import static de.is24.javaparser.Nodes.getTypeName;
@@ -269,17 +269,11 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                     @Override
                     public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull ClassOrInterfaceType typeReference) {
                         String typeName = getTypeName(typeReference);
-                        CtClass clazz = classPoolAccessor.getClassPool().getOrNull(typeName);
+                        CtClass clazz = getCtClass(classPoolAccessor.getClassPool(),typeName);
                         if (clazz == null) {
-                            logger.warn("Failed to load [{}]; TypeErasureAnalyzer may not find all references!", typeName);
                             return absent();
                         }
-                        try {
-                            return resolveInheritedType(clazz, getFirstQualifier(typeReference));
-                        } catch (NotFoundException e) {
-                            logger.warn("The class path is not correctly set up; could not load [{}]! Skipping type erasure check for {}.", e.getMessage(), typeName);
-                            return absent();
-                        }
+                        return resolveInheritedType(clazz, getFirstQualifier(typeReference));
                     }
                 };
             }
@@ -287,12 +281,12 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
             @Nonnull
             private Optional<String> resolveInheritedType(
                     @Nonnull CtClass clazz,
-                    @Nonnull ClassOrInterfaceType firstQualifier) throws NotFoundException {
-                Optional<String> result = checkNestedClasses(clazz.getSuperclass(), firstQualifier);
+                    @Nonnull ClassOrInterfaceType firstQualifier) {
+                Optional<String> result = checkNestedClasses(getSuperclassOf(clazz), firstQualifier);
                 if (result.isPresent()) {
                     return result;
                 }
-                for (CtClass interfaceClazz : clazz.getInterfaces()) {
+                for (CtClass interfaceClazz : getInterfacesOf(clazz)) {
                     result = checkNestedClasses(interfaceClazz, firstQualifier);
                     if (result.isPresent()) {
                         return result;
@@ -304,11 +298,11 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
             @Nonnull
             private Optional<String> checkNestedClasses(
                     @Nullable CtClass clazz,
-                    @Nonnull ClassOrInterfaceType firstQualifier) throws NotFoundException {
+                    @Nonnull ClassOrInterfaceType firstQualifier) {
                 if (clazz == null || "java.lang.Object".equals(clazz.getName())) {
                     return absent();
                 }
-                for (CtClass nestedClass : clazz.getNestedClasses()) {
+                for (CtClass nestedClass : getNestedClassesOf(clazz)) {
                     String simpleName = nestedClass.getSimpleName();
                     simpleName = simpleName.substring(simpleName.lastIndexOf('$') + 1);
                     if (firstQualifier.getName().equals(simpleName)) {
