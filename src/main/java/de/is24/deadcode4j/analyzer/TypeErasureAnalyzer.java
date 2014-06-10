@@ -86,24 +86,25 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
     @Override
     @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "The MavenProject does not provide the proper encoding")
     public void doAnalysis(@Nonnull AnalysisContext analysisContext, @Nonnull File file) {
-        if (file.getName().endsWith(".java")) {
-            logger.debug("Analyzing Java file [{}]...", file);
-            final CompilationUnit compilationUnit;
-            Reader reader = null;
-            try {
-                reader = analysisContext.getModule().getEncoding() != null
-                        ? new InputStreamReader(new FileInputStream(file), analysisContext.getModule().getEncoding())
-                        : new FileReader(file);
-                compilationUnit = JavaParser.parse(reader, false);
-            } catch (TokenMgrError e) {
-                throw new RuntimeException("Failed to parse [" + file + "]!", e);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to parse [" + file + "]!", e);
-            } finally {
-                closeQuietly(reader);
-            }
-            analyzeCompilationUnit(analysisContext, compilationUnit);
+        if (!file.getName().endsWith(".java")) {
+            return;
         }
+        logger.debug("Analyzing Java file [{}]...", file);
+        final CompilationUnit compilationUnit;
+        Reader reader = null;
+        try {
+            reader = analysisContext.getModule().getEncoding() != null
+                    ? new InputStreamReader(new FileInputStream(file), analysisContext.getModule().getEncoding())
+                    : new FileReader(file);
+            compilationUnit = JavaParser.parse(reader, false);
+        } catch (TokenMgrError e) {
+            throw new RuntimeException("Failed to parse [" + file + "]!", e);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse [" + file + "]!", e);
+        } finally {
+            closeQuietly(reader);
+        }
+        analyzeCompilationUnit(analysisContext, compilationUnit);
     }
 
     private void analyzeCompilationUnit(@Nonnull final AnalysisContext analysisContext, @Nonnull final CompilationUnit compilationUnit) {
@@ -269,7 +270,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                     @Override
                     public Optional<String> apply(@SuppressWarnings("NullableProblems") @Nonnull ClassOrInterfaceType typeReference) {
                         String typeName = getTypeName(typeReference);
-                        CtClass clazz = getCtClass(classPoolAccessor.getClassPool(),typeName);
+                        CtClass clazz = getCtClass(classPoolAccessor.getClassPool(), typeName);
                         if (clazz == null) {
                             return absent();
                         }
