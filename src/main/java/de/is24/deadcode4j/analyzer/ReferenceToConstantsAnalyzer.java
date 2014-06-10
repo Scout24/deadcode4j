@@ -124,6 +124,9 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                     super.visit(n, arg);
                     return;
                 }
+                if (aLocalVariableExists(getFirstElement(n))) {
+                    return;
+                }
                 if (FieldAccessExpr.class.isInstance(n.getScope())) {
                     FieldAccessExpr nestedFieldAccessExpr = FieldAccessExpr.class.cast(n.getScope());
                     if (isFullyQualifiedReference(nestedFieldAccessExpr)) { // fq beats all
@@ -158,8 +161,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             }
 
             private void resolveFieldReference(FieldAccessExpr fieldAccessExpr) {
-                if (!(aLocalVariableExists(getFirstElement(fieldAccessExpr))
-                        || refersToInnerType(fieldAccessExpr)
+                if (!(refersToInnerType(fieldAccessExpr)
                         || refersToImport(fieldAccessExpr)
                         || refersToPackageType(fieldAccessExpr)
                         || refersToAsteriskImport(fieldAccessExpr)
