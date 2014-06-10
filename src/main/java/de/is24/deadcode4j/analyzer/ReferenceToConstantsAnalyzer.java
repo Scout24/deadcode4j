@@ -17,6 +17,9 @@ import japa.parser.ast.stmt.CatchClause;
 import japa.parser.ast.stmt.ForStmt;
 import japa.parser.ast.stmt.ForeachStmt;
 import japa.parser.ast.type.ClassOrInterfaceType;
+import javassist.CtClass;
+import javassist.CtField;
+import javassist.Modifier;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -31,6 +34,7 @@ import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Sets.newHashSet;
 import static de.is24.deadcode4j.Utils.emptyIfNull;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
+import static de.is24.deadcode4j.analyzer.javassist.CtClasses.*;
 import static de.is24.javaparser.ImportDeclarations.isAsterisk;
 import static de.is24.javaparser.ImportDeclarations.isStatic;
 import static de.is24.javaparser.Nodes.getTypeName;
@@ -275,6 +279,9 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                 if (aLocalVariableExists(referenceName)) {
                     return;
                 }
+                if (refersToInheritedField(reference)) {
+                    return;
+                }
                 String typeName = getTypeName(reference);
                 String staticImport = getStaticImport(referenceName);
                 if (staticImport != null) {
@@ -284,6 +291,46 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                 }
                 // TODO handle asterisk static imports
                 logger.debug("Could not resolve name reference [{}] found within [{}].", reference, typeName);
+            }
+
+            private boolean refersToInheritedField(NameExpr reference) {
+                String typeName = getTypeName(reference);
+                CtClass referencingClazz = getCtClass(classPoolAccessor.getClassPool(), typeName);
+                if (referencingClazz == null) {
+                    return false;
+                }
+                for (CtClass declaringClazz : getDeclaringClassesOf(referencingClazz)) {
+                    if (refersToInheritedField(referencingClazz, declaringClazz, reference)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            private boolean refersToInheritedField(@Nonnull final CtClass referencingClazz,
+                                                   @Nullable CtClass clazz,
+                                                   @Nonnull final NameExpr reference) {
+                if (clazz == null || isJavaLangObject(clazz)) {
+                    return false;
+                }
+                for (CtField ctField : clazz.getDeclaredFields()) {
+                    if (ctField.getName().equals(reference.getName()) && ctField.visibleFrom(referencingClazz)) {
+                        if (Modifier.isStatic(ctField.getModifiers()) && Modifier.isFinal(ctField.getModifiers())) {
+                            // only report dependency if it is a constant
+                            analysisContext.addDependencies(referencingClazz.getName(), clazz.getName());
+                        }
+                        return true;
+                    }
+                }
+                if (refersToInheritedField(referencingClazz, getSuperclassOf(clazz), reference)) {
+                    return true;
+                }
+                for (CtClass interfaceClazz : getInterfacesOf(clazz)) {
+                    if (refersToInheritedField(referencingClazz, interfaceClazz, reference)) {
+                        return true;
+                    }
+                }
+                return false;
             }
 
             @Nullable

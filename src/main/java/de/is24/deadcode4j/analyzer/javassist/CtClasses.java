@@ -110,6 +110,22 @@ public final class CtClasses {
 
 
     /**
+     * Retrieves the declaring classes in bottom-up order.
+     * This method swallows class loading issues, returning only those classes that are accessible by the
+     * {@link javassist.CtClass#getClassPool() class pool}.
+     *
+     * @since 1.6
+     */
+    @Nonnull
+    public static Iterable<CtClass> getDeclaringClassesOf(@Nonnull CtClass clazz) {
+        Collection<CtClass> declaringClasses = Lists.newArrayList();
+        for (CtClass declarer = clazz; declarer != null; declarer = getDeclaringClassOf(declarer)) {
+            declaringClasses.add(declarer);
+        }
+        return declaringClasses;
+    }
+
+    /**
      * Retrieves the nested classes.
      * This method swallows class loading issues, returning only those classes that are accessible by the
      * {@link javassist.CtClass#getClassPool() class pool}.
@@ -145,6 +161,16 @@ public final class CtClasses {
     @Nullable
     private static CtClass getCtClass(@Nonnull CtClass classProvidingPool, @Nonnull String className) {
         return getCtClass(classProvidingPool.getClassPool(), className);
+    }
+
+    @Nullable
+    private static CtClass getDeclaringClassOf(@Nonnull CtClass clazz) {
+        try {
+            return clazz.getDeclaringClass();
+        } catch (NotFoundException e) {
+            handleMissingClass(e.getMessage());
+            return null;
+        }
     }
 
 }
