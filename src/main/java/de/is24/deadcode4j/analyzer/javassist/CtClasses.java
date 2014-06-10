@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -13,7 +15,6 @@ import java.util.Set;
 
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
-import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * Provides convenience methods with which to analyze instances of {@link javassist.CtClass}.
@@ -22,9 +23,10 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 public final class CtClasses {
 
+    private static boolean issuedWarningForJavaLangAnnotationRepeatable = false;
+
     private CtClasses() {
     }
-
 
     /**
      * Retrieves the specified class.
@@ -124,8 +126,20 @@ public final class CtClasses {
         }
     }
 
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(CtClasses.class);
+    }
+
     private static void handleMissingClass(@Nonnull String className) {
-        getLogger(CtClasses.class).warn("The class path is not correctly set up; could not load {}!", className);
+        if ("java.lang.annotation.Repeatable".equals(className)) {
+            if (issuedWarningForJavaLangAnnotationRepeatable) {
+                return;
+            }
+            getLogger().warn("Running with JDK < 8, but classes or libraries refer to JDK8 annotation {}.", className);
+            issuedWarningForJavaLangAnnotationRepeatable = true;
+        } else {
+            getLogger().warn("The class path is not correctly set up; could not load {}!", className);
+        }
     }
 
     @Nullable
