@@ -274,7 +274,14 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                         if (clazz == null) {
                             return absent();
                         }
-                        return resolveInheritedType(clazz, getFirstQualifier(typeReference));
+                        ClassOrInterfaceType firstQualifier = getFirstQualifier(typeReference);
+                        for (CtClass declaringClazz : getDeclaringClassesOf(clazz)) {
+                            Optional<String> inheritedType = resolveInheritedType(declaringClazz, firstQualifier);
+                            if (inheritedType.isPresent()){
+                                return inheritedType;
+                            }
+                        }
+                        return absent();
                     }
                 };
             }

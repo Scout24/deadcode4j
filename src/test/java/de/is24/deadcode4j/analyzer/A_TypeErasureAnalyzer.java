@@ -56,6 +56,10 @@ public final class A_TypeErasureAnalyzer extends AnAnalyzer<TypeErasureAnalyzer>
 
         assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.ClassWithInheritedType",
                 "de.is24.deadcode4j.analyzer.typeerasure.TypedArrayList$InnerClass");
+        assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.ClassWithInheritedType$Inner",
+                "de.is24.deadcode4j.analyzer.typeerasure.TypedArrayList$InnerClass");
+        assertThatDependenciesAreReportedFor("de.is24.deadcode4j.analyzer.typeerasure.ClassWithInheritedType$Inner$Core",
+                "de.is24.deadcode4j.junit.SomeInterface$InnerType");
     }
 
     @Test
