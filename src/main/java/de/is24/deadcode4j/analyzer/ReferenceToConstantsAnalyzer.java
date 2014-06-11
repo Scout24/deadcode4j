@@ -113,6 +113,10 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
         };
     }
 
+    private static boolean isConstant(CtField ctField) {
+        return Modifier.isStatic(ctField.getModifiers()) && Modifier.isFinal(ctField.getModifiers());
+    }
+
     @Override
     protected void analyzeCompilationUnit(@Nonnull final AnalysisContext analysisContext,
                                           @Nonnull final CompilationUnit compilationUnit) {
@@ -314,8 +318,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                 }
                 for (CtField ctField : clazz.getDeclaredFields()) {
                     if (ctField.getName().equals(reference.getName()) && ctField.visibleFrom(referencingClazz)) {
-                        if (Modifier.isStatic(ctField.getModifiers()) && Modifier.isFinal(ctField.getModifiers())) {
-                            // only report dependency if it is a constant
+                        if (isConstant(ctField)) {
                             analysisContext.addDependencies(referencingClazz.getName(), clazz.getName());
                         }
                         return true;
