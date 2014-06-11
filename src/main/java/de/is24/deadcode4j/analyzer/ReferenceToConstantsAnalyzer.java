@@ -279,27 +279,14 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             }
 
             private void resolveNameReference(NameExpr reference) {
-                String referenceName = reference.getName();
-                if (aLocalVariableExists(referenceName)) {
-                    return;
-                }
-                if (refersToInheritedField(reference)) {
-                    return;
-                }
-                String typeName = getTypeName(reference);
-                String staticImport = getStaticImport(referenceName);
-                if (staticImport != null) {
-                    Optional<String> resolvedClass = resolveClass(staticImport);
-                    if (resolvedClass.isPresent()) {
-                        analysisContext.addDependencies(typeName, resolvedClass.get());
-                    } else {
-                        logger.warn("Could not resolve static import [{}.{}] found within [{}]!",
-                                staticImport, referenceName, typeName);
-                    }
+                if (aLocalVariableExists(reference.getName())
+                        || refersToInheritedField(reference)
+                        || refersToStaticImport(reference)) {
                     return;
                 }
                 // TODO handle asterisk static imports
-                logger.debug("Could not resolve name reference [{}] found within [{}].", reference, typeName);
+                logger.debug("Could not resolve name reference [{}] found within [{}].",
+                        reference, getTypeName(reference));
             }
 
             private boolean refersToInheritedField(NameExpr reference) {
@@ -338,6 +325,23 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                     }
                 }
                 return false;
+            }
+
+            private boolean refersToStaticImport(NameExpr reference) {
+                String referenceName = reference.getName();
+                String staticImport = getStaticImport(referenceName);
+                if (staticImport == null) {
+                    return false;
+                }
+                String typeName = getTypeName(reference);
+                Optional<String> resolvedClass = resolveClass(staticImport);
+                if (resolvedClass.isPresent()) {
+                    analysisContext.addDependencies(typeName, resolvedClass.get());
+                } else {
+                    logger.warn("Could not resolve static import [{}.{}] found within [{}]!",
+                            staticImport, referenceName, typeName);
+                }
+                return true;
             }
 
             @Nullable
