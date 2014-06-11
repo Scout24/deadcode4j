@@ -415,6 +415,15 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer<ReferenceTo
     }
 
     @Test
+    public void recognizesDependencyToConstantOfInnerClassViaStaticImportInField() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingConstantOfInnerClassViaStaticImportInField.java");
+        triggerFinishAnalysisEvent();
+
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.ClassUsingConstantOfInnerClassViaStaticImportInField",
+                FQ_CONSTANTS + "$More");
+    }
+
+    @Test
     public void recognizesDependencyToConstantForInnerClassViaAsteriskStaticImportInField() {
     }
 

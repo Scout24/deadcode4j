@@ -289,8 +289,13 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                 String typeName = getTypeName(reference);
                 String staticImport = getStaticImport(referenceName);
                 if (staticImport != null) {
-                    // TODO this should probably be resolved
-                    analysisContext.addDependencies(typeName, staticImport);
+                    Optional<String> resolvedClass = resolveClass(staticImport);
+                    if (resolvedClass.isPresent()) {
+                        analysisContext.addDependencies(typeName, resolvedClass.get());
+                    } else {
+                        logger.warn("Could not resolve static import [{}.{}] found within [{}]!",
+                                staticImport, referenceName, typeName);
+                    }
                     return;
                 }
                 // TODO handle asterisk static imports
