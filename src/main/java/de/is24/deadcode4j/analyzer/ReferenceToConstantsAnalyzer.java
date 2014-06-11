@@ -294,8 +294,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             }
 
             private boolean refersToInheritedField(NameExpr reference) {
-                String typeName = getTypeName(reference);
-                CtClass referencingClazz = getCtClass(classPoolAccessor.getClassPool(), typeName);
+                CtClass referencingClazz = getCtClass(classPoolAccessor.getClassPool(), getTypeName(reference));
                 if (referencingClazz == null) {
                     return false;
                 }
