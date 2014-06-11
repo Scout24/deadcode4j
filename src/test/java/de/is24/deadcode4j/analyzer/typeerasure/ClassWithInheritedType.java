@@ -5,7 +5,7 @@ import java.util.List;
 public class ClassWithInheritedType extends TypedArrayList {
     private List<InnerClass> aList;
     public static class Inner implements SomeInterface {
-        private List<InnerClass> aList;
+        private List<InnerClass.NestedInnerClass> aList;
         public static class Core {
             private List<InnerType> aList;
         }

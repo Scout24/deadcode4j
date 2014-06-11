@@ -315,7 +315,7 @@ public class TypeErasureAnalyzer extends AnalyzerAdapter {
                     simpleName = simpleName.substring(simpleName.lastIndexOf('$') + 1);
                     if (firstQualifier.getName().equals(simpleName)) {
                         return of(nestedClass.getName().substring(0, nestedClass.getName().length() - simpleName.length())
-                                + getFullQualifier(getLastQualifier(firstQualifier)));
+                                + getFullQualifier(getLastQualifier(firstQualifier)).replace('.', '$'));
                     }
                 }
                 return resolveInheritedType(clazz, firstQualifier);
