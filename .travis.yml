@@ -1,12 +1,9 @@
 language: java
 install: "mvn clean"
-script: "mvn verify -T 1C"
+script: "mvn verify -T 1C -PenableCoverage"
 jdk:
   - openjdk7
   - openjdk6
   - oraclejdk7
-branches:
-  only:
-    - master
 after_success:
-  - mvn clean test jacoco:report coveralls:jacoco
+  - mvn jacoco:report coveralls:jacoco
