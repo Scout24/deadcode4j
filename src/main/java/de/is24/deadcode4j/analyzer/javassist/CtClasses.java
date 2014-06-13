@@ -25,9 +25,6 @@ public final class CtClasses {
 
     private static boolean issuedWarningForJavaLangAnnotationRepeatable = false;
 
-    private CtClasses() {
-    }
-
     /**
      * Retrieves the specified class.
      * This method swallows class loading issues, returning only those classes that are accessible by the
