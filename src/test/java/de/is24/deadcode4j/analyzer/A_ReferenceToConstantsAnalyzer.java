@@ -474,6 +474,16 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer<ReferenceTo
                 "de.is24.deadcode4j.analyzer.constants.InnerClassUsingConstantOfOuterClassInFieldDirectly");
     }
 
+    @Ignore("Although this is no inlined constant it screws performance a bit, as we have no way of identifying the reference and thus perform many unnecessary class resolvings.")
+    @Test
+    public void recognizesReferenceToEnumerationInSwitch() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingEnumConstantInSwitch.java");
+        triggerFinishAnalysisEvent();
+
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.ClassUsingEnumConstantInSwitch",
+                "de.is24.deadcode4j.analyzer.constants.EnumUsingConstantInField");
+    }
+
     @Test
     public void ignoresReferencesToStaticMethods() {
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingStaticMethodInStaticField.java");
