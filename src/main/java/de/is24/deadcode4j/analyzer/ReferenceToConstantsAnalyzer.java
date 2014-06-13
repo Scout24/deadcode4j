@@ -12,10 +12,7 @@ import japa.parser.ast.ImportDeclaration;
 import japa.parser.ast.Node;
 import japa.parser.ast.body.*;
 import japa.parser.ast.expr.*;
-import japa.parser.ast.stmt.BlockStmt;
-import japa.parser.ast.stmt.CatchClause;
-import japa.parser.ast.stmt.ForStmt;
-import japa.parser.ast.stmt.ForeachStmt;
+import japa.parser.ast.stmt.*;
 import japa.parser.ast.type.ClassOrInterfaceType;
 import javassist.CtClass;
 import javassist.CtField;
@@ -613,6 +610,22 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
         public void visit(ForStmt n, A arg) {
             this.localVariables.addLast(Sets.<String>newHashSet());
             try {
+                super.visit(n, arg);
+            } finally {
+                this.localVariables.removeLast();
+            }
+        }
+
+        @Override
+        public void visit(TryStmt n, A arg) {
+            HashSet<String> blockVariables = newHashSet();
+            this.localVariables.addLast(blockVariables);
+            try {
+                for (VariableDeclarationExpr variableDeclarationExpr : emptyIfNull(n.getResources())) {
+                    for (VariableDeclarator variableDeclarator : variableDeclarationExpr.getVars()) {
+                        blockVariables.add(variableDeclarator.getId().getName());
+                    }
+                }
                 super.visit(n, arg);
             } finally {
                 this.localVariables.removeLast();
