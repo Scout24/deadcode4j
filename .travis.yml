@@ -1,6 +1,6 @@
 language: java
-install: "mvn clean verify -B -U -Dmaven.main.skip=true -Dmaven.test.skip=true -Dinvoker.skip=true"
-script: "mvn verify -B -T 1C"
+install: "mvn clean verify -B -U -Ptravis -Dmaven.main.skip=true -Dmaven.test.skip=true -Dinvoker.skip=true"
+script: "mvn verify -B -T 1C -Ptravis"
 jdk:
   - openjdk7
   - openjdk6
