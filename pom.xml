@@ -167,15 +167,17 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <id>test-find</id>
                         <goals>
                             <goal>install</goal>
-                            <goal>integration-test</goal>
                             <goal>verify</goal>
                         </goals>
+                    </execution>
+                    <execution>
+                        <id>test-find</id>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
                         <configuration>
-                            <cloneClean>true</cloneClean>
-                            <cloneProjectsTo>${project.build.directory}/it-projects</cloneProjectsTo>
                             <goals>
                                 <goal>clean</goal>
                                 <goal>${project.groupId}:${project.artifactId}:find</goal>
@@ -188,9 +190,7 @@
                     <execution>
                         <id>test-help</id>
                         <goals>
-                            <goal>install</goal>
                             <goal>integration-test</goal>
-                            <goal>verify</goal>
                         </goals>
                         <configuration>
                             <goals>
