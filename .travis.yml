@@ -1,9 +1,10 @@
 language: java
-install: "mvn clean"
-script: "mvn verify -T 1C -PenableCoverage"
+install: "mvn clean verify -B -U -Ptravis -Dmaven.main.skip=true -Dmaven.test.skip=true -Dinvoker.skip=true"
+script: "mvn verify -B -T 1C -PenableCoverage,travis"
 jdk:
   - openjdk7
   - openjdk6
   - oraclejdk7
+  - oraclejdk8
 after_success:
   - mvn jacoco:report coveralls:jacoco

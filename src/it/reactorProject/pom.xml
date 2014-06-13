@@ -3,7 +3,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>de.is24.junit</groupId>
+    <parent>
+        <groupId>de.is24.junit</groupId>
+        <artifactId>parent</artifactId>
+        <version>42</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
     <artifactId>reactorProject</artifactId>
     <version>42</version>
     <packaging>pom</packaging>

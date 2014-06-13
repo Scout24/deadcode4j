@@ -59,9 +59,10 @@
         <!-- Configure Maven plugins -->
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
+        <maven.test.skip>false</maven.test.skip>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <test>**/A_*.java,**/An_*.java</test>
+        <invoker.localRepositoryPath>${project.build.directory}/it-repo</invoker.localRepositoryPath>
         <!-- own stuff -->
         <testScenarios.directory>${java.io.tmpdir}/deadcode4j</testScenarios.directory>
         <!-- Dependency Management -->
@@ -79,20 +80,23 @@
         <pluginManagement>
             <plugins>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-plugin-plugin</artifactId>
-                    <version>3.2</version>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>2.6</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.1</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.17</version>
                     <configuration>
-                        <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
+                        <test>**/A_*.java,**/An_*.java</test>
                     </configuration>
-                    <executions>
-                        <execution>
-                            <id>help-goal</id>
-                            <goals>
-                                <goal>helpmojo</goal>
-                            </goals>
-                        </execution>
-                    </executions>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>2.4</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -103,7 +107,6 @@
                     </configuration>
                 </plugin>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-pmd-plugin</artifactId>
                     <version>3.1</version>
                     <configuration>
@@ -135,7 +138,6 @@
         </pluginManagement>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
                 <version>3.2</version>
                 <configuration>
@@ -143,6 +145,12 @@
                     <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
                 </configuration>
                 <executions>
+                    <execution>
+                        <id>help-goal</id>
+                        <goals>
+                            <goal>helpmojo</goal>
+                        </goals>
+                    </execution>
                     <execution>
                         <id>mojo-descriptor</id>
                         <goals>
@@ -172,21 +180,23 @@
                     <cloneClean>true</cloneClean>
                     <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
                     <debug>false</debug>
-                    <localRepositoryPath>${project.build.directory}/it-repo</localRepositoryPath>
+                    <localRepositoryPath>${invoker.localRepositoryPath}</localRepositoryPath>
                     <postBuildHookScript>verify</postBuildHookScript>
                     <streamLogs>true</streamLogs>
                 </configuration>
                 <executions>
                     <execution>
-                        <id>test-find</id>
                         <goals>
                             <goal>install</goal>
-                            <goal>integration-test</goal>
                             <goal>verify</goal>
                         </goals>
+                    </execution>
+                    <execution>
+                        <id>test-find</id>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
                         <configuration>
-                            <cloneClean>true</cloneClean>
-                            <cloneProjectsTo>${project.build.directory}/it-projects</cloneProjectsTo>
                             <goals>
                                 <goal>clean</goal>
                                 <goal>${project.groupId}:${project.artifactId}:find</goal>
@@ -199,9 +209,7 @@
                     <execution>
                         <id>test-help</id>
                         <goals>
-                            <goal>install</goal>
                             <goal>integration-test</goal>
-                            <goal>verify</goal>
                         </goals>
                         <configuration>
                             <goals>
@@ -218,6 +226,10 @@
 
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.7</version>
+                <configuration>
+                    <skip>${maven.test.skip}</skip>
+                </configuration>
                 <executions>
                     <execution>
                         <id>copyTestClasses</id>
@@ -254,6 +266,12 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>travis</id>
+            <properties>
+                <invoker.localRepositoryPath>${settings.localRepository}</invoker.localRepositoryPath>
+            </properties>
+        </profile>
         <profile>
             <id>enableCoverage</id>
             <build>
