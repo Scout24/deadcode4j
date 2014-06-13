@@ -140,7 +140,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                     if (isFullyQualifiedReference(nestedFieldAccessExpr)) { // fq beats all
                         return;
                     }
-                    resolveFieldReference(nestedFieldAccessExpr);
+                    resolveFieldReference(n);
                 } else if (NameExpr.class.isInstance(n.getScope())) {
                     resolveFieldReference(n);
                 }
@@ -261,21 +261,25 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             }
 
             private boolean refersToClass(@Nonnull FieldAccessExpr fieldAccessExpr, @Nonnull String qualifierPrefix) {
-                Optional<String> resolvedClass = resolveClass(qualifierPrefix + fieldAccessExpr.toString());
-                if (resolvedClass.isPresent()) {
-                    analysisContext.addDependencies(getTypeName(fieldAccessExpr), resolvedClass.get());
-                    return true;
-                }
-                if (FieldAccessExpr.class.isInstance(fieldAccessExpr.getScope())) {
-                    return refersToClass(FieldAccessExpr.class.cast(fieldAccessExpr.getScope()), qualifierPrefix);
-                }
+                // skip last qualifier, as it refers to a field, not a class
+                return refersToClass(fieldAccessExpr.getScope(), qualifierPrefix);
+            }
 
-                resolvedClass = resolveClass(qualifierPrefix + NameExpr.class.cast(fieldAccessExpr.getScope()).getName());
+            private boolean refersToClass(@Nonnull Expression expression, @Nonnull String qualifierPrefix) {
+                if (NameExpr.class.isInstance(expression)) {
+                    Optional<String> resolvedClass = resolveClass(qualifierPrefix + NameExpr.class.cast(expression).getName());
+                    if (resolvedClass.isPresent()) {
+                        analysisContext.addDependencies(getTypeName(expression), resolvedClass.get());
+                        return true;
+                    }
+                    return false;
+                }
+                Optional<String> resolvedClass = resolveClass(qualifierPrefix + expression.toString());
                 if (resolvedClass.isPresent()) {
-                    analysisContext.addDependencies(getTypeName(fieldAccessExpr), resolvedClass.get());
+                    analysisContext.addDependencies(getTypeName(expression), resolvedClass.get());
                     return true;
                 }
-                return false;
+                return refersToClass(FieldAccessExpr.class.cast(expression).getScope(), qualifierPrefix);
             }
 
             private void resolveNameReference(NameExpr reference) {
