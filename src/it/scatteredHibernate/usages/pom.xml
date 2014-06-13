@@ -9,6 +9,7 @@
         <version>42</version>
         <relativePath>./../pom.xml</relativePath>
     </parent>
+
     <artifactId>scatteredHibernate-usages</artifactId>
     <version>${project.parent.version}</version>
     <packaging>jar</packaging>

@@ -9,6 +9,7 @@
         <version>42</version>
         <relativePath>./../pom.xml</relativePath>
     </parent>
+
     <artifactId>scatteredHibernate-overriding-definition</artifactId>
     <version>${project.parent.version}</version>
     <packaging>jar</packaging>
