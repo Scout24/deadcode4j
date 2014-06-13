@@ -153,7 +153,7 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer<ReferenceTo
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingConstantViaAsteriskStaticImportInField.java");
         triggerFinishAnalysisEvent();
 
-        // TODO implement
+        assertDependencyToConstantsExists("de.is24.deadcode4j.analyzer.constants.ClassUsingConstantViaAsteriskStaticImportInField");
     }
 
     @Test
@@ -385,7 +385,7 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer<ReferenceTo
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/subpackage/ClassUsingConstantOfOtherPackageViaAsteriskStaticImportInField.java");
         triggerFinishAnalysisEvent();
 
-        // TODO implement
+        assertDependencyToConstantsExists("de.is24.deadcode4j.analyzer.constants.subpackage.ClassUsingConstantOfOtherPackageViaAsteriskStaticImportInField");
     }
 
     @Test

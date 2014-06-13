@@ -105,7 +105,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                 if (input == null)
                     return null;
                 NameExpr name = input.getName();
-                if (input.isStatic()) {
+                if (input.isStatic() && !input.isAsterisk()) {
                     name = QualifiedNameExpr.class.cast(name).getQualifier();
                 }
                 return name.toString();
@@ -281,10 +281,10 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             private void resolveNameReference(NameExpr reference) {
                 if (aLocalVariableExists(reference.getName())
                         || refersToInheritedField(reference)
-                        || refersToStaticImport(reference)) {
+                        || refersToStaticImport(reference)
+                        || refersToAsteriskStaticImport(reference)) {
                     return;
                 }
-                // TODO handle asterisk static imports
                 logger.debug("Could not resolve name reference [{}] found within [{}].",
                         reference, getTypeName(reference));
             }
@@ -344,6 +344,28 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                 return true;
             }
 
+            private boolean refersToAsteriskStaticImport(NameExpr reference) {
+                CtClass referencingClazz = getCtClass(classPoolAccessor.getClassPool(), getTypeName(reference));
+                if (referencingClazz == null) {
+                    return false;
+                }
+                for (String asteriskImport : getStaticAsteriskImports()) {
+                    Optional<String> resolvedClass = resolveClass(asteriskImport);
+                    if (!resolvedClass.isPresent()) {
+                        String typeName = getTypeName(reference);
+                        logger.warn("Could not resolve static import [{}.*] found within [{}]!",
+                                asteriskImport, typeName);
+                        continue;
+                    }
+                    CtClass potentialTarget = getCtClass(classPoolAccessor.getClassPool(), resolvedClass.get());
+                    if (refersToInheritedField(referencingClazz, potentialTarget, reference)) {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
             @Nullable
             @SuppressWarnings("unchecked")
             private String getImport(String typeName) {
@@ -362,6 +384,12 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             private Iterable<String> getAsteriskImports() {
                 return transform(filter(emptyIfNull(compilationUnit.getImports()),
                         and(isAsterisk(), not(isStatic()))), toImportedType());
+            }
+
+            @Nonnull
+            private Iterable<String> getStaticAsteriskImports() {
+                return transform(filter(emptyIfNull(compilationUnit.getImports()),
+                        and(isAsterisk(), isStatic())), toImportedType());
             }
 
             @Override
