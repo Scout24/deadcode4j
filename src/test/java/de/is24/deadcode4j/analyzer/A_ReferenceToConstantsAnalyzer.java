@@ -516,6 +516,8 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer<ReferenceTo
     public void ignoresReferencesToStaticMethods() {
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingStaticMethodInStaticField.java");
         triggerFinishAnalysisEvent();
+
+        assertNoOtherDependenciesExist();
     }
 
     private void triggerFinishAnalysisEvent() {
