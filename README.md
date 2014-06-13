@@ -1,4 +1,8 @@
-# deadcode4j [![Build Status](https://api.travis-ci.org/ImmobilienScout24/deadcode4j.svg?branch=master)](https://travis-ci.org/ImmobilienScout24/deadcode4j)
+# deadcode4j 
+
+[![Build Status](https://api.travis-ci.org/ImmobilienScout24/deadcode4j.svg?branch=master)](https://travis-ci.org/ImmobilienScout24/deadcode4j)
+[![Coverage Status](https://coveralls.io/repos/ImmobilienScout24/deadcode4j/badge.png)](https://coveralls.io/r/ImmobilienScout24/deadcode4j)
+
 *deadcode4j* helps you find code that is no longer used by your application. It is especially useful for cleaning up legacy code.
 
 ## Usage
