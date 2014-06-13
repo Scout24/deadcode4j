@@ -93,6 +93,34 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer<ReferenceTo
     }
 
     @Test
+    public void recognizesDependencyToNestedConstantOfImplementedInterfaceInExpression() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingNestedConstantOfImplementedInterfaceInField.java");
+        triggerFinishAnalysisEvent();
+
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.ClassUsingNestedConstantOfImplementedInterfaceInField",
+                FQ_CONSTANTS + "$More");
+    }
+
+    @Test
+    public void recognizesDependencyToNestedConstantOfImplementedInterfaceUsedByInnerClassInExpression() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/InnerClassUsingNestedConstantOfImplementedInterfaceInExpression.java");
+        triggerFinishAnalysisEvent();
+
+
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.InnerClassUsingNestedConstantOfImplementedInterfaceInExpression$InnerClass",
+                FQ_CONSTANTS + "$More");
+    }
+
+    @Test
+    public void recognizesDependencyToNestedConstantOfSuperclassInMethod() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingNestedConstantOfSuperclassInMethod.java");
+        triggerFinishAnalysisEvent();
+
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.ClassUsingNestedConstantOfSuperclassInMethod",
+                FQ_CONSTANTS + "$More");
+    }
+
+    @Test
     public void recognizesDependencyToFullyQualifiedConstantInExpression() {
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingFQConstantInExpression.java");
         triggerFinishAnalysisEvent();

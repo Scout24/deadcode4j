@@ -170,6 +170,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
             private void resolveFieldReference(FieldAccessExpr fieldAccessExpr) {
                 if (!(refersToInnerType(fieldAccessExpr)
+                        || refersToInheritedField(fieldAccessExpr)
                         || refersToImport(fieldAccessExpr)
                         || refersToPackageType(fieldAccessExpr)
                         || refersToAsteriskImport(fieldAccessExpr)
@@ -228,6 +229,55 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                 }
 
                 return getTypeName(typeDeclaration);
+            }
+
+            private boolean refersToInheritedField(FieldAccessExpr fieldAccessExpr) {
+                CtClass referencingClazz = getCtClass(classPoolAccessor.getClassPool(), getTypeName(fieldAccessExpr));
+                if (referencingClazz == null) {
+                    return false;
+                }
+                for (CtClass declaringClazz : getDeclaringClassesOf(referencingClazz)) {
+                    if (refersToInheritedField(referencingClazz, declaringClazz, fieldAccessExpr)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            private boolean refersToInheritedField(@Nonnull final CtClass referencingClazz,
+                                                   @Nullable CtClass clazz,
+                                                   @Nonnull final FieldAccessExpr fieldAccessExpr) {
+                if (clazz == null || isJavaLangObject(clazz)) {
+                    return false;
+                }
+                for (CtField ctField : clazz.getDeclaredFields()) {
+                    if (ctField.getName().equals(getFirstElement(fieldAccessExpr)) && ctField.visibleFrom(referencingClazz)) {
+                        if (isConstant(ctField)) {
+                            analysisContext.addDependencies(referencingClazz.getName(), clazz.getName());
+                        }
+                        return true;
+                    }
+                }
+                for (CtClass nestedClazz : getNestedClassesOf(clazz)) {
+                    if (nestedClazz.getName().substring(clazz.getName().length() + 1).equals(getFirstElement(fieldAccessExpr))) {
+                        if (refersToClass(fieldAccessExpr, clazz.getName() + "$")) {
+                            return true;
+                        } else {
+                            logger.warn("Could not resolve inherited type [{}] found within [{}]!",
+                                    nestedClazz.getName(), getTypeName(fieldAccessExpr));
+                            return false;
+                        }
+                    }
+                }
+                if (refersToInheritedField(referencingClazz, getSuperclassOf(clazz), fieldAccessExpr)) {
+                    return true;
+                }
+                for (CtClass interfaceClazz : getInterfacesOf(clazz)) {
+                    if (refersToInheritedField(referencingClazz, interfaceClazz, fieldAccessExpr)) {
+                        return true;
+                    }
+                }
+                return false;
             }
 
             private boolean refersToImport(FieldAccessExpr fieldAccessExpr) {
