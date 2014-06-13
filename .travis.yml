@@ -1,7 +1,8 @@
 language: java
-install: "mvn clean"
+install: "mvn clean dependency:resolve"
 script: "mvn verify -T 1C"
 jdk:
   - openjdk7
   - openjdk6
   - oraclejdk7
+  - oraclejdk8

@@ -12,6 +12,7 @@
     * only recognizes custom implementations following the default naming convention `RepositoryNameImpl`
 * Custom analyzers now report if a configured annotation, interface or super class isn't found in the class path and thus could be removed
 * SpringWebXmlAnalyzer now recognizes classes listed within the `contextConfigLocation` init-parameter 
+* Added analysis of [Jetty XML configuration](http://www.eclipse.org/jetty/configure_9_0.dtd) files: recognizing listed `class` and `type` attributes as _live code_ 
 * made *deadcode4j* more resilient: failing to analyze a file does not lead to termination any longer
 
 ## Internal

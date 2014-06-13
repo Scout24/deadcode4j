@@ -1,8 +1,10 @@
 package de.is24.deadcode4j.junit;
 
 import com.google.common.base.Strings;
+import org.apache.maven.monitor.logging.DefaultLog;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.plugin.logging.SystemStreamLog;
+import org.codehaus.plexus.logging.Logger;
+import org.codehaus.plexus.logging.console.ConsoleLogger;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.mockito.invocation.InvocationOnMock;
@@ -21,12 +23,7 @@ public class LoggingRule extends TestWatcher {
     }
 
     public LoggingRule() {
-        this(new SystemStreamLog() {
-            @Override
-            public boolean isDebugEnabled() {
-                return true;
-            }
-        });
+        this(new DefaultLog(new ConsoleLogger(Logger.LEVEL_DEBUG, "junit")));
     }
 
     public static Log createMock() {

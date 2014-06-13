@@ -135,6 +135,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
                 new FacesConfigXmlAnalyzer(),
                 new HibernateAnnotationsAnalyzer(),
                 new JeeAnnotationsAnalyzer(),
+                new JettyXmlAnalyzer(),
                 new ReferenceToConstantsAnalyzer(),
                 new ServletContainerInitializerAnalyzer(),
                 new SpringAnnotationsAnalyzer(),

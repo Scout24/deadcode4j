@@ -246,7 +246,14 @@ public class TypeErasureAnalyzer extends JavaFileAnalyzer {
                         if (clazz == null) {
                             return absent();
                         }
-                        return resolveInheritedType(clazz, getFirstQualifier(typeReference));
+                        ClassOrInterfaceType firstQualifier = getFirstQualifier(typeReference);
+                        for (CtClass declaringClazz : getDeclaringClassesOf(clazz)) {
+                            Optional<String> inheritedType = resolveInheritedType(declaringClazz, firstQualifier);
+                            if (inheritedType.isPresent()){
+                                return inheritedType;
+                            }
+                        }
+                        return absent();
                     }
                 };
             }
@@ -280,7 +287,7 @@ public class TypeErasureAnalyzer extends JavaFileAnalyzer {
                     simpleName = simpleName.substring(simpleName.lastIndexOf('$') + 1);
                     if (firstQualifier.getName().equals(simpleName)) {
                         return of(nestedClass.getName().substring(0, nestedClass.getName().length() - simpleName.length())
-                                + getFullQualifier(getLastQualifier(firstQualifier)));
+                                + getFullQualifier(getLastQualifier(firstQualifier)).replace('.', '$'));
                     }
                 }
                 return resolveInheritedType(clazz, firstQualifier);
