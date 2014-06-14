@@ -7,4 +7,8 @@ public interface Constants {
     public interface More {
         String STUFF = "acme";
     }
+
+    public class Inner {
+        public static void call() {}
+    }
 }

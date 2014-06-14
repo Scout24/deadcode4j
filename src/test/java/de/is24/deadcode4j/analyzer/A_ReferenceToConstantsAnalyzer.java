@@ -521,11 +521,44 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer<ReferenceTo
     }
 
     @Test
-    public void recognizesReferenceToConstantBeingPartOfAMethodCall() {
+    public void ignoresReferencesToStaticMethodsOfToStaticallyImportedClasses() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingStaticMethodOfStaticallyImportedClassInMethod.java");
+        triggerFinishAnalysisEvent();
+
+        assertNoOtherDependenciesExist();
+    }
+
+    @Test
+    public void ignoresReferencesToStaticMethodsOfNestedClasses() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingStaticMethodOfNestedClassInMethod.java");
+        triggerFinishAnalysisEvent();
+
+        assertNoOtherDependenciesExist();
+    }
+
+    @Test
+    public void recognizesReferenceToConstantBeingScopeOfAMethodCall() {
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassCallingMethodOfStaticallyImportedConstantInField.java");
         triggerFinishAnalysisEvent();
 
         assertDependencyToConstantsExists("de.is24.deadcode4j.analyzer.constants.ClassCallingMethodOfStaticallyImportedConstantInField");
+    }
+
+    @Test
+    public void recognizesReferenceToConstantBeingPartialScopeOfAMethodCall() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassCallingMethodOnConstantOfImportedClassInField.java");
+        triggerFinishAnalysisEvent();
+
+        assertDependencyToConstantsExists("de.is24.deadcode4j.analyzer.constants.ClassCallingMethodOnConstantOfImportedClassInField");
+    }
+
+    @Test
+    public void recognizesReferenceToNestedConstantBeingPartialScopeOfAMethodCall() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassCallingMethodOnConstantOfNestedClassOfImportedClassInField.java");
+        triggerFinishAnalysisEvent();
+
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.ClassCallingMethodOnConstantOfNestedClassOfImportedClassInField",
+                FQ_CONSTANTS + "$More");
     }
 
     private void triggerFinishAnalysisEvent() {
