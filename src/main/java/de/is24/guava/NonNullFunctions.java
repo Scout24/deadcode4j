@@ -13,8 +13,6 @@ import javax.annotation.Nullable;
  */
 public final class NonNullFunctions {
 
-    private NonNullFunctions() {}
-
     /**
      * Transforms a <code>NonNullFunction</code> into a <code>Function</code>.
      * If a <code>Function</code>'s input is <code>null</code>, a <code>NullPointerException</code> is thrown.
