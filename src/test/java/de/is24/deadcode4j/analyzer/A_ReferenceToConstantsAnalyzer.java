@@ -520,6 +520,14 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer<ReferenceTo
         assertNoOtherDependenciesExist();
     }
 
+    @Test
+    public void recognizesReferenceToConstantBeingPartOfAMethodCall() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassCallingMethodOfStaticallyImportedConstantInField.java");
+        triggerFinishAnalysisEvent();
+
+        assertDependencyToConstantsExists("de.is24.deadcode4j.analyzer.constants.ClassCallingMethodOfStaticallyImportedConstantInField");
+    }
+
     private void triggerFinishAnalysisEvent() {
         objectUnderTest.finishAnalysis(analysisContext);
     }
