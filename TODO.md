@@ -8,7 +8,7 @@ Features
 * [ ] _Detection 2.0_
     * [ ] check if a Spring bean is really used
     * [ ] check if JSF stuff is really used
-    * [ ] check if GenericGenerator is really used
+    * [x] check if GenericGenerator is really used
     * [ ] generate a report
     * [ ] consider only listed Spring Web Flow XML files
 * [ ] JBoss XML files (can be done using custom XML for the moment)
