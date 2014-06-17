@@ -11,7 +11,7 @@ import javax.annotation.Nonnull;
 import static com.google.common.collect.Iterables.filter;
 
 /**
- * Analyzes class files: marks a class a being in use if it defines a main method.
+ * Analyzes class files: marks a class as being in use if it defines a main method.
  *
  * @since 1.6
  */
