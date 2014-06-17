@@ -67,6 +67,13 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     @Parameter
     private List<CustomXml> customXmls = emptyList();
     /**
+     * Mark all classes with a main method as being "live code".
+     *
+     * @since 1.6
+     */
+    @Parameter
+    private boolean ignoreMainClasses = false;
+    /**
      * Lists the fqcn of the interfaces marking a class as being "live code".
      *
      * @since 1.4
@@ -152,6 +159,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
         addCustomInterfacesAnalyzerIfConfigured(analyzers);
         addCustomSuperClassesAnalyzerIfConfigured(analyzers);
         addCustomXmlAnalyzerIfConfigured(analyzers);
+        addMainClassAnalyzerIfConfigured(analyzers);
         DeadCodeFinder deadCodeFinder = new DeadCodeFinder(analyzers);
         return deadCodeFinder.findDeadCode(gatherModules());
     }
@@ -189,6 +197,13 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
             }
             analyzers.add(customXmlAnalyzer);
         }
+    }
+
+    private void addMainClassAnalyzerIfConfigured(Set<Analyzer> analyzers) {
+        if (!ignoreMainClasses)
+            return;
+        analyzers.add(new MainClassAnalyzer());
+        getLog().info("Treating classes with a main method as live code.");
     }
 
     private Iterable<Module> gatherModules() throws MojoExecutionException {

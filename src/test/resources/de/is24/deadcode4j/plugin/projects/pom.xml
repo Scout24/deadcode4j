@@ -30,6 +30,7 @@
                             </xPaths>
                         </customXml>
                     </customXmls>
+                    <ignoreMainClasses>true</ignoreMainClasses>
                     <interfacesMarkingLiveCode>
                         <param>java.lang.Cloneable</param>
                         <param>java.io.Externalizable</param>

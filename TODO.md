@@ -1,6 +1,6 @@
 Features
 --------
-* [ ] @dcsobral: possibility to ignore all classes with main method
+* [x] @dcsobral: possibility to ignore all classes with main method
 * [ ] recognize cyclic dependencies
     * [ ] actually, better to report which parts of the code are really used
     * [ ] "really used" means either marked as such manually or because the application breaks if the class (and its minions) is removed, i.e. the class is listed in sth. like web.xml
