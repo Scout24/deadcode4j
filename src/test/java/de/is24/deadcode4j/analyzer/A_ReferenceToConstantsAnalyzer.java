@@ -561,6 +561,20 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer<ReferenceTo
                 FQ_CONSTANTS + "$More");
     }
 
+    @Test
+    public void doesNotRecognizeReferenceForInheritedNonConstantField() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ReferenceToInheritedNonConstant.java");
+    }
+
+    @Test
+    public void recognizesReferenceForInheritedConstantField() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ReferenceToInheritedConstant.java");
+        triggerFinishAnalysisEvent();
+
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.ReferenceToInheritedConstant",
+                "de.is24.deadcode4j.analyzer.constants.Superclass");
+    }
+
     private void triggerFinishAnalysisEvent() {
         objectUnderTest.finishAnalysis(analysisContext);
     }

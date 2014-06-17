@@ -9,7 +9,6 @@ import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
 import de.is24.javaparser.FixedVoidVisitorAdapter;
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
-import japa.parser.ast.Node;
 import japa.parser.ast.body.*;
 import japa.parser.ast.expr.*;
 import japa.parser.ast.stmt.*;
@@ -24,6 +23,8 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.Set;
 
+import static com.google.common.base.Optional.absent;
+import static com.google.common.base.Optional.of;
 import static com.google.common.base.Predicates.and;
 import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.*;
@@ -35,8 +36,6 @@ import static de.is24.deadcode4j.analyzer.javassist.CtClasses.*;
 import static de.is24.javaparser.ImportDeclarations.isAsterisk;
 import static de.is24.javaparser.ImportDeclarations.isStatic;
 import static de.is24.javaparser.Nodes.getTypeName;
-import static java.lang.Math.max;
-import static java.util.Collections.singleton;
 
 public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
@@ -132,15 +131,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                 if (aLocalVariableExists(getFirstElement(n))) {
                     return;
                 }
-                if (FieldAccessExpr.class.isInstance(n.getScope())) {
-                    FieldAccessExpr nestedFieldAccessExpr = FieldAccessExpr.class.cast(n.getScope());
-                    if (isFullyQualifiedReference(nestedFieldAccessExpr)) { // fq beats all
-                        return;
-                    }
-                    resolveFieldReference(n);
-                } else if (NameExpr.class.isInstance(n.getScope())) {
-                    resolveFieldReference(n);
-                }
+                resolveFieldReference(n);
             }
 
             @Override
@@ -151,182 +142,26 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                 resolveNameReference(n);
             }
 
-            private boolean isFullyQualifiedReference(FieldAccessExpr fieldAccessExpr) {
-                Optional<String> resolvedClass = resolveClass(fieldAccessExpr.toString());
-                if (resolvedClass.isPresent()) {
-                    analysisContext.addDependencies(getTypeName(fieldAccessExpr), resolvedClass.get());
-                    return true;
-                }
-                return FieldAccessExpr.class.isInstance(fieldAccessExpr.getScope())
-                        && isFullyQualifiedReference(FieldAccessExpr.class.cast(fieldAccessExpr.getScope()));
-            }
-
             private Optional<String> resolveClass(String qualifier) {
                 return this.classPoolAccessor.resolveClass(qualifier);
             }
 
             private void resolveFieldReference(FieldAccessExpr fieldAccessExpr) {
-                if (!(refersToInnerType(fieldAccessExpr)
-                        || refersToInheritedField(fieldAccessExpr)
-                        || refersToImport(fieldAccessExpr)
-                        || refersToPackageType(fieldAccessExpr)
-                        || refersToAsteriskImport(fieldAccessExpr)
-                        || refersToJavaLang(fieldAccessExpr))) {
-                    logger.debug("Could not resolve reference [{}] found within [{}].", fieldAccessExpr, getTypeName(fieldAccessExpr));
-                }
-            }
+                Optional<String> resolvedClass = resolveType(analysisContext, qualifierFor(fieldAccessExpr));
 
-            private boolean refersToInnerType(@Nonnull FieldAccessExpr fieldAccessExpr) {
-                NameExpr firstQualifier = getFirstNode(fieldAccessExpr);
-                Node loopNode = fieldAccessExpr;
-                for (; ; ) {
-                    if (TypeDeclaration.class.isInstance(loopNode)) {
-                        TypeDeclaration typeDeclaration = TypeDeclaration.class.cast(loopNode);
-                        if (resolveInnerReference(firstQualifier, singleton(typeDeclaration))) {
-                            return true;
-                        }
-                        if (resolveInnerReference(firstQualifier, typeDeclaration.getMembers())) {
-                            return true;
-                        }
-                    } else if (CompilationUnit.class.isInstance(loopNode)
-                            && resolveInnerReference(firstQualifier, CompilationUnit.class.cast(loopNode).getTypes())) {
-                        return true;
-                    }
-                    loopNode = loopNode.getParentNode();
-                    if (loopNode == null) {
-                        break;
-                    }
-                }
-
-                return false;
-            }
-
-            private boolean resolveInnerReference(@Nonnull NameExpr firstQualifier,
-                                                  @Nullable Iterable<? extends BodyDeclaration> bodyDeclarations) {
-                for (TypeDeclaration typeDeclaration : emptyIfNull(bodyDeclarations).filter(TypeDeclaration.class)) {
-                    if (firstQualifier.getName().equals(typeDeclaration.getName())) {
-                        String referencedClass = resolveReferencedType(firstQualifier, typeDeclaration);
-                        analysisContext.addDependencies(getTypeName(firstQualifier), referencedClass);
-                        return true;
-                    }
-                }
-                return false;
-            }
-
-            @Nonnull
-            private String resolveReferencedType(@Nonnull NameExpr firstQualifier,
-                                                 @Nonnull TypeDeclaration typeDeclaration) {
-                if (FieldAccessExpr.class.isInstance(firstQualifier.getParentNode())) {
-                    NameExpr nextQualifier = FieldAccessExpr.class.cast(firstQualifier.getParentNode()).getFieldExpr();
-                    for (TypeDeclaration nextTypeDeclaration : emptyIfNull(typeDeclaration.getMembers()).filter(TypeDeclaration.class)) {
-                        if (nextQualifier.getName().equals(nextTypeDeclaration.getName())) {
-                            return resolveReferencedType(nextQualifier, nextTypeDeclaration);
-                        }
-                    }
-                }
-
-                return getTypeName(typeDeclaration);
-            }
-
-            private boolean refersToInheritedField(FieldAccessExpr fieldAccessExpr) {
-                CtClass referencingClazz = getCtClass(classPoolAccessor.getClassPool(), getTypeName(fieldAccessExpr));
-                if (referencingClazz == null) {
-                    return false;
-                }
-                for (CtClass declaringClazz : getDeclaringClassesOf(referencingClazz)) {
-                    if (refersToInheritedField(referencingClazz, declaringClazz, fieldAccessExpr)) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-
-            private boolean refersToInheritedField(@Nonnull final CtClass referencingClazz,
-                                                   @Nullable CtClass clazz,
-                                                   @Nonnull final FieldAccessExpr fieldAccessExpr) {
-                if (clazz == null || isJavaLangObject(clazz)) {
-                    return false;
-                }
-                for (CtField ctField : clazz.getDeclaredFields()) {
-                    if (ctField.getName().equals(getFirstElement(fieldAccessExpr)) && ctField.visibleFrom(referencingClazz)) {
-                        if (isConstant(ctField)) {
-                            analysisContext.addDependencies(referencingClazz.getName(), clazz.getName());
-                        }
-                        return true;
-                    }
-                }
-                for (CtClass nestedClazz : getNestedClassesOf(clazz)) {
-                    if (nestedClazz.getName().substring(clazz.getName().length() + 1).equals(getFirstElement(fieldAccessExpr))) {
-                        if (refersToClass(fieldAccessExpr, clazz.getName() + "$")) {
-                            return true;
-                        } else {
-                            logger.warn("Could not resolve inherited type [{}] found within [{}]!",
-                                    nestedClazz.getName(), getTypeName(fieldAccessExpr));
-                            return false;
-                        }
-                    }
-                }
-                if (refersToInheritedField(referencingClazz, getSuperclassOf(clazz), fieldAccessExpr)) {
-                    return true;
-                }
-                for (CtClass interfaceClazz : getInterfacesOf(clazz)) {
-                    if (refersToInheritedField(referencingClazz, interfaceClazz, fieldAccessExpr)) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-
-            private boolean refersToImport(FieldAccessExpr fieldAccessExpr) {
-                String firstElement = getFirstElement(fieldAccessExpr);
-                String anImport = getImport(firstElement);
-                if (anImport != null) {
-                    return
-                            refersToClass(fieldAccessExpr, anImport.substring(0, max(0, anImport.lastIndexOf('.') + 1)));
-                }
-                anImport = getStaticImport(firstElement);
-                return anImport != null &&
-                        refersToClass(fieldAccessExpr, anImport + ".");
-            }
-
-            private boolean refersToPackageType(FieldAccessExpr fieldAccessExpr) {
-                String packagePrefix = compilationUnit.getPackage() == null
-                        ? "" : compilationUnit.getPackage().getName().toString() + ".";
-                return refersToClass(fieldAccessExpr, packagePrefix);
-            }
-
-            private boolean refersToAsteriskImport(FieldAccessExpr fieldAccessExpr) {
-                for (String asteriskImport : getAsteriskImports()) {
-                    if (refersToClass(fieldAccessExpr, asteriskImport + "."))
-                        return true;
-                }
-                return false;
-            }
-
-            private boolean refersToJavaLang(FieldAccessExpr fieldAccessExpr) {
-                return refersToClass(fieldAccessExpr, "java.lang.");
-            }
-
-            private boolean refersToClass(@Nonnull FieldAccessExpr fieldAccessExpr, @Nonnull String qualifierPrefix) {
-                // skip last qualifier, as it refers to a field, not a class
-                return refersToClass(fieldAccessExpr.getScope(), qualifierPrefix);
-            }
-
-            private boolean refersToClass(@Nonnull Expression expression, @Nonnull String qualifierPrefix) {
-                if (NameExpr.class.isInstance(expression)) {
-                    Optional<String> resolvedClass = resolveClass(qualifierPrefix + NameExpr.class.cast(expression).getName());
-                    if (resolvedClass.isPresent()) {
-                        analysisContext.addDependencies(getTypeName(expression), resolvedClass.get());
-                        return true;
-                    }
-                    return false;
-                }
-                Optional<String> resolvedClass = resolveClass(qualifierPrefix + expression.toString());
+                String referencingType = getTypeName(fieldAccessExpr);
                 if (resolvedClass.isPresent()) {
-                    analysisContext.addDependencies(getTypeName(expression), resolvedClass.get());
-                    return true;
+                    analysisContext.addDependencies(referencingType, resolvedClass.get());
+                } else {
+                    logger.debug("Could not resolve reference [{}] found within [{}].", fieldAccessExpr, referencingType);
                 }
-                return refersToClass(FieldAccessExpr.class.cast(expression).getScope(), qualifierPrefix);
+            }
+
+            private Qualifier qualifierFor(FieldAccessExpr fieldAccessExpr) {
+                Expression scope = fieldAccessExpr.getScope();
+                return NameExpr.class.isInstance(scope)
+                        ? new NameExprQualifier(NameExpr.class.cast(scope))
+                        : new FieldAccessExprQualifier(FieldAccessExpr.class.cast(scope));
             }
 
             private void resolveNameReference(NameExpr reference) {
@@ -419,22 +254,9 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
             @Nullable
             @SuppressWarnings("unchecked")
-            private String getImport(String typeName) {
-                return getOnlyElement(transform(filter(emptyIfNull(compilationUnit.getImports()),
-                        and(refersTo(typeName), not(isAsterisk()), not(isStatic()))), toImportedType()), null);
-            }
-
-            @Nullable
-            @SuppressWarnings("unchecked")
             private String getStaticImport(String referenceName) {
                 return getOnlyElement(transform(filter(emptyIfNull(compilationUnit.getImports()),
                         and(refersTo(referenceName), not(isAsterisk()), isStatic())), toImportedType()), null);
-            }
-
-            @Nonnull
-            private Iterable<String> getAsteriskImports() {
-                return transform(filter(emptyIfNull(compilationUnit.getImports()),
-                        and(isAsterisk(), not(isStatic()))), toImportedType());
             }
 
             @Nonnull
@@ -664,6 +486,109 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                     }
                 }
             }
+        }
+
+    }
+
+    private static class NameExprQualifier extends Qualifier<NameExpr> {
+
+        public NameExprQualifier(NameExpr nameExpr) {
+            super(nameExpr);
+        }
+
+        public NameExprQualifier(NameExpr nameExpr, FieldAccessExprQualifier parent) {
+            super(nameExpr, parent);
+        }
+
+        @Nullable
+        @Override
+        protected Qualifier getScopeQualifier(@Nonnull NameExpr reference) {
+            return null;
+        }
+
+        @Nonnull
+        @Override
+        protected String getName(@Nonnull NameExpr reference) {
+            return reference.getName();
+        }
+
+        @Nonnull
+        @Override
+        protected String getFullQualifier(@Nonnull NameExpr reference) {
+            return reference.getName();
+        }
+
+        @Override
+        public boolean allowsPartialResolving() {
+            return true;
+        }
+
+        @Nonnull
+        @Override
+        public Optional<String> examineInheritedType(@Nonnull CtClass referencingClazz,
+                                                     @Nonnull CtClass inheritedClazz) {
+            for (CtField ctField : inheritedClazz.getDeclaredFields()) {
+                if (ctField.getName().equals(getName()) && ctField.visibleFrom(referencingClazz)) {
+                    if (isConstant(ctField)) {
+                        return of(inheritedClazz.getName());
+                    }
+                    // we want no reference to be established, so we refer to ourselves
+                    return of(referencingClazz.getName());
+                }
+            }
+            return absent();
+        }
+
+    }
+
+    private static class FieldAccessExprQualifier extends Qualifier<FieldAccessExpr> {
+
+        public FieldAccessExprQualifier(FieldAccessExpr fieldAccessExpr) {
+            super(fieldAccessExpr);
+        }
+
+        private FieldAccessExprQualifier(FieldAccessExpr fieldAccessExpr, FieldAccessExprQualifier parent) {
+            super(fieldAccessExpr, parent);
+        }
+
+        @Nullable
+        @Override
+        protected Qualifier<?> getScopeQualifier(@Nonnull FieldAccessExpr reference) {
+            Expression scope = reference.getScope();
+            return NameExpr.class.isInstance(scope)
+                    ? new NameExprQualifier(NameExpr.class.cast(scope), this)
+                    : new FieldAccessExprQualifier(FieldAccessExpr.class.cast(scope), this);
+        }
+
+        @Nonnull
+        @Override
+        protected String getName(@Nonnull FieldAccessExpr reference) {
+            return reference.getField();
+        }
+
+        @Nonnull
+        @Override
+        protected String getFullQualifier(@Nonnull FieldAccessExpr reference) {
+            StringBuilder buffy = new StringBuilder(reference.getField());
+            for (FieldAccessExpr loop = reference; loop != null; ) {
+                Expression scope = loop.getScope();
+                final String qualifier;
+                if (NameExpr.class.isInstance(scope)) {
+                    loop = null;
+                    qualifier = NameExpr.class.cast(scope).getName();
+                } else {
+                    loop = FieldAccessExpr.class.cast(scope);
+                    qualifier = loop.getField();
+                }
+                buffy.insert(0, '.');
+                buffy.insert(0, qualifier);
+            }
+            return buffy.toString();
+        }
+
+        @Override
+        public boolean allowsPartialResolving() {
+            return true;
         }
 
     }

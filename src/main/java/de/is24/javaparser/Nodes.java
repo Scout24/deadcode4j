@@ -25,6 +25,20 @@ import static java.util.Collections.singleton;
 public class Nodes {
 
     @Nonnull
+    public static CompilationUnit getCompilationUnit(@Nonnull Node node) {
+        Node loopNode = node;
+        for (; ; ) {
+            if (CompilationUnit.class.isInstance(loopNode)) {
+                return CompilationUnit.class.cast(loopNode);
+            }
+            loopNode = loopNode.getParentNode();
+            if (loopNode == null) {
+                throw new RuntimeException("Couldn't locate CompilationUnit for [" + node + "]!");
+            }
+        }
+    }
+
+    @Nonnull
     public static String getTypeName(@Nonnull Node node) {
         List<Node> anonymousClasses = newArrayList();
         StringBuilder buffy = new StringBuilder();
