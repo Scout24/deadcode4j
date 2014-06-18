@@ -1,6 +1,6 @@
 Features
 --------
-* [ ] @dcsobral: possibility to ignore all classes with main method
+* [x] @dcsobral: possibility to ignore all classes with main method
 * [ ] recognize cyclic dependencies
     * [ ] actually, better to report which parts of the code are really used
     * [ ] "really used" means either marked as such manually or because the application breaks if the class (and its minions) is removed, i.e. the class is listed in sth. like web.xml
@@ -8,7 +8,7 @@ Features
 * [ ] _Detection 2.0_
     * [ ] check if a Spring bean is really used
     * [ ] check if JSF stuff is really used
-    * [ ] check if GenericGenerator is really used
+    * [x] check if GenericGenerator is really used
     * [ ] generate a report
     * [ ] consider only listed Spring Web Flow XML files
 * [ ] JBoss XML files (can be done using custom XML for the moment)

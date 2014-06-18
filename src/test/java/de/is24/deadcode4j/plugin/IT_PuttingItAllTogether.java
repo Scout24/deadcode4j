@@ -39,7 +39,7 @@ public class IT_PuttingItAllTogether {
     public void test() throws Exception {
         findDeadCodeMojo.execute();
 
-        verify(logMock).info("Analyzed 25 class(es).");
+        verify(logMock).info("Analyzed 26 class(es).");
         verify(logMock).info("Ignoring 1 class(es) which seem(s) to be unused.");
         verify(logMock).warn("Class [com.acme.Foo] should be ignored, but is not dead. You should remove the configuration entry.");
         verify(logMock).warn("Found 3 unused class(es):");

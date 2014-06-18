@@ -21,7 +21,7 @@ import static com.google.common.collect.Sets.newHashSet;
  * @since 1.2.0
  */
 public abstract class SimpleXmlAnalyzer extends XmlAnalyzer {
-    private final String dependerId;
+    protected final String dependerId;
     private final String rootElement;
     private final Set<Element> registeredElements = newHashSet();
 
@@ -42,6 +42,15 @@ public abstract class SimpleXmlAnalyzer extends XmlAnalyzer {
         super(endOfFileName);
         this.dependerId = dependerId;
         this.rootElement = rootElement;
+    }
+
+    @Override
+    public String toString() {
+        String description = super.toString();
+        if (this.rootElement == null) {
+            return description;
+        }
+        return description + " with root Element <" + this.rootElement + ">";
     }
 
     @Override

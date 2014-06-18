@@ -44,6 +44,11 @@ public abstract class XmlAnalyzer extends AnalyzerAdapter {
     }
 
     @Override
+    public String toString() {
+        return super.toString() + " analyzing [" + endOfFileName + "] files";
+    }
+
+    @Override
     public final void doAnalysis(@Nonnull AnalysisContext analysisContext, @Nonnull File file) {
         if (file.getName().endsWith(endOfFileName)) {
             logger.debug("Analyzing XML file [{}]...", file);
