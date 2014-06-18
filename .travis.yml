@@ -1,11 +1,11 @@
 language: java
 install: "mvn clean verify -B -U -Ptravis -Dmaven.main.skip=true -Dmaven.test.skip=true -Dinvoker.skip=true"
-script: "mvn verify -B -T 1C -PenableCoverage,travis"
+script: "mvn verify -B -T 1C -PenableCoverage,travis -Dinvoker.debug=true"
 jdk:
   - openjdk7
   - openjdk6
   - oraclejdk7
   - oraclejdk8
 after_success:
-  - mvn jacoco:report coveralls:jacoco
-  - mvn jacoco:report-integration coveralls:jacoco -DcoverageFile=\${project.reporting.outputDirectory}/jacoco-it/jacoco.xml
+  - "mvn jacoco:report coveralls:jacoco"
+  - "mvn jacoco:report-integration coveralls:jacoco -DcoverageFile=\${project.reporting.outputDirectory}/jacoco-it/jacoco.xml"
