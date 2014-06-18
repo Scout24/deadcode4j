@@ -1,6 +1,10 @@
 language: java
 install: mvn clean verify -B -U -Ptravis -Dmaven.main.skip=true -Dmaven.test.skip=true -Dinvoker.skip=true
-script: mvn verify -B -T 1C -PenableCoverage,travis
+script:
+  - mvn verify -B -T 1C -PenableCoverage,travis -Dinvoker.skip=true
+  - mvn invoker:install -B -T 1C -PenableCoverage,travis
+  - mvn invoker:integration-test -B -T 1C -PenableCoverage,travis -X
+  - mvn invoker:report -B -T 1C -PenableCoverage,travis
 jdk:
   - openjdk7
   - openjdk6

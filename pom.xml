@@ -193,7 +193,7 @@
                         </goals>
                     </execution>
                     <execution>
-                        <id>test-find</id>
+                        <id>default-cli</id>
                         <goals>
                             <goal>integration-test</goal>
                         </goals>
