@@ -3,8 +3,7 @@ install: mvn clean verify -B -U -Ptravis -Dmaven.main.skip=true -Dmaven.test.ski
 script:
   - echo $MAVEN_OPTS
   - mvn verify -B -T 1C -PenableCoverage,travis -Dinvoker.skip=true
-  - mvn invoker:install -B -T 1C -PenableCoverage,travis
-  - mvn jacoco:prepare-agent-integration invoker:integration-test -B -T 1C -PenableCoverage,travis -X -Djacoco.propertyName=invoker.mavenOpts
+  - mvn jacoco:prepare-agent-integration invoker:install invoker:integration-test -B -T 1C -PenableCoverage,travis -X -Djacoco.propertyName=invoker.mavenOpts
   - mvn invoker:report -B -T 1C -PenableCoverage,travis
 jdk:
   - openjdk7
