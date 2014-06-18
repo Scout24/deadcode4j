@@ -8,3 +8,4 @@ jdk:
   - oraclejdk8
 after_success:
   - mvn jacoco:report coveralls:jacoco
+  - mvn jacoco:report-integration coveralls:jacoco -DcoverageFile=\${project.reporting.outputDirectory}/jacoco-it/jacoco.xml
