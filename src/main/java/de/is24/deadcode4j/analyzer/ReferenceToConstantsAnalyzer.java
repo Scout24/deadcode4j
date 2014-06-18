@@ -21,6 +21,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import static com.google.common.base.Optional.absent;
@@ -29,8 +30,10 @@ import static com.google.common.base.Predicates.and;
 import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.*;
 import static com.google.common.collect.Lists.newLinkedList;
+import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static de.is24.deadcode4j.Utils.emptyIfNull;
+import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
 import static de.is24.deadcode4j.analyzer.javassist.CtClasses.*;
 import static de.is24.javaparser.ImportDeclarations.isAsterisk;
@@ -65,11 +68,24 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
         return false;
     }
 
-    /**
-     * This is not entirely correct: while we want to filter calls like
-     * <code>org.slf4j.LoggerFactory.getLogger("foo")</code>, we want to analyze
-     * <code>foo.bar.FOO.substring(1)</code>.
-     */
+    private static String getFullQualifier(FieldAccessExpr reference) {
+        StringBuilder buffy = new StringBuilder(reference.getField());
+        for (FieldAccessExpr loop = reference; loop != null; ) {
+            Expression scope = loop.getScope();
+            final String qualifier;
+            if (NameExpr.class.isInstance(scope)) {
+                loop = null;
+                qualifier = NameExpr.class.cast(scope).getName();
+            } else {
+                loop = FieldAccessExpr.class.cast(scope);
+                qualifier = loop.getField();
+            }
+            buffy.insert(0, '.');
+            buffy.insert(0, qualifier);
+        }
+        return buffy.toString();
+    }
+
     private static boolean isScopeOfAMethodCall(@Nonnull Expression expression) {
         return MethodCallExpr.class.isInstance(expression.getParentNode())
                 && expression == MethodCallExpr.class.cast(expression.getParentNode()).getScope();
@@ -118,6 +134,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                                           @Nonnull final CompilationUnit compilationUnit) {
         compilationUnit.accept(new LocalVariableRecordingVisitor<Void>() {
             private final ClassPoolAccessor classPoolAccessor = classPoolAccessorFor(analysisContext);
+            private final Map<String, Set<String>> processedReferences = newHashMap();
 
             @Override
             public void visit(FieldAccessExpr n, Void arg) {
@@ -149,25 +166,33 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                 return this.classPoolAccessor.resolveClass(qualifier);
             }
 
-            private void resolveFieldReference(FieldAccessExpr fieldAccessExpr) {
+            private void resolveFieldReference(FieldAccessExpr reference) {
+                if (!needsProcessing(reference)) {
+                    return;
+                }
                 Optional<String> resolvedType;
-                if (isScopeOfAMethodCall(fieldAccessExpr)) {
-                    FieldAccessExprQualifier qualifier = new FieldAccessExprQualifier(fieldAccessExpr);
+                if (isScopeOfAMethodCall(reference)) {
+                    FieldAccessExprQualifier qualifier = new FieldAccessExprQualifier(reference);
                     resolvedType = resolveType(analysisContext, qualifier);
                     if (resolvedType.isPresent() && isFullyResolved(resolvedType.get(), qualifier)) {
                         return; // this is just a static method
                     }
                 } else {
-                    resolvedType = resolveType(analysisContext, qualifierFor(fieldAccessExpr));
+                    resolvedType = resolveType(analysisContext, qualifierFor(reference));
                 }
 
-                String referencingType = getTypeName(fieldAccessExpr);
+                String referencingType = getTypeName(reference);
                 if (resolvedType.isPresent()) {
                     analysisContext.addDependencies(referencingType, resolvedType.get());
                 } else {
                     logger.debug("Could not resolve reference [{}] found within [{}].",
-                            fieldAccessExpr, referencingType);
+                            reference, referencingType);
                 }
+            }
+
+            private boolean needsProcessing(FieldAccessExpr fieldAccessExpr) {
+                Set<String> references = getOrAddMappedSet(this.processedReferences, getTypeName(fieldAccessExpr));
+                return references.add(getFullQualifier(fieldAccessExpr));
             }
 
             private Qualifier qualifierFor(FieldAccessExpr fieldAccessExpr) {
@@ -178,19 +203,27 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             }
 
             private void resolveNameReference(NameExpr reference) {
-                if (isScopeOfAMethodCall(reference)) {
-                    Optional<String> resolvedType = resolveType(analysisContext, new NameExprQualifier(reference));
-                    if (resolvedType.isPresent()) {
-                        return; // this is just a static method call
-                    }
+                if (!needsProcessing(reference)) {
+                    return;
                 }
+                if (isScopeOfAMethodCall(reference)
+                        && resolveType(analysisContext, new NameExprQualifier(reference)).isPresent()) {
+                    return; // this is just a static method call
+                }
+                String referringType = getTypeName(reference);
                 if (refersToInheritedField(reference)
                         || refersToStaticImport(reference)
                         || refersToAsteriskStaticImport(reference)) {
+                    getOrAddMappedSet(this.processedReferences, referringType).add(reference.getName());
                     return;
                 }
                 logger.debug("Could not resolve name reference [{}] found within [{}].",
-                        reference, getTypeName(reference));
+                        reference, referringType);
+            }
+
+            private boolean needsProcessing(NameExpr nameExpr) {
+                Set<String> references = getOrAddMappedSet(this.processedReferences, getTypeName(nameExpr));
+                return references.add(nameExpr.getName());
             }
 
             private boolean refersToInheritedField(NameExpr reference) {
@@ -587,21 +620,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
         @Nonnull
         @Override
         protected String getFullQualifier(@Nonnull FieldAccessExpr reference) {
-            StringBuilder buffy = new StringBuilder(reference.getField());
-            for (FieldAccessExpr loop = reference; loop != null; ) {
-                Expression scope = loop.getScope();
-                final String qualifier;
-                if (NameExpr.class.isInstance(scope)) {
-                    loop = null;
-                    qualifier = NameExpr.class.cast(scope).getName();
-                } else {
-                    loop = FieldAccessExpr.class.cast(scope);
-                    qualifier = loop.getField();
-                }
-                buffy.insert(0, '.');
-                buffy.insert(0, qualifier);
-            }
-            return buffy.toString();
+            return ReferenceToConstantsAnalyzer.getFullQualifier(reference);
         }
 
         @Override
