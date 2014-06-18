@@ -291,8 +291,31 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
         }
     }
 
-    private static class FullyQualifiedTypeResolver extends RequiresClassPoolAccessor
+    private static abstract class CandidatesResolver extends RequiresClassPoolAccessor
             implements NonNullFunction<Qualifier<?>, Optional<String>> {
+
+        protected CandidatesResolver(@Nonnull ClassPoolAccessor classPoolAccessor) {
+            super(classPoolAccessor);
+        }
+
+        @Nonnull
+        @Override
+        public final Optional<String> apply(@Nonnull Qualifier<?> input) {
+            for (Qualifier qualifier : input.getTypeCandidates()) {
+                Optional<String> resolvedClass = doResolve(qualifier);
+                if (resolvedClass.isPresent()) {
+                    return resolvedClass;
+                }
+            }
+            return absent();
+        }
+
+        @Nonnull
+        protected abstract Optional<String> doResolve(Qualifier<?> candidate);
+
+    }
+
+    private static class FullyQualifiedTypeResolver extends CandidatesResolver {
 
         public FullyQualifiedTypeResolver(ClassPoolAccessor classPoolAccessor) {
             super(classPoolAccessor);
@@ -300,17 +323,9 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
 
         @Nonnull
         @Override
-        public Optional<String> apply(@Nonnull Qualifier<?> input) {
-            for (Qualifier qualifier : input.getTypeCandidates()) {
-                if (qualifier.isSingleQualifier()) {
-                    continue;
-                }
-                Optional<String> resolvedClass = classPoolAccessor.resolveClass(qualifier.getFullQualifier());
-                if (resolvedClass.isPresent()) {
-                    return resolvedClass;
-                }
-            }
-            return absent();
+        protected Optional<String> doResolve(Qualifier<?> candidate) {
+            return candidate.isSingleQualifier() ? Optional.<String>absent()
+                    : classPoolAccessor.resolveClass(candidate.getFullQualifier());
         }
 
     }
@@ -480,8 +495,7 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
 
     }
 
-    private static class PackageTypeResolver extends RequiresClassPoolAccessor
-            implements NonNullFunction<Qualifier<?>, Optional<String>> {
+    private static class PackageTypeResolver extends CandidatesResolver {
 
         public PackageTypeResolver(@Nonnull ClassPoolAccessor classPoolAccessor) {
             super(classPoolAccessor);
@@ -489,17 +503,11 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
 
         @Nonnull
         @Override
-        public Optional<String> apply(@Nonnull Qualifier<?> input) {
-            CompilationUnit compilationUnit = Nodes.getCompilationUnit(input.getNode());
-            for (Qualifier qualifier : input.getTypeCandidates()) {
-                StringBuilder buffy = new StringBuilder(qualifier.getFullQualifier());
-                prependPackageName(compilationUnit, buffy);
-                Optional<String> resolvedClass = classPoolAccessor.resolveClass(buffy);
-                if (resolvedClass.isPresent()) {
-                    return resolvedClass;
-                }
-            }
-            return absent();
+        protected Optional<String> doResolve(Qualifier<?> candidate) {
+            CompilationUnit compilationUnit = Nodes.getCompilationUnit(candidate.getNode());
+            StringBuilder buffy = new StringBuilder(candidate.getFullQualifier());
+            prependPackageName(compilationUnit, buffy);
+            return classPoolAccessor.resolveClass(buffy);
         }
 
     }
@@ -531,8 +539,7 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
 
     }
 
-    private static class JavaLangTypeResolver extends RequiresClassPoolAccessor
-            implements NonNullFunction<Qualifier<?>, Optional<String>> {
+    private static class JavaLangTypeResolver extends CandidatesResolver {
 
         public JavaLangTypeResolver(@Nonnull ClassPoolAccessor classPoolAccessor) {
             super(classPoolAccessor);
@@ -540,15 +547,8 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
 
         @Nonnull
         @Override
-        public Optional<String> apply(@Nonnull Qualifier<?> input) {
-            for (Qualifier qualifier : input.getTypeCandidates()) {
-                StringBuilder buffy = new StringBuilder("java.lang.").append(qualifier.getFullQualifier());
-                Optional<String> resolvedClass = classPoolAccessor.resolveClass(buffy);
-                if (resolvedClass.isPresent()) {
-                    return resolvedClass;
-                }
-            }
-            return absent();
+        protected Optional<String> doResolve(Qualifier<?> candidate) {
+            return classPoolAccessor.resolveClass(new StringBuilder("java.lang.").append(candidate.getFullQualifier()));
         }
 
     }
