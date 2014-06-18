@@ -124,12 +124,15 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
     protected static Optional<String> resolveType(@Nonnull final AnalysisContext analysisContext, @Nonnull Qualifier qualifier) {
         Optional<String> resolvedClass = getTypeResolver(analysisContext).apply(qualifier);
         if (!qualifier.allowsPartialResolving() && resolvedClass.isPresent()) {
-            String resolvedQualifier = resolvedClass.get();
-            if (!resolvedQualifier.replace('$', '.').endsWith(qualifier.getFullQualifier().replace('$', '.'))) {
+            if (!isFullyResolved(resolvedClass.get(), qualifier)) {
                 return absent();
             }
         }
         return resolvedClass;
+    }
+
+    protected static boolean isFullyResolved(@Nonnull String resolvedClass, @Nonnull Qualifier qualifier) {
+        return resolvedClass.replace('$', '.').endsWith(qualifier.getFullQualifier().replace('$', '.'));
     }
 
     @Override

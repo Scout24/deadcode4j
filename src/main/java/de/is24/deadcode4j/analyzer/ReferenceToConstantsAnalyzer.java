@@ -122,7 +122,6 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             @Override
             public void visit(FieldAccessExpr n, Void arg) {
                 if (isTargetOfAnAssignment(n)
-                        || isScopeOfAMethodCall(n)
                         || isScopeOfThisExpression(n)) {
                     return;
                 }
@@ -151,13 +150,23 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             }
 
             private void resolveFieldReference(FieldAccessExpr fieldAccessExpr) {
-                Optional<String> resolvedClass = resolveType(analysisContext, qualifierFor(fieldAccessExpr));
+                Optional<String> resolvedType;
+                if (isScopeOfAMethodCall(fieldAccessExpr)) {
+                    FieldAccessExprQualifier qualifier = new FieldAccessExprQualifier(fieldAccessExpr);
+                    resolvedType = resolveType(analysisContext, qualifier);
+                    if (resolvedType.isPresent() && isFullyResolved(resolvedType.get(), qualifier)) {
+                        return; // this is just a static method
+                    }
+                } else {
+                    resolvedType = resolveType(analysisContext, qualifierFor(fieldAccessExpr));
+                }
 
                 String referencingType = getTypeName(fieldAccessExpr);
-                if (resolvedClass.isPresent()) {
-                    analysisContext.addDependencies(referencingType, resolvedClass.get());
+                if (resolvedType.isPresent()) {
+                    analysisContext.addDependencies(referencingType, resolvedType.get());
                 } else {
-                    logger.debug("Could not resolve reference [{}] found within [{}].", fieldAccessExpr, referencingType);
+                    logger.debug("Could not resolve reference [{}] found within [{}].",
+                            fieldAccessExpr, referencingType);
                 }
             }
 
