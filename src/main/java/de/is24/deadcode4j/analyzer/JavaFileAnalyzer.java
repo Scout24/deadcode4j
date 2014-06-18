@@ -13,6 +13,7 @@ import japa.parser.TokenMgrError;
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
 import japa.parser.ast.Node;
+import japa.parser.ast.PackageDeclaration;
 import japa.parser.ast.body.BodyDeclaration;
 import japa.parser.ast.body.TypeDeclaration;
 import javassist.CtClass;
@@ -20,21 +21,26 @@ import javassist.CtClass;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
+import static com.google.common.base.Predicates.and;
 import static com.google.common.base.Predicates.not;
+import static com.google.common.collect.Iterables.getOnlyElement;
 import static com.google.common.collect.Lists.newArrayList;
 import static de.is24.deadcode4j.Utils.emptyIfNull;
 import static de.is24.deadcode4j.analyzer.javassist.CtClasses.*;
 import static de.is24.guava.NonNullFunctions.or;
 import static de.is24.guava.NonNullFunctions.toFunction;
 import static de.is24.javaparser.ImportDeclarations.isAsterisk;
+import static de.is24.javaparser.ImportDeclarations.refersTo;
 import static de.is24.javaparser.Nodes.getTypeName;
 import static de.is24.javaparser.Nodes.prepend;
 import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 
 /**
@@ -106,13 +112,6 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
 
     private static NonNullFunction<Qualifier<?>, Optional<String>> getTypeResolver(AnalysisContext analysisContext) {
         return analysisContext.getOrCreateCacheEntry(TYPE_RESOLVER_KEY, TYPE_RESOLVER_SUPPLIER);
-    }
-
-    @Nonnull
-    private static StringBuilder prependPackageName(@Nonnull CompilationUnit compilationUnit, @Nonnull StringBuilder buffy) {
-        return compilationUnit.getPackage() == null
-                ? buffy
-                : prepend(compilationUnit.getPackage().getName(), buffy);
     }
 
     /**
@@ -299,19 +298,36 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
         }
 
         @Nonnull
+        protected Iterable<String> calculatePrefixes(@Nonnull Qualifier<?> topQualifier) {
+            String prefix = calculatePrefix(topQualifier);
+            return prefix != null ? singletonList(prefix) : Collections.<String>emptyList();
+        }
+
+        @Nullable
+        protected String calculatePrefix(@Nonnull Qualifier<?> topQualifier) {
+            return null;
+        }
+
+        protected boolean skipResolvingFor(@Nonnull Qualifier<?> candidate) {
+            return false;
+        }
+
+        @Nonnull
         @Override
         public final Optional<String> apply(@Nonnull Qualifier<?> input) {
-            for (Qualifier qualifier : input.getTypeCandidates()) {
-                Optional<String> resolvedClass = doResolve(qualifier);
-                if (resolvedClass.isPresent()) {
-                    return resolvedClass;
+            for (CharSequence prefix : calculatePrefixes(input)) {
+                for (Qualifier candidate : input.getTypeCandidates()) {
+                    if (skipResolvingFor(candidate)) {
+                        continue;
+                    }
+                    Optional<String> resolvedClass = classPoolAccessor.resolveClass(prefix + candidate.getFullQualifier());
+                    if (resolvedClass.isPresent()) {
+                        return resolvedClass;
+                    }
                 }
             }
             return absent();
         }
-
-        @Nonnull
-        protected abstract Optional<String> doResolve(Qualifier<?> candidate);
 
     }
 
@@ -323,9 +339,13 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
 
         @Nonnull
         @Override
-        protected Optional<String> doResolve(Qualifier<?> candidate) {
-            return candidate.isSingleQualifier() ? Optional.<String>absent()
-                    : classPoolAccessor.resolveClass(candidate.getFullQualifier());
+        protected String calculatePrefix(@Nonnull Qualifier<?> topQualifier) {
+            return "";
+        }
+
+        @Override
+        protected boolean skipResolvingFor(@Nonnull Qualifier<?> candidate) {
+            return candidate.isSingleQualifier();
         }
 
     }
@@ -465,32 +485,26 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
 
     }
 
-    private static class ImportedTypeResolver extends RequiresClassPoolAccessor
-            implements NonNullFunction<Qualifier<?>, Optional<String>> {
+    private static class ImportedTypeResolver extends CandidatesResolver {
+
         public ImportedTypeResolver(ClassPoolAccessor classPoolAccessor) {
             super(classPoolAccessor);
         }
 
-        @Nonnull
+        @Nullable
         @Override
-        public Optional<String> apply(@Nonnull Qualifier<?> input) {
-            CompilationUnit compilationUnit = Nodes.getCompilationUnit(input.getNode());
-            for (ImportDeclaration importDeclaration :
-                    emptyIfNull(compilationUnit.getImports()).filter(not(isAsterisk()))) {
-                String importedClass = importDeclaration.getName().getName();
-                if (importedClass.equals(input.getFirstQualifier().getName())) {
-                    for (Qualifier<?> qualifier : input.getTypeCandidates()) {
-                        StringBuilder buffy = prepend(importDeclaration.getName(), new StringBuilder());
-                        buffy.append(qualifier.getFullQualifier().substring(importedClass.length()));
-                        Optional<String> resolvedClass = classPoolAccessor.resolveClass(buffy);
-                        if (resolvedClass.isPresent()) {
-                            return resolvedClass;
-                        }
-                    }
-                    return classPoolAccessor.resolveClass(prepend(importDeclaration.getName(), new StringBuilder()).toString());
-                }
+        protected String calculatePrefix(@Nonnull Qualifier<?> topQualifier) {
+            String firstQualifier = topQualifier.getFirstQualifier().getName();
+            CompilationUnit compilationUnit = Nodes.getCompilationUnit(topQualifier.getNode());
+            ImportDeclaration importDeclaration = getOnlyElement(emptyIfNull(compilationUnit.getImports()).filter(
+                    and(not(isAsterisk()), refersTo(firstQualifier))), null);
+            if (importDeclaration == null) {
+                return null;
             }
-            return absent();
+            StringBuilder buffy = prepend(importDeclaration.getName(), new StringBuilder());
+            int beginIndex = buffy.length() - firstQualifier.length();
+            return beginIndex == 0 ? "" :
+                    buffy.replace(beginIndex - 1, buffy.length(), importDeclaration.isStatic() ? "$" : ".").toString();
         }
 
     }
@@ -503,17 +517,17 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
 
         @Nonnull
         @Override
-        protected Optional<String> doResolve(Qualifier<?> candidate) {
-            CompilationUnit compilationUnit = Nodes.getCompilationUnit(candidate.getNode());
-            StringBuilder buffy = new StringBuilder(candidate.getFullQualifier());
-            prependPackageName(compilationUnit, buffy);
-            return classPoolAccessor.resolveClass(buffy);
+        protected String calculatePrefix(@Nonnull Qualifier<?> topQualifier) {
+            PackageDeclaration aPackage = Nodes.getCompilationUnit(topQualifier.getNode()).getPackage();
+            if (aPackage == null) {
+                return "";
+            }
+            return prepend(aPackage.getName(), new StringBuilder("")).append(".").toString();
         }
 
     }
 
-    private static class AsteriskImportedTypeResolver extends RequiresClassPoolAccessor
-            implements NonNullFunction<Qualifier<?>, Optional<String>> {
+    private static class AsteriskImportedTypeResolver extends CandidatesResolver {
 
         public AsteriskImportedTypeResolver(@Nonnull ClassPoolAccessor classPoolAccessor) {
             super(classPoolAccessor);
@@ -521,20 +535,16 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
 
         @Nonnull
         @Override
-        public Optional<String> apply(@Nonnull Qualifier<?> input) {
-            CompilationUnit compilationUnit = Nodes.getCompilationUnit(input.getNode());
+        protected Iterable<String> calculatePrefixes(@Nonnull Qualifier<?> topQualifier) {
+            ArrayList<String> asteriskImports = newArrayList();
+            CompilationUnit compilationUnit = Nodes.getCompilationUnit(topQualifier.getNode());
             for (ImportDeclaration importDeclaration :
                     emptyIfNull(compilationUnit.getImports()).filter(isAsterisk())) {
-                for (Qualifier qualifier : input.getTypeCandidates()) {
-                    StringBuilder buffy = new StringBuilder(qualifier.getFullQualifier());
-                    prepend(importDeclaration.getName(), buffy);
-                    Optional<String> resolvedClass = classPoolAccessor.resolveClass(buffy);
-                    if (resolvedClass.isPresent()) {
-                        return resolvedClass;
-                    }
-                }
+                StringBuilder buffy = prepend(importDeclaration.getName(), new StringBuilder());
+                buffy.append(importDeclaration.isStatic() ? '$' : '.');
+                asteriskImports.add(buffy.toString());
             }
-            return absent();
+            return asteriskImports;
         }
 
     }
@@ -547,8 +557,8 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
 
         @Nonnull
         @Override
-        protected Optional<String> doResolve(Qualifier<?> candidate) {
-            return classPoolAccessor.resolveClass(new StringBuilder("java.lang.").append(candidate.getFullQualifier()));
+        protected String calculatePrefix(@Nonnull Qualifier<?> topQualifier) {
+            return "java.lang.";
         }
 
     }
