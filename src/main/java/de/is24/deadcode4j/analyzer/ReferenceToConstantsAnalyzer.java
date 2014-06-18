@@ -121,7 +121,9 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
             @Override
             public void visit(FieldAccessExpr n, Void arg) {
-                if (isTargetOfAnAssignment(n) || isScopeOfAMethodCall(n) || isScopeOfThisExpression(n)) {
+                if (isTargetOfAnAssignment(n)
+                        || isScopeOfAMethodCall(n)
+                        || isScopeOfThisExpression(n)) {
                     return;
                 }
                 if (!isRegularFieldAccessExpr(n)) {
@@ -136,7 +138,9 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
             @Override
             public void visit(NameExpr n, Void arg) {
-                if (isTargetOfAnAssignment(n) || isScopeOfThisExpression(n)) {
+                if (isTargetOfAnAssignment(n)
+                        || isScopeOfThisExpression(n)
+                        || aLocalVariableExists(n.getName())) {
                     return;
                 }
                 resolveNameReference(n);
@@ -165,8 +169,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             }
 
             private void resolveNameReference(NameExpr reference) {
-                if (aLocalVariableExists(reference.getName())
-                        || refersToInheritedField(reference)
+                if (refersToInheritedField(reference)
                         || refersToStaticImport(reference)
                         || refersToAsteriskStaticImport(reference)) {
                     return;
