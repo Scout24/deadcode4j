@@ -178,6 +178,12 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             }
 
             private void resolveNameReference(NameExpr reference) {
+                if (isScopeOfAMethodCall(reference)) {
+                    Optional<String> resolvedType = resolveType(analysisContext, new NameExprQualifier(reference));
+                    if (resolvedType.isPresent()) {
+                        return; // this is just a static method call
+                    }
+                }
                 if (refersToInheritedField(reference)
                         || refersToStaticImport(reference)
                         || refersToAsteriskStaticImport(reference)) {
