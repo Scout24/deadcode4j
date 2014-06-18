@@ -181,6 +181,7 @@
                     <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
                     <debug>false</debug>
                     <localRepositoryPath>${invoker.localRepositoryPath}</localRepositoryPath>
+                    <mavenOpts>${invoker.mavenOpts}</mavenOpts>
                     <postBuildHookScript>verify</postBuildHookScript>
                     <streamLogs>true</streamLogs>
                 </configuration>
