@@ -214,7 +214,6 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                 if (refersToInheritedField(reference)
                         || refersToStaticImport(reference)
                         || refersToAsteriskStaticImport(reference)) {
-                    getOrAddMappedSet(this.processedReferences, referringType).add(reference.getName());
                     return;
                 }
                 logger.debug("Could not resolve name reference [{}] found within [{}].",
