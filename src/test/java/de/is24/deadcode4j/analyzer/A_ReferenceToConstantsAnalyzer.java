@@ -524,8 +524,6 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer<ReferenceTo
     public void ignoresReferencesToStaticMethodsOfToStaticallyImportedClasses() {
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingStaticMethodOfStaticallyImportedClassInMethod.java");
         triggerFinishAnalysisEvent();
-
-        assertNoOtherDependenciesExist();
     }
 
     @Test
