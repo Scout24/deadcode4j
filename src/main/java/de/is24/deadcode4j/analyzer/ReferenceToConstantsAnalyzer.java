@@ -2,7 +2,6 @@ package de.is24.deadcode4j.analyzer;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
 import com.google.common.collect.Sets;
 import de.is24.deadcode4j.AnalysisContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
@@ -36,8 +35,7 @@ import static de.is24.deadcode4j.Utils.emptyIfNull;
 import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
 import static de.is24.deadcode4j.analyzer.javassist.CtClasses.*;
-import static de.is24.javaparser.ImportDeclarations.isAsterisk;
-import static de.is24.javaparser.ImportDeclarations.isStatic;
+import static de.is24.javaparser.ImportDeclarations.*;
 import static de.is24.javaparser.Nodes.getTypeName;
 
 public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
@@ -98,15 +96,6 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
     private static boolean isTargetOfAnAssignment(@Nonnull Expression expression) {
         return AssignExpr.class.isInstance(expression.getParentNode())
                 && expression == AssignExpr.class.cast(expression.getParentNode()).getTarget();
-    }
-
-    private static Predicate<? super ImportDeclaration> refersTo(final String name) {
-        return new Predicate<ImportDeclaration>() {
-            @Override
-            public boolean apply(@Nullable ImportDeclaration input) {
-                return input != null && input.getName().getName().equals(name);
-            }
-        };
     }
 
     private static Function<? super ImportDeclaration, ? extends String> toImportedType() {
