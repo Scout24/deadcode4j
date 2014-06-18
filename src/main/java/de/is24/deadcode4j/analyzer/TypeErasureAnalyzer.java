@@ -59,9 +59,6 @@ public class TypeErasureAnalyzer extends JavaFileAnalyzer {
                     if (typeParameterWithSameNameIsDefined(referencedType)) {
                         continue;
                     }
-                    if (typeReferenceHasAlreadyBeenProcessed(referencedType)) {
-                        continue;
-                    }
                     resolveTypeReference(referencedType);
                     this.visit(referencedType, arg); // resolve nested type arguments
                 }
@@ -98,22 +95,24 @@ public class TypeErasureAnalyzer extends JavaFileAnalyzer {
                 return ClassOrInterfaceType.class.cast(nestedType);
             }
 
-            private boolean typeReferenceHasAlreadyBeenProcessed(ClassOrInterfaceType referencedType) {
-                Set<String> references = this.processedReferences.get(getTypeName(referencedType));
-                return references != null && references.contains(getFullQualifier(referencedType));
-            }
-
             private void resolveTypeReference(final ClassOrInterfaceType referencedType) {
+                if (!needsProcessing(referencedType)) {
+                    return;
+                }
                 Optional<String> resolvedClass = resolveType(analysisContext,
                         new ClassOrInterfaceTypeQualifier(referencedType));
                 String depender = getTypeName(referencedType);
-                String referencedTypeQualifier = getFullQualifier(referencedType);
                 if (resolvedClass.isPresent()) {
                     analysisContext.addDependencies(depender, resolvedClass.get());
                 } else {
-                    logger.debug("Could not resolve Type Argument [{}] used by [{}].", referencedTypeQualifier, depender);
+                    logger.debug("Could not resolve Type Argument [{}] used by [{}].",
+                            getFullQualifier(referencedType), depender);
                 }
-                getOrAddMappedSet(this.processedReferences, depender).add(referencedTypeQualifier);
+            }
+
+            private boolean needsProcessing(ClassOrInterfaceType referencedType) {
+                Set<String> references = getOrAddMappedSet(this.processedReferences, getTypeName(referencedType));
+                return references.add(getFullQualifier(referencedType));
             }
 
         }, null);
@@ -199,6 +198,7 @@ public class TypeErasureAnalyzer extends JavaFileAnalyzer {
         protected String getFullQualifier(@Nonnull ClassOrInterfaceType referencedType) {
             return TypeErasureAnalyzer.getFullQualifier(referencedType);
         }
+
         @Nullable
         @Override
         protected Qualifier getScopeQualifier(@Nonnull ClassOrInterfaceType referencedType) {
