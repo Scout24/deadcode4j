@@ -205,6 +205,9 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                         || refersToAsteriskStaticImport(reference)) {
                     return;
                 }
+                if (SwitchEntryStmt.class.isInstance(reference.getParentNode())) {
+                    return; // see A_ReferenceToConstantsAnalyzer#recognizesReferenceToEnumerationInSwitch()
+                }
                 logger.debug("Could not resolve name reference [{}] found within [{}].",
                         reference, referringType);
             }
