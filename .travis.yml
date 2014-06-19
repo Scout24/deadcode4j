@@ -1,4 +1,5 @@
 language: java
+before_install: sudo rm /etc/mavenrc
 install: mvn clean verify -B -U -Ptravis -Dmaven.main.skip=true -Dmaven.test.skip=true -Dinvoker.skip=true
 script:
   - mvn verify -B -T 1C -PenableCoverage,travis
