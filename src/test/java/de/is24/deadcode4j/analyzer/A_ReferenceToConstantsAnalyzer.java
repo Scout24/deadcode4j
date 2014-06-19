@@ -464,15 +464,6 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer<ReferenceTo
                 FQ_CONSTANTS + "$More");
     }
 
-    @Ignore("not sure if Constants.A_STRING.intern() is actually inlined by the compiler")
-    @Test
-    public void recognizesDependencyToConstantOfOtherPackageForInnerClassesInMethodCall() {
-        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/subpackage/ClassUsingInnerClassOfConstantOfOtherPackageInMethodCall.java");
-        triggerFinishAnalysisEvent();
-
-        assertDependencyToConstantsExists("de.is24.deadcode4j.analyzer.constants.subpackage.ClassUsingInnerClassOfConstantOfOtherPackageInMethodCall");
-    }
-
     @Test
     public void recognizesAnnotationsDependencyToConstantAsDefault() {
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/AnnotationUsingConstantAsDefault.java");
