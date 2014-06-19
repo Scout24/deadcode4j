@@ -13,8 +13,8 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Lists.newArrayList;
-import static de.is24.deadcode4j.analyzer.javassist.CtClasses.getSuperclassOf;
-import static de.is24.deadcode4j.analyzer.javassist.CtClasses.isJavaLangObject;
+import static de.is24.javassist.CtClasses.getSuperclassOf;
+import static de.is24.javassist.CtClasses.isJavaLangObject;
 
 /**
  * Serves as a base class with which to mark classes as being in use if they are a direct subclass of one of the

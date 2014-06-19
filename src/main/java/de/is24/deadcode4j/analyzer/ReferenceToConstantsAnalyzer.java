@@ -35,7 +35,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import static de.is24.deadcode4j.Utils.emptyIfNull;
 import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
-import static de.is24.deadcode4j.analyzer.javassist.CtClasses.*;
+import static de.is24.javassist.CtClasses.*;
 import static de.is24.javaparser.ImportDeclarations.*;
 import static de.is24.javaparser.Nodes.getTypeName;
 

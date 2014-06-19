@@ -10,7 +10,7 @@ import java.util.Set;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static de.is24.deadcode4j.IntermediateResults.*;
-import static de.is24.deadcode4j.analyzer.javassist.CtClasses.getAllImplementedInterfaces;
+import static de.is24.javassist.CtClasses.getAllImplementedInterfaces;
 
 /**
  * Analyzes class files: marks custom implementations of Spring Data repositories as being in use.<br/>

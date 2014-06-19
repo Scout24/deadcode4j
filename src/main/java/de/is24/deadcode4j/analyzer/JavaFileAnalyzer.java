@@ -32,7 +32,7 @@ import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static com.google.common.collect.Lists.newArrayList;
 import static de.is24.deadcode4j.Utils.emptyIfNull;
-import static de.is24.deadcode4j.analyzer.javassist.CtClasses.*;
+import static de.is24.javassist.CtClasses.*;
 import static de.is24.guava.NonNullFunctions.or;
 import static de.is24.guava.NonNullFunctions.toFunction;
 import static de.is24.javaparser.ImportDeclarations.isAsterisk;

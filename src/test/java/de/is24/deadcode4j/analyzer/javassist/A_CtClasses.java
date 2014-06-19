@@ -1,6 +1,7 @@
 package de.is24.deadcode4j.analyzer.javassist;
 
 import de.is24.deadcode4j.junit.FileLoader;
+import de.is24.javassist.CtClasses;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;

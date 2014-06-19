@@ -1,4 +1,4 @@
-package de.is24.deadcode4j.analyzer.javassist;
+package de.is24.javassist;
 
 import com.google.common.collect.Lists;
 import javassist.ClassPool;

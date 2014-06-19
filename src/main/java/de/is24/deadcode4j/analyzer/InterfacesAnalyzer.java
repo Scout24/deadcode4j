@@ -10,7 +10,7 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Sets.newHashSet;
-import static de.is24.deadcode4j.analyzer.javassist.CtClasses.getAllImplementedInterfaces;
+import static de.is24.javassist.CtClasses.getAllImplementedInterfaces;
 import static java.util.Collections.disjoint;
 
 /**
