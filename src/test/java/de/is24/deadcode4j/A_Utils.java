@@ -1,22 +1,16 @@
 package de.is24.deadcode4j;
 
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
-import static com.google.common.base.Optional.absent;
-import static com.google.common.base.Optional.of;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Mockito.*;
 
 public final class A_Utils {
 
@@ -82,40 +76,6 @@ public final class A_Utils {
         Set<Integer> set = Utils.getOrAddMappedSet(map, key);
 
         assertThat(set, is(sameInstance(existingSet)));
-    }
-
-    @Test
-    @SuppressWarnings("unchecked")
-    public void callsEachFunction() {
-        Object expectedReturnValue = new Object();
-        Function<Object, Optional<Object>> first = mock(Function.class, "firstFunction");
-        when(first.apply(anyObject())).thenReturn(absent());
-        Function<Object, Optional<Object>> second = mock(Function.class, "secondFunction");
-        when(second.apply(anyObject())).thenReturn(of(expectedReturnValue));
-
-        Optional<Object> result = Utils.or(first, second).apply(new Object());
-
-        assert result != null;
-        assertThat(result.isPresent(), is(true));
-        assertThat(result.get(), is(expectedReturnValue));
-        verify(first).apply(anyObject());
-    }
-
-    @Test
-    @SuppressWarnings("unchecked")
-    public void stopsAfterResultIsPresent() {
-        Object expectedReturnValue = new Object();
-        Function<Object, Optional<Object>> first = mock(Function.class, "firstFunction");
-        when(first.apply(anyObject())).thenReturn(of(expectedReturnValue));
-        Function<Object, Optional<Object>> second = mock(Function.class, "secondFunction");
-        when(second.apply(anyObject())).thenReturn(absent());
-
-        Optional<Object> result = Utils.or(first, second).apply(new Object());
-
-        assert result != null;
-        assertThat(result.isPresent(), is(true));
-        assertThat(result.get(), is(expectedReturnValue));
-        verify(second, never()).apply(anyObject());
     }
 
 }
