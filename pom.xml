@@ -281,13 +281,13 @@
                         <artifactId>jacoco-maven-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>pre-unit-test</id>
+                                <id>configure-argLine</id>
                                 <goals>
                                     <goal>prepare-agent</goal>
                                 </goals>
                             </execution>
                             <execution>
-                                <id>pre-integration-test</id>
+                                <id>configure-invoker.mavenOpts</id>
                                 <phase>pre-integration-test</phase>
                                 <goals>
                                     <goal>prepare-agent</goal>
