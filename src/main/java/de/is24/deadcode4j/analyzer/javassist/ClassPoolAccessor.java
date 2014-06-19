@@ -72,6 +72,19 @@ public final class ClassPoolAccessor {
         return classPool;
     }
 
+    private static String prepareQualifier(CharSequence qualifier) {
+        String preparedQualifier = qualifier.toString();
+        for (; ; ) {
+            int lastDot = preparedQualifier.lastIndexOf('.');
+            int lastDollar = preparedQualifier.lastIndexOf('$');
+            if (lastDollar < 0 || lastDot < 0 || lastDollar > lastDot) {
+                break;
+            }
+            preparedQualifier = preparedQualifier.substring(0, lastDot) + "$" + preparedQualifier.substring(lastDot + 1);
+        }
+        return preparedQualifier;
+    }
+
     /**
      * Returns the <code>ClassPool</code> used for examining classes.
      *
@@ -91,7 +104,7 @@ public final class ClassPoolAccessor {
      */
     @Nonnull
     public Optional<String> resolveClass(@Nonnull CharSequence qualifier) {
-        return classResolver.getUnchecked(qualifier.toString());
+        return classResolver.getUnchecked(prepareQualifier(qualifier));
     }
 
     @Nonnull

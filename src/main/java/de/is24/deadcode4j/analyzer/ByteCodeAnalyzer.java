@@ -99,10 +99,16 @@ public abstract class ByteCodeAnalyzer extends AnalyzerAdapter {
         return annotations;
     }
 
+    private static LoadingCache<File, Optional<CtClass>> getClassLoader(AnalysisContext analysisContext) {
+        return analysisContext.getOrCreateCacheEntry(ByteCodeAnalyzer.class, SUPPLIER);
+    }
+
     @Override
     public final void doAnalysis(@Nonnull AnalysisContext analysisContext, @Nonnull File file) {
         if (file.getName().endsWith(".class")) {
-            analyzeClass(analysisContext, file);
+            CtClass ctClass = getClassLoader(analysisContext).getUnchecked(file).get();
+            logger.debug("Analyzing class [{}]...", ctClass.getName());
+            analyzeClass(analysisContext, ctClass);
         }
     }
 
@@ -113,15 +119,5 @@ public abstract class ByteCodeAnalyzer extends AnalyzerAdapter {
      * @since 1.3
      */
     protected abstract void analyzeClass(@Nonnull AnalysisContext analysisContext, @Nonnull CtClass clazz);
-
-    private void analyzeClass(@Nonnull AnalysisContext analysisContext, @Nonnull File clazz) {
-        CtClass ctClass = getOrCreateClassLoader(analysisContext).getUnchecked(clazz).get();
-        logger.debug("Analyzing class [{}]...", ctClass.getName());
-        analyzeClass(analysisContext, ctClass);
-    }
-
-    private LoadingCache<File, Optional<CtClass>> getOrCreateClassLoader(AnalysisContext analysisContext) {
-        return analysisContext.getOrCreateCacheEntry(ByteCodeAnalyzer.class, SUPPLIER);
-    }
 
 }

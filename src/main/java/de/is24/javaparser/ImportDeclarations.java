@@ -49,4 +49,21 @@ public final class ImportDeclarations {
         };
     }
 
+    /**
+     * Returns a <code>Predicate</code> that evaluates to <code>true</code> if the last qualifier of the
+     * <code>ImportDeclaration</code> being tested matches the given String.
+     *
+     * @since 1.6
+     */
+    @Nonnull
+    public static Predicate<? super ImportDeclaration> refersTo(@Nonnull final String lastQualifier) {
+        return new Predicate<ImportDeclaration>() {
+            @Override
+            @SuppressWarnings("ConstantConditions")
+            public boolean apply(@Nullable ImportDeclaration input) {
+                return lastQualifier.equals(checkNotNull(input).getName().getName());
+            }
+        };
+    }
+
 }

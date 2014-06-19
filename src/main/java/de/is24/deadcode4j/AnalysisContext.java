@@ -12,6 +12,7 @@ import java.util.Set;
 import static com.google.common.base.Predicates.equalTo;
 import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Iterables.size;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
@@ -105,6 +106,9 @@ public class AnalysisContext {
      */
     public void addDependencies(@Nonnull String depender, @Nonnull Iterable<String> dependees) {
         dependees = filter(dependees, not(equalTo(depender))); // this would be cheating
+        if (size(dependees) == 0) {
+            return;
+        }
         Set<String> existingDependees = getOrAddMappedSet(this.dependencyMap, depender);
         for (String aDependee : dependees) {
             existingDependees.add(aDependee);
