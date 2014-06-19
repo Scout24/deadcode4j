@@ -483,7 +483,6 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer<ReferenceTo
                 "de.is24.deadcode4j.analyzer.constants.InnerClassUsingConstantOfOuterClassInFieldViaQualifier");
     }
 
-    @Ignore("This dependency (inner to outer) is recognized anyways by the class dependency analysis")
     @Test
     public void recognizesReferenceOfInnerClassToOuterClassInFieldDirectly() {
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/InnerClassUsingConstantOfOuterClassInFieldDirectly.java");

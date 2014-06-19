@@ -2,6 +2,7 @@ package de.is24.deadcode4j.analyzer;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Sets;
 import de.is24.deadcode4j.AnalysisContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
@@ -347,6 +348,17 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
         @Nonnull
         private final Deque<Set<String>> localVariables = newLinkedList();
 
+        private static Predicate<? super FieldDeclaration> constants() {
+            return new Predicate<FieldDeclaration>() {
+                @Override
+                @SuppressWarnings("ConstantConditions")
+                public boolean apply(@Nullable FieldDeclaration fieldDeclaration) {
+                    int modifiers = fieldDeclaration.getModifiers();
+                    return ModifierSet.isStatic(modifiers) && ModifierSet.isFinal(modifiers);
+                }
+            };
+        }
+
         @Override
         public void visit(ClassOrInterfaceDeclaration n, A arg) {
             HashSet<String> fields = newHashSet();
@@ -521,11 +533,10 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
         }
 
         private void addFieldVariables(@Nullable Iterable<? extends BodyDeclaration> declarations, @Nonnull Set<String> variables) {
-            for (BodyDeclaration bodyDeclaration : emptyIfNull(declarations)) {
-                if (FieldDeclaration.class.isInstance(bodyDeclaration)) {
-                    for (VariableDeclarator variableDeclarator : FieldDeclaration.class.cast(bodyDeclaration).getVariables()) {
-                        variables.add(variableDeclarator.getId().getName());
-                    }
+            for (FieldDeclaration fieldDeclaration : emptyIfNull(declarations).
+                    filter(FieldDeclaration.class).filter(not(constants()))) {
+                for (VariableDeclarator variableDeclarator : fieldDeclaration.getVariables()) {
+                    variables.add(variableDeclarator.getId().getName());
                 }
             }
         }
