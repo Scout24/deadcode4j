@@ -290,7 +290,7 @@
                                 <id>configure-invoker.mavenOpts</id>
                                 <phase>pre-integration-test</phase>
                                 <goals>
-                                    <goal>prepare-agent-integration</goal>
+                                    <goal>prepare-agent</goal>
                                 </goals>
                                 <configuration>
                                     <propertyName>invoker.mavenOpts</propertyName>
