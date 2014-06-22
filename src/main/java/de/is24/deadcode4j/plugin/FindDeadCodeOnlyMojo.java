@@ -1,12 +1,15 @@
 package de.is24.deadcode4j.plugin;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.Sets;
 import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.DeadCode;
 import de.is24.deadcode4j.DeadCodeFinder;
 import de.is24.deadcode4j.Module;
 import de.is24.deadcode4j.analyzer.*;
+import de.is24.maven.UpdateChecker;
 import de.is24.maven.slf4j.AbstractSlf4jMojo;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
@@ -97,12 +100,21 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     @Component
     private RepositorySystem repositorySystem;
     /**
+     * Skip the update check performed at startup.
+     *
+     * @since 1.6
+     */
+    @Parameter(property = "deadcode4j.skipUpdate")
+    private boolean skipUpdateCheck = false;
+    /**
      * Lists the fqcn of the classes marking a direct subclass as being "live code".
      *
      * @since 1.4
      */
     @Parameter
     private Set<String> superClassesMarkingLiveCode = emptySet();
+    @Component
+    private UpdateChecker updateChecker;
     /**
      * This parameter only exists to have a generated <code>help</code> goal. It is not used at all.
      *
@@ -116,6 +128,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
 
     public void doExecute() throws MojoExecutionException {
         try {
+            checkForUpdate();
             logWelcome();
             DeadCode deadCode = analyzeCode();
             log(deadCode);
@@ -124,6 +137,17 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
             getLog().error("An unexpected exception occurred." +
                     "Please consider reporting an issue at https://github.com/ImmobilienScout24/deadcode4j/issues", rE);
             throw rE;
+        }
+    }
+
+    private void checkForUpdate() {
+        if (skipUpdateCheck) {
+            return;
+        }
+        Optional<ArtifactVersion> mostRecentVersion = updateChecker.checkForUpdate(mojoExecution);
+        if (mostRecentVersion.isPresent()) {
+            getLog().warn("The new version [" + mostRecentVersion.get() +
+                    "] is available; consider updating for better analysis results!");
         }
     }
 
