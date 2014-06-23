@@ -250,14 +250,14 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <delete dir="${testScenarios.directory}"/>
                                 <copy toDir="${testScenarios.directory}">
                                     <fileset dir="${project.build.testOutputDirectory}" includes="*,META-INF/**">
                                         <type type="file"/>
                                     </fileset>
                                 </copy>
-                            </tasks>
+                            </target>
                         </configuration>
                     </execution>
                     <execution>
@@ -267,9 +267,9 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <delete dir="${testScenarios.directory}"/>
-                            </tasks>
+                            </target>
                         </configuration>
                     </execution>
                 </executions>
