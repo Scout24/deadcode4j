@@ -115,16 +115,6 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     private Set<String> superClassesMarkingLiveCode = emptySet();
     @Component
     private UpdateChecker updateChecker;
-    /**
-     * This parameter only exists to have a generated <code>help</code> goal. It is not used at all.
-     *
-     * @since 1.4.1
-     * @deprecated this value is ignored
-     */
-    @Deprecated
-    @Parameter(defaultValue = "fooBar")
-    @SuppressWarnings("unused")
-    private String workAroundForHelpMojo;
 
     public void doExecute() throws MojoExecutionException {
         try {
