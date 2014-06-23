@@ -125,7 +125,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
             log(deadCode);
             logGoodbye();
         } catch (RuntimeException rE) {
-            getLog().error("An unexpected exception occurred." +
+            getLog().error("An unexpected exception occurred. " +
                     "Please consider reporting an issue at https://github.com/ImmobilienScout24/deadcode4j/issues", rE);
             throw rE;
         }

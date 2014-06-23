@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>de.is24.junit</groupId>
+    <artifactId>project</artifactId>
+    <version>42</version>
+    <packaging>jar</packaging>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>de.is24.mavenplugins</groupId>
+                <artifactId>deadcode4j-maven-plugin</artifactId>
+                <configuration>
+                    <customXmls>
+                        <customXml>
+                            <rootElement>nospring</rootElement>
+                            <endOfFileName>.xml</endOfFileName>
+                        </customXml>
+                    </customXmls>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
