@@ -33,6 +33,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 public final class A_ModuleGenerator {
@@ -48,6 +49,8 @@ public final class A_ModuleGenerator {
     public void setUp() throws Exception {
         mavenProject = givenMavenProject("project");
         repositorySystem = mock(RepositorySystem.class);
+        disableArtifactResolving();
+
         objectUnderTest = new ModuleGenerator(repositorySystem);
     }
 
@@ -167,11 +170,28 @@ public final class A_ModuleGenerator {
         artifact.setResolved(resolved);
         artifact.setFile(tempFileRule.getTempFile());
 
-        mavenProject.setResolvedArtifacts(newHashSet(artifact));
         mavenProject.setArtifactFilter(new ScopeArtifactFilter(SCOPE_COMPILE_PLUS_RUNTIME));
+        if (resolved) {
+            mavenProject.setResolvedArtifacts(newHashSet(artifact));
+        } else {
+            mavenProject.setArtifacts(newHashSet(artifact));
+        }
+    }
+
+    private void disableArtifactResolving() {
+        when(this.repositorySystem.resolve(any(ArtifactResolutionRequest.class))).thenAnswer(new Answer<ArtifactResolutionResult>() {
+            @Override
+            public ArtifactResolutionResult answer(InvocationOnMock invocationOnMock) throws Throwable {
+                ArtifactResolutionRequest request = (ArtifactResolutionRequest) invocationOnMock.getArguments()[0];
+                ArtifactResolutionResult artifactResolutionResult = new ArtifactResolutionResult();
+                artifactResolutionResult.addMissingArtifact(request.getArtifact());
+                return artifactResolutionResult;
+            }
+        });
     }
 
     private void enableArtifactResolving() {
+        reset(this.repositorySystem);
         when(this.repositorySystem.resolve(any(ArtifactResolutionRequest.class))).thenAnswer(new Answer<ArtifactResolutionResult>() {
             @Override
             public ArtifactResolutionResult answer(InvocationOnMock invocationOnMock) throws Throwable {
