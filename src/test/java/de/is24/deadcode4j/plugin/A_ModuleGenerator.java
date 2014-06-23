@@ -130,6 +130,17 @@ public final class A_ModuleGenerator {
         assertThat(module.getClassPath(), is(emptyIterable()));
     }
 
+    @Test
+    public void createsNoClassPathEntryForInvalidDependency() throws MojoExecutionException {
+        addResolvedArtifact(mavenProject).setFile(null);
+
+        Iterable<Module> modules = objectUnderTest.getModulesFor(singleton(mavenProject));
+
+        assertThat(modules, is(Matchers.<Module>iterableWithSize(1)));
+        Module module = Iterables.getOnlyElement(modules);
+        assertThat(module.getClassPath(), is(emptyIterable()));
+    }
+
     private MavenProject givenMavenProject(String projectId) {
         MavenProject mavenProject = new MavenProject();
         mavenProject.setGroupId("de.is24.junit");
@@ -147,15 +158,15 @@ public final class A_ModuleGenerator {
         return mavenProject;
     }
 
-    private void addResolvedArtifact(MavenProject mavenProject) {
-        addArtifact(mavenProject, true);
+    private Artifact addResolvedArtifact(MavenProject mavenProject) {
+        return addArtifact(mavenProject, true);
     }
 
     private void addUnresolvedArtifact(MavenProject mavenProject) {
         addArtifact(mavenProject, false);
     }
 
-    private void addArtifact(MavenProject mavenProject, final boolean resolved) {
+    private Artifact addArtifact(MavenProject mavenProject, final boolean resolved) {
         Artifact artifact = new ArtifactStub() {
             private boolean resolved = false;
 
@@ -187,6 +198,7 @@ public final class A_ModuleGenerator {
         } else {
             mavenProject.setArtifacts(newHashSet(artifact));
         }
+        return artifact;
     }
 
     private void disableArtifactResolving() {
