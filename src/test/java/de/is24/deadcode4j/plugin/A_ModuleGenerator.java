@@ -121,6 +121,7 @@ public final class A_ModuleGenerator {
         mavenProject.setGroupId("de.is24.junit");
         mavenProject.setArtifactId(projectId);
         mavenProject.setVersion("42");
+        mavenProject.getProperties().setProperty("project.build.sourceEncoding", "UTF-8");
         ArtifactStub projectArtifact = new ArtifactStub();
         projectArtifact.setGroupId("de.is24.junit");
         projectArtifact.setArtifactId(projectId);
