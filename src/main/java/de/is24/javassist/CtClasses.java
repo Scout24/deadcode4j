@@ -23,6 +23,8 @@ import static java.util.Arrays.asList;
  */
 public final class CtClasses {
 
+    private CtClasses() {}
+
     private static boolean issuedWarningForJavaLangAnnotationRepeatable = false;
 
     /**

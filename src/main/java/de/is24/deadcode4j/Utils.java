@@ -21,6 +21,8 @@ import static com.google.common.collect.Sets.newHashSet;
  */
 public final class Utils {
 
+    private Utils() {}
+
     /**
      * Returns <i>groupId:artifactId</i> for the specified artifact.
      *

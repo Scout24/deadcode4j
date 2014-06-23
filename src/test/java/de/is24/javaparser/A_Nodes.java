@@ -1,5 +1,6 @@
 package de.is24.javaparser;
 
+import de.is24.deadcode4j.junit.AUtilityClass;
 import de.is24.deadcode4j.junit.FileLoader;
 import japa.parser.JavaParser;
 import japa.parser.ParseException;
@@ -14,7 +15,7 @@ import java.io.IOException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-public final class A_Nodes {
+public final class A_Nodes extends AUtilityClass {
 
     @Test
     public void prependsNothingForEmptyStringBuilder() {
@@ -57,6 +58,11 @@ public final class A_Nodes {
                 assertThat("Name of anonymous class is invalid!", Nodes.getTypeName(n), is(n.getValue()));
             }
         }, null);
+    }
+
+    @Override
+    protected Class<?> getType() {
+        return Nodes.class;
     }
 
 }

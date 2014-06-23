@@ -1,6 +1,7 @@
 package de.is24.guava;
 
 import com.google.common.base.Optional;
+import de.is24.deadcode4j.junit.AUtilityClass;
 import org.junit.Test;
 
 import static com.google.common.base.Optional.absent;
@@ -10,7 +11,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.*;
 
-public class A_NonNullFunctions {
+public class A_NonNullFunctions extends AUtilityClass {
 
     @Test
     @SuppressWarnings("unchecked")
@@ -42,6 +43,11 @@ public class A_NonNullFunctions {
         assertThat(result.isPresent(), is(true));
         assertThat(result.get(), is(expectedReturnValue));
         verify(second, never()).apply(anyObject());
+    }
+
+    @Override
+    protected Class<?> getType() {
+        return NonNullFunctions.class;
     }
 
 }

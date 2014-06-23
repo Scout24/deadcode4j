@@ -1,5 +1,6 @@
 package de.is24.deadcode4j.analyzer.javassist;
 
+import de.is24.deadcode4j.junit.AUtilityClass;
 import de.is24.deadcode4j.junit.FileLoader;
 import de.is24.javassist.CtClasses;
 import javassist.ClassPool;
@@ -12,7 +13,7 @@ import java.util.Set;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-public final class A_CtClasses {
+public final class A_CtClasses extends AUtilityClass {
 
     @Test
     public void retrievesAllImplementedInterfaces() throws NotFoundException {
@@ -39,6 +40,11 @@ public final class A_CtClasses {
         CtClass clazz = classPool.getOrNull(className);
         assertThat(clazz, is(notNullValue()));
         return clazz;
+    }
+
+    @Override
+    protected Class<?> getType() {
+        return CtClasses.class;
     }
 
 }

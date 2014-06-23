@@ -1,5 +1,6 @@
 package de.is24.deadcode4j;
 
+import de.is24.deadcode4j.junit.AUtilityClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-public final class A_Utils {
+public final class A_Utils extends AUtilityClass {
 
     @Test
     public void doesNotAddNull() {
@@ -76,6 +77,11 @@ public final class A_Utils {
         Set<Integer> set = Utils.getOrAddMappedSet(map, key);
 
         assertThat(set, is(sameInstance(existingSet)));
+    }
+
+    @Override
+    protected Class getType() {
+        return Utils.class;
     }
 
 }

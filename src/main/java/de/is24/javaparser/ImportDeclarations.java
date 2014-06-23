@@ -15,6 +15,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public final class ImportDeclarations {
 
+    private ImportDeclarations() {}
+
     /**
      * Returns a <code>Predicate</code> that evaluates to <code>true</code> if the <code>ImportDeclaration</code> being
      * tested is an asterisk import.

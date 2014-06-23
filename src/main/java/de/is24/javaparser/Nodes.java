@@ -24,6 +24,8 @@ import static java.util.Collections.singleton;
  */
 public class Nodes {
 
+    private Nodes() {}
+
     @Nonnull
     public static CompilationUnit getCompilationUnit(@Nonnull Node node) {
         Node loopNode = node;

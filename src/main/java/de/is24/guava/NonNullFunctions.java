@@ -14,6 +14,8 @@ import javax.annotation.Nullable;
  */
 public final class NonNullFunctions {
 
+    private NonNullFunctions() {}
+
     /**
      * Returns a <code>NonNullFunction</code> that will call the specified functions one by one until a return value is
      * <i>present</i> or the end of the call chain is reached.
