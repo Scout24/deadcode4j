@@ -32,11 +32,11 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Mockito.*;
 
-public final class A_DefaultUpdateChecker {
+public final class An_UpdateChecker {
 
     @Rule
     public final LoggingRule enableLogging = new LoggingRule();
-    private DefaultUpdateChecker objectUnderTest;
+    private UpdateChecker objectUnderTest;
     private RepositoryMetadataManager repositoryMetadataManager;
     private MavenSession mavenSession;
     private Optional<ArtifactVersion> result;
@@ -47,7 +47,7 @@ public final class A_DefaultUpdateChecker {
 
     @Before
     public void setUp() throws Exception {
-        objectUnderTest = new DefaultUpdateChecker();
+        objectUnderTest = new UpdateChecker();
         repositoryMetadataManager = mock(RepositoryMetadataManager.class);
         mavenSession = mock(MavenSession.class);
         when(mavenSession.getCurrentProject()).thenReturn(new MavenProject());
