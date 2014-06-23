@@ -101,6 +101,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     private RepositorySystem repositorySystem;
     /**
      * Skip the update check performed at startup.
+     * Note that the update check is skipped if Maven is running in offline mode (using the -o flag).
      *
      * @since 1.6
      */
