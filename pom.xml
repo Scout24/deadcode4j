@@ -212,6 +212,7 @@
                             <goals>
                                 <goal>clean</goal>
                                 <goal>${project.groupId}:${project.artifactId}:find</goal>
+                                <goal>${project.groupId}:${project.artifactId}:find-without-packaging</goal>
                             </goals>
                             <pomExcludes>
                                 <exclude>help/pom.xml</exclude>
