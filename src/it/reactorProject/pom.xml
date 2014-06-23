@@ -24,6 +24,7 @@
                     <modulesToSkip>
                         <param>secondReactorProject</param>
                         <param>secondJavaProject</param>
+                        <param>nonExistingProject</param>
                     </modulesToSkip>
                 </configuration>
             </plugin>
