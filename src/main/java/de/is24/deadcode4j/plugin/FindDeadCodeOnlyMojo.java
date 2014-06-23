@@ -23,10 +23,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Lists.newArrayList;
@@ -138,6 +135,22 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     }
 
     private void sendStatistics() {
+        // interesting values:
+        // java.runtime.name
+        // java.runtime.version
+        // java.specification.version // should be the same as above?
+        // java.vm.specification.version // should be the same as above?
+        // java.class.version // should be the same as above?
+        // java.version // should be the same as above?
+        // os.name
+        // os.version
+        // user.language
+        for (Map.Entry<Object, Object> entry : System.getProperties().entrySet()) {
+            System.out.println(entry.getKey() + "=" + entry.getValue());
+        }
+        for (Map.Entry<String, String> entry : System.getenv().entrySet()) {
+            System.out.println(entry.getKey() + ":" + entry.getValue());
+        }
         final URL url;
         try {
             url = new URL(null, "https://docs.google.com/forms/d/1-XZeeAyHrucUMREQLHZEnZ5mhywYZi5Dk9nfEv7U2GU/formResponse?" +
