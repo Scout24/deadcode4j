@@ -1,0 +1,14 @@
+import java.io.*;
+
+File buildLog = new File(basedir, "build.log");
+BufferedReader reader = new BufferedReader(new FileReader(buildLog));
+String line;
+boolean analysisFailedForFile = false;
+while ((line = reader.readLine()) != null) {
+    if (line.contains("At least one file could not be parsed; analysis may be inaccurate!")) {
+        analysisFailedForFile = true;
+    }
+}
+if (!analysisFailedForFile) {
+    throw new RuntimeException("Should have warned about analysis issues!");
+}
