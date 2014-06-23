@@ -30,12 +30,20 @@ public class LoggingRule extends TestWatcher {
         Log logMock = mock(Log.class);
         when(logMock.isDebugEnabled()).thenReturn(true);
         doAnswer(new LogAnswer("DEBUG")).when(logMock).debug(any(CharSequence.class));
+        doAnswer(new LogAnswer("DEBUG")).when(logMock).debug(any(CharSequence.class), any(Throwable.class));
+        doAnswer(new LogAnswer("DEBUG")).when(logMock).debug(any(Throwable.class));
         when(logMock.isInfoEnabled()).thenReturn(true);
         doAnswer(new LogAnswer("INFO")).when(logMock).info(any(CharSequence.class));
+        doAnswer(new LogAnswer("INFO")).when(logMock).info(any(CharSequence.class), any(Throwable.class));
+        doAnswer(new LogAnswer("INFO")).when(logMock).info(any(Throwable.class));
         when(logMock.isWarnEnabled()).thenReturn(true);
         doAnswer(new LogAnswer("WARN")).when(logMock).warn(any(CharSequence.class));
+        doAnswer(new LogAnswer("WARN")).when(logMock).warn(any(CharSequence.class), any(Throwable.class));
+        doAnswer(new LogAnswer("WARN")).when(logMock).warn(any(Throwable.class));
         when(logMock.isErrorEnabled()).thenReturn(true);
         doAnswer(new LogAnswer("ERROR")).when(logMock).error(any(CharSequence.class));
+        doAnswer(new LogAnswer("ERROR")).when(logMock).error(any(CharSequence.class), any(Throwable.class));
+        doAnswer(new LogAnswer("ERROR")).when(logMock).error(any(Throwable.class));
         return logMock;
     }
 
@@ -58,8 +66,24 @@ public class LoggingRule extends TestWatcher {
         }
 
         @Override
+        @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
         public Void answer(InvocationOnMock invocationOnMock) throws Throwable {
-            System.out.println("[" + Strings.padEnd(level, 5, ' ') + "] " + invocationOnMock.getArguments()[0]);
+            final Object[] arguments = invocationOnMock.getArguments();
+            final String message;
+            Throwable throwable = null;
+            if (Throwable.class.isInstance(arguments[0])) {
+                throwable = Throwable.class.cast(arguments[0]);
+                message = throwable.getMessage();
+            } else {
+                message = String.valueOf(arguments[0]);
+            }
+            if (arguments.length > 1) {
+                throwable = Throwable.class.cast(arguments[1]);
+            }
+            System.out.println("[" + Strings.padEnd(level, 5, ' ') + "] " + message);
+            if (throwable != null) {
+                throwable.printStackTrace(System.out);
+            }
             return null;
         }
 
