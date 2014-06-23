@@ -79,4 +79,11 @@ public final class A_TypeErasureAnalyzer extends AnAnalyzer<TypeErasureAnalyzer>
                 "java.util.Set");
     }
 
+    @Test
+    public void gracefullyHandlesIrrelevantTypes() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/typeerasure/ClassWithTypesThatShouldNotBeRecognized.java");
+
+        assertThatNoDependenciesAreReported();
+    }
+
 }
