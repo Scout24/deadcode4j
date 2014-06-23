@@ -119,6 +119,17 @@ public final class A_ModuleGenerator {
         assertThat(module.getClassPath(), is(Matchers.<File>iterableWithSize(1)));
     }
 
+    @Test
+    public void createsNoClassPathEntryForUnresolvableDependency() throws MojoExecutionException {
+        addUnresolvedArtifact(mavenProject);
+
+        Iterable<Module> modules = objectUnderTest.getModulesFor(singleton(mavenProject));
+
+        assertThat(modules, is(Matchers.<Module>iterableWithSize(1)));
+        Module module = Iterables.getOnlyElement(modules);
+        assertThat(module.getClassPath(), is(emptyIterable()));
+    }
+
     private MavenProject givenMavenProject(String projectId) {
         MavenProject mavenProject = new MavenProject();
         mavenProject.setGroupId("de.is24.junit");
