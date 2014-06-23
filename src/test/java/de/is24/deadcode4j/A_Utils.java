@@ -79,6 +79,26 @@ public final class A_Utils extends AUtilityClass {
         assertThat(set, is(sameInstance(existingSet)));
     }
 
+    @Test
+    public void returnsNullForNull() {
+        assertThat(Utils.nullIfEmpty(null), is(nullValue()));
+    }
+
+    @Test
+    public void returnsNullForEmptyString() {
+        assertThat(Utils.nullIfEmpty(""), is(nullValue()));
+    }
+
+    @Test
+    public void returnsNullForBlanks() {
+        assertThat(Utils.nullIfEmpty("  "), is(nullValue()));
+    }
+
+    @Test
+    public void returnsTheArgumentIfItIsNonNullAndNotEmpty() {
+        assertThat(Utils.nullIfEmpty("foo"), is("foo"));
+    }
+
     @Override
     protected Class getType() {
         return Utils.class;

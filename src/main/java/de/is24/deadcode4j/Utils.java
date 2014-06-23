@@ -122,4 +122,14 @@ public final class Utils {
         return FluentIterable.from(iterable == null ? Collections.<E>emptyList() : iterable);
     }
 
+    /**
+     * Returns {@code null} if the given String is {@code null} or empty; or the argument otherwise.
+     *
+     * @since 1.6
+     */
+    @Nullable
+    public static String nullIfEmpty(@Nullable String string) {
+        return (string == null || "".equals(string.trim())) ? null : string;
+    }
+
 }

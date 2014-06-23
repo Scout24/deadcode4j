@@ -115,7 +115,7 @@ class ModuleGenerator {
             @Nonnull MavenProject project,
             @Nonnull Map<String, Module> knownModules) throws MojoExecutionException {
         String projectId = getKeyFor(project);
-        String encoding = project.getProperties().getProperty("project.build.sourceEncoding");
+        String encoding = nullIfEmpty(project.getProperties().getProperty("project.build.sourceEncoding"));
         if (encoding == null) {
             logger.warn("No encoding set for [{}]! Parsing source files may cause issues.", projectId);
         }
