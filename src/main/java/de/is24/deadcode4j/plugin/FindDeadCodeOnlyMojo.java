@@ -9,6 +9,7 @@ import de.is24.deadcode4j.Module;
 import de.is24.deadcode4j.analyzer.*;
 import de.is24.maven.UpdateChecker;
 import de.is24.maven.slf4j.AbstractSlf4jMojo;
+import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -18,6 +19,10 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.repository.RepositorySystem;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -124,10 +129,39 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
             DeadCode deadCode = analyzeCode();
             log(deadCode);
             logGoodbye();
+            sendStatistics();
         } catch (RuntimeException rE) {
             getLog().error("An unexpected exception occurred. " +
                     "Please consider reporting an issue at https://github.com/ImmobilienScout24/deadcode4j/issues", rE);
             throw rE;
+        }
+    }
+
+    private void sendStatistics() {
+        final URL url;
+        try {
+            url = new URL(null, "https://docs.google.com/forms/d/1-XZeeAyHrucUMREQLHZEnZ5mhywYZi5Dk9nfEv7U2GU/formResponse?" +
+                    "entry.1472283741=1.6&" +
+                    "entry.131773189=3.1&" +
+                    "entry.344342021=1.7_55");
+        } catch (MalformedURLException e) {
+            getLog().debug("Failed to create form URL!", e);
+            getLog().info("Failed preparing usage statistics.");
+            return;
+        }
+        try {
+            URLConnection urlConnection = url.openConnection();
+            urlConnection.setAllowUserInteraction(false);
+            urlConnection.setConnectTimeout(2000);
+            urlConnection.setReadTimeout(5000);
+            urlConnection.connect();
+            List<String> answer = IOUtils.readLines(urlConnection.getInputStream());
+            for (String line : answer) {
+                System.out.println(line);
+            }
+        } catch (IOException e) {
+            getLog().debug("Failed to send statistics!", e);
+            getLog().info("Failed sending usage statistics.");
         }
     }
 
