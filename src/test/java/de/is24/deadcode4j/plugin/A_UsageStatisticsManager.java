@@ -10,70 +10,50 @@ import org.apache.maven.shared.runtime.MavenRuntimeException;
 import org.codehaus.plexus.components.interactivity.Prompter;
 import org.codehaus.plexus.components.interactivity.PrompterException;
 import org.codehaus.plexus.util.ReflectionUtils;
-import org.eclipse.aether.RepositorySystemSession;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.URL;
 
 import static de.is24.deadcode4j.plugin.UsageStatisticsManager.DeadCodeStatistics;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyString;
-import static org.powermock.api.mockito.PowerMockito.*;
+import static org.mockito.Mockito.*;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(UsageStatisticsManager.class)
 public final class A_UsageStatisticsManager {
 
     @Rule
     public LoggingRule enableLogging = new LoggingRule();
 
     private UsageStatisticsManager objectUnderTest;
-    private MavenSession mavenSession;
-    private URL urlMock;
-    private MavenRuntime mavenRuntimeMock;
-    private Prompter prompterMock;
+    private HttpURLConnection urlConnectionMock;
 
     @Before
     public void setUp() throws Exception {
-        objectUnderTest = new UsageStatisticsManager();
-        ReflectionUtils.setVariableValueInObject(objectUnderTest, "legacySupport", new LegacySupport() {
+        objectUnderTest = new UsageStatisticsManager() {
             @Override
-            public MavenSession getSession() {
-                return mavenSession;
+            protected HttpURLConnection openUrlConnection() throws IOException {
+                super.openUrlConnection(); // cover this ;)
+                return urlConnectionMock;
             }
-
-            @Override
-            public void setSession(MavenSession session) {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public RepositorySystemSession getRepositorySession() {
-                throw new UnsupportedOperationException();
-            }
-        });
-        mavenRuntimeMock = Mockito.mock(MavenRuntime.class);
-        Mockito.when(mavenRuntimeMock.getProjectProperties(Mockito.any(Class.class))).thenReturn(
+        };
+        MavenRuntime mavenRuntimeMock = mock(MavenRuntime.class);
+        when(mavenRuntimeMock.getProjectProperties(Mockito.any(Class.class))).thenReturn(
                 new MavenProjectProperties("de.is24", "junit", "42.23"));
         ReflectionUtils.setVariableValueInObject(objectUnderTest, "mavenRuntime", mavenRuntimeMock);
 
-        prompterMock = Mockito.mock(Prompter.class);
-        Mockito.when(prompterMock.prompt(anyString(), anyList(), anyString())).thenReturn("N");
+        Prompter prompterMock = mock(Prompter.class);
+        when(prompterMock.prompt(anyString(), anyList(), anyString())).thenReturn("N");
         ReflectionUtils.setVariableValueInObject(objectUnderTest, "prompter", prompterMock);
 
         givenHttpResultsIn(200);
@@ -154,11 +134,14 @@ public final class A_UsageStatisticsManager {
         assertThatStatisticsWereSent();
     }
 
-    private void givenModes(NetworkModes networkMode, InteractivityModes interactivity) {
+    private void givenModes(NetworkModes networkMode, InteractivityModes interactivity) throws IllegalAccessException {
         DefaultMavenExecutionRequest mavenExecutionRequest = new DefaultMavenExecutionRequest();
         mavenExecutionRequest.setOffline(NetworkModes.OFFLINE == networkMode);
         mavenExecutionRequest.setInteractiveMode(InteractivityModes.INTERACTIVE == interactivity);
-        this.mavenSession = new MavenSession(null, null, mavenExecutionRequest, null);
+
+        LegacySupport legacySupport = mock(LegacySupport.class);
+        when(legacySupport.getSession()).thenReturn(new MavenSession(null, null, mavenExecutionRequest, null));
+        ReflectionUtils.setVariableValueInObject(objectUnderTest, "legacySupport", legacySupport);
     }
 
     private void givenHttpResultsIn(int responseCode) throws Exception {
@@ -175,33 +158,31 @@ public final class A_UsageStatisticsManager {
                 return 4;
             }
         }).thenReturn(-1);
-        HttpURLConnection connectionMock = mock(HttpURLConnection.class);
-        when(connectionMock.getInputStream()).thenReturn(inputMock);
-        when(connectionMock.getOutputStream()).thenReturn(mock(OutputStream.class));
-        when(connectionMock.getResponseCode()).thenReturn(responseCode);
-        urlMock = mock(URL.class);
-        when(urlMock.openConnection()).thenReturn(connectionMock);
-        PowerMockito.whenNew(URL.class).withAnyArguments().thenReturn(urlMock);
+        urlConnectionMock = mock(HttpURLConnection.class);
+        when(urlConnectionMock.getInputStream()).thenReturn(inputMock);
+        when(urlConnectionMock.getOutputStream()).thenReturn(mock(OutputStream.class));
+        when(urlConnectionMock.getResponseCode()).thenReturn(responseCode);
     }
 
-    private void givenProjectPropertiesCannotBeDetermined() throws MavenRuntimeException {
-        Mockito.reset(mavenRuntimeMock);
-        Mockito.when(mavenRuntimeMock.getProjectProperties(Mockito.any(Class.class))).thenThrow(new MavenRuntimeException("Yack Fou"));
+    private void givenProjectPropertiesCannotBeDetermined() throws MavenRuntimeException, IllegalAccessException {
+        MavenRuntime mock = mock(MavenRuntime.class);
+        when(mock.getProjectProperties(Mockito.any(Class.class))).thenThrow(new MavenRuntimeException("Yack Fou"));
+        ReflectionUtils.setVariableValueInObject(objectUnderTest, "mavenRuntime", mock);
     }
 
-    private void givenUserAgreesToSendStatistics(String comment) throws PrompterException {
-        Mockito.reset(prompterMock);
-        prompterMock = Mockito.mock(Prompter.class);
-        Mockito.when(prompterMock.prompt(anyString(), anyList(), anyString())).thenReturn("Y");
-        Mockito.when(prompterMock.prompt(anyString(), anyString())).thenReturn(comment);
+    private void givenUserAgreesToSendStatistics(String comment) throws IllegalAccessException, PrompterException {
+        Prompter mock = mock(Prompter.class);
+        when(mock.prompt(anyString(), anyList(), anyString())).thenReturn("Y");
+        when(mock.prompt(anyString(), anyString())).thenReturn(comment);
+        ReflectionUtils.setVariableValueInObject(objectUnderTest, "prompter", mock);
     }
 
     private void assertThatStatisticsWereNotSent() throws Exception {
-        verifyNew(URL.class, Mockito.never());
+        verifyZeroInteractions(urlConnectionMock);
     }
 
     private void assertThatStatisticsWereSent() throws Exception {
-        verifyNew(URL.class);
+        verify(urlConnectionMock).getResponseCode();
     }
 
     private static enum NetworkModes {

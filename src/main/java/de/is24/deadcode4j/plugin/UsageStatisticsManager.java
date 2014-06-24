@@ -79,8 +79,7 @@ public class UsageStatisticsManager {
 
         Map<String, String> parameters = getParameters(comment, deadCodeStatistics, systemProperties);
         try {
-            URL url = new URL("https://docs.google.com/forms/d/1-XZeeAyHrucUMREQLHZEnZ5mhywYZi5Dk9nfEv7U2GU/formResponse");
-            HttpURLConnection urlConnection = HttpURLConnection.class.cast(url.openConnection());
+            HttpURLConnection urlConnection = openUrlConnection();
             urlConnection.setAllowUserInteraction(false);
             urlConnection.setConnectTimeout(2000);
             urlConnection.setReadTimeout(5000);
@@ -115,6 +114,16 @@ public class UsageStatisticsManager {
             logger.debug("Failed to send statistics!", e);
             logger.info("Failed sending usage statistics.");
         }
+    }
+
+    /**
+     * This is around for testing.
+     *
+     * @since 1.6
+     */
+    protected HttpURLConnection openUrlConnection() throws IOException {
+        URL url = new URL("https://docs.google.com/forms/d/1-XZeeAyHrucUMREQLHZEnZ5mhywYZi5Dk9nfEv7U2GU/formResponse");
+        return HttpURLConnection.class.cast(url.openConnection());
     }
 
     private Map<String, String> getParameters(String comment,
