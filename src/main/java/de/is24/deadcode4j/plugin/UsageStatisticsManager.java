@@ -12,14 +12,12 @@ import org.codehaus.plexus.components.interactivity.PrompterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
-import java.net.MalformedURLException;
+import java.io.OutputStream;
 import java.net.URL;
-import java.net.URLConnection;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.TreeSet;
+import java.net.URLEncoder;
+import java.util.*;
 
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
@@ -59,7 +57,7 @@ public class UsageStatisticsManager {
             }
             StringBuilder buffy = listStatistics(deadCodeStatistics, systemProperties);
             try {
-                buffy.append("\nMay I report those usage statistics?");
+                buffy.append("\nMay I report those usage statistics (via HTTPS)?");
                 String answer = prompter.prompt(buffy.toString(), asList("Y", "N"), "Y");
                 if ("N".equals(answer)) {
                     logger.info("Sending usage statistics is aborted.");
@@ -74,24 +72,56 @@ public class UsageStatisticsManager {
             }
         }
 
+        Map<String, String> parameters = getParameters(comment, deadCodeStatistics, systemProperties);
         try {
-            URL url = new URL(null, "https://docs.google.com/forms/d/1-XZeeAyHrucUMREQLHZEnZ5mhywYZi5Dk9nfEv7U2GU/formResponse?" +
-                    "entry.1472283741=1.6&" +
-                    "entry.131773189=3.1&" +
-                    "entry.344342021=1.7_55");
-            URLConnection urlConnection = url.openConnection();
+            URL url = new URL(null, "https://docs.google.com/forms/d/1-XZeeAyHrucUMREQLHZEnZ5mhywYZi5Dk9nfEv7U2GU/formResponse");
+            HttpsURLConnection urlConnection = HttpsURLConnection.class.cast(url.openConnection());
             urlConnection.setAllowUserInteraction(false);
             urlConnection.setConnectTimeout(2000);
             urlConnection.setReadTimeout(5000);
+            urlConnection.setDoInput(true);
+            urlConnection.setDoOutput(true);
+            urlConnection.setRequestMethod("POST");
+            urlConnection.setRequestProperty("content-type", "application/x-www-form-urlencoded");
             urlConnection.connect();
-            List<String> answer = IOUtils.readLines(urlConnection.getInputStream());
-            for (String line : answer) {
-                System.out.println(line);
+
+            OutputStream outputStream = urlConnection.getOutputStream();
+            StringBuilder buffy = new StringBuilder();
+            for (Map.Entry<String, String> entry : parameters.entrySet()) {
+                buffy.append(entry.getKey()).append('=').append(URLEncoder.encode(entry.getValue(), "UTF-8")).append('&');
+            }
+            outputStream.write(buffy.toString().getBytes("UTF-8"));
+            outputStream.close();
+
+            int responseCode = urlConnection.getResponseCode();
+            if (responseCode == 200) {
+                logger.info("Usage statistics have been transferred.");
+            } else {
+                logger.info("Could not transfer usage statistics: {}/{}", responseCode,
+                        urlConnection.getResponseMessage());
+                if (logger.isDebugEnabled()) {
+                    List<String> response = IOUtils.readLines(urlConnection.getInputStream());
+                    for (String line : response) {
+                        logger.debug(line);
+                    }
+                }
             }
         } catch (IOException e) {
             logger.debug("Failed to send statistics!", e);
             logger.info("Failed sending usage statistics.");
         }
+    }
+
+    private Map<String, String> getParameters(String comment,
+                                              DeadCodeStatistics deadCodeStatistics,
+                                              SystemProperties systemProperties) {
+        HashMap<String, String> parameters = newHashMap();
+        if (comment != null) {
+            parameters.put("entry.2135548690", comment);
+        }
+        deadCodeStatistics.addRequestParameters(parameters);
+        systemProperties.addRequestParameters(parameters);
+        return parameters;
     }
 
     private Logger getLogger() {
@@ -104,7 +134,7 @@ public class UsageStatisticsManager {
             buffy.append("\n  ").append(key).append(": ").append(systemProperties.values.get(key));
         }
 
-        buffy.append("\nand extracted this from your configuration: ");
+        buffy.append("\nextracted this from your configuration: ");
         buffy.append("\n  value for ignoreMainClasses: ").
                 append(deadCodeStatistics.config_ignoreMainClasses);
         buffy.append("\n  value for skipSendingUsageStatistics: ").
@@ -124,12 +154,17 @@ public class UsageStatisticsManager {
         buffy.append("\n  number of modules to skip: ").
                 append(deadCodeStatistics.config_numberOfModulesToSkip);
 
+        buffy.append("\nand gathered those results: ");
+        buffy.append("\n  analyzed classes: ").append(deadCodeStatistics.numberOfAnalyzedClasses);
+        buffy.append("\n  analyzed modules: ").append(deadCodeStatistics.numberOfAnalyzedModules);
+        buffy.append("\n  found dead classes: ").append(deadCodeStatistics.numberOfDeadClassesFound);
+
         return buffy;
     }
 
     public static class DeadCodeStatistics {
-        public int numberOfAnalyzedModules;
         public int numberOfAnalyzedClasses;
+        public int numberOfAnalyzedModules;
         public int numberOfDeadClassesFound;
         public boolean config_ignoreMainClasses;
         public int config_numberOfClassesToIgnore;
@@ -138,27 +173,45 @@ public class UsageStatisticsManager {
         public int config_numberOfCustomSuperclasses;
         public int config_numberOfCustomXmlDefinitions;
         public int config_numberOfModulesToSkip;
-        public boolean config_skipSendingUsageStatistics;
+        public Boolean config_skipSendingUsageStatistics;
         public boolean config_skipUpdateCheck;
+
+        public void addRequestParameters(HashMap<String, String> parameters) {
+            parameters.put("entry.1074756797", String.valueOf(numberOfAnalyzedClasses));
+            parameters.put("entry.1318897553", String.valueOf(numberOfAnalyzedModules));
+            parameters.put("entry.582394579", String.valueOf(numberOfDeadClassesFound));
+            parameters.put("entry.2113716156", String.valueOf(config_ignoreMainClasses));
+            parameters.put("entry.1255607340", String.valueOf(config_numberOfClassesToIgnore));
+            parameters.put("entry.837156809", String.valueOf(config_numberOfCustomAnnotations));
+            parameters.put("entry.1900438860", String.valueOf(config_numberOfCustomInterfaces));
+            parameters.put("entry.2138491452", String.valueOf(config_numberOfCustomSuperclasses));
+            parameters.put("entry.1308824804", String.valueOf(config_numberOfCustomXmlDefinitions));
+            parameters.put("entry.1094908901", String.valueOf(config_numberOfModulesToSkip));
+            if (config_skipSendingUsageStatistics != null) {
+                parameters.put("entry.1975817511", String.valueOf(config_skipSendingUsageStatistics));
+            }
+            parameters.put("entry.1760639029", String.valueOf(config_skipUpdateCheck));
+        }
+
     }
 
     private static class SystemProperties {
         private static final Map<String, String> KEYS = newHashMap();
 
         static {
-            KEYS.put("deadcode4j.version", null);
-            KEYS.put("java.class.version", null);
-            KEYS.put("java.runtime.name", null);
-            KEYS.put("java.runtime.version", null);
-            KEYS.put("java.specification.version", null);
-            KEYS.put("java.version", null);
-            KEYS.put("java.vm.specification.version", null);
-            KEYS.put("maven.build.version", null);
-            KEYS.put("maven.version", null);
-            KEYS.put("os.name", null);
-            KEYS.put("os.version", null);
-            KEYS.put("user.country", null);
-            KEYS.put("user.language", null);
+            KEYS.put("deadcode4j.version", "entry.1472283741");
+            KEYS.put("java.class.version", "entry.1951632658");
+            KEYS.put("java.runtime.name", "entry.890615248");
+            KEYS.put("java.runtime.version", "entry.120214478");
+            KEYS.put("java.specification.version", "entry.1933178438");
+            KEYS.put("java.version", "entry.344342021");
+            KEYS.put("java.vm.specification.version", "entry.1718484204");
+            KEYS.put("maven.build.version", "entry.1702626216");
+            KEYS.put("maven.version", "entry.131773189");
+            KEYS.put("os.name", "entry.1484769972");
+            KEYS.put("os.version", "entry.1546424580");
+            KEYS.put("user.country", "entry.1667669021");
+            KEYS.put("user.language", "entry.1213472042");
         }
 
         private final Map<String, String> values = newHashMapWithExpectedSize(KEYS.size());
@@ -184,6 +237,13 @@ public class UsageStatisticsManager {
             }
             return systemProperties;
         }
+
+        public void addRequestParameters(HashMap<String, String> parameters) {
+            for (Map.Entry<String, String> entry : values.entrySet()) {
+                parameters.put(KEYS.get(entry.getKey()), entry.getValue());
+            }
+        }
+
     }
 
 }
