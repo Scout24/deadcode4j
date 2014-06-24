@@ -152,6 +152,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
         deadCodeStatistics.config_numberOfCustomSuperclasses = this.superClassesMarkingLiveCode.size();
         deadCodeStatistics.config_numberOfCustomXmlDefinitions = this.customXmls.size();
         deadCodeStatistics.config_numberOfModulesToSkip = this.modulesToSkip.size();
+        deadCodeStatistics.config_skipSendingUsageStatistics = this.skipSendingUsageStatistics;
         deadCodeStatistics.config_skipUpdateCheck = this.skipUpdateCheck;
 
         deadCodeStatistics.numberOfAnalyzedClasses = deadCode.getAnalyzedClasses().size();

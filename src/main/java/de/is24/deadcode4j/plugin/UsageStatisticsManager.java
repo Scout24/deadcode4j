@@ -40,7 +40,7 @@ public class UsageStatisticsManager {
 
     public void sendUsageStatistics(Boolean skipSendingUsageStatistics, DeadCodeStatistics deadCodeStatistics) {
         final Logger logger = getLogger();
-        if (Boolean.FALSE.equals(skipSendingUsageStatistics)) {
+        if (Boolean.TRUE.equals(skipSendingUsageStatistics)) {
             logger.debug("Configuration wants to me to skip sending usage statistics.");
             return;
         }
@@ -50,7 +50,7 @@ public class UsageStatisticsManager {
         }
         SystemProperties systemProperties = SystemProperties.from(legacySupport, mavenRuntime);
         String comment = null;
-        if (Boolean.TRUE.equals(skipSendingUsageStatistics)) {
+        if (Boolean.FALSE.equals(skipSendingUsageStatistics)) {
             logger.debug("Configured to send usage statistics.");
         } else {
             if (!legacySupport.getSession().getRequest().isInteractiveMode()) {
@@ -74,18 +74,11 @@ public class UsageStatisticsManager {
             }
         }
 
-        final URL url;
         try {
-            url = new URL(null, "https://docs.google.com/forms/d/1-XZeeAyHrucUMREQLHZEnZ5mhywYZi5Dk9nfEv7U2GU/formResponse?" +
+            URL url = new URL(null, "https://docs.google.com/forms/d/1-XZeeAyHrucUMREQLHZEnZ5mhywYZi5Dk9nfEv7U2GU/formResponse?" +
                     "entry.1472283741=1.6&" +
                     "entry.131773189=3.1&" +
                     "entry.344342021=1.7_55");
-        } catch (MalformedURLException e) {
-            logger.debug("Failed to create form URL!", e);
-            logger.info("Failed preparing usage statistics.");
-            return;
-        }
-        try {
             URLConnection urlConnection = url.openConnection();
             urlConnection.setAllowUserInteraction(false);
             urlConnection.setConnectTimeout(2000);
@@ -114,6 +107,8 @@ public class UsageStatisticsManager {
         buffy.append("\nand extracted this from your configuration: ");
         buffy.append("\n  value for ignoreMainClasses: ").
                 append(deadCodeStatistics.config_ignoreMainClasses);
+        buffy.append("\n  value for skipSendingUsageStatistics: ").
+                append(deadCodeStatistics.config_skipSendingUsageStatistics);
         buffy.append("\n  value for skipUpdateCheck: ").
                 append(deadCodeStatistics.config_skipUpdateCheck);
         buffy.append("\n  number of classes to ignore: ").
@@ -143,6 +138,7 @@ public class UsageStatisticsManager {
         public int config_numberOfCustomSuperclasses;
         public int config_numberOfCustomXmlDefinitions;
         public int config_numberOfModulesToSkip;
+        public boolean config_skipSendingUsageStatistics;
         public boolean config_skipUpdateCheck;
     }
 
