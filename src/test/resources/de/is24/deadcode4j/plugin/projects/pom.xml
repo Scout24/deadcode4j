@@ -41,6 +41,7 @@
                         </project>
                     </reactorProjects>
                     <skipUpdateCheck>true</skipUpdateCheck>
+                    <skipSendingUsageStatistics>true</skipSendingUsageStatistics>
                     <superClassesMarkingLiveCode>
                         <param>java.lang.Thread</param>
                     </superClassesMarkingLiveCode>
