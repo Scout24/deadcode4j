@@ -12,9 +12,9 @@ import org.codehaus.plexus.components.interactivity.PrompterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.*;
@@ -74,8 +74,8 @@ public class UsageStatisticsManager {
 
         Map<String, String> parameters = getParameters(comment, deadCodeStatistics, systemProperties);
         try {
-            URL url = new URL(null, "https://docs.google.com/forms/d/1-XZeeAyHrucUMREQLHZEnZ5mhywYZi5Dk9nfEv7U2GU/formResponse");
-            HttpsURLConnection urlConnection = HttpsURLConnection.class.cast(url.openConnection());
+            URL url = new URL("https://docs.google.com/forms/d/1-XZeeAyHrucUMREQLHZEnZ5mhywYZi5Dk9nfEv7U2GU/formResponse");
+            HttpURLConnection urlConnection = HttpURLConnection.class.cast(url.openConnection());
             urlConnection.setAllowUserInteraction(false);
             urlConnection.setConnectTimeout(2000);
             urlConnection.setReadTimeout(5000);
