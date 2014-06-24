@@ -100,8 +100,16 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     @Component
     private RepositorySystem repositorySystem;
     /**
+     * Skip sending usage statistics.
+     * Note that this step is skipped if Maven is running in offline mode (using the -o flag).
+     *
+     * @since 1.6
+     */
+    @Parameter(property = "deadcode4j.skipSendingStatistics")
+    private Boolean skipSendingUsageStatistics = false;
+    /**
      * Skip the update check performed at startup.
-     * Note that the update check is skipped if Maven is running in offline mode (using the -o flag).
+     * Note that this step is skipped if Maven is running in offline mode (using the -o flag).
      *
      * @since 1.6
      */
@@ -135,7 +143,8 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     }
 
     private void sendStatistics() {
-        this.usageStatisticsManager.sendUsageStatistics();
+        this.usageStatisticsManager.sendUsageStatistics(this.skipSendingUsageStatistics,
+                new UsageStatisticsManager.DeadCodeStatistics());
     }
 
     private void checkForUpdate() {

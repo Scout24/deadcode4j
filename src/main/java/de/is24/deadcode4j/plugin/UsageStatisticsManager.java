@@ -32,24 +32,39 @@ public class UsageStatisticsManager {
     @Requirement
     private Prompter prompter;
 
-    public void sendUsageStatistics() {
-        final Logger logger = LoggerFactory.getLogger(getClass());
-        if (!legacySupport.getSession().getRequest().isInteractiveMode()) {
-            logger.info("Running in non-interactive mode; skipping sending of usage statistics.");
-        }
-        try {
-            String answer = prompter.prompt("May I send the aforementioned usage statistics?", Arrays.asList("Y", "N"), "Y");
-            if ("N".equals(answer)) {
-                logger.info("Sending usage statistics is aborted.");
-                return;
-            }
-        } catch (PrompterException e) {
-            logger.debug("Prompter failed!", e);
-            logger.info("Failed to interact with the user!");
+    public void sendUsageStatistics(Boolean skipSendingUsageStatistics, DeadCodeStatistics deadCodeStatistics) {
+        final Logger logger = getLogger();
+        if (Boolean.FALSE.equals(skipSendingUsageStatistics)) {
+            logger.debug("Configuration wants to me to skip sending usage statistics.");
             return;
         }
-
+        if (legacySupport.getSession().isOffline()) {
+            logger.info("Running in offline mode; skipping sending of usage statistics.");
+            return;
+        }
         SystemProperties systemProperties = SystemProperties.from(legacySupport, mavenRuntime);
+        if (Boolean.TRUE.equals(skipSendingUsageStatistics)) {
+            logger.debug("Configured to send usage statistics.");
+        } else {
+            if (!legacySupport.getSession().getRequest().isInteractiveMode()) {
+                logger.info("Running in non-interactive mode; skipping sending of usage statistics.");
+                return;
+            }
+            listStatistics(deadCodeStatistics, systemProperties);
+
+            try {
+                String answer = prompter.prompt("May I send the aforementioned usage statistics?", Arrays.asList("Y", "N"), "Y");
+                if ("N".equals(answer)) {
+                    logger.info("Sending usage statistics is aborted.");
+                    return;
+                }
+            } catch (PrompterException e) {
+                logger.debug("Prompter failed!", e);
+                logger.info("Failed to interact with the user!");
+                return;
+            }
+        }
+
 
         final URL url;
         try {
@@ -75,6 +90,20 @@ public class UsageStatisticsManager {
         } catch (IOException e) {
             logger.debug("Failed to send statistics!", e);
             logger.info("Failed sending usage statistics.");
+        }
+    }
+
+    private Logger getLogger() {
+        return LoggerFactory.getLogger(getClass());
+    }
+
+    private void listStatistics(DeadCodeStatistics deadCodeStatistics, SystemProperties systemProperties) {
+        final Logger logger = getLogger();
+        try {
+            prompter.showMessage("I gathered the following usage statistics:");
+        } catch (PrompterException e) {
+            logger.debug("Failed to present the usage statistics!", e);
+            logger.info("Couldn't list the usage statistics!");
         }
     }
 
