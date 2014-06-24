@@ -24,6 +24,11 @@ import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static de.is24.deadcode4j.Utils.nullIfEmpty;
 import static java.util.Arrays.asList;
 
+/**
+ * Sends usage statistics (via Google Forms).
+ *
+ * @since 1.6
+ */
 @Component(role = UsageStatisticsManager.class)
 public class UsageStatisticsManager {
 
