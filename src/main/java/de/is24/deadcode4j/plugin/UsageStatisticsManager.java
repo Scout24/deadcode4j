@@ -16,9 +16,15 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.TreeSet;
+
+import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
+import static de.is24.deadcode4j.Utils.nullIfEmpty;
+import static java.util.Arrays.asList;
 
 @Component(role = UsageStatisticsManager.class)
 public class UsageStatisticsManager {
@@ -43,6 +49,7 @@ public class UsageStatisticsManager {
             return;
         }
         SystemProperties systemProperties = SystemProperties.from(legacySupport, mavenRuntime);
+        String comment = null;
         if (Boolean.TRUE.equals(skipSendingUsageStatistics)) {
             logger.debug("Configured to send usage statistics.");
         } else {
@@ -50,21 +57,22 @@ public class UsageStatisticsManager {
                 logger.info("Running in non-interactive mode; skipping sending of usage statistics.");
                 return;
             }
-            listStatistics(deadCodeStatistics, systemProperties);
-
+            StringBuilder buffy = listStatistics(deadCodeStatistics, systemProperties);
             try {
-                String answer = prompter.prompt("May I send the aforementioned usage statistics?", Arrays.asList("Y", "N"), "Y");
+                buffy.append("\nMay I report those usage statistics?");
+                String answer = prompter.prompt(buffy.toString(), asList("Y", "N"), "Y");
                 if ("N".equals(answer)) {
                     logger.info("Sending usage statistics is aborted.");
+                    logger.info("You may configure deadcode4j to permanently disable sending usage statistics.");
                     return;
                 }
+                comment = nullIfEmpty(prompter.prompt("Awesome! Would you like to state a testimonial or give a comment? Here you can"));
             } catch (PrompterException e) {
                 logger.debug("Prompter failed!", e);
                 logger.info("Failed to interact with the user!");
                 return;
             }
         }
-
 
         final URL url;
         try {
@@ -97,14 +105,31 @@ public class UsageStatisticsManager {
         return LoggerFactory.getLogger(getClass());
     }
 
-    private void listStatistics(DeadCodeStatistics deadCodeStatistics, SystemProperties systemProperties) {
-        final Logger logger = getLogger();
-        try {
-            prompter.showMessage("I gathered the following usage statistics:");
-        } catch (PrompterException e) {
-            logger.debug("Failed to present the usage statistics!", e);
-            logger.info("Couldn't list the usage statistics!");
+    private StringBuilder listStatistics(DeadCodeStatistics deadCodeStatistics, SystemProperties systemProperties) {
+        StringBuilder buffy = new StringBuilder("I gathered the following system properties:");
+        for (String key : new TreeSet<String>(SystemProperties.KEYS.keySet())) {
+            buffy.append("\n  ").append(key).append(": ").append(systemProperties.values.get(key));
         }
+
+        buffy.append("\nand extracted this from your configuration: ");
+        buffy.append("\n  value for ignoreMainClasses: ").
+                append(deadCodeStatistics.config_ignoreMainClasses);
+        buffy.append("\n  value for skipUpdateCheck: ").
+                append(deadCodeStatistics.config_skipUpdateCheck);
+        buffy.append("\n  number of classes to ignore: ").
+                append(deadCodeStatistics.config_numberOfClassesToIgnore);
+        buffy.append("\n  number of custom annotations: ").
+                append(deadCodeStatistics.config_numberOfCustomAnnotations);
+        buffy.append("\n  number of custom interfaces: ").
+                append(deadCodeStatistics.config_numberOfCustomInterfaces);
+        buffy.append("\n  number of custom superclasses: ").
+                append(deadCodeStatistics.config_numberOfCustomSuperclasses);
+        buffy.append("\n  number of custom XML definitions: ").
+                append(deadCodeStatistics.config_numberOfCustomXmlDefinitions);
+        buffy.append("\n  number of modules to skip: ").
+                append(deadCodeStatistics.config_numberOfModulesToSkip);
+
+        return buffy;
     }
 
     public static class DeadCodeStatistics {
@@ -122,41 +147,45 @@ public class UsageStatisticsManager {
     }
 
     private static class SystemProperties {
-        public String deadcode4jVersion = "1.6";
-        public String javaClassVersion;
-        public String javaRuntimeName;
-        public String javaRuntimeVersion;
-        public String javaSpecificationVersion;
-        public String javaVersion;
-        public String javaVmSpecificationVersion;
-        public String mavenBuildVersion;
-        public String mavenVersion;
-        public String osName;
-        public String osVersion;
-        public String userCountry;
-        public String userLanguage;
+        private static final Map<String, String> KEYS = newHashMap();
+
+        static {
+            KEYS.put("deadcode4j.version", null);
+            KEYS.put("java.class.version", null);
+            KEYS.put("java.runtime.name", null);
+            KEYS.put("java.runtime.version", null);
+            KEYS.put("java.specification.version", null);
+            KEYS.put("java.version", null);
+            KEYS.put("java.vm.specification.version", null);
+            KEYS.put("maven.build.version", null);
+            KEYS.put("maven.version", null);
+            KEYS.put("os.name", null);
+            KEYS.put("os.version", null);
+            KEYS.put("user.country", null);
+            KEYS.put("user.language", null);
+        }
+
+        private final Map<String, String> values = newHashMapWithExpectedSize(KEYS.size());
+
+        private SystemProperties() {
+            values.put("deadcode4j.version", "1.6");
+        }
 
         public static SystemProperties from(LegacySupport legacySupport, MavenRuntime mavenRuntime) {
             SystemProperties systemProperties = new SystemProperties();
             try {
                 MavenProjectProperties projectProperties = mavenRuntime.getProjectProperties(SystemProperties.class);
-                systemProperties.deadcode4jVersion = projectProperties.getVersion();
+                systemProperties.values.put("deadcode4j.version", projectProperties.getVersion());
             } catch (MavenRuntimeException e) {
                 LoggerFactory.getLogger(SystemProperties.class).debug("Failed to determine MavenRuntime.", e);
             }
             Properties properties = legacySupport.getSession().getRequest().getSystemProperties();
-            systemProperties.javaClassVersion = properties.getProperty("java.class.version");
-            systemProperties.javaRuntimeName = properties.getProperty("java.runtime.name");
-            systemProperties.javaRuntimeVersion = properties.getProperty("java.runtime.version");
-            systemProperties.javaSpecificationVersion = properties.getProperty("java.specification.version");
-            systemProperties.javaVersion = properties.getProperty("java.version");
-            systemProperties.javaVmSpecificationVersion = properties.getProperty("java.vm.specification.version");
-            systemProperties.mavenBuildVersion = properties.getProperty("maven.build.version");
-            systemProperties.mavenVersion = properties.getProperty("maven.version");
-            systemProperties.osName = properties.getProperty("os.name");
-            systemProperties.osVersion = properties.getProperty("os.version");
-            systemProperties.userCountry = properties.getProperty("user.country");
-            systemProperties.userLanguage = properties.getProperty("user.language");
+            for (String key : KEYS.keySet()) {
+                String property = nullIfEmpty(properties.getProperty(key));
+                if (property != null) {
+                    systemProperties.values.put(key, property);
+                }
+            }
             return systemProperties;
         }
     }

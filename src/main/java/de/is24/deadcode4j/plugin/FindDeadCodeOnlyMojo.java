@@ -101,12 +101,13 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     private RepositorySystem repositorySystem;
     /**
      * Skip sending usage statistics.
+     * If nothing is configured and running in interactive mode (NOT using the -B flag), the user is requested to allow sending the usage statistics.
      * Note that this step is skipped if Maven is running in offline mode (using the -o flag).
      *
      * @since 1.6
      */
     @Parameter(property = "deadcode4j.skipSendingStatistics")
-    private Boolean skipSendingUsageStatistics = false;
+    private Boolean skipSendingUsageStatistics;
     /**
      * Skip the update check performed at startup.
      * Note that this step is skipped if Maven is running in offline mode (using the -o flag).
@@ -134,7 +135,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
             DeadCode deadCode = analyzeCode();
             log(deadCode);
             logGoodbye();
-            sendStatistics();
+            sendStatistics(deadCode);
         } catch (RuntimeException rE) {
             getLog().error("An unexpected exception occurred. " +
                     "Please consider reporting an issue at https://github.com/ImmobilienScout24/deadcode4j/issues", rE);
@@ -142,9 +143,22 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
         }
     }
 
-    private void sendStatistics() {
-        this.usageStatisticsManager.sendUsageStatistics(this.skipSendingUsageStatistics,
-                new UsageStatisticsManager.DeadCodeStatistics());
+    private void sendStatistics(DeadCode deadCode) {
+        UsageStatisticsManager.DeadCodeStatistics deadCodeStatistics = new UsageStatisticsManager.DeadCodeStatistics();
+        deadCodeStatistics.config_ignoreMainClasses = this.ignoreMainClasses;
+        deadCodeStatistics.config_numberOfClassesToIgnore = this.classesToIgnore.size();
+        deadCodeStatistics.config_numberOfCustomAnnotations = this.annotationsMarkingLiveCode.size();
+        deadCodeStatistics.config_numberOfCustomInterfaces = this.interfacesMarkingLiveCode.size();
+        deadCodeStatistics.config_numberOfCustomSuperclasses = this.superClassesMarkingLiveCode.size();
+        deadCodeStatistics.config_numberOfCustomXmlDefinitions = this.customXmls.size();
+        deadCodeStatistics.config_numberOfModulesToSkip = this.modulesToSkip.size();
+        deadCodeStatistics.config_skipUpdateCheck = this.skipUpdateCheck;
+
+        deadCodeStatistics.numberOfAnalyzedClasses = deadCode.getAnalyzedClasses().size();
+        deadCodeStatistics.numberOfAnalyzedModules = this.reactorProjects.size();
+        deadCodeStatistics.numberOfDeadClassesFound = deadCode.getDeadClasses().size();
+
+        this.usageStatisticsManager.sendUsageStatistics(this.skipSendingUsageStatistics, deadCodeStatistics);
     }
 
     private void checkForUpdate() {
