@@ -173,7 +173,7 @@ public final class A_UsageStatisticsManager {
     private void givenUserAgreesToSendStatistics(String comment) throws IllegalAccessException, PrompterException {
         Prompter mock = mock(Prompter.class);
         when(mock.prompt(anyString(), anyList(), anyString())).thenReturn("Y");
-        when(mock.prompt(anyString(), anyString())).thenReturn(comment);
+        when(mock.prompt(anyString())).thenReturn(comment);
         ReflectionUtils.setVariableValueInObject(objectUnderTest, "prompter", mock);
     }
 
