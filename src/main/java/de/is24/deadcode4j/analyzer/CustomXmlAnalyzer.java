@@ -23,6 +23,10 @@ public final class CustomXmlAnalyzer extends SimpleXmlAnalyzer {
     private static volatile int instanceNumber = 0; // we assign this to make sure the self check works
     private boolean dependencyWasFound = false;
 
+    private static int getNewInstanceNumber() {
+        return instanceNumber++;
+    }
+
     /**
      * Creates a new <code>CustomXmlAnalyzer</code>.
      * Be sure to call {@link #registerXPath(String)} after construction.
@@ -50,7 +54,7 @@ public final class CustomXmlAnalyzer extends SimpleXmlAnalyzer {
      * @since 1.3
      */
     public CustomXmlAnalyzer(@Nonnull String endOfFileName, @Nullable String rootElement) {
-        this("_custom-XML#" + (instanceNumber++) + "_", endOfFileName, rootElement);
+        this("_custom-XML#" + getNewInstanceNumber() + "_", endOfFileName, rootElement);
     }
 
     /**
