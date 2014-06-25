@@ -53,9 +53,9 @@ public class UsageStatisticsManager {
         return HttpURLConnection.class.cast(url.openConnection());
     }
 
-    public void sendUsageStatistics(Boolean skipSendingUsageStatistics, DeadCodeStatistics deadCodeStatistics) {
+    public void sendUsageStatistics(DeadCodeStatistics deadCodeStatistics) {
         final Logger logger = getLogger();
-        if (Boolean.TRUE.equals(skipSendingUsageStatistics)) {
+        if (Boolean.TRUE.equals(deadCodeStatistics.getSkipSendingUsageStatistics())) {
             logger.debug("Configuration wants to me to skip sending usage statistics.");
             return;
         }
@@ -65,7 +65,7 @@ public class UsageStatisticsManager {
         }
         SystemProperties systemProperties = SystemProperties.from(legacySupport, mavenRuntime);
         final String comment;
-        if (Boolean.FALSE.equals(skipSendingUsageStatistics)) {
+        if (Boolean.FALSE.equals(deadCodeStatistics.getSkipSendingUsageStatistics())) {
             logger.debug("Configured to send usage statistics.");
             comment = null;
         } else {
@@ -190,8 +190,10 @@ public class UsageStatisticsManager {
         buffy.append("\nextracted this from your configuration: ");
         buffy.append("\n  value for ignoreMainClasses: ").
                 append(deadCodeStatistics.config_ignoreMainClasses);
-        buffy.append("\n  value for skipSendingUsageStatistics: ").
-                append(deadCodeStatistics.config_skipSendingUsageStatistics);
+        if (Boolean.TRUE.equals(deadCodeStatistics.getSkipSendingUsageStatistics())) {
+            buffy.append("\n  value for skipSendingUsageStatistics: ").
+                    append(deadCodeStatistics.getSkipSendingUsageStatistics());
+        }
         buffy.append("\n  value for skipUpdateCheck: ").
                 append(deadCodeStatistics.config_skipUpdateCheck);
         buffy.append("\n  number of classes to ignore: ").
@@ -216,6 +218,7 @@ public class UsageStatisticsManager {
     }
 
     public static class DeadCodeStatistics {
+        private final Boolean skipSendingUsageStatistics;
         public int numberOfAnalyzedClasses;
         public int numberOfAnalyzedModules;
         public int numberOfDeadClassesFound;
@@ -226,8 +229,20 @@ public class UsageStatisticsManager {
         public int config_numberOfCustomSuperclasses;
         public int config_numberOfCustomXmlDefinitions;
         public int config_numberOfModulesToSkip;
-        public Boolean config_skipSendingUsageStatistics;
         public boolean config_skipUpdateCheck;
+
+        /**
+         * Creates a new instance of {@code DeadCodeStatistics}.
+         *
+         * @param skipSendingUsageStatistics the configuration value indicating if statistics should be sent or not
+         */
+        public DeadCodeStatistics(Boolean skipSendingUsageStatistics) {
+            this.skipSendingUsageStatistics = skipSendingUsageStatistics;
+        }
+
+        public Boolean getSkipSendingUsageStatistics() {
+            return skipSendingUsageStatistics;
+        }
 
         public void addRequestParameters(HashMap<String, String> parameters) {
             parameters.put("entry.1074756797", String.valueOf(numberOfAnalyzedClasses));
@@ -240,8 +255,8 @@ public class UsageStatisticsManager {
             parameters.put("entry.2138491452", String.valueOf(config_numberOfCustomSuperclasses));
             parameters.put("entry.1308824804", String.valueOf(config_numberOfCustomXmlDefinitions));
             parameters.put("entry.1094908901", String.valueOf(config_numberOfModulesToSkip));
-            if (config_skipSendingUsageStatistics != null) {
-                parameters.put("entry.1975817511", String.valueOf(config_skipSendingUsageStatistics));
+            if (this.skipSendingUsageStatistics != null) {
+                parameters.put("entry.1975817511", String.valueOf(skipSendingUsageStatistics));
             }
             parameters.put("entry.1760639029", String.valueOf(config_skipUpdateCheck));
         }

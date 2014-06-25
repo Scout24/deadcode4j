@@ -76,7 +76,7 @@ public final class A_UsageStatisticsManager {
     public void shouldDoNothingIfSoConfigured() throws Exception {
         givenModes(NetworkModes.ONLINE, InteractivityModes.INTERACTIVE);
 
-        objectUnderTest.sendUsageStatistics(TRUE, new DeadCodeStatistics());
+        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(TRUE));
 
         assertThatStatisticsWereNotSent();
     }
@@ -85,7 +85,7 @@ public final class A_UsageStatisticsManager {
     public void shouldDoNothingIfInOfflineMode() throws Exception {
         givenModes(NetworkModes.OFFLINE, InteractivityModes.INTERACTIVE);
 
-        objectUnderTest.sendUsageStatistics(FALSE, new DeadCodeStatistics());
+        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(FALSE));
 
         assertThatStatisticsWereNotSent();
     }
@@ -94,7 +94,7 @@ public final class A_UsageStatisticsManager {
     public void shouldSimplySendStatisticsIfSoConfigured() throws Exception {
         givenModes(NetworkModes.ONLINE, InteractivityModes.INTERACTIVE);
 
-        objectUnderTest.sendUsageStatistics(FALSE, new DeadCodeStatistics());
+        objectUnderTest.sendUsageStatistics( new DeadCodeStatistics(FALSE));
 
         assertThatStatisticsWereSent();
     }
@@ -104,9 +104,7 @@ public final class A_UsageStatisticsManager {
         givenModes(NetworkModes.ONLINE, InteractivityModes.NON_INTERACTIVE);
         givenHttpTransferResultsIn(503);
 
-        DeadCodeStatistics deadCodeStatistics = new DeadCodeStatistics();
-        deadCodeStatistics.config_skipSendingUsageStatistics = FALSE; // code coverage
-        objectUnderTest.sendUsageStatistics(FALSE, deadCodeStatistics);
+        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(FALSE));
 
         assertThatStatisticsWereSent();
     }
@@ -116,7 +114,7 @@ public final class A_UsageStatisticsManager {
         givenModes(NetworkModes.ONLINE, InteractivityModes.NON_INTERACTIVE);
         givenHttpConnectionFails();
 
-        objectUnderTest.sendUsageStatistics(FALSE, new DeadCodeStatistics());
+        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(FALSE));
 
         verify(log).info(and(contains("Fail"), contains("usage statistics")));
     }
@@ -126,7 +124,7 @@ public final class A_UsageStatisticsManager {
         givenModes(NetworkModes.ONLINE, InteractivityModes.NON_INTERACTIVE);
         givenProjectPropertiesCannotBeDetermined();
 
-        objectUnderTest.sendUsageStatistics(FALSE, new DeadCodeStatistics());
+        objectUnderTest.sendUsageStatistics( new DeadCodeStatistics(FALSE));
 
         assertThatStatisticsWereSent();
     }
@@ -135,7 +133,7 @@ public final class A_UsageStatisticsManager {
     public void shouldAbortIfInNonInteractiveModeAndNonConfigured() throws Exception {
         givenModes(NetworkModes.ONLINE, InteractivityModes.NON_INTERACTIVE);
 
-        objectUnderTest.sendUsageStatistics(null, new DeadCodeStatistics());
+        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(null));
 
         assertThatStatisticsWereNotSent();
     }
@@ -144,7 +142,7 @@ public final class A_UsageStatisticsManager {
     public void shouldAbortIfRequestedByUser() throws Exception {
         givenModes(NetworkModes.ONLINE, InteractivityModes.INTERACTIVE);
 
-        objectUnderTest.sendUsageStatistics(null, new DeadCodeStatistics());
+        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(null));
 
         assertThatStatisticsWereNotSent();
     }
@@ -154,7 +152,7 @@ public final class A_UsageStatisticsManager {
         givenModes(NetworkModes.ONLINE, InteractivityModes.INTERACTIVE);
         givenUserAgreesToSendStatistics("Just do it!");
 
-        objectUnderTest.sendUsageStatistics(null, new DeadCodeStatistics());
+        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(null));
 
         assertThatStatisticsWereSent();
     }
@@ -164,7 +162,7 @@ public final class A_UsageStatisticsManager {
         givenModes(NetworkModes.ONLINE, InteractivityModes.INTERACTIVE);
         givenPrompterFails();
 
-        objectUnderTest.sendUsageStatistics(null, new DeadCodeStatistics());
+        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(null));
 
         assertThatStatisticsWereNotSent();
     }

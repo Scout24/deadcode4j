@@ -145,7 +145,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     }
 
     private void sendStatistics(DeadCode deadCode) {
-        UsageStatisticsManager.DeadCodeStatistics deadCodeStatistics = new UsageStatisticsManager.DeadCodeStatistics();
+        UsageStatisticsManager.DeadCodeStatistics deadCodeStatistics = new UsageStatisticsManager.DeadCodeStatistics(this.skipSendingUsageStatistics);
         deadCodeStatistics.config_ignoreMainClasses = this.ignoreMainClasses;
         deadCodeStatistics.config_numberOfClassesToIgnore = this.classesToIgnore.size();
         deadCodeStatistics.config_numberOfCustomAnnotations = this.annotationsMarkingLiveCode.size();
@@ -153,14 +153,13 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
         deadCodeStatistics.config_numberOfCustomSuperclasses = this.superClassesMarkingLiveCode.size();
         deadCodeStatistics.config_numberOfCustomXmlDefinitions = this.customXmls.size();
         deadCodeStatistics.config_numberOfModulesToSkip = this.modulesToSkip.size();
-        deadCodeStatistics.config_skipSendingUsageStatistics = this.skipSendingUsageStatistics;
         deadCodeStatistics.config_skipUpdateCheck = this.skipUpdateCheck;
 
         deadCodeStatistics.numberOfAnalyzedClasses = deadCode.getAnalyzedClasses().size();
         deadCodeStatistics.numberOfAnalyzedModules = this.reactorProjects.size();
         deadCodeStatistics.numberOfDeadClassesFound = deadCode.getDeadClasses().size();
 
-        this.usageStatisticsManager.sendUsageStatistics(this.skipSendingUsageStatistics, deadCodeStatistics);
+        this.usageStatisticsManager.sendUsageStatistics(deadCodeStatistics);
     }
 
     private void checkForUpdate() {
