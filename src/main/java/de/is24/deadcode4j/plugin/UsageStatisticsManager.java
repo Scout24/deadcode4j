@@ -182,16 +182,12 @@ public class UsageStatisticsManager {
         }
 
         buffy.append("\nextracted this from your configuration: ");
-        buffy.append("\n  value for ignoreMainClasses: ").
-                append(deadCodeStatistics.config_ignoreMainClasses);
-        if (Boolean.TRUE.equals(deadCodeStatistics.getSkipSendingUsageStatistics())) {
-            buffy.append("\n  value for skipSendingUsageStatistics: ").
-                    append(deadCodeStatistics.getSkipSendingUsageStatistics());
-        }
         if (deadCodeStatistics.getUsageStatisticsComment() != null) {
             buffy.append("\n  your comment to deadcode4j: ").
                     append(deadCodeStatistics.getUsageStatisticsComment());
         }
+        buffy.append("\n  value for ignoreMainClasses: ").
+                append(deadCodeStatistics.config_ignoreMainClasses);
         buffy.append("\n  value for skipUpdateCheck: ").
                 append(deadCodeStatistics.config_skipUpdateCheck);
         buffy.append("\n  number of classes to ignore: ").
