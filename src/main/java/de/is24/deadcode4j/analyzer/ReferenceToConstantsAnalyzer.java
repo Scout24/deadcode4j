@@ -40,6 +40,11 @@ import static de.is24.javassist.CtClasses.*;
 import static de.is24.javaparser.ImportDeclarations.*;
 import static de.is24.javaparser.Nodes.getTypeName;
 
+/**
+ * Analyzes Java files and reports dependencies to classes that are not part of the byte code due to constant inlining.
+ *
+ * @since 1.6
+ */
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 

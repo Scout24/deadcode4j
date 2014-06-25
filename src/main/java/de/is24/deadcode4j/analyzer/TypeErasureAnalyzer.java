@@ -27,7 +27,6 @@ import static java.util.Collections.emptySet;
 
 /**
  * Analyzes Java files and reports dependencies to classes that are not part of the byte code due to type erasure.
- * <b>Note</b> that references to "inherited" types are not analyzed, as they are found by the byte code analysis.
  *
  * @since 1.6
  */
