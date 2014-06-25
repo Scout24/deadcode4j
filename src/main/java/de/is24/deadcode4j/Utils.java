@@ -130,7 +130,7 @@ public final class Utils {
      */
     @Nullable
     public static String nullIfEmpty(@Nullable String string) {
-        return (string == null || "".equals(string.trim())) ? null : string;
+        return string == null || "".equals(string.trim()) ? null : string;
     }
 
     /**
