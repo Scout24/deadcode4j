@@ -40,6 +40,7 @@ import static de.is24.javassist.CtClasses.*;
 import static de.is24.javaparser.ImportDeclarations.*;
 import static de.is24.javaparser.Nodes.getTypeName;
 
+@SuppressWarnings("PMD.TooManyStaticImports")
 public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
     @Nonnull
