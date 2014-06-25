@@ -218,6 +218,9 @@ public class UsageStatisticsManager {
     public static class DeadCodeStatistics {
         private final Boolean skipSendingUsageStatistics;
         private String usageStatisticsComment;
+
+        private Map<String, String> parameters = newHashMap();
+
         public int numberOfAnalyzedClasses;
         public int numberOfAnalyzedModules;
         public int numberOfDeadClassesFound;
@@ -254,6 +257,7 @@ public class UsageStatisticsManager {
         }
 
         public void addRequestParameters(HashMap<String, String> parameters) {
+            parameters.putAll(parameters);
             parameters.put("entry.1074756797", String.valueOf(numberOfAnalyzedClasses));
             parameters.put("entry.1318897553", String.valueOf(numberOfAnalyzedModules));
             parameters.put("entry.582394579", String.valueOf(numberOfDeadClassesFound));
@@ -271,6 +275,54 @@ public class UsageStatisticsManager {
             if (this.usageStatisticsComment != null) {
                 parameters.put("entry.2135548690", this.usageStatisticsComment);
             }
+        }
+
+        public void setNumberOfAnalyzedClasses(int value) {
+            appParameter("entry.1074756797", value);
+        }
+
+        public void setNumberOfAnalyzedModules(int value) {
+            appParameter("entry.1318897553", value);
+        }
+
+        public void setNumberOfDeadClassesFound(int value) {
+            appParameter("entry.582394579", value);
+        }
+
+        public void setConfigurationValueForIgnoreMainClasses(boolean value) {
+            appParameter("entry.2113716156", value);
+        }
+
+        public void setConfigurationValueForSkipUpdateCheck(boolean value) {
+            appParameter("entry.1760639029", value);
+        }
+
+        public void setNumberOfConfiguredClassesToIgnore(int value) {
+            appParameter("entry.1255607340", value);
+        }
+
+        public void setNumberOfConfiguredCustomAnnotations(int value) {
+            appParameter("entry.837156809", value);
+        }
+
+        public void setNumberOfConfiguredCustomInterfaces(int value) {
+            appParameter("entry.1900438860", value);
+        }
+
+        public void setNumberOfConfiguredCustomSuperclasses(int value) {
+            appParameter("entry.2138491452", value);
+        }
+
+        public void setNumberOfConfiguredCustomXmlDefinitions(int value) {
+            appParameter("entry.1308824804", value);
+        }
+
+        public void setNumberOfConfiguredModulesToSkip(int value) {
+            appParameter("entry.1094908901", value);
+        }
+
+        private void appParameter(String key, Object value) {
+            this.parameters.put(key, String.valueOf(value));
         }
 
     }
