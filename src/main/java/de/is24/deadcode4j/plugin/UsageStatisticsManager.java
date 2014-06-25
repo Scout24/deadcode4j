@@ -115,7 +115,7 @@ public class UsageStatisticsManager {
     private void processResponse(HttpURLConnection urlConnection) throws IOException {
         final Logger logger = getLogger();
         int responseCode = urlConnection.getResponseCode();
-        if (responseCode % 100 == 2) {
+        if (responseCode / 100 == 2) {
             logger.info("Usage statistics have been transferred.");
             return;
         }
