@@ -479,6 +479,12 @@
             <artifactId>spring-data-commons</artifactId>
             <version>1.8.0.RELEASE</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
