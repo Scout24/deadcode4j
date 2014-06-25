@@ -32,13 +32,13 @@ import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static com.google.common.collect.Lists.newArrayList;
 import static de.is24.deadcode4j.Utils.emptyIfNull;
-import static de.is24.javassist.CtClasses.*;
 import static de.is24.guava.NonNullFunctions.or;
 import static de.is24.guava.NonNullFunctions.toFunction;
 import static de.is24.javaparser.ImportDeclarations.isAsterisk;
 import static de.is24.javaparser.ImportDeclarations.refersTo;
 import static de.is24.javaparser.Nodes.getTypeName;
 import static de.is24.javaparser.Nodes.prepend;
+import static de.is24.javassist.CtClasses.*;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static org.apache.commons.io.IOUtils.closeQuietly;
@@ -126,10 +126,10 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
     @Nonnull
     protected static Optional<String> resolveType(@Nonnull final AnalysisContext analysisContext, @Nonnull Qualifier qualifier) {
         Optional<String> resolvedClass = getTypeResolver(analysisContext).apply(qualifier);
-        if (!qualifier.allowsPartialResolving() && resolvedClass.isPresent()) {
-            if (!isFullyResolved(resolvedClass.get(), qualifier)) {
-                return absent();
-            }
+        if (!qualifier.allowsPartialResolving()
+                && resolvedClass.isPresent()
+                && !isFullyResolved(resolvedClass.get(), qualifier)) {
+            return absent();
         }
         return resolvedClass;
     }
