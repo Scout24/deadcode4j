@@ -52,7 +52,8 @@
     </ciManagement>
 
     <prerequisites>
-        <maven>2.2.1</maven>
+        <!-- The DefaultUpdateChecker requires LegacySupport -->
+        <maven>3.0</maven>
     </prerequisites>
 
     <properties>
