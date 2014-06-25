@@ -1,5 +1,6 @@
 package de.is24.deadcode4j.plugin;
 
+import com.google.common.base.Optional;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.shared.runtime.MavenProjectProperties;
@@ -42,6 +43,16 @@ public class UsageStatisticsManager {
     @Requirement
     private Prompter prompter;
 
+    /**
+     * This is around for testing.
+     *
+     * @since 1.6
+     */
+    protected HttpURLConnection openUrlConnection() throws IOException {
+        URL url = new URL("https://docs.google.com/forms/d/1-XZeeAyHrucUMREQLHZEnZ5mhywYZi5Dk9nfEv7U2GU/formResponse");
+        return HttpURLConnection.class.cast(url.openConnection());
+    }
+
     public void sendUsageStatistics(Boolean skipSendingUsageStatistics, DeadCodeStatistics deadCodeStatistics) {
         final Logger logger = getLogger();
         if (Boolean.TRUE.equals(skipSendingUsageStatistics)) {
@@ -53,74 +64,46 @@ public class UsageStatisticsManager {
             return;
         }
         SystemProperties systemProperties = SystemProperties.from(legacySupport, mavenRuntime);
-        String comment = null;
+        final String comment;
         if (Boolean.FALSE.equals(skipSendingUsageStatistics)) {
             logger.debug("Configured to send usage statistics.");
+            comment = null;
         } else {
             if (!legacySupport.getSession().getRequest().isInteractiveMode()) {
                 logger.info("Running in non-interactive mode; skipping sending of usage statistics.");
                 return;
             }
-            StringBuilder buffy = listStatistics(deadCodeStatistics, systemProperties);
-            try {
-                buffy.append("\nMay I report those usage statistics (via HTTPS)?");
-                String answer = prompter.prompt(buffy.toString(), asList("Y", "N"), "Y");
-                if ("N".equals(answer)) {
-                    logger.info("Sending usage statistics is aborted.");
-                    logger.info("You may configure deadcode4j to permanently disable sending usage statistics.");
-                    return;
-                }
-                comment = nullIfEmpty(prompter.prompt("Awesome! Would you like to state a testimonial or give a comment? Here you can"));
-            } catch (PrompterException e) {
-                logger.debug("Prompter failed!", e);
-                logger.info("Failed to interact with the user!");
+            Optional<String> userResponse = askForPermission(deadCodeStatistics, systemProperties);
+            if (userResponse == null) {
                 return;
             }
+            comment = userResponse.orNull();
         }
 
         Map<String, String> parameters = getParameters(comment, deadCodeStatistics, systemProperties);
+        sendUsageStatistics(parameters);
+    }
+
+    private Logger getLogger() {
+        return LoggerFactory.getLogger(getClass());
+    }
+
+    private void sendUsageStatistics(Map<String, String> parameters) {
+        final Logger logger = getLogger();
         HttpURLConnection urlConnection = null;
         try {
             urlConnection = openUrlConnection();
             urlConnection.setAllowUserInteraction(false);
             urlConnection.setConnectTimeout(2000);
-            urlConnection.setReadTimeout(5000);
             urlConnection.setDoInput(true);
             urlConnection.setDoOutput(true);
-            urlConnection.setRequestMethod("POST");
+            urlConnection.setInstanceFollowRedirects(false);
+            urlConnection.setReadTimeout(5000);
             urlConnection.setRequestProperty("content-type", "application/x-www-form-urlencoded");
             urlConnection.connect();
 
-            StringBuilder buffy = new StringBuilder();
-            for (Map.Entry<String, String> entry : parameters.entrySet()) {
-                buffy.append(entry.getKey()).append('=').append(URLEncoder.encode(entry.getValue(), "UTF-8")).append('&');
-            }
-            OutputStream outputStream = urlConnection.getOutputStream();
-            try {
-                outputStream.write(buffy.toString().getBytes("UTF-8"));
-            } finally {
-                IOUtils.closeQuietly(outputStream);
-            }
-
-            int responseCode = urlConnection.getResponseCode();
-            if (responseCode == 200) {
-                logger.info("Usage statistics have been transferred.");
-            } else {
-                logger.info("Could not transfer usage statistics: {}/{}", responseCode,
-                        urlConnection.getResponseMessage());
-                if (logger.isDebugEnabled()) {
-                    InputStream inputStream = urlConnection.getInputStream();
-                    final List<String> response;
-                    try {
-                        response = IOUtils.readLines(inputStream);
-                    } finally {
-                        IOUtils.closeQuietly(inputStream);
-                    }
-                    for (String line : response) {
-                        logger.debug(line);
-                    }
-                }
-            }
+            writeParameters(parameters, urlConnection);
+            processResponse(urlConnection);
         } catch (IOException e) {
             logger.debug("Failed to send statistics!", e);
             logger.info("Failed sending usage statistics.");
@@ -129,14 +112,38 @@ public class UsageStatisticsManager {
         }
     }
 
-    /**
-     * This is around for testing.
-     *
-     * @since 1.6
-     */
-    protected HttpURLConnection openUrlConnection() throws IOException {
-        URL url = new URL("https://docs.google.com/forms/d/1-XZeeAyHrucUMREQLHZEnZ5mhywYZi5Dk9nfEv7U2GU/formResponse");
-        return HttpURLConnection.class.cast(url.openConnection());
+    private void processResponse(HttpURLConnection urlConnection) throws IOException {
+        final Logger logger = getLogger();
+        int responseCode = urlConnection.getResponseCode();
+        if (responseCode % 100 == 2) {
+            logger.info("Usage statistics have been transferred.");
+            return;
+        }
+        logger.info("Could not transfer usage statistics: {}/{}", responseCode, urlConnection.getResponseMessage());
+        if (logger.isDebugEnabled()) {
+            InputStream inputStream = urlConnection.getInputStream();
+            try {
+                List<String> response = IOUtils.readLines(inputStream);
+                for (String line : response) {
+                    logger.debug(line);
+                }
+            } finally {
+                IOUtils.closeQuietly(inputStream);
+            }
+        }
+    }
+
+    private void writeParameters(Map<String, String> parameters, HttpURLConnection urlConnection) throws IOException {
+        StringBuilder buffy = new StringBuilder();
+        for (Map.Entry<String, String> entry : parameters.entrySet()) {
+            buffy.append(entry.getKey()).append('=').append(URLEncoder.encode(entry.getValue(), "UTF-8")).append('&');
+        }
+        OutputStream outputStream = urlConnection.getOutputStream();
+        try {
+            outputStream.write(buffy.toString().getBytes("UTF-8"));
+        } finally {
+            IOUtils.closeQuietly(outputStream);
+        }
     }
 
     private Map<String, String> getParameters(String comment,
@@ -151,8 +158,27 @@ public class UsageStatisticsManager {
         return parameters;
     }
 
-    private Logger getLogger() {
-        return LoggerFactory.getLogger(getClass());
+    /**
+     * @return {@code null} if sending statistics should be aborted
+     */
+    private Optional<String> askForPermission(DeadCodeStatistics deadCodeStatistics, SystemProperties systemProperties) {
+        final Logger logger = getLogger();
+        StringBuilder buffy = listStatistics(deadCodeStatistics, systemProperties);
+        try {
+            buffy.append("\nMay I report those usage statistics (via HTTPS)?");
+            String answer = prompter.prompt(buffy.toString(), asList("Y", "N"), "Y");
+            if ("N".equals(answer)) {
+                logger.info("Sending usage statistics is aborted.");
+                logger.info("You may configure deadcode4j to permanently disable sending usage statistics.");
+                return null;
+            }
+            return Optional.fromNullable(nullIfEmpty(prompter.prompt(
+                    "Awesome! Would you like to state a testimonial or give a comment? Here you can")));
+        } catch (PrompterException e) {
+            logger.debug("Prompter failed!", e);
+            logger.info("Failed to interact with the user!");
+            return null;
+        }
     }
 
     private StringBuilder listStatistics(DeadCodeStatistics deadCodeStatistics, SystemProperties systemProperties) {
