@@ -99,6 +99,17 @@ public final class A_Utils extends AUtilityClass {
         assertThat(Utils.nullIfEmpty("foo"), is("foo"));
     }
 
+    @Test
+    public void returnsTheArgumentIfItsNonNull() {
+        Object reference = new Object();
+        assertThat(Utils.checkNotNull(reference), is(reference));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void throwsExceptionIfArgumentIsNull() {
+        Utils.checkNotNull(null);
+    }
+
     @Override
     protected Class getType() {
         return Utils.class;

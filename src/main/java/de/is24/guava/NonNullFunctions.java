@@ -2,7 +2,7 @@ package de.is24.guava;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
+import de.is24.deadcode4j.Utils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -51,7 +51,7 @@ public final class NonNullFunctions {
             @Override
             @SuppressWarnings("ConstantConditions")
             public T apply(@Nullable F input) {
-                return nonNullFunction.apply(Preconditions.checkNotNull(input));
+                return nonNullFunction.apply(Utils.checkNotNull(input));
             }
         };
     }

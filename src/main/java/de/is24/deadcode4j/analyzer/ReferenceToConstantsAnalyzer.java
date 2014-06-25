@@ -32,6 +32,7 @@ import static com.google.common.collect.Iterables.*;
 import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
+import static de.is24.deadcode4j.Utils.checkNotNull;
 import static de.is24.deadcode4j.Utils.emptyIfNull;
 import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
@@ -353,7 +354,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                 @Override
                 @SuppressWarnings("ConstantConditions")
                 public boolean apply(@Nullable FieldDeclaration fieldDeclaration) {
-                    int modifiers = fieldDeclaration.getModifiers();
+                    int modifiers = checkNotNull(fieldDeclaration).getModifiers();
                     return ModifierSet.isStatic(modifiers) && ModifierSet.isFinal(modifiers);
                 }
             };

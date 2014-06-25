@@ -2,6 +2,7 @@ package de.is24.deadcode4j;
 
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 
@@ -130,6 +131,20 @@ public final class Utils {
     @Nullable
     public static String nullIfEmpty(@Nullable String string) {
         return (string == null || "".equals(string.trim())) ? null : string;
+    }
+
+    /**
+     * A properly annotated implementation of {@link com.google.common.base.Preconditions#checkNotNull(Object)}.
+     *
+     * @since 1.6
+     */
+    @Nonnull
+    @SuppressFBWarnings(value = "NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
+    public static <T> T checkNotNull(@Nullable T reference) {
+        if (reference == null) {
+            throw new NullPointerException();
+        }
+        return reference;
     }
 
 }
