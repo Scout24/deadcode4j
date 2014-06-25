@@ -48,6 +48,7 @@ import static org.apache.commons.io.IOUtils.closeQuietly;
  *
  * @since 1.6
  */
+@SuppressWarnings("PMD.TooManyStaticImports")
 public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
 
     private static final String JAVA_PARSER_KEY = JavaFileAnalyzer.class.getName() + ":JavaParser";
