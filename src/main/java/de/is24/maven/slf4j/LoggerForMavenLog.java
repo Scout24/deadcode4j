@@ -136,9 +136,7 @@ public class LoggerForMavenLog extends MarkerIgnoringBase {
 
     @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
     private void doInfo(FormattingTuple tuple) {
-        if (tuple.getMessage() == null) {
-            log.info(tuple.getThrowable());
-        } else if (tuple.getThrowable() == null) {
+        if (tuple.getThrowable() == null) {
             log.info(tuple.getMessage());
         } else {
             log.info(tuple.getMessage(), tuple.getThrowable());
@@ -187,9 +185,7 @@ public class LoggerForMavenLog extends MarkerIgnoringBase {
 
     @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
     private void doWarn(FormattingTuple tuple) {
-        if (tuple.getMessage() == null) {
-            log.warn(tuple.getThrowable());
-        } else if (tuple.getThrowable() == null) {
+        if (tuple.getThrowable() == null) {
             log.warn(tuple.getMessage());
         } else {
             log.warn(tuple.getMessage(), tuple.getThrowable());
@@ -206,7 +202,7 @@ public class LoggerForMavenLog extends MarkerIgnoringBase {
     @Override
     public void warn(String format, Object arg1, Object arg2) {
         if (log.isWarnEnabled()) {
-            doWarn( format(format, arg1, arg2));
+            doWarn(format(format, arg1, arg2));
         }
     }
 
@@ -236,9 +232,7 @@ public class LoggerForMavenLog extends MarkerIgnoringBase {
 
     @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
     private void doError(FormattingTuple tuple) {
-        if (tuple.getMessage() == null) {
-            log.error(tuple.getThrowable());
-        } else if (tuple.getThrowable() == null) {
+        if (tuple.getThrowable() == null) {
             log.error(tuple.getMessage());
         } else {
             log.error(tuple.getMessage(), tuple.getThrowable());
