@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -78,8 +79,9 @@ public class UsageStatisticsManager {
         }
 
         Map<String, String> parameters = getParameters(comment, deadCodeStatistics, systemProperties);
+        HttpURLConnection urlConnection = null;
         try {
-            HttpURLConnection urlConnection = openUrlConnection();
+            urlConnection = openUrlConnection();
             urlConnection.setAllowUserInteraction(false);
             urlConnection.setConnectTimeout(2000);
             urlConnection.setReadTimeout(5000);
@@ -89,13 +91,16 @@ public class UsageStatisticsManager {
             urlConnection.setRequestProperty("content-type", "application/x-www-form-urlencoded");
             urlConnection.connect();
 
-            OutputStream outputStream = urlConnection.getOutputStream();
             StringBuilder buffy = new StringBuilder();
             for (Map.Entry<String, String> entry : parameters.entrySet()) {
                 buffy.append(entry.getKey()).append('=').append(URLEncoder.encode(entry.getValue(), "UTF-8")).append('&');
             }
-            outputStream.write(buffy.toString().getBytes("UTF-8"));
-            outputStream.close();
+            OutputStream outputStream = urlConnection.getOutputStream();
+            try {
+                outputStream.write(buffy.toString().getBytes("UTF-8"));
+            } finally {
+                IOUtils.closeQuietly(outputStream);
+            }
 
             int responseCode = urlConnection.getResponseCode();
             if (responseCode == 200) {
@@ -104,7 +109,13 @@ public class UsageStatisticsManager {
                 logger.info("Could not transfer usage statistics: {}/{}", responseCode,
                         urlConnection.getResponseMessage());
                 if (logger.isDebugEnabled()) {
-                    List<String> response = IOUtils.readLines(urlConnection.getInputStream());
+                    InputStream inputStream = urlConnection.getInputStream();
+                    final List<String> response;
+                    try {
+                        response = IOUtils.readLines(inputStream);
+                    } finally {
+                        IOUtils.closeQuietly(inputStream);
+                    }
                     for (String line : response) {
                         logger.debug(line);
                     }
@@ -113,6 +124,8 @@ public class UsageStatisticsManager {
         } catch (IOException e) {
             logger.debug("Failed to send statistics!", e);
             logger.info("Failed sending usage statistics.");
+        } finally {
+            IOUtils.close(urlConnection);
         }
     }
 
