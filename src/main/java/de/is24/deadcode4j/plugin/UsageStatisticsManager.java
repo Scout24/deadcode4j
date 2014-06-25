@@ -275,23 +275,25 @@ public class UsageStatisticsManager {
 
     }
 
-    private static class SystemProperties {
-        private static final Map<String, String> KEYS = newHashMap();
+    public static class SystemProperties {
+        public static final Map<String, String> KEYS;
 
         static {
-            KEYS.put("deadcode4j.version", "entry.1472283741");
-            KEYS.put("java.class.version", "entry.1951632658");
-            KEYS.put("java.runtime.name", "entry.890615248");
-            KEYS.put("java.runtime.version", "entry.120214478");
-            KEYS.put("java.specification.version", "entry.1933178438");
-            KEYS.put("java.version", "entry.344342021");
-            KEYS.put("java.vm.specification.version", "entry.1718484204");
-            KEYS.put("maven.build.version", "entry.1702626216");
-            KEYS.put("maven.version", "entry.131773189");
-            KEYS.put("os.name", "entry.1484769972");
-            KEYS.put("os.version", "entry.1546424580");
-            KEYS.put("user.country", "entry.1667669021");
-            KEYS.put("user.language", "entry.1213472042");
+            Map<String, String> keys = newHashMap();
+            keys.put("deadcode4j.version", "entry.1472283741");
+            keys.put("java.class.version", "entry.1951632658");
+            keys.put("java.runtime.name", "entry.890615248");
+            keys.put("java.runtime.version", "entry.120214478");
+            keys.put("java.specification.version", "entry.1933178438");
+            keys.put("java.version", "entry.344342021");
+            keys.put("java.vm.specification.version", "entry.1718484204");
+            keys.put("maven.build.version", "entry.1702626216");
+            keys.put("maven.version", "entry.131773189");
+            keys.put("os.name", "entry.1484769972");
+            keys.put("os.version", "entry.1546424580");
+            keys.put("user.country", "entry.1667669021");
+            keys.put("user.language", "entry.1213472042");
+            KEYS = Collections.unmodifiableMap(keys);
         }
 
         private final Map<String, String> values = newHashMapWithExpectedSize(KEYS.size());

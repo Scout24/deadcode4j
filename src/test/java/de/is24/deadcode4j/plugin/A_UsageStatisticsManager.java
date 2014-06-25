@@ -24,7 +24,11 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URLEncoder;
+import java.util.List;
+import java.util.UUID;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static de.is24.deadcode4j.Utils.nullIfEmpty;
 import static de.is24.deadcode4j.plugin.UsageStatisticsManager.DeadCodeStatistics;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
@@ -105,24 +109,46 @@ public final class A_UsageStatisticsManager {
     }
 
     @Test
+    @SuppressWarnings("ConstantConditions")
     public void shouldSendStatisticsValues() throws Exception {
+        List<Object> expectedValues = newArrayList();
         DeadCodeStatistics deadCodeStatistics = new DeadCodeStatistics(FALSE, "Greetings from JUnit!");
+        expectedValues.add("Greetings from JUnit!");
         deadCodeStatistics.numberOfAnalyzedClasses = 1;
+        expectedValues.add(deadCodeStatistics.numberOfAnalyzedClasses);
         deadCodeStatistics.numberOfAnalyzedModules = 22;
+        expectedValues.add(deadCodeStatistics.numberOfAnalyzedModules);
         deadCodeStatistics.numberOfDeadClassesFound = 333;
+        expectedValues.add(deadCodeStatistics.numberOfDeadClassesFound);
         deadCodeStatistics.config_numberOfClassesToIgnore = 4444;
+        expectedValues.add(deadCodeStatistics.config_numberOfClassesToIgnore);
         deadCodeStatistics.config_numberOfCustomAnnotations = 55555;
+        expectedValues.add(deadCodeStatistics.config_numberOfCustomAnnotations);
         deadCodeStatistics.config_numberOfCustomInterfaces = 6666;
+        expectedValues.add(deadCodeStatistics.config_numberOfCustomInterfaces);
         deadCodeStatistics.config_numberOfCustomSuperclasses = 777;
+        expectedValues.add(deadCodeStatistics.config_numberOfCustomSuperclasses);
         deadCodeStatistics.config_numberOfCustomXmlDefinitions = 88;
+        expectedValues.add(deadCodeStatistics.config_numberOfCustomXmlDefinitions);
         deadCodeStatistics.config_numberOfModulesToSkip = 9;
+        expectedValues.add(deadCodeStatistics.config_numberOfModulesToSkip);
         deadCodeStatistics.config_ignoreMainClasses = true;
+        expectedValues.add(deadCodeStatistics.config_ignoreMainClasses);
         deadCodeStatistics.config_skipUpdateCheck = false;
+        expectedValues.add(deadCodeStatistics.config_skipUpdateCheck);
+        for (String key : UsageStatisticsManager.SystemProperties.KEYS.keySet()) {
+            String value = nullIfEmpty(System.getProperties().getProperty(key));
+            if (value == null) {
+                value = UUID.randomUUID().toString();
+                System.getProperties().setProperty(key, value);
+            }
+            expectedValues.add(value);
+        }
         givenModes(NetworkModes.ONLINE, InteractivityModes.INTERACTIVE);
 
         objectUnderTest.sendUsageStatistics(deadCodeStatistics);
 
-        assertThatStatisticsWereSent("Greetings from JUnit!", 1, 22, 333, 4444, 55555, 6666, 777, 88, 9, true, false);
+        assertThatStatisticsWereSent(expectedValues.toArray());
     }
 
     @Test
@@ -209,6 +235,7 @@ public final class A_UsageStatisticsManager {
         DefaultMavenExecutionRequest mavenExecutionRequest = new DefaultMavenExecutionRequest();
         mavenExecutionRequest.setOffline(NetworkModes.OFFLINE == networkMode);
         mavenExecutionRequest.setInteractiveMode(InteractivityModes.INTERACTIVE == interactivity);
+        mavenExecutionRequest.setSystemProperties(System.getProperties());
 
         LegacySupport legacySupport = mock(LegacySupport.class);
         when(legacySupport.getSession()).thenReturn(new MavenSession(null, null, mavenExecutionRequest, null));
