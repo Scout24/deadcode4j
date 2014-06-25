@@ -68,7 +68,7 @@
         <testScenarios.directory>${java.io.tmpdir}/deadcode4j</testScenarios.directory>
         <!-- Dependency Management -->
         <version.findbugs>2.0.3</version.findbugs>
-        <version.maven>3.2.1</version.maven>
+        <version.maven>3.2.2</version.maven>
     </properties>
 
     <build>
