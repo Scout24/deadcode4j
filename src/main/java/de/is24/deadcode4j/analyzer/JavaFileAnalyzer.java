@@ -91,6 +91,7 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
                     return new NonNullFunction<Qualifier<?>, Optional<String>>() {
                         @Nonnull
                         @Override
+                        @SuppressWarnings("unchecked")
                         public Optional<String> apply(@Nonnull Qualifier<?> input) {
                             return or(
                                     new FullyQualifiedTypeResolver(classPoolAccessor),
