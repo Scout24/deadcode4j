@@ -370,9 +370,19 @@
             <version>${version.maven}</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-repository-metadata</artifactId>
+            <version>${version.maven}</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.maven.shared</groupId>
             <artifactId>maven-runtime</artifactId>
             <version>1.0-alpha-3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-component-annotations</artifactId>
+            <version>1.5.5</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.plexus</groupId>
@@ -383,6 +393,11 @@
             <groupId>org.codehaus.plexus</groupId>
             <artifactId>plexus-interactivity-api</artifactId>
             <version>1.0-alpha-6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.aether</groupId>
+            <artifactId>aether-api</artifactId>
+            <version>1.0.0.v20140518</version>
         </dependency>
 
         <dependency>
