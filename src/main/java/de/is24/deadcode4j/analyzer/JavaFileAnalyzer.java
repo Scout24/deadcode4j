@@ -60,6 +60,7 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
                     return SequentialLoadingCache.createSingleValueCache(toFunction(new NonNullFunction<File, Optional<CompilationUnit>>() {
                         @Nonnull
                         @Override
+                        @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "The MavenProject does not provide the proper encoding")
                         public Optional<CompilationUnit> apply(@Nonnull File file) {
                             Reader reader = null;
                             try {
@@ -137,7 +138,6 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
     }
 
     @Override
-    @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "The MavenProject does not provide the proper encoding")
     public final void doAnalysis(@Nonnull AnalysisContext analysisContext, @Nonnull File file) {
         if (file.getName().endsWith(".java")) {
             CompilationUnit compilationUnit = getJavaFileParser(analysisContext).getUnchecked(file).get();
