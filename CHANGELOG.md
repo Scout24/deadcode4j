@@ -7,7 +7,8 @@
     * `InterfacesAnalyzer` now determines implementation even if by a superclass or inherited by other interface
     * `SuperClassAnalyzer` now analyzes the whole class hierarchy
 * Introduced `TypeErasureAnalyzer` which finds references that are not found in the byte code due to type erasure
-    * references to inner types defined by a superclass or an implemented interface are not recognized; as those types are marked as dependency of the defining *outer* class, they won't show up as false positive
+* Introduced `ReferenceToConstantsAnalyzer` which finds references that are not found in the byte code due to constants inlining
+    * to be precise, this analyzer finds references to *all* constants, not only to those that are inlined
 * Added analysis of [Spring Data custom repositories](http://docs.spring.io/spring-data/data-commons/docs/1.6.x/reference/html/repositories.html#repositories.custom-implementations): recognizing custom implementations as _live code_.
     * only recognizes custom implementations following the default naming convention `RepositoryNameImpl`
 * Custom analyzers now report if a configured annotation, interface, superclass or XPath isn't found in the class path and thus could be removed
