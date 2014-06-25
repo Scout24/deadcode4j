@@ -42,6 +42,7 @@ import static de.is24.javaparser.Nodes.getTypeName;
 
 /**
  * Analyzes Java files and reports dependencies to classes that are not part of the byte code due to constant inlining.
+ * <b>Note</b> that this analyzer does not distinguish between inlined and referenced constants.
  *
  * @since 1.6
  */
