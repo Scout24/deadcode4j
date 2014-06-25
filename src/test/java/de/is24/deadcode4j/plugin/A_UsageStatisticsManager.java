@@ -10,6 +10,7 @@ import org.apache.maven.shared.runtime.MavenRuntime;
 import org.apache.maven.shared.runtime.MavenRuntimeException;
 import org.codehaus.plexus.components.interactivity.Prompter;
 import org.codehaus.plexus.components.interactivity.PrompterException;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -17,15 +18,18 @@ import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.URLEncoder;
 
 import static de.is24.deadcode4j.plugin.UsageStatisticsManager.DeadCodeStatistics;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.codehaus.plexus.util.ReflectionUtils.setVariableValueInObject;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.AdditionalMatchers.and;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
@@ -39,6 +43,7 @@ public final class A_UsageStatisticsManager {
     private Log log;
     private UsageStatisticsManager objectUnderTest;
     private HttpURLConnection urlConnectionMock;
+    private ByteArrayOutputStream outputStream;
 
     @Rule
     public LoggingRule enableLogging() {
@@ -100,12 +105,24 @@ public final class A_UsageStatisticsManager {
     }
 
     @Test
-    public void shouldSendStatisticsWithCommentIfSoConfigured() throws Exception {
+    public void shouldSendStatisticsValues() throws Exception {
+        DeadCodeStatistics deadCodeStatistics = new DeadCodeStatistics(FALSE, "Greetings from JUnit!");
+        deadCodeStatistics.numberOfAnalyzedClasses = 1;
+        deadCodeStatistics.numberOfAnalyzedModules = 22;
+        deadCodeStatistics.numberOfDeadClassesFound = 333;
+        deadCodeStatistics.config_numberOfClassesToIgnore = 4444;
+        deadCodeStatistics.config_numberOfCustomAnnotations = 55555;
+        deadCodeStatistics.config_numberOfCustomInterfaces = 6666;
+        deadCodeStatistics.config_numberOfCustomSuperclasses = 777;
+        deadCodeStatistics.config_numberOfCustomXmlDefinitions = 88;
+        deadCodeStatistics.config_numberOfModulesToSkip = 9;
+        deadCodeStatistics.config_ignoreMainClasses = true;
+        deadCodeStatistics.config_skipUpdateCheck = false;
         givenModes(NetworkModes.ONLINE, InteractivityModes.INTERACTIVE);
 
-        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(FALSE, "Greetings from JUnit!"));
+        objectUnderTest.sendUsageStatistics(deadCodeStatistics);
 
-        assertThatStatisticsWereSent();
+        assertThatStatisticsWereSent("Greetings from JUnit!", 1, 22, 333, 4444, 55555, 6666, 777, 88, 9, true, false);
     }
 
     @Test
@@ -158,22 +175,24 @@ public final class A_UsageStatisticsManager {
 
     @Test
     public void shouldSendStatisticsWithGivenCommentIfUserAgrees() throws Exception {
+        String comment = "Just do it!";
         givenModes(NetworkModes.ONLINE, InteractivityModes.INTERACTIVE);
-        givenUserAgreesToSendStatistics("Just do it!");
+        givenUserAgreesToSendStatistics(comment);
 
         objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(null, null));
 
-        assertThatStatisticsWereSent();
+        assertThatStatisticsWereSent(comment);
     }
 
     @Test
     public void shouldSendStatisticsWithConfiguredCommentIfUserAgrees() throws Exception {
+        String comment = "Just do it!";
         givenModes(NetworkModes.ONLINE, InteractivityModes.INTERACTIVE);
         givenUserAgreesToSendStatistics();
 
-        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(null, "Just do it!"));
+        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(null, comment));
 
-        assertThatStatisticsWereSent();
+        assertThatStatisticsWereSent(comment);
     }
 
     @Test
@@ -212,7 +231,8 @@ public final class A_UsageStatisticsManager {
         }).thenReturn(-1);
         urlConnectionMock = mock(HttpURLConnection.class);
         when(urlConnectionMock.getInputStream()).thenReturn(inputMock);
-        when(urlConnectionMock.getOutputStream()).thenReturn(mock(OutputStream.class));
+        outputStream = new ByteArrayOutputStream();
+        when(urlConnectionMock.getOutputStream()).thenReturn(outputStream);
         when(urlConnectionMock.getResponseCode()).thenReturn(responseCode);
     }
 
@@ -254,8 +274,17 @@ public final class A_UsageStatisticsManager {
         verify(urlConnectionMock).getResponseCode();
     }
 
+    private void assertThatStatisticsWereSent(Object... values) throws UnsupportedEncodingException {
+        String sendData = outputStream.toString("UTF-8");
+        for (Object value : values) {
+            assertThat(sendData, Matchers.containsString(URLEncoder.encode(String.valueOf(value), "UTF-8")));
+        }
+    }
+
     private static enum NetworkModes {
         ONLINE, OFFLINE
+
+
     }
 
     private static enum InteractivityModes {
