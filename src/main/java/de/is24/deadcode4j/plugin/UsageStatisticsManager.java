@@ -1,6 +1,5 @@
 package de.is24.deadcode4j.plugin;
 
-import com.google.common.base.Optional;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.shared.runtime.MavenProjectProperties;
@@ -64,23 +63,19 @@ public class UsageStatisticsManager {
             return;
         }
         SystemProperties systemProperties = SystemProperties.from(legacySupport, mavenRuntime);
-        final String comment;
         if (Boolean.FALSE.equals(deadCodeStatistics.getSkipSendingUsageStatistics())) {
             logger.debug("Configured to send usage statistics.");
-            comment = null;
         } else {
             if (!legacySupport.getSession().getRequest().isInteractiveMode()) {
                 logger.info("Running in non-interactive mode; skipping sending of usage statistics.");
                 return;
             }
-            Optional<String> userResponse = askForPermission(deadCodeStatistics, systemProperties);
-            if (userResponse == null) {
+            if (!askForPermissionAndComment(deadCodeStatistics, systemProperties)) {
                 return;
             }
-            comment = userResponse.orNull();
         }
 
-        Map<String, String> parameters = getParameters(comment, deadCodeStatistics, systemProperties);
+        Map<String, String> parameters = getParameters(deadCodeStatistics, systemProperties);
         sendUsageStatistics(parameters);
     }
 
@@ -146,13 +141,9 @@ public class UsageStatisticsManager {
         }
     }
 
-    private Map<String, String> getParameters(String comment,
-                                              DeadCodeStatistics deadCodeStatistics,
+    private Map<String, String> getParameters(DeadCodeStatistics deadCodeStatistics,
                                               SystemProperties systemProperties) {
         HashMap<String, String> parameters = newHashMap();
-        if (comment != null) {
-            parameters.put("entry.2135548690", comment);
-        }
         deadCodeStatistics.addRequestParameters(parameters);
         systemProperties.addRequestParameters(parameters);
         return parameters;
@@ -161,7 +152,7 @@ public class UsageStatisticsManager {
     /**
      * @return {@code null} if sending statistics should be aborted
      */
-    private Optional<String> askForPermission(DeadCodeStatistics deadCodeStatistics, SystemProperties systemProperties) {
+    private boolean askForPermissionAndComment(DeadCodeStatistics deadCodeStatistics, SystemProperties systemProperties) {
         final Logger logger = getLogger();
         StringBuilder buffy = listStatistics(deadCodeStatistics, systemProperties);
         try {
@@ -170,14 +161,17 @@ public class UsageStatisticsManager {
             if ("N".equals(answer)) {
                 logger.info("Sending usage statistics is aborted.");
                 logger.info("You may configure deadcode4j to permanently disable sending usage statistics.");
-                return null;
+                return false;
             }
-            return Optional.fromNullable(nullIfEmpty(prompter.prompt(
-                    "Awesome! Would you like to state a testimonial or give a comment? Here you can")));
+            if (deadCodeStatistics.getUsageStatisticsComment() == null) {
+                deadCodeStatistics.setUsageStatisticsComment(prompter.prompt(
+                        "Awesome! Would you like to state a testimonial or give a comment? Here you can"));
+            }
+            return true;
         } catch (PrompterException e) {
             logger.debug("Prompter failed!", e);
             logger.info("Failed to interact with the user!");
-            return null;
+            return false;
         }
     }
 
@@ -193,6 +187,10 @@ public class UsageStatisticsManager {
         if (Boolean.TRUE.equals(deadCodeStatistics.getSkipSendingUsageStatistics())) {
             buffy.append("\n  value for skipSendingUsageStatistics: ").
                     append(deadCodeStatistics.getSkipSendingUsageStatistics());
+        }
+        if (deadCodeStatistics.getUsageStatisticsComment() != null) {
+            buffy.append("\n  your comment to deadcode4j: ").
+                    append(deadCodeStatistics.getUsageStatisticsComment());
         }
         buffy.append("\n  value for skipUpdateCheck: ").
                 append(deadCodeStatistics.config_skipUpdateCheck);
@@ -219,6 +217,7 @@ public class UsageStatisticsManager {
 
     public static class DeadCodeStatistics {
         private final Boolean skipSendingUsageStatistics;
+        private String usageStatisticsComment;
         public int numberOfAnalyzedClasses;
         public int numberOfAnalyzedModules;
         public int numberOfDeadClassesFound;
@@ -235,13 +234,23 @@ public class UsageStatisticsManager {
          * Creates a new instance of {@code DeadCodeStatistics}.
          *
          * @param skipSendingUsageStatistics the configuration value indicating if statistics should be sent or not
+         * @param usageStatisticsComment the configured comment
          */
-        public DeadCodeStatistics(Boolean skipSendingUsageStatistics) {
+        public DeadCodeStatistics(Boolean skipSendingUsageStatistics, String usageStatisticsComment) {
             this.skipSendingUsageStatistics = skipSendingUsageStatistics;
+            setUsageStatisticsComment(usageStatisticsComment);
         }
 
         public Boolean getSkipSendingUsageStatistics() {
             return skipSendingUsageStatistics;
+        }
+
+        public String getUsageStatisticsComment() {
+            return usageStatisticsComment;
+        }
+
+        public void setUsageStatisticsComment(String usageStatisticsComment) {
+            this.usageStatisticsComment = nullIfEmpty(usageStatisticsComment);
         }
 
         public void addRequestParameters(HashMap<String, String> parameters) {
@@ -255,10 +264,13 @@ public class UsageStatisticsManager {
             parameters.put("entry.2138491452", String.valueOf(config_numberOfCustomSuperclasses));
             parameters.put("entry.1308824804", String.valueOf(config_numberOfCustomXmlDefinitions));
             parameters.put("entry.1094908901", String.valueOf(config_numberOfModulesToSkip));
+            parameters.put("entry.1760639029", String.valueOf(config_skipUpdateCheck));
             if (this.skipSendingUsageStatistics != null) {
                 parameters.put("entry.1975817511", String.valueOf(skipSendingUsageStatistics));
             }
-            parameters.put("entry.1760639029", String.valueOf(config_skipUpdateCheck));
+            if (this.usageStatisticsComment != null) {
+                parameters.put("entry.2135548690", this.usageStatisticsComment);
+            }
         }
 
     }

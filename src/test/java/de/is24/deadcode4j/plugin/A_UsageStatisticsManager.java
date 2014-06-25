@@ -76,7 +76,7 @@ public final class A_UsageStatisticsManager {
     public void shouldDoNothingIfSoConfigured() throws Exception {
         givenModes(NetworkModes.ONLINE, InteractivityModes.INTERACTIVE);
 
-        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(TRUE));
+        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(TRUE, null));
 
         assertThatStatisticsWereNotSent();
     }
@@ -85,7 +85,7 @@ public final class A_UsageStatisticsManager {
     public void shouldDoNothingIfInOfflineMode() throws Exception {
         givenModes(NetworkModes.OFFLINE, InteractivityModes.INTERACTIVE);
 
-        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(FALSE));
+        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(FALSE, null));
 
         assertThatStatisticsWereNotSent();
     }
@@ -94,7 +94,16 @@ public final class A_UsageStatisticsManager {
     public void shouldSimplySendStatisticsIfSoConfigured() throws Exception {
         givenModes(NetworkModes.ONLINE, InteractivityModes.INTERACTIVE);
 
-        objectUnderTest.sendUsageStatistics( new DeadCodeStatistics(FALSE));
+        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(FALSE, null));
+
+        assertThatStatisticsWereSent();
+    }
+
+    @Test
+    public void shouldSendStatisticsWithCommentIfSoConfigured() throws Exception {
+        givenModes(NetworkModes.ONLINE, InteractivityModes.INTERACTIVE);
+
+        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(FALSE, "Greetings from JUnit!"));
 
         assertThatStatisticsWereSent();
     }
@@ -104,7 +113,7 @@ public final class A_UsageStatisticsManager {
         givenModes(NetworkModes.ONLINE, InteractivityModes.NON_INTERACTIVE);
         givenHttpTransferResultsIn(503);
 
-        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(FALSE));
+        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(FALSE, null));
 
         assertThatStatisticsWereSent();
     }
@@ -114,7 +123,7 @@ public final class A_UsageStatisticsManager {
         givenModes(NetworkModes.ONLINE, InteractivityModes.NON_INTERACTIVE);
         givenHttpConnectionFails();
 
-        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(FALSE));
+        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(FALSE, null));
 
         verify(log).info(and(contains("Fail"), contains("usage statistics")));
     }
@@ -124,7 +133,7 @@ public final class A_UsageStatisticsManager {
         givenModes(NetworkModes.ONLINE, InteractivityModes.NON_INTERACTIVE);
         givenProjectPropertiesCannotBeDetermined();
 
-        objectUnderTest.sendUsageStatistics( new DeadCodeStatistics(FALSE));
+        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(FALSE, null));
 
         assertThatStatisticsWereSent();
     }
@@ -133,7 +142,7 @@ public final class A_UsageStatisticsManager {
     public void shouldAbortIfInNonInteractiveModeAndNonConfigured() throws Exception {
         givenModes(NetworkModes.ONLINE, InteractivityModes.NON_INTERACTIVE);
 
-        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(null));
+        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(null, null));
 
         assertThatStatisticsWereNotSent();
     }
@@ -142,17 +151,27 @@ public final class A_UsageStatisticsManager {
     public void shouldAbortIfRequestedByUser() throws Exception {
         givenModes(NetworkModes.ONLINE, InteractivityModes.INTERACTIVE);
 
-        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(null));
+        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(null, null));
 
         assertThatStatisticsWereNotSent();
     }
 
     @Test
-    public void shouldSendStatisticsIfUserAgrees() throws Exception {
+    public void shouldSendStatisticsWithGivenCommentIfUserAgrees() throws Exception {
         givenModes(NetworkModes.ONLINE, InteractivityModes.INTERACTIVE);
         givenUserAgreesToSendStatistics("Just do it!");
 
-        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(null));
+        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(null, null));
+
+        assertThatStatisticsWereSent();
+    }
+
+    @Test
+    public void shouldSendStatisticsWithConfiguredCommentIfUserAgrees() throws Exception {
+        givenModes(NetworkModes.ONLINE, InteractivityModes.INTERACTIVE);
+        givenUserAgreesToSendStatistics();
+
+        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(null, "Just do it!"));
 
         assertThatStatisticsWereSent();
     }
@@ -162,7 +181,7 @@ public final class A_UsageStatisticsManager {
         givenModes(NetworkModes.ONLINE, InteractivityModes.INTERACTIVE);
         givenPrompterFails();
 
-        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(null));
+        objectUnderTest.sendUsageStatistics(new DeadCodeStatistics(null, null));
 
         assertThatStatisticsWereNotSent();
     }
@@ -211,8 +230,14 @@ public final class A_UsageStatisticsManager {
     private void givenUserAgreesToSendStatistics(String comment) throws IllegalAccessException, PrompterException {
         Prompter mock = mock(Prompter.class);
         when(mock.prompt(anyString(), anyList(), anyString())).thenReturn("Y");
-        when(mock.prompt(anyString())).thenReturn(comment);
+        if (comment != null) {
+            when(mock.prompt(anyString())).thenReturn(comment);
+        }
         setVariableValueInObject(objectUnderTest, "prompter", mock);
+    }
+
+    private void givenUserAgreesToSendStatistics() throws IllegalAccessException, PrompterException {
+        givenUserAgreesToSendStatistics(null);
     }
 
     private void givenPrompterFails() throws IllegalAccessException, PrompterException {

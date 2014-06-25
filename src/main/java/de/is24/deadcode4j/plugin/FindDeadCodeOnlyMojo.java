@@ -126,6 +126,15 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     private Set<String> superClassesMarkingLiveCode = emptySet();
     @Component
     private UpdateChecker updateChecker;
+    /**
+     * The comment to send along with the usage statistics.<br/>
+     * State a testimonial, refer to your project, provide a way to contact you, request a feature, ...
+     *
+     * @see #skipSendingUsageStatistics
+     * @since 1.6
+     */
+    @Parameter(property = "deadcode4j.statisticsComment")
+    private String usageStatisticsComment;
     @Component
     private UsageStatisticsManager usageStatisticsManager;
 
@@ -145,7 +154,9 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     }
 
     private void sendStatistics(DeadCode deadCode) {
-        UsageStatisticsManager.DeadCodeStatistics deadCodeStatistics = new UsageStatisticsManager.DeadCodeStatistics(this.skipSendingUsageStatistics);
+        UsageStatisticsManager.DeadCodeStatistics deadCodeStatistics = new UsageStatisticsManager.DeadCodeStatistics(
+                this.skipSendingUsageStatistics,
+                this.usageStatisticsComment);
         deadCodeStatistics.config_ignoreMainClasses = this.ignoreMainClasses;
         deadCodeStatistics.config_numberOfClassesToIgnore = this.classesToIgnore.size();
         deadCodeStatistics.config_numberOfCustomAnnotations = this.annotationsMarkingLiveCode.size();
