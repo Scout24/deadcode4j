@@ -21,6 +21,7 @@
     * analyze each module with its own context
     * establish possibility to pass on intermediate results to depending modules
 * performs an update check when starting up
+* may send usage statistics to Google Forms
 
 ###[code changes](https://github.com/ImmobilienScout24/deadcode4j/compare/deadcode4j-maven-plugin-1.5...master)
 

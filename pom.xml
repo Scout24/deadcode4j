@@ -370,9 +370,19 @@
             <version>${version.maven}</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.maven.shared</groupId>
+            <artifactId>maven-runtime</artifactId>
+            <version>1.0-alpha-3</version>
+        </dependency>
+        <dependency>
             <groupId>org.codehaus.plexus</groupId>
             <artifactId>plexus-utils</artifactId>
             <version>3.0.17</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-interactivity-api</artifactId>
+            <version>1.0-alpha-6</version>
         </dependency>
 
         <dependency>

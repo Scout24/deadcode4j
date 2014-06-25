@@ -100,8 +100,18 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     @Component
     private RepositorySystem repositorySystem;
     /**
-     * Skip the update check performed at startup.
-     * Note that the update check is skipped if Maven is running in offline mode (using the -o flag).
+     * Skip sending usage statistics.<br/>
+     * If set to {@code false}, statistics will be sent.<br/>
+     * If nothing is configured and running in interactive mode (NOT using the -B flag), the user is requested to allow sending the usage statistics.<br/>
+     * Note that this step is skipped if Maven is running in offline mode (using the -o flag).
+     *
+     * @since 1.6
+     */
+    @Parameter(property = "deadcode4j.skipSendingStatistics")
+    private Boolean skipSendingUsageStatistics;
+    /**
+     * Skip the update check performed at startup.<br/>
+     * Note that this step is skipped if Maven is running in offline mode (using the -o flag).
      *
      * @since 1.6
      */
@@ -116,6 +126,17 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     private Set<String> superClassesMarkingLiveCode = emptySet();
     @Component
     private UpdateChecker updateChecker;
+    /**
+     * The comment to send along with the usage statistics.<br/>
+     * State a testimonial, refer to your project, provide a way to contact you, request a feature, ...
+     *
+     * @see #skipSendingUsageStatistics
+     * @since 1.6
+     */
+    @Parameter(property = "deadcode4j.statisticsComment")
+    private String usageStatisticsComment;
+    @Component
+    private UsageStatisticsManager usageStatisticsManager;
 
     public void doExecute() throws MojoExecutionException {
         try {
@@ -124,11 +145,32 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
             DeadCode deadCode = analyzeCode();
             log(deadCode);
             logGoodbye();
+            sendStatistics(deadCode);
         } catch (RuntimeException rE) {
             getLog().error("An unexpected exception occurred. " +
                     "Please consider reporting an issue at https://github.com/ImmobilienScout24/deadcode4j/issues", rE);
             throw rE;
         }
+    }
+
+    private void sendStatistics(DeadCode deadCode) {
+        UsageStatisticsManager.DeadCodeStatistics deadCodeStatistics = new UsageStatisticsManager.DeadCodeStatistics(
+                this.skipSendingUsageStatistics,
+                this.usageStatisticsComment);
+        deadCodeStatistics.config_ignoreMainClasses = this.ignoreMainClasses;
+        deadCodeStatistics.config_numberOfClassesToIgnore = this.classesToIgnore.size();
+        deadCodeStatistics.config_numberOfCustomAnnotations = this.annotationsMarkingLiveCode.size();
+        deadCodeStatistics.config_numberOfCustomInterfaces = this.interfacesMarkingLiveCode.size();
+        deadCodeStatistics.config_numberOfCustomSuperclasses = this.superClassesMarkingLiveCode.size();
+        deadCodeStatistics.config_numberOfCustomXmlDefinitions = this.customXmls.size();
+        deadCodeStatistics.config_numberOfModulesToSkip = this.modulesToSkip.size();
+        deadCodeStatistics.config_skipUpdateCheck = this.skipUpdateCheck;
+
+        deadCodeStatistics.numberOfAnalyzedClasses = deadCode.getAnalyzedClasses().size();
+        deadCodeStatistics.numberOfAnalyzedModules = this.reactorProjects.size();
+        deadCodeStatistics.numberOfDeadClassesFound = deadCode.getDeadClasses().size();
+
+        this.usageStatisticsManager.sendUsageStatistics(deadCodeStatistics);
     }
 
     private void checkForUpdate() {

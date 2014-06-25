@@ -20,6 +20,7 @@
                             <endOfFileName>.xml</endOfFileName>
                         </customXml>
                     </customXmls>
+                    <skipSendingUsageStatistics>true</skipSendingUsageStatistics>
                 </configuration>
             </plugin>
         </plugins>
