@@ -5,12 +5,12 @@ jdk:
   - oraclejdk7
   - oraclejdk8
 
+cache:
+  directories:
+  - $HOME/.m2/repository
+
 before_install: sudo rm /etc/mavenrc
 install: mvn clean verify war:war -B -U -PenableCoverage,travis -Dmaven.main.skip=true -Dmaven.test.skip=true -Dinvoker.skip=true -DfailOnMissingWebXml=false
 script: mvn verify -B -T 1C -PenableCoverage,travis
 after_success:
   - mvn jacoco:report coveralls:jacoco
-
-cache:
-  directories:
-  - $HOME/.m2/repository
