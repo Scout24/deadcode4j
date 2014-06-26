@@ -10,3 +10,7 @@ install: mvn clean verify -B -U -PenableCoverage,travis -Dmaven.main.skip=true -
 script: mvn verify -B -T 1C -PenableCoverage,travis
 after_success:
   - mvn jacoco:report coveralls:jacoco
+
+cache:
+  directories:
+  - $HOME/.m2/repository
