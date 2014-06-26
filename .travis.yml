@@ -9,10 +9,7 @@ cache:
   directories:
   - $HOME/.m2/repository
 
-before_install:
-  - ls -la $HOME/.m2/repository
-  - sudo cat /etc/mavenrc
-  - sudo rm /etc/mavenrc
+before_install: sudo rm /etc/mavenrc
 install: mvn clean verify war:war -B -U -T 4 -PenableCoverage,travis -Dmaven.main.skip=true -Dmaven.test.skip=true -Dinvoker.skip=true -DfailOnMissingWebXml=false
 script: mvn verify -B -T 4 -PenableCoverage,travis
 after_success: mvn jacoco:report coveralls:jacoco
