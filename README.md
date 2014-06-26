@@ -21,4 +21,4 @@ Have a look at the [wiki](https://github.com/ImmobilienScout24/deadcode4j/wiki) 
 [features](https://github.com/ImmobilienScout24/deadcode4j/wiki/deadcode4j-v1.5%3A-Features),
 read about the available [goals](https://github.com/ImmobilienScout24/deadcode4j/wiki/deadcode4j-v1.5%3A-Usage),
 understand the [configuration](https://github.com/ImmobilienScout24/deadcode4j/wiki/deadcode4j-v1.5%3A-Configuration)
-or learn *deadcod4j*'s history and principles.
+or learn *deadcode4j*'s history and principles.
