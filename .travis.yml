@@ -6,7 +6,7 @@ jdk:
   - oraclejdk8
 
 before_install: sudo rm /etc/mavenrc
-install: mvn clean verify -B -U -PenableCoverage,travis -Dmaven.main.skip=true -Dmaven.test.skip=true -Dinvoker.skip=true
+install: mvn clean verify war:war -B -U -PenableCoverage,travis -Dmaven.main.skip=true -Dmaven.test.skip=true -Dinvoker.skip=true -DfailOnMissingWebXml=false
 script: mvn verify -B -T 1C -PenableCoverage,travis
 after_success:
   - mvn jacoco:report coveralls:jacoco
