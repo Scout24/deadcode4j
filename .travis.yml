@@ -11,6 +11,7 @@ cache:
 
 before_install:
   - ls -la $HOME/.m2/repository
+  - sudo less /etc/mavenrc
   - sudo rm /etc/mavenrc
 install: mvn clean verify war:war -B -U -PenableCoverage,travis -Dmaven.main.skip=true -Dmaven.test.skip=true -Dinvoker.skip=true -DfailOnMissingWebXml=false
 script: mvn verify -B -T 1C -PenableCoverage,travis
