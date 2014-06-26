@@ -5,7 +5,9 @@
 
 *deadcode4j* helps you find code that is no longer used by your application. It is especially useful for cleaning up legacy code.
 
-As *deadcode4j* is available via the Maven repository, you can simply run `mvn de.is24.mavenplugins:deadcode4j-maven-plugin:find -Dmaven.test.skip=true` to analyze your project.  
+As *deadcode4j* is available via the Maven repository, you can simply run  
+`mvn de.is24.mavenplugins:deadcode4j-maven-plugin:find -Dmaven.test.skip=true`  
+to analyze your project.  
 *deadcode4j* will trigger the _package phase_ to be executed for a project (and for all modules listed in a reactor project) before analyzing the output directories.
 The output will look something like this:
 
