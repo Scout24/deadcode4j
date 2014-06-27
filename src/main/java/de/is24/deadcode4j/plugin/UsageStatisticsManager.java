@@ -295,7 +295,7 @@ public class UsageStatisticsManager {
         private final Map<String, String> values = newHashMapWithExpectedSize(KEYS.size());
 
         private SystemProperties() {
-            values.put("deadcode4j.version", "1.6");
+            values.put("deadcode4j.version", "2.0.0");
         }
 
         public static SystemProperties from(LegacySupport legacySupport, MavenRuntime mavenRuntime) {
