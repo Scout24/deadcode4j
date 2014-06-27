@@ -10,11 +10,6 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <properties>
-        <project.build.sourceEncoding></project.build.sourceEncoding>
-        <project.reporting.outputEncoding></project.reporting.outputEncoding>
-    </properties>
-
     <artifactId>brokenFiles</artifactId>
     <version>42</version>
     <packaging>jar</packaging>
