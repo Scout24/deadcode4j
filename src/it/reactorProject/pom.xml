@@ -15,20 +15,21 @@
     <packaging>pom</packaging>
 
     <build>
-        <plugins>
-            <plugin>
-                <groupId>de.is24.mavenplugins</groupId>
-                <artifactId>deadcode4j-maven-plugin</artifactId>
-                <version>@project.version@</version>
-                <configuration>
-                    <modulesToSkip>
-                        <param>secondReactorProject</param>
-                        <param>secondJavaProject</param>
-                        <param>nonExistingProject</param>
-                    </modulesToSkip>
-                </configuration>
-            </plugin>
-        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>de.is24.mavenplugins</groupId>
+                    <artifactId>deadcode4j-maven-plugin</artifactId>
+                    <configuration>
+                        <modulesToSkip>
+                            <param>secondReactorProject</param>
+                            <param>secondJavaProject</param>
+                            <param>nonExistingProject</param>
+                        </modulesToSkip>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
     <modules>

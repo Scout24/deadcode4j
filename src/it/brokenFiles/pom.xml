@@ -15,14 +15,4 @@
     <packaging>jar</packaging>
     <description>This project is used to make sure failing file analysis is a) reported and b) handled gracefully</description>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>de.is24.mavenplugins</groupId>
-                <artifactId>deadcode4j-maven-plugin</artifactId>
-                <version>@project.version@</version>
-            </plugin>
-        </plugins>
-    </build>
-
 </project>

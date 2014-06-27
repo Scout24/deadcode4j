@@ -14,14 +14,4 @@
     <version>42</version>
     <packaging>war</packaging>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>de.is24.mavenplugins</groupId>
-                <artifactId>deadcode4j-maven-plugin</artifactId>
-                <version>@project.version@</version>
-            </plugin>
-        </plugins>
-    </build>
-
 </project>

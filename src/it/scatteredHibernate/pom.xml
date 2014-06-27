@@ -18,18 +18,19 @@
     </description>
 
     <build>
-        <plugins>
-            <plugin>
-                <groupId>de.is24.mavenplugins</groupId>
-                <artifactId>deadcode4j-maven-plugin</artifactId>
-                <version>@project.version@</version>
-                <configuration>
-                    <classesToIgnore>
-                        <param>de.is24.junit.EntityClass</param>
-                    </classesToIgnore>
-                </configuration>
-            </plugin>
-        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>de.is24.mavenplugins</groupId>
+                    <artifactId>deadcode4j-maven-plugin</artifactId>
+                    <configuration>
+                        <classesToIgnore>
+                            <param>de.is24.junit.EntityClass</param>
+                        </classesToIgnore>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
     <modules>
