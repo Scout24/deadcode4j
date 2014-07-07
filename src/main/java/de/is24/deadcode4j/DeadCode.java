@@ -11,23 +11,18 @@ import java.util.EnumSet;
  */
 public class DeadCode {
     @Nonnull
-    private final EnumSet<AnalysisStage> stagesWithExceptions;
-    @Nonnull
-    private final Collection<String> analyzedClasses;
+    private final AnalyzedCode analyzedCode;
     @Nonnull
     private final Collection<String> deadClasses;
 
-    public DeadCode(@Nonnull EnumSet<AnalysisStage> stagesWithExceptions,
-                    @Nonnull Collection<String> analyzedClasses,
-                    @Nonnull Collection<String> deadClasses) {
-        this.stagesWithExceptions = stagesWithExceptions;
-        this.analyzedClasses = analyzedClasses;
+    public DeadCode(@Nonnull AnalyzedCode analyzedCode, @Nonnull Collection<String> deadClasses) {
+        this.analyzedCode = analyzedCode;
         this.deadClasses = deadClasses;
     }
 
     @Nonnull
     public Collection<String> getAnalyzedClasses() {
-        return this.analyzedClasses;
+        return this.analyzedCode.getAnalyzedClasses();
     }
 
     @Nonnull
@@ -42,7 +37,7 @@ public class DeadCode {
      */
     @Nonnull
     public EnumSet<AnalysisStage> getStagesWithExceptions() {
-        return stagesWithExceptions;
+        return this.analyzedCode.getStagesWithExceptions();
     }
 
 }
