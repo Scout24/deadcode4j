@@ -1,5 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
+import de.is24.deadcode4j.AnalyzedCode;
 import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.AnalysisContext;
 import org.slf4j.Logger;
@@ -22,11 +23,9 @@ public abstract class AnalyzerAdapter implements Analyzer {
     }
 
     @Override
-    public void finishAnalysis(@Nonnull AnalysisContext analysisContext) {
-    }
+    public void finishAnalysis(@Nonnull AnalysisContext analysisContext) {}
 
     @Override
-    public void finishAnalysis() {
-    }
+    public void finishAnalysis(@Nonnull AnalyzedCode analyzedCode) {}
 
 }

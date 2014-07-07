@@ -29,10 +29,10 @@ public interface Analyzer {
 
     /**
      * Indicates that all modules have been processed.
-     * This method offers <code>Analyzer</code>s the possibility to report dependencies based on the whole project.
+     * This method offers <code>Analyzer</code>s the possibility to report warnings, clean up, etc.
      *
      * @since 1.6
      */
-    void finishAnalysis();
+    void finishAnalysis(@Nonnull AnalyzedCode analyzedCode);
 
 }

@@ -54,11 +54,12 @@ public class DeadCodeFinder {
             analyzedCode.add(analysisContext.getAnalyzedCode());
         }
         logger.debug("Finishing analysis of whole project...");
+        AnalyzedCode combinedAnalysis = merge(analyzedCode);
         for (Analyzer analyzer : this.analyzers) {
-            analyzer.finishAnalysis();
+            analyzer.finishAnalysis(combinedAnalysis);
         }
         logger.debug("Finished analysis of project.");
-        return merge(analyzedCode);
+        return combinedAnalysis;
     }
 
     @Nonnull

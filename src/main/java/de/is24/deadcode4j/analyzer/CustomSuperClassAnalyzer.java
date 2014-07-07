@@ -1,6 +1,7 @@
 package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.AnalysisContext;
+import de.is24.deadcode4j.AnalyzedCode;
 
 import javax.annotation.Nonnull;
 import java.util.HashSet;
@@ -35,8 +36,8 @@ public final class CustomSuperClassAnalyzer extends SuperClassAnalyzer {
     }
 
     @Override
-    public void finishAnalysis() {
-        super.finishAnalysis();
+    public void finishAnalysis(@Nonnull AnalyzedCode analyzedCode) {
+        super.finishAnalysis(analyzedCode);
         for (String interfaceName : superClassesNotFoundInClassPath) {
             logger.warn("SuperClass [{}] wasn't ever found in the class path. You should remove the configuration entry.", interfaceName);
         }
