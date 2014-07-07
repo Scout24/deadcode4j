@@ -1,7 +1,7 @@
 package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.AnalysisContext;
-import de.is24.deadcode4j.AnalyzedCode;
+import de.is24.deadcode4j.DeadCode;
 import javassist.CtClass;
 
 import javax.annotation.Nonnull;
@@ -33,9 +33,15 @@ public class IgnoreClassesAnalyzer extends ByteCodeAnalyzer {
     }
 
     @Override
-    public void finishAnalysis(@Nonnull AnalyzedCode analyzedCode) {
+    public void finishAnalysis(@Nonnull DeadCode deadCode) {
         if (this.ignoredClasses.size() != 0) {
             logger.info("Ignoring {} class(es) which seem(s) to be unused.");
+        }
+        for (String ignoredClass : ignoredClasses) {
+            if (!deadCode.getDeadClasses().contains(ignoredClass)) {
+                logger.warn("Class [{}] should be ignored, but is not dead. You should remove the configuration entry.",
+                        ignoredClass);
+            }
         }
     }
 

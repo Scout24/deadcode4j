@@ -7,6 +7,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -52,7 +53,8 @@ public abstract class AnAnalyzer<T extends Analyzer> {
 
     protected void finishAnalysis() {
         this.objectUnderTest.finishAnalysis(this.analysisContext);
-        this.objectUnderTest.finishAnalysis(this.analysisContext.getAnalyzedCode());
+        this.objectUnderTest.finishAnalysis(
+                new DeadCode(this.analysisContext.getAnalyzedCode(), Collections.<String>emptyList()));
         this.analysisIsFinished = true;
     }
 

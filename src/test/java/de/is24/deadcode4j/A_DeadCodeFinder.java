@@ -91,7 +91,7 @@ public final class A_DeadCodeFinder {
             }
 
             @Override
-            public void finishAnalysis(@Nonnull AnalyzedCode analyzedCode) {
+            public void finishAnalysis(@Nonnull DeadCode deadCode) {
                 finishAnalysisWasCalled.set(true);
             }
         }));

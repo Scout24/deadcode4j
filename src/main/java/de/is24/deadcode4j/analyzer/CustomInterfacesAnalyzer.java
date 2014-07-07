@@ -1,7 +1,7 @@
 package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.AnalysisContext;
-import de.is24.deadcode4j.AnalyzedCode;
+import de.is24.deadcode4j.DeadCode;
 
 import javax.annotation.Nonnull;
 import java.util.HashSet;
@@ -36,8 +36,8 @@ public final class CustomInterfacesAnalyzer extends InterfacesAnalyzer {
     }
 
     @Override
-    public void finishAnalysis(@Nonnull AnalyzedCode analyzedCode) {
-        super.finishAnalysis(analyzedCode);
+    public void finishAnalysis(@Nonnull DeadCode deadCode) {
+        super.finishAnalysis(deadCode);
         for (String interfaceName : interfacesNotFoundInClassPath) {
             logger.warn("Interface [{}] wasn't ever found in the class path. You should remove the configuration entry.", interfaceName);
         }

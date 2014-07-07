@@ -33,6 +33,6 @@ public interface Analyzer {
      *
      * @since 1.6
      */
-    void finishAnalysis(@Nonnull AnalyzedCode analyzedCode);
+    void finishAnalysis(@Nonnull DeadCode deadCode);
 
 }
