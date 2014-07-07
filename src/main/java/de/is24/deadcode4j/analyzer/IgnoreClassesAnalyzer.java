@@ -35,7 +35,7 @@ public class IgnoreClassesAnalyzer extends ByteCodeAnalyzer {
     @Override
     public void finishAnalysis(@Nonnull DeadCode deadCode) {
         if (this.ignoredClasses.size() != 0) {
-            logger.info("Ignoring {} class(es) which seem(s) to be unused.");
+            logger.info("Ignoring {} class(es) which seem(s) to be unused.", this.ignoredClasses.size());
         }
         for (String ignoredClass : ignoredClasses) {
             if (!deadCode.getDeadClasses().contains(ignoredClass)) {
