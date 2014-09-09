@@ -217,7 +217,6 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
         addCustomInterfacesAnalyzerIfConfigured(analyzers);
         addCustomSuperClassesAnalyzerIfConfigured(analyzers);
         addCustomXmlAnalyzerIfConfigured(analyzers);
-        addIgnoreClassesAnalyzerIfConfigured(analyzers);
         addMainClassAnalyzerIfConfigured(analyzers);
         DeadCodeFinder deadCodeFinder = new DeadCodeFinder(analyzers);
         return deadCodeFinder.findDeadCode(gatherModules());
@@ -256,13 +255,6 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
             }
             analyzers.add(customXmlAnalyzer);
         }
-    }
-
-    private void addIgnoreClassesAnalyzerIfConfigured(Set<Analyzer> analyzers) {
-        if (classesToIgnore.isEmpty()) {
-            return;
-        }
-        analyzers.add(new IgnoreClassesAnalyzer(this.classesToIgnore));
     }
 
     private void addMainClassAnalyzerIfConfigured(Set<Analyzer> analyzers) {
@@ -309,7 +301,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     }
 
     private void log(DeadCode deadCode) {
-        new DeadCodeLogger(getLog()).log(deadCode);
+        new DeadCodeLogger(getLog()).log(deadCode, this.classesToIgnore);
     }
 
     private void logGoodbye() {
