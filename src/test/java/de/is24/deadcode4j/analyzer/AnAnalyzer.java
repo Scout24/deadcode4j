@@ -52,7 +52,7 @@ public abstract class AnAnalyzer<T extends Analyzer> {
 
     protected void finishAnalysis() {
         this.objectUnderTest.finishAnalysis(this.analysisContext);
-        this.objectUnderTest.finishAnalysis(this.analysisContext.getAnalyzedCode());
+        this.objectUnderTest.finishAnalysis();
         this.analysisIsFinished = true;
     }
 

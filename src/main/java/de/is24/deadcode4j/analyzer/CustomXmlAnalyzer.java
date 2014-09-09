@@ -1,14 +1,15 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.AnalyzedCode;
+import de.is24.deadcode4j.AnalysisContext;
+import de.is24.deadcode4j.Utils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static de.is24.deadcode4j.Utils.isEmpty;
 
 /**
  * Analyzes XML files: lists the registered elements' text or attribute values as being referenced classes.
@@ -20,6 +21,11 @@ public final class CustomXmlAnalyzer extends SimpleXmlAnalyzer {
     //                                                              element       [@attribute='value']    /   @attribute|text()
     private static final Pattern XPATH_PATTERN = Pattern.compile("^([^/\\[]+)(?:\\[@([^=]+)='([^']+)'\\])?/(?:@(.*)|text\\(\\))$");
     private static volatile int instanceNumber = 0; // we assign this to make sure the self check works
+    private boolean dependencyWasFound = false;
+
+    private static int getNewInstanceNumber() {
+        return instanceNumber++;
+    }
 
     /**
      * Creates a new <code>CustomXmlAnalyzer</code>.
@@ -51,18 +57,6 @@ public final class CustomXmlAnalyzer extends SimpleXmlAnalyzer {
         this("_custom-XML#" + getNewInstanceNumber() + "_", endOfFileName, rootElement);
     }
 
-    private static int getNewInstanceNumber() {
-        return instanceNumber++;
-    }
-
-    @Override
-    public void finishAnalysis(@Nonnull AnalyzedCode analyzedCode) {
-        super.finishAnalysis(analyzedCode);
-        if (isEmpty(analyzedCode.getCodeDependencies().get(super.dependerId))) {
-            logger.warn("The {} didn't find any class to report. You should remove the configuration entry.", this);
-        }
-    }
-
     /**
      * Register an XPath expression identifying an XML node which is to be recognized as a class being in use.
      * Supported expressions are:
@@ -89,6 +83,23 @@ public final class CustomXmlAnalyzer extends SimpleXmlAnalyzer {
         }
         if (matcher.group(2) != null) {
             element.withAttributeValue(matcher.group(2), matcher.group(3));
+        }
+    }
+
+    @Override
+    public void finishAnalysis(@Nonnull AnalysisContext analysisContext) {
+        super.finishAnalysis(analysisContext);
+        Set<String> dependencies = analysisContext.getAnalyzedCode().getCodeDependencies().get(super.dependerId);
+        if (!Utils.isEmpty(dependencies)) {
+            dependencyWasFound = true;
+        }
+    }
+
+    @Override
+    public void finishAnalysis() {
+        super.finishAnalysis();
+        if (!dependencyWasFound) {
+            logger.warn("The {} didn't find any class to report. You should remove the configuration entry.", this);
         }
     }
 
