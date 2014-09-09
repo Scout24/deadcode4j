@@ -32,6 +32,12 @@ public class DeadCodeFinder {
 
     @Nonnull
     public DeadCode findDeadCode(@Nonnull Iterable<Module> modules) {
+        AnalyzedCode analyzedCode = analyzeCode(modules);
+        return computeDeadCode(analyzedCode);
+    }
+
+    @Nonnull
+    private AnalyzedCode analyzeCode(@Nonnull Iterable<Module> modules) {
         List<AnalyzedCode> analyzedCode = newArrayList();
         IntermediateResults intermediateResults = new IntermediateResults();
         for (Module module : sort(modules)) {
@@ -47,14 +53,13 @@ public class DeadCodeFinder {
             intermediateResults.add(analysisContext);
             analyzedCode.add(analysisContext.getAnalyzedCode());
         }
-        AnalyzedCode combinedAnalysis = merge(analyzedCode);
-        DeadCode deadCode = computeDeadCode(combinedAnalysis);
         logger.debug("Finishing analysis of whole project...");
+        AnalyzedCode combinedAnalysis = merge(analyzedCode);
         for (Analyzer analyzer : this.analyzers) {
-            analyzer.finishAnalysis(deadCode);
+            analyzer.finishAnalysis(combinedAnalysis);
         }
         logger.debug("Finished analysis of project.");
-        return deadCode;
+        return combinedAnalysis;
     }
 
     @Nonnull

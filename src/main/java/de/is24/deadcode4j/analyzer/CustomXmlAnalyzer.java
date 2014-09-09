@@ -1,6 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
-import de.is24.deadcode4j.DeadCode;
+import de.is24.deadcode4j.AnalyzedCode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -56,9 +56,9 @@ public final class CustomXmlAnalyzer extends SimpleXmlAnalyzer {
     }
 
     @Override
-    public void finishAnalysis(@Nonnull DeadCode deadCode) {
-        super.finishAnalysis(deadCode);
-        if (isEmpty(deadCode.getAnalyzedCode().getCodeDependencies().get(super.dependerId))) {
+    public void finishAnalysis(@Nonnull AnalyzedCode analyzedCode) {
+        super.finishAnalysis(analyzedCode);
+        if (isEmpty(analyzedCode.getCodeDependencies().get(super.dependerId))) {
             logger.warn("The {} didn't find any class to report. You should remove the configuration entry.", this);
         }
     }

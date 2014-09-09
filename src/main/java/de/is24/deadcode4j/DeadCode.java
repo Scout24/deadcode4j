@@ -20,16 +20,6 @@ public class DeadCode {
         this.deadClasses = deadClasses;
     }
 
-    /**
-     * Returns the analyzed code the results are based upon.
-     *
-     * @since 1.6
-     */
-    @Nonnull
-    public AnalyzedCode getAnalyzedCode() {
-        return this.analyzedCode;
-    }
-
     @Nonnull
     public Collection<String> getAnalyzedClasses() {
         return this.analyzedCode.getAnalyzedClasses();
