@@ -65,7 +65,7 @@ public class DeadCodeFinder {
     @Nonnull
     private DeadCode computeDeadCode(@Nonnull AnalyzedCode analyzedCode) {
         Collection<String> deadClasses = determineDeadClasses(analyzedCode);
-        return new DeadCode(analyzedCode, deadClasses);
+        return new DeadCode(analyzedCode.getStagesWithExceptions(), analyzedCode.getAnalyzedClasses(), deadClasses);
     }
 
     private void analyzeRepository(@Nonnull AnalysisContext analysisContext, @Nonnull Repository repository) {
