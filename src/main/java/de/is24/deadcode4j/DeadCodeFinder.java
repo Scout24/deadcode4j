@@ -14,6 +14,7 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static de.is24.deadcode4j.Module.sort;
 import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
+import static java.util.Arrays.asList;
 
 /**
  * The <code>DeadCodeFinder</code> ties everything together in order to ultimately find dead code.
@@ -54,11 +55,14 @@ public class DeadCodeFinder {
             analyzedCode.add(analysisContext.getAnalyzedCode());
         }
         logger.debug("Finishing analysis of whole project...");
+        AnalyzedCode combinedAnalysis = merge(analyzedCode);
         for (Analyzer analyzer : this.analyzers) {
-            analyzer.finishAnalysis();
+            AnalysisSink analysisSink = new AnalysisSink();
+            analyzer.finishAnalysis(analysisSink, combinedAnalysis);
+            combinedAnalysis = merge(combinedAnalysis, analysisSink);
         }
         logger.debug("Finished analysis of project.");
-        return merge(analyzedCode);
+        return combinedAnalysis;
     }
 
     @Nonnull
@@ -88,6 +92,16 @@ public class DeadCodeFinder {
             }
         }
         return new AnalyzedCode(stagesWithExceptions, analyzedClasses, dependencies);
+    }
+
+    private AnalyzedCode merge(AnalyzedCode analyzedCode, AnalysisSink analysisSink) {
+        AnalyzedCode analysisToAdd = analysisSink.getAnalyzedCode();
+        if (analysisToAdd.getStagesWithExceptions().isEmpty()
+                && analysisToAdd.getAnalyzedClasses().isEmpty()
+                && analysisToAdd.getCodeDependencies().isEmpty()) {
+            return analyzedCode;
+        }
+        return merge(asList(analyzedCode, analysisToAdd));
     }
 
     private static class RepositoryAnalyzer extends DirectoryWalker<Void> {

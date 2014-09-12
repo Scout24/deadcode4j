@@ -10,7 +10,6 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
@@ -55,21 +54,22 @@ public final class A_DeadCodeFinder {
 
     @Test
     public void callsFinishAnalysisForProject() {
-        final AtomicBoolean finishAnalysisWasCalled = new AtomicBoolean(false);
         objectUnderTest = new DeadCodeFinder(newHashSet(new AnalyzerAdapter() {
             @Override
             public void doAnalysis(@Nonnull AnalysisContext analysisContext, @Nonnull File fileName) {
             }
 
             @Override
-            public void finishAnalysis() {
-                finishAnalysisWasCalled.set(true);
+            public void finishAnalysis(@Nonnull AnalysisSink analysisSink, @Nonnull AnalyzedCode analyzedCode) {
+                analysisSink.addAnalyzedClass("A");
+                analysisSink.addException(AnalysisStage.DEADCODE_ANALYSIS);
             }
         }));
 
-        objectUnderTest.findDeadCode(newArrayList(givenModule("A"), givenModule("B")));
+        DeadCode deadCode = objectUnderTest.findDeadCode(newArrayList(givenModule("A"), givenModule("B")));
 
-        assertThat(finishAnalysisWasCalled.get(), is(true));
+        assertThat(deadCode.getAnalyzedClasses(), contains("A"));
+        assertThat(deadCode.getStagesWithExceptions(), contains(AnalysisStage.DEADCODE_ANALYSIS));
     }
 
     @Test

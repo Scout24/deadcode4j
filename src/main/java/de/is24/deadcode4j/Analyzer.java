@@ -31,8 +31,8 @@ public interface Analyzer {
      * Indicates that all modules have been processed.
      * This method offers <code>Analyzer</code>s the possibility to report dependencies based on the whole project.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
-    void finishAnalysis();
+    void finishAnalysis(@Nonnull AnalysisSink analysisSink, @Nonnull AnalyzedCode analyzedCode);
 
 }

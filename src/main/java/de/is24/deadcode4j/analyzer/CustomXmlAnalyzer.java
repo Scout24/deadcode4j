@@ -1,6 +1,8 @@
 package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.AnalysisContext;
+import de.is24.deadcode4j.AnalysisSink;
+import de.is24.deadcode4j.AnalyzedCode;
 import de.is24.deadcode4j.Utils;
 
 import javax.annotation.Nonnull;
@@ -22,10 +24,6 @@ public final class CustomXmlAnalyzer extends SimpleXmlAnalyzer {
     private static final Pattern XPATH_PATTERN = Pattern.compile("^([^/\\[]+)(?:\\[@([^=]+)='([^']+)'\\])?/(?:@(.*)|text\\(\\))$");
     private static volatile int instanceNumber = 0; // we assign this to make sure the self check works
     private boolean dependencyWasFound = false;
-
-    private static int getNewInstanceNumber() {
-        return instanceNumber++;
-    }
 
     /**
      * Creates a new <code>CustomXmlAnalyzer</code>.
@@ -55,6 +53,10 @@ public final class CustomXmlAnalyzer extends SimpleXmlAnalyzer {
      */
     public CustomXmlAnalyzer(@Nonnull String endOfFileName, @Nullable String rootElement) {
         this("_custom-XML#" + getNewInstanceNumber() + "_", endOfFileName, rootElement);
+    }
+
+    private static int getNewInstanceNumber() {
+        return instanceNumber++;
     }
 
     /**
@@ -96,8 +98,8 @@ public final class CustomXmlAnalyzer extends SimpleXmlAnalyzer {
     }
 
     @Override
-    public void finishAnalysis() {
-        super.finishAnalysis();
+    public void finishAnalysis(@Nonnull AnalysisSink analysisSink, @Nonnull AnalyzedCode analyzedCode) {
+        super.finishAnalysis(analysisSink, analyzedCode);
         if (!dependencyWasFound) {
             logger.warn("The {} didn't find any class to report. You should remove the configuration entry.", this);
         }
