@@ -1,6 +1,8 @@
 package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.AnalysisContext;
+import de.is24.deadcode4j.AnalysisSink;
+import de.is24.deadcode4j.AnalyzedCode;
 
 import javax.annotation.Nonnull;
 import java.util.HashSet;
@@ -35,8 +37,8 @@ public final class CustomAnnotationsAnalyzer extends AnnotationsAnalyzer {
     }
 
     @Override
-    public void finishAnalysis() {
-        super.finishAnalysis();
+    public void finishAnalysis(@Nonnull AnalysisSink analysisSink, @Nonnull AnalyzedCode analyzedCode) {
+        super.finishAnalysis(analysisSink, analyzedCode);
         for (String interfaceName : annotationsNotFoundInClassPath) {
             logger.warn("Annotation [{}] wasn't ever found in the class path. You should remove the configuration entry.", interfaceName);
         }
