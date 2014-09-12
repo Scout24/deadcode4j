@@ -63,8 +63,7 @@ public class DeadCodeFinder {
 
     @Nonnull
     private DeadCode computeDeadCode(@Nonnull AnalyzedCode analyzedCode) {
-        Collection<String> deadClasses = determineDeadClasses(analyzedCode);
-        return new DeadCode(analyzedCode.getStagesWithExceptions(), analyzedCode.getAnalyzedClasses(), deadClasses);
+        return new DeadCodeComputer().computeDeadCode(analyzedCode);
     }
 
     private void analyzeRepository(@Nonnull AnalysisContext analysisContext, @Nonnull Repository repository) {
@@ -89,20 +88,6 @@ public class DeadCodeFinder {
             }
         }
         return new AnalyzedCode(stagesWithExceptions, analyzedClasses, dependencies);
-    }
-
-    @Nonnull
-    Collection<String> determineDeadClasses(@Nonnull AnalyzedCode analyzedCode) {
-        Set<String> classesInUse = newHashSet();
-        for (Iterable<String> usedClasses : analyzedCode.getCodeDependencies().values()) {
-            for (String clazz : usedClasses) {
-                classesInUse.add(clazz);
-            }
-        }
-
-        List<String> deadClasses = newArrayList(analyzedCode.getAnalyzedClasses());
-        deadClasses.removeAll(classesInUse);
-        return deadClasses;
     }
 
     private static class RepositoryAnalyzer extends DirectoryWalker<Void> {
