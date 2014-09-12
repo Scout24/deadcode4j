@@ -3,6 +3,7 @@ package de.is24.deadcode4j;
 import com.google.common.base.Function;
 
 import javax.annotation.Nullable;
+import java.io.File;
 import java.util.Collections;
 
 import static com.google.common.collect.Lists.transform;
@@ -12,8 +13,17 @@ public final class ModuleBuilder {
     private ModuleBuilder() {
     }
 
+    public static Module givenModule(String moduleId, File repository, Module... dependencies) {
+        return new Module(
+                moduleId,
+                "UTF-8",
+                transform(asList(dependencies), toResource()),
+                repository == null ? null : new Repository(repository),
+                Collections.<Repository>emptyList());
+    }
+
     public static Module givenModule(String moduleId, Module... dependencies) {
-        return new Module(moduleId, "UTF-8", transform(asList(dependencies), toResource()), null, Collections.<Repository>emptyList());
+        return givenModule(moduleId, null, dependencies);
     }
 
     public static Module givenModule(String moduleId) {
