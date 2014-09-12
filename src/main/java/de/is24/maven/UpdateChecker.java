@@ -21,7 +21,7 @@ import static com.google.common.base.Optional.absent;
 /**
  * Performs an update check for the currently executed plugin.
  *
- * @since 1.6
+ * @since 2.0.0
  */
 @Component(role = UpdateChecker.class)
 public class UpdateChecker {
@@ -35,7 +35,7 @@ public class UpdateChecker {
      * Checks if a new version is available for the currently executed plugin.
      *
      * @return the most recent version available or nothing if the running plugin is of newer or equal version
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     public Optional<ArtifactVersion> checkForUpdate(@Nonnull MojoExecution mojoExecution) {

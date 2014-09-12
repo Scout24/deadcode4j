@@ -42,7 +42,7 @@ public class AnalyzedCode {
     /**
      * Returns the stages for which an exception occurred.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     public EnumSet<AnalysisStage> getStagesWithExceptions() {

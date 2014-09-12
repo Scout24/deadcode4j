@@ -28,7 +28,7 @@ public class AnalysisContext extends AnalysisSink {
     /**
      * Creates a new instance of <code>AnalysisContext</code> for the specified module.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     public AnalysisContext(@Nonnull Module module, @Nonnull Map<Object, IntermediateResult> intermediateResults) {
         this.module = module;
@@ -43,7 +43,7 @@ public class AnalysisContext extends AnalysisSink {
     /**
      * Returns the associated <code>Module</code>.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     public Module getModule() {

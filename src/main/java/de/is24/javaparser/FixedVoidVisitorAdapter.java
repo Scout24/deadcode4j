@@ -18,7 +18,7 @@ import japa.parser.ast.visitor.VoidVisitorAdapter;
  *     the variable declarations aren't visited</li>
  * </ul>
  *
- * @since 1.6
+ * @since 2.0.0
  */
 public class FixedVoidVisitorAdapter<A> extends VoidVisitorAdapter<A> {
 

@@ -17,7 +17,7 @@ import static de.is24.javassist.CtClasses.getAllImplementedInterfaces;
  * Note that this analyzer only considers the default naming convention <code><i>RepositoryName</i>Impl</code> to
  * identify custom implementations.
  *
- * @since 1.6
+ * @since 2.0.0
  */
 public class SpringDataCustomRepositoriesAnalyzer extends ByteCodeAnalyzer {
 

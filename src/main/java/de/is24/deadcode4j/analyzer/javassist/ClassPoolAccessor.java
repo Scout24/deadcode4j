@@ -23,7 +23,7 @@ import static com.google.common.collect.Sets.newHashSet;
  * The <code>ClassPoolAccessor</code> provides access to a Javassist {@link javassist.ClassPool} with fully configured
  * class path. It also provides some convenience methods to deal with loading & resolving classes.
  *
- * @since 1.6
+ * @since 2.0.0
  */
 public final class ClassPoolAccessor {
     @Nonnull
@@ -48,7 +48,7 @@ public final class ClassPoolAccessor {
      * Creates or retrieves the <code>ClassPoolAccessor</code> for the given analysis context.<br/>
      * A new instance will be put in the analysis context's cache and subsequently retrieved from there.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     public static ClassPoolAccessor classPoolAccessorFor(@Nonnull AnalysisContext analysisContext) {
@@ -88,7 +88,7 @@ public final class ClassPoolAccessor {
     /**
      * Returns the <code>ClassPool</code> used for examining classes.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     public ClassPool getClassPool() {
@@ -100,7 +100,7 @@ public final class ClassPoolAccessor {
      * "Resolved" in this case means that if the qualifier refers to an existing class, the class'
      * {@link java.lang.ClassLoader binary name} is returned.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     public Optional<String> resolveClass(@Nonnull CharSequence qualifier) {

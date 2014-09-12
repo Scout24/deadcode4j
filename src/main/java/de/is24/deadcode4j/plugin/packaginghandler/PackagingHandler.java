@@ -39,7 +39,7 @@ public abstract class PackagingHandler {
     /**
      * Returns additional repositories (configuration, JSPs, raw java files) to analyze for the given project.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     public Iterable<Repository> getAdditionalRepositoriesFor(@Nonnull MavenProject project) throws MojoExecutionException {
@@ -51,7 +51,7 @@ public abstract class PackagingHandler {
      * providing access to the Java files it contains.
      * Silently ignores compile source roots that do not exist in the file system.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     protected Collection<Repository> getJavaFilesOfCompileSourceRootsAsRepositories(@Nonnull MavenProject project) {

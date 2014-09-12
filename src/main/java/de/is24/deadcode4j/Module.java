@@ -20,7 +20,7 @@ import static de.is24.deadcode4j.Utils.addIfNonNull;
 /**
  * A <code>Module</code> represents a java module from the deadcode4j perspective.
  *
- * @since 1.6
+ * @since 2.0.0
  */
 public class Module {
 
@@ -43,7 +43,7 @@ public class Module {
      * @param dependencies     the resources this module depends on
      * @param outputRepository the "output" repository - i.e. the directory where compiled classes can be found
      * @param repositories     additional repositories to analyze
-     * @since 1.6
+     * @since 2.0.0
      */
     public Module(@Nonnull String moduleId,
                   @Nullable String encoding,
@@ -62,7 +62,7 @@ public class Module {
     /**
      * Sorts the given modules by their dependencies onto one another, and alphabetically on second order.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     public static Iterable<Module> sort(@Nonnull Iterable<Module> modules) {
@@ -121,7 +121,7 @@ public class Module {
     /**
      * Returns the module's ID.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     public String getModuleId() {
@@ -131,7 +131,7 @@ public class Module {
     /**
      * Returns the module's source file encoding.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nullable
     public String getEncoding() {
@@ -141,7 +141,7 @@ public class Module {
     /**
      * Returns all class path entries of this module.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     public Iterable<File> getClassPath() {
@@ -158,7 +158,7 @@ public class Module {
     /**
      * Returns all modules required by this module, listed in order of their position in the class path.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     public Collection<Module> getRequiredModules() {
@@ -175,7 +175,7 @@ public class Module {
     /**
      * Returns the "output" repository - i.e. the directory where compiled classes can be found.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nullable
     public Repository getOutputRepository() {
@@ -185,7 +185,7 @@ public class Module {
     /**
      * Returns all repositories to analyze (including the {@link #getOutputRepository() output repository}).
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     public Iterable<Repository> getAllRepositories() {

@@ -72,7 +72,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     /**
      * Mark all classes with a main method as being "live code".
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Parameter
     private boolean ignoreMainClasses = false;
@@ -105,7 +105,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
      * If nothing is configured and running in interactive mode (NOT using the -B flag), the user is requested to allow sending the usage statistics.<br/>
      * Note that this step is skipped if Maven is running in offline mode (using the -o flag).
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Parameter(property = "deadcode4j.skipSendingStatistics")
     private Boolean skipSendingUsageStatistics;
@@ -113,7 +113,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
      * Skip the update check performed at startup.<br/>
      * Note that this step is skipped if Maven is running in offline mode (using the -o flag).
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Parameter(property = "deadcode4j.skipUpdate")
     private boolean skipUpdateCheck = false;
@@ -131,7 +131,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
      * State a testimonial, refer to your project, provide a way to contact you, request a feature, ...
      *
      * @see #skipSendingUsageStatistics
-     * @since 1.6
+     * @since 2.0.0
      */
     @Parameter(property = "deadcode4j.statisticsComment")
     private String usageStatisticsComment;

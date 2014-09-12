@@ -28,7 +28,7 @@ import static java.util.Arrays.asList;
 /**
  * Sends usage statistics (via Google Forms).
  *
- * @since 1.6
+ * @since 2.0.0
  */
 @Component(role = UsageStatisticsManager.class)
 public class UsageStatisticsManager {
@@ -45,7 +45,7 @@ public class UsageStatisticsManager {
     /**
      * This is around for testing.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     protected HttpURLConnection openUrlConnection() throws IOException {
         URL url = new URL("https://docs.google.com/forms/d/1-XZeeAyHrucUMREQLHZEnZ5mhywYZi5Dk9nfEv7U2GU/formResponse");

@@ -28,7 +28,7 @@ import static java.util.Collections.emptySet;
 /**
  * Analyzes Java files and reports dependencies to classes that are not part of the byte code due to type erasure.
  *
- * @since 1.6
+ * @since 2.0.0
  */
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class TypeErasureAnalyzer extends JavaFileAnalyzer {

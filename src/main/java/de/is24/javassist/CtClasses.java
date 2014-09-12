@@ -19,7 +19,7 @@ import static java.util.Arrays.asList;
 /**
  * Provides convenience methods with which to analyze instances of {@link javassist.CtClass}.
  *
- * @since 1.6
+ * @since 2.0.0
  */
 public final class CtClasses {
 
@@ -32,7 +32,7 @@ public final class CtClasses {
      * This method swallows class loading issues, returning only those classes that are accessible by the
      * {@link javassist.CtClass#getClassPool() class pool}.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nullable
     public static CtClass getCtClass(@Nonnull ClassPool classPool, @Nonnull String className) {
@@ -46,7 +46,7 @@ public final class CtClasses {
     /**
      * Returns {@code true} if the specified class refers to {@link java.lang.Object}.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     public static boolean isJavaLangObject(@Nullable CtClass loopClass) {
         return loopClass != null && "java.lang.Object".equals(loopClass.getName());
@@ -57,7 +57,7 @@ public final class CtClasses {
      *
      * @throws java.lang.RuntimeException if an implemented interface or super class cannot be loaded
      * @see #getInterfacesOf(javassist.CtClass)
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     public static Set<String> getAllImplementedInterfaces(@Nonnull final CtClass clazz) {
@@ -79,7 +79,7 @@ public final class CtClasses {
      * {@link javassist.CtClass#getClassPool() class pool}.
      *
      * @see #getAllImplementedInterfaces(javassist.CtClass)
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     public static Iterable<CtClass> getInterfacesOf(@Nonnull CtClass clazz) {
@@ -99,7 +99,7 @@ public final class CtClasses {
      * This method swallows class loading issues, returning only those classes that are accessible by the
      * {@link javassist.CtClass#getClassPool() class pool}.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nullable
     public static CtClass getSuperclassOf(@Nonnull CtClass clazz) {
@@ -113,7 +113,7 @@ public final class CtClasses {
      * This method swallows class loading issues, returning only those classes that are accessible by the
      * {@link javassist.CtClass#getClassPool() class pool}.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     public static Iterable<CtClass> getDeclaringClassesOf(@Nonnull CtClass clazz) {
@@ -129,7 +129,7 @@ public final class CtClasses {
      * This method swallows class loading issues, returning only those classes that are accessible by the
      * {@link javassist.CtClass#getClassPool() class pool}.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     public static Iterable<CtClass> getNestedClassesOf(@Nonnull CtClass clazz) {

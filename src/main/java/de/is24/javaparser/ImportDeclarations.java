@@ -11,7 +11,7 @@ import static de.is24.deadcode4j.Utils.checkNotNull;
 /**
  * Provides convenience methods for dealing with {@link japa.parser.ast.ImportDeclaration}s.
  *
- * @since 1.6
+ * @since 2.0.0
  */
 public final class ImportDeclarations {
 
@@ -21,7 +21,7 @@ public final class ImportDeclarations {
      * Returns a <code>Predicate</code> that evaluates to <code>true</code> if the <code>ImportDeclaration</code> being
      * tested is an asterisk import.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     public static Predicate<? super ImportDeclaration> isAsterisk() {
@@ -38,7 +38,7 @@ public final class ImportDeclarations {
      * Returns a <code>Predicate</code> that evaluates to <code>true</code> if the <code>ImportDeclaration</code> being
      * tested is a static import.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     public static Predicate<? super ImportDeclaration> isStatic() {
@@ -55,7 +55,7 @@ public final class ImportDeclarations {
      * Returns a <code>Predicate</code> that evaluates to <code>true</code> if the last qualifier of the
      * <code>ImportDeclaration</code> being tested matches the given String.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     public static Predicate<? super ImportDeclaration> refersTo(@Nonnull final String lastQualifier) {

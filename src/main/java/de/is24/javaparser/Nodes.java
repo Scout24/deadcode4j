@@ -20,7 +20,7 @@ import static java.util.Collections.singleton;
 /**
  * Provides convenience methods for dealing with {@link japa.parser.ast.Node}s.
  *
- * @since 1.6
+ * @since 2.0.0
  */
 public class Nodes {
 

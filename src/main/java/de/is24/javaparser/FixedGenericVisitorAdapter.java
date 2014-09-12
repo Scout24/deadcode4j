@@ -18,7 +18,7 @@ import japa.parser.ast.visitor.GenericVisitorAdapter;
  *     the variable declarations aren't visited</li>
  * </ul>
  *
- * @since 1.6
+ * @since 2.0.0
  */
 public class FixedGenericVisitorAdapter<R, A> extends GenericVisitorAdapter<R, A> {
 

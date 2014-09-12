@@ -17,7 +17,7 @@ import java.util.concurrent.ExecutionException;
  *
  * @param <K> the keys' type
  * @param <V> the values' type
- * @since 1.6
+ * @since 2.0.0
  */
 public class SequentialLoadingCache<K, V> extends AbstractLoadingCache<K, Optional<V>> {
 
@@ -29,7 +29,7 @@ public class SequentialLoadingCache<K, V> extends AbstractLoadingCache<K, Option
     /**
      * Creates a <code>SequentialLoadingCache</code> that uses the given function to load the values.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     protected SequentialLoadingCache(@Nonnull Map<K, Optional<V>> cache, @Nonnull Function<K, Optional<V>> cacheLoader) {
         this.cache = cache;
@@ -39,7 +39,7 @@ public class SequentialLoadingCache<K, V> extends AbstractLoadingCache<K, Option
     /**
      * Creates a <code>SequentialLoadingCache</code> that uses the given function to load the values.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     public SequentialLoadingCache(@Nonnull Function<K, Optional<V>> cacheLoader) {
         this(Maps.<K, Optional<V>>newHashMap(), cacheLoader);
@@ -49,7 +49,7 @@ public class SequentialLoadingCache<K, V> extends AbstractLoadingCache<K, Option
      * Creates a <code>SequentialLoadingCache</code> that only caches one value.
      *
      * @see #SequentialLoadingCache(com.google.common.base.Function)
-     * @since 1.6
+     * @since 2.0.0
      */
     public static <K, V> SequentialLoadingCache<K, V> createSingleValueCache(@Nonnull Function<K, Optional<V>> cacheLoader) {
         return new SequentialLoadingCache<K, V>(new HashMap<K, Optional<V>>() {

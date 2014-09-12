@@ -46,7 +46,7 @@ import static org.apache.commons.io.IOUtils.closeQuietly;
 /**
  * Serves as a base class with which to analyze java files.
  *
- * @since 1.6
+ * @since 2.0.0
  */
 @SuppressWarnings("PMD.TooManyStaticImports")
 public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
@@ -121,7 +121,7 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
      * Resolves a type reference by means of the given {@code Qualifier}.
      *
      * @see de.is24.deadcode4j.analyzer.JavaFileAnalyzer.Qualifier
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     protected static Optional<String> resolveType(@Nonnull final AnalysisContext analysisContext, @Nonnull Qualifier qualifier) {
@@ -151,7 +151,7 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
      * Perform an analysis for the specified java file.
      * Results must be reported via the capabilities of the {@link AnalysisContext}.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     protected abstract void analyzeCompilationUnit(@Nonnull AnalysisContext analysisContext, @Nonnull CompilationUnit compilationUnit);
 
@@ -159,7 +159,7 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
      * Subclasses of {@code Qualifier} are used to resolve types by providing an environment to analyze.
      *
      * @see #resolveType(de.is24.deadcode4j.AnalysisContext, de.is24.deadcode4j.analyzer.JavaFileAnalyzer.Qualifier)
-     * @since 1.6
+     * @since 2.0.0
      */
     protected static abstract class Qualifier<T extends Node> {
 
@@ -189,7 +189,7 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
         /**
          * Must return the name of the level/scope this qualifier represents.
          *
-         * @since 1.6
+         * @since 2.0.0
          */
         @Nonnull
         protected abstract String getName(@Nonnull T reference);
@@ -197,7 +197,7 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
         /**
          * Must return the full qualifier name of this level/scope and below.
          *
-         * @since 1.6
+         * @since 2.0.0
          */
         @Nonnull
         protected abstract String getFullQualifier(@Nonnull T reference);
@@ -205,7 +205,7 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
         /**
          * Must return the qualifier of the level/scope below.
          *
-         * @since 1.6
+         * @since 2.0.0
          */
         @Nullable
         protected abstract Qualifier<?> getScopeQualifier(@Nonnull T reference);
@@ -213,7 +213,7 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
         /**
          * Indicates if this qualifier can be resolved partially or must be resolved completely.
          *
-         * @since 1.6
+         * @since 2.0.0
          */
         protected abstract boolean allowsPartialResolving();
 
@@ -276,7 +276,7 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
          * This hook allows to further analyze an inherited type.
          *
          * @return the name of the class this qualifier refers to
-         * @since 1.6
+         * @since 2.0.0
          */
         @Nonnull
         protected Optional<String> examineInheritedType(@Nonnull CtClass referencingClazz,

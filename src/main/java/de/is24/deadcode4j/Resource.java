@@ -8,7 +8,7 @@ import java.io.File;
  * A <code>Resource</code> represents a required artifact/dependency of a <code>Module</code>.
  * It can be a mere class path entry or a <code>Module</code> which is part of the analysis.
  *
- * @since 1.6
+ * @since 2.0.0
  */
 public abstract class Resource {
 
