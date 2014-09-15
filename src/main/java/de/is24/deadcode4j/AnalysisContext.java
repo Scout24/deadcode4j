@@ -16,7 +16,6 @@ import static com.google.common.collect.Maps.newHashMap;
  *
  * @since 1.1.0
  */
-@SuppressWarnings("PMD.TooManyStaticImports")
 public class AnalysisContext extends AnalysisSink {
     @Nonnull
     private final Map<Object, Object> cache = newHashMap();
