@@ -58,7 +58,7 @@ public class IgnoreClassesAnalyzer extends ByteCodeAnalyzer {
         }
     }
 
-    private void logLiveClassesThatShouldBeIgnored(AnalyzedCode analyzedCode) {
+    private void logLiveClassesThatShouldBeIgnored(@Nonnull AnalyzedCode analyzedCode) {
         ArrayList<String> ignoredButExistingClasses = Lists.newArrayList(this.ignoredClasses);
         ignoredButExistingClasses.removeAll(new DeadCodeComputer().computeDeadCode(analyzedCode).getDeadClasses());
         for (String ignoredButExistingClass : ignoredButExistingClasses) {
