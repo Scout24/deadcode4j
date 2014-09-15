@@ -9,12 +9,10 @@ import org.junit.Test;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.List;
-import java.util.Set;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 import static de.is24.deadcode4j.ModuleBuilder.givenModule;
-import static java.util.Collections.emptySet;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
@@ -27,14 +25,13 @@ public final class A_DeadCodeFinder {
 
     @Before
     public void setUpObjectUnderTest() {
-        Set<Analyzer> analyzers = emptySet();
-        this.objectUnderTest = new DeadCodeFinder(analyzers);
+        createObjectUnderTest();
     }
 
     @Test
     public void callsFinishAnalysisForEachModule() {
         final List<Module> reportedModules = newArrayList();
-        objectUnderTest = new DeadCodeFinder(newHashSet(new AnalyzerAdapter() {
+        createObjectUnderTest(new AnalyzerAdapter() {
             @Override
             public void doAnalysis(@Nonnull AnalysisContext analysisContext, @Nonnull File fileName) {
             }
@@ -43,7 +40,7 @@ public final class A_DeadCodeFinder {
             public void finishAnalysis(@Nonnull AnalysisContext analysisContext) {
                 reportedModules.add(analysisContext.getModule());
             }
-        }));
+        });
         Module a = givenModule("A");
         Module b = givenModule("B");
 
@@ -54,7 +51,7 @@ public final class A_DeadCodeFinder {
 
     @Test
     public void callsFinishAnalysisForProject() {
-        objectUnderTest = new DeadCodeFinder(newHashSet(new AnalyzerAdapter() {
+        createObjectUnderTest(new AnalyzerAdapter() {
             @Override
             public void doAnalysis(@Nonnull AnalysisContext analysisContext, @Nonnull File fileName) {
             }
@@ -64,7 +61,7 @@ public final class A_DeadCodeFinder {
                 analysisSink.addAnalyzedClass("A");
                 analysisSink.addException(AnalysisStage.DEADCODE_ANALYSIS);
             }
-        }));
+        });
 
         DeadCode deadCode = objectUnderTest.findDeadCode(newArrayList(givenModule("A"), givenModule("B")));
 
@@ -74,18 +71,22 @@ public final class A_DeadCodeFinder {
 
     @Test
     public void computesDeadCode() {
-        objectUnderTest = new DeadCodeFinder(newHashSet(new AnalyzerAdapter() {
+        createObjectUnderTest(new AnalyzerAdapter() {
             @Override
             public void doAnalysis(@Nonnull AnalysisContext analysisContext, @Nonnull File fileName) {
                 analysisContext.addAnalyzedClass(fileName.getName());
             }
-        }));
+        });
 
         DeadCode deadCode = objectUnderTest.findDeadCode(newArrayList(givenModule("A", new File("."))));
 
         assertThat(deadCode, is(notNullValue()));
         assertThat("Working directory should contain several files!", deadCode.getAnalyzedClasses(), hasSize(greaterThan(0)));
         assertThat("As no valid analyzer is set up, everything should be dead!", deadCode.getDeadClasses(), hasSize(greaterThan(0)));
+    }
+
+    private void createObjectUnderTest(Analyzer... analyzers) {
+        this.objectUnderTest = new DeadCodeFinder(new DeadCodeComputer(), newHashSet(analyzers));
     }
 
 }

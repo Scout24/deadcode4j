@@ -2,10 +2,7 @@ package de.is24.deadcode4j.plugin;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Sets;
-import de.is24.deadcode4j.Analyzer;
-import de.is24.deadcode4j.DeadCode;
-import de.is24.deadcode4j.DeadCodeFinder;
-import de.is24.deadcode4j.Module;
+import de.is24.deadcode4j.*;
 import de.is24.deadcode4j.analyzer.*;
 import de.is24.maven.UpdateChecker;
 import de.is24.maven.slf4j.AbstractSlf4jMojo;
@@ -213,13 +210,14 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
                 new TypeErasureAnalyzer(),
                 new WebXmlAnalyzer(),
                 new WsddAnalyzer());
+        DeadCodeComputer deadCodeComputer = new DeadCodeComputer();
         addCustomAnnotationsAnalyzerIfConfigured(analyzers);
         addCustomInterfacesAnalyzerIfConfigured(analyzers);
         addCustomSuperClassesAnalyzerIfConfigured(analyzers);
         addCustomXmlAnalyzerIfConfigured(analyzers);
-        addIgnoreClassesAnalyzerIfConfigured(analyzers);
+        addIgnoreClassesAnalyzerIfConfigured(deadCodeComputer, analyzers);
         addMainClassAnalyzerIfConfigured(analyzers);
-        DeadCodeFinder deadCodeFinder = new DeadCodeFinder(analyzers);
+        DeadCodeFinder deadCodeFinder = new DeadCodeFinder(deadCodeComputer, analyzers);
         return deadCodeFinder.findDeadCode(gatherModules());
     }
 
@@ -258,10 +256,10 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
         }
     }
 
-    private void addIgnoreClassesAnalyzerIfConfigured(Set<Analyzer> analyzers) {
+    private void addIgnoreClassesAnalyzerIfConfigured(DeadCodeComputer deadCodeComputer, Set<Analyzer> analyzers) {
         if (classesToIgnore.isEmpty())
             return;
-        analyzers.add(new IgnoreClassesAnalyzer(classesToIgnore));
+        analyzers.add(new IgnoreClassesAnalyzer(deadCodeComputer, classesToIgnore));
     }
 
     private void addMainClassAnalyzerIfConfigured(Set<Analyzer> analyzers) {

@@ -25,9 +25,13 @@ import static java.util.Arrays.asList;
 public class DeadCodeFinder {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    @Nonnull
+    private final DeadCodeComputer deadCodeComputer;
+    @Nonnull
     private final Iterable<? extends Analyzer> analyzers;
 
-    public DeadCodeFinder(@Nonnull Set<? extends Analyzer> analyzers) {
+    public DeadCodeFinder(@Nonnull DeadCodeComputer deadCodeComputer, @Nonnull Set<? extends Analyzer> analyzers) {
+        this.deadCodeComputer = deadCodeComputer;
         this.analyzers = newArrayList(analyzers);
     }
 
@@ -67,7 +71,7 @@ public class DeadCodeFinder {
 
     @Nonnull
     private DeadCode computeDeadCode(@Nonnull AnalyzedCode analyzedCode) {
-        return new DeadCodeComputer().computeDeadCode(analyzedCode);
+        return this.deadCodeComputer.computeDeadCode(analyzedCode);
     }
 
     private void analyzeRepository(@Nonnull AnalysisContext analysisContext, @Nonnull Repository repository) {
@@ -79,7 +83,8 @@ public class DeadCodeFinder {
         }
     }
 
-    private AnalyzedCode merge(List<AnalyzedCode> analyzedCode) {
+    @Nonnull
+    private AnalyzedCode merge(@Nonnull List<AnalyzedCode> analyzedCode) {
         EnumSet<AnalysisStage> stagesWithExceptions = EnumSet.noneOf(AnalysisStage.class);
         Set<String> analyzedClasses = newHashSet();
         Map<String, Set<String>> dependencies = newHashMap();
@@ -94,7 +99,8 @@ public class DeadCodeFinder {
         return new AnalyzedCode(stagesWithExceptions, analyzedClasses, dependencies);
     }
 
-    private AnalyzedCode merge(AnalyzedCode analyzedCode, AnalysisSink analysisSink) {
+    @Nonnull
+    private AnalyzedCode merge(@Nonnull AnalyzedCode analyzedCode, @Nonnull AnalysisSink analysisSink) {
         AnalyzedCode analysisToAdd = analysisSink.getAnalyzedCode();
         if (analysisToAdd.getStagesWithExceptions().isEmpty()
                 && analysisToAdd.getAnalyzedClasses().isEmpty()

@@ -22,11 +22,14 @@ import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 public class IgnoreClassesAnalyzer extends ByteCodeAnalyzer {
 
     @Nonnull
+    private final DeadCodeComputer deadCodeComputer;
+    @Nonnull
     private final Set<String> classesToIgnore;
     @Nonnull
     private final Set<String> ignoredClasses;
 
-    public IgnoreClassesAnalyzer(@Nonnull Set<String> classesToIgnore) {
+    public IgnoreClassesAnalyzer(@Nonnull DeadCodeComputer deadCodeComputer, @Nonnull Set<String> classesToIgnore) {
+        this.deadCodeComputer = deadCodeComputer;
         this.classesToIgnore = newHashSet(classesToIgnore);
         this.ignoredClasses = newHashSetWithExpectedSize(classesToIgnore.size());
     }
@@ -60,7 +63,7 @@ public class IgnoreClassesAnalyzer extends ByteCodeAnalyzer {
 
     private void logLiveClassesThatShouldBeIgnored(@Nonnull AnalyzedCode analyzedCode) {
         ArrayList<String> ignoredButExistingClasses = Lists.newArrayList(this.ignoredClasses);
-        ignoredButExistingClasses.removeAll(new DeadCodeComputer().computeDeadCode(analyzedCode).getDeadClasses());
+        ignoredButExistingClasses.removeAll(this.deadCodeComputer.computeDeadCode(analyzedCode).getDeadClasses());
         for (String ignoredButExistingClass : ignoredButExistingClasses) {
             logger.warn("Class [{}] should be ignored, but is not dead. You should remove the configuration entry.",
                     ignoredButExistingClass);

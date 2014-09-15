@@ -1,6 +1,7 @@
 package de.is24.deadcode4j.analyzer;
 
 import com.google.common.collect.Sets;
+import de.is24.deadcode4j.DeadCodeComputer;
 import de.is24.deadcode4j.junit.LoggingRule;
 import org.apache.maven.plugin.logging.Log;
 import org.junit.Test;
@@ -19,7 +20,7 @@ public class An_IgnoreClassesAnalyzer extends AByteCodeAnalyzer<IgnoreClassesAna
 
     @Override
     protected IgnoreClassesAnalyzer createAnalyzer() {
-        return new IgnoreClassesAnalyzer(Sets.newHashSet("A", "C"));
+        return new IgnoreClassesAnalyzer(new DeadCodeComputer(), Sets.newHashSet("A", "C"));
     }
 
     @Test
