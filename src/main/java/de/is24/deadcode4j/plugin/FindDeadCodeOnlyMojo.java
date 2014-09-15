@@ -36,6 +36,7 @@ import static org.apache.maven.plugins.annotations.ResolutionScope.COMPILE;
  * @see FindDeadCodeMojo
  * @since 1.5
  */
+/* Technical Note: The mojo should wire everything together; i.e. new instance creation should only happen here. */
 @Mojo(name = "find-only",
         aggregator = true,
         requiresProject = true,
