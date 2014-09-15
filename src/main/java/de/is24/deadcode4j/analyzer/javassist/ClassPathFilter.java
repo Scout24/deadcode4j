@@ -17,7 +17,7 @@ import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolA
  * It is intended to be used in conjunction with
  * {@link de.is24.deadcode4j.AnalysisContext#getOrCreateCacheEntry(Object, de.is24.guava.NonNullFunction)}.
  *
- * @since 1.6
+ * @since 2.0.0
  */
 public class ClassPathFilter implements NonNullFunction<AnalysisContext, Set<String>> {
     @Nonnull
@@ -28,7 +28,7 @@ public class ClassPathFilter implements NonNullFunction<AnalysisContext, Set<Str
     /**
      * Creates a new <code>ClassPathFilter</code> for the given class names.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     public ClassPathFilter(@Nonnull Set<String> classes) {
         this.classes = classes;

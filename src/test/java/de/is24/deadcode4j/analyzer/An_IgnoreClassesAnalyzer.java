@@ -47,6 +47,14 @@ public class An_IgnoreClassesAnalyzer extends AByteCodeAnalyzer<IgnoreClassesAna
     }
 
     @Test
+    public void logsThatAnIgnoredClassDoesNotExist() throws Exception {
+        analyzeFile("A.class");
+        doFinishAnalysis();
+
+        verify(logMock).warn("Class [C] should be ignored, but does not exist. You should remove the configuration entry.");
+    }
+
+    @Test
     public void logsThatAnIgnoredClassIsRequiredAnyway() throws Exception {
         analysisContext.addDependencies("B", "A");
 

@@ -41,7 +41,7 @@ import static de.is24.deadcode4j.Utils.*;
  * Calculates the modules for the given maven projects.
  *
  * @see #getModulesFor(Iterable)
- * @since 1.6
+ * @since 2.0.0
  */
 @SuppressWarnings("PMD.TooManyStaticImports")
 class ModuleGenerator {
@@ -60,7 +60,7 @@ class ModuleGenerator {
      *
      * @param repositorySystem the given <code>RepositorySystem</code> is required to resolve the class path of the
      *                         examined maven projects
-     * @since 1.6
+     * @since 2.0.0
      */
     public ModuleGenerator(@Nonnull final RepositorySystem repositorySystem) {
         packagingHandlers.put("pom", new PomPackagingHandler());
@@ -97,7 +97,7 @@ class ModuleGenerator {
      * @param projects the <code>MavenProject</code>s to transform; the projects MUST be ordered such that project
      *                 <i>A</i> is listed before project <i>B</i> if <i>B</i> depends on <i>A</i>
      * @throws MojoExecutionException if calculating the repositories fails
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     public Iterable<Module> getModulesFor(@Nonnull Iterable<MavenProject> projects) throws MojoExecutionException {

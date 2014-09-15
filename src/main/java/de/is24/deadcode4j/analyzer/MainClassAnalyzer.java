@@ -13,7 +13,7 @@ import static com.google.common.collect.Iterables.filter;
 /**
  * Analyzes class files: marks a class as being in use if it defines a main method.
  *
- * @since 1.6
+ * @since 2.0.0
  */
 public class MainClassAnalyzer extends ByteCodeAnalyzer {
 

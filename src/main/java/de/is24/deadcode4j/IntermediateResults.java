@@ -17,7 +17,7 @@ import static com.google.common.collect.Sets.newHashSet;
  * Instances of <code>IntermediateResults</code> are used to keep track of and calculate the {@link IntermediateResult}s
  * produced by and being made available to {@link AnalysisContext} instances, respectively.
  *
- * @since 1.6
+ * @since 2.0.0
  */
 public final class IntermediateResults {
     @Nonnull
@@ -32,7 +32,7 @@ public final class IntermediateResults {
      * Returns an <code>IntermediateResultSet</code> for the given <code>Set</code>.<br/>
      * This method is defined for type inference, as it could simply be replaced with a constructor call.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     public static <E> IntermediateResultSet<E> resultSetFor(@Nonnull Collection<E> intermediateResults) {
@@ -43,7 +43,7 @@ public final class IntermediateResults {
      * Returns an <code>IntermediateResultMap</code> for the given <code>Map</code>.<br/>
      * This method is defined for type inference, as it could simply be replaced with a constructor call.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     public static <K, V> IntermediateResultMap<K, V> resultMapFor(@Nonnull Map<K, V> intermediateResults) {
@@ -55,7 +55,7 @@ public final class IntermediateResults {
      * This method is defined to handle the <i>unchecked</i> cast to a typed <code>IntermediateResultSet</code>,
      * it could simply be replaced with {@link AnalysisContext#getIntermediateResult(Object)}.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nullable
     @SuppressWarnings("unchecked")
@@ -68,7 +68,7 @@ public final class IntermediateResults {
      * This method is defined to handle the <i>unchecked</i> cast to a typed <code>IntermediateResultMap</code>,
      * it could simply be replaced with {@link AnalysisContext#getIntermediateResult(Object)}.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nullable
     @SuppressWarnings("unchecked")
@@ -79,7 +79,7 @@ public final class IntermediateResults {
     /**
      * Adds the intermediate results of the given analysis context's cache.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     public void add(@Nonnull AnalysisContext analysisContext) {
         intermediateResults.put(analysisContext.getModule(), getIntermediateResultsOf(analysisContext));
@@ -88,7 +88,7 @@ public final class IntermediateResults {
     /**
      * Calculates the intermediate results being available for the specified module.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     public Map<Object, IntermediateResult> calculateIntermediateResultsFor(@Nonnull Module module) {
@@ -153,7 +153,7 @@ public final class IntermediateResults {
      * An <code>IntermediateResultSet</code> is an implementation of {@link de.is24.deadcode4j.IntermediateResult} using
      * a <code>Set</code> to store the results. Concerning merging with siblings & parents, it simply adds both sets.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     public static class IntermediateResultSet<E> implements IntermediateResult {
 
@@ -163,7 +163,7 @@ public final class IntermediateResults {
         /**
          * Creates an <code>IntermediateResultSet</code> to store the given <code>Set</code>.
          *
-         * @since 1.6
+         * @since 2.0.0
          */
         public IntermediateResultSet(@Nonnull Collection<E> results) {
             this.results = Collections.unmodifiableSet(newHashSet(results));
@@ -189,7 +189,7 @@ public final class IntermediateResults {
         /**
          * Returns the stored read-only <code>Set</code>.
          *
-         * @since 1.6
+         * @since 2.0.0
          */
         @Nonnull
         public Set<E> getResults() {
@@ -224,7 +224,7 @@ public final class IntermediateResults {
      * </li>
      * </ul>
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     public static class IntermediateResultMap<K, V> implements IntermediateResult {
         @Nonnull
@@ -235,7 +235,7 @@ public final class IntermediateResults {
         /**
          * Creates an <code>IntermediateResultMap</code> to store the given <code>Map</code>.
          *
-         * @since 1.6
+         * @since 2.0.0
          */
         public IntermediateResultMap(@Nonnull Map<K, V> results) {
             this.results = Collections.unmodifiableMap(newHashMap(results));
@@ -262,7 +262,7 @@ public final class IntermediateResults {
         /**
          * Returns the stored read-only <code>Map</code>.
          *
-         * @since 1.6
+         * @since 2.0.0
          */
         @Nonnull
         public Map<K, V> getResults() {

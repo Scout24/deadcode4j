@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 /**
  * Provides convenience methods for {@link de.is24.guava.NonNullFunction}.
  *
- * @since 1.6
+ * @since 2.0.0
  */
 public final class NonNullFunctions {
 
@@ -20,7 +20,7 @@ public final class NonNullFunctions {
      * Returns a <code>NonNullFunction</code> that will call the specified functions one by one until a return value is
      * <i>present</i> or the end of the call chain is reached.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     public static <F, T> NonNullFunction<F, Optional<T>> or(@Nonnull final NonNullFunction<F, Optional<T>>... functions) {
@@ -42,7 +42,7 @@ public final class NonNullFunctions {
      * Transforms a <code>NonNullFunction</code> into a <code>Function</code>.
      * If a <code>Function</code>'s input is <code>null</code>, a <code>NullPointerException</code> is thrown.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     public static <F, T> Function<F, T> toFunction(@Nonnull final NonNullFunction<F, T> nonNullFunction) {

@@ -4,7 +4,7 @@ package de.is24.deadcode4j.analyzer;
  * Analyzes <a href="http://www.eclipse.org/jetty/configure_9_0.dtd">Jetty XML configuration</a> files.
  * Reports the {@code class} and {@code type} attributes as classes being referenced.
  *
- * @since 1.6
+ * @since 2.0.0
  */
 public class JettyXmlAnalyzer extends SimpleXmlAnalyzer {
 

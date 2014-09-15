@@ -27,7 +27,7 @@ public final class Utils {
     /**
      * Returns <i>groupId:artifactId</i> for the specified artifact.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     public static String getKeyFor(@Nonnull Artifact artifact) {
@@ -37,7 +37,7 @@ public final class Utils {
     /**
      * Returns <i>groupId:artifactId:version</i> for the specified artifact.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     public static String getVersionedKeyFor(@Nonnull Artifact artifact) {
@@ -74,7 +74,7 @@ public final class Utils {
     /**
      * Returns {@code true} if the given collection is {@code null} or empty.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     public static boolean isEmpty(Collection<?> collection) {
         return collection == null || collection.isEmpty();
@@ -116,7 +116,7 @@ public final class Utils {
     /**
      * Returns the given <code>Iterable</code> or an empty list if it is <code>null</code> as a {@link FluentIterable}.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     public static <E> FluentIterable<E> emptyIfNull(@Nullable Iterable<E> iterable) {
@@ -126,7 +126,7 @@ public final class Utils {
     /**
      * Returns {@code null} if the given String is {@code null} or empty; or the argument otherwise.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nullable
     public static String nullIfEmpty(@Nullable String string) {
@@ -136,7 +136,7 @@ public final class Utils {
     /**
      * A properly annotated implementation of {@link com.google.common.base.Preconditions#checkNotNull(Object)}.
      *
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     @SuppressFBWarnings(value = "NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")

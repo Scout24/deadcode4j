@@ -6,7 +6,7 @@ import javax.annotation.Nonnull;
  * If an <code>IntermediateResult</code> is put into an {@link AnalysisContext#getCache() analysis context's cache},
  * it will be made available to the analysis context of those modules depending on the module the result belongs to.
  *
- * @since 1.6
+ * @since 2.0.0
  */
 public interface IntermediateResult {
 
@@ -19,7 +19,7 @@ public interface IntermediateResult {
      *
      * @param sibling the <code>IntermediateResult</code> to merge with
      * @return a new <code>IntermediateResult</code> instance
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     IntermediateResult mergeSibling(@Nonnull IntermediateResult sibling);
@@ -34,7 +34,7 @@ public interface IntermediateResult {
      *
      * @param parent the <code>IntermediateResult</code> to merge with
      * @return a new <code>IntermediateResult</code> instance
-     * @since 1.6
+     * @since 2.0.0
      */
     @Nonnull
     IntermediateResult mergeParent(@Nonnull IntermediateResult parent);
