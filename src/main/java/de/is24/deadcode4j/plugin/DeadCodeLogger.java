@@ -9,8 +9,6 @@ import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.EnumSet;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 /**
  * The <code>DeadCodeLogger</code> is responsible for logging the findings of a code analysis.
  *
@@ -24,14 +22,10 @@ class DeadCodeLogger {
         this.log = log;
     }
 
-    public void log(@Nonnull DeadCode deadCode, @Nonnull Iterable<String> classesToIgnore) {
+    public void log(@Nonnull DeadCode deadCode) {
         logExceptions(deadCode.getStagesWithExceptions());
         logAnalyzedClasses(deadCode.getAnalyzedClasses());
-
-        Collection<String> deadClasses = newArrayList(deadCode.getDeadClasses());
-        removeAndLogIgnoredClasses(deadClasses, classesToIgnore);
-
-        logDeadClasses(deadClasses);
+        logDeadClasses(deadCode.getDeadClasses());
     }
 
     private void logExceptions(EnumSet<AnalysisStage> stagesWithExceptions) {
@@ -54,20 +48,6 @@ class DeadCodeLogger {
 
     private void logAnalyzedClasses(@Nonnull Collection<String> analyzedClasses) {
         log.info("Analyzed " + analyzedClasses.size() + " class(es).");
-    }
-
-    private void removeAndLogIgnoredClasses(@Nonnull Collection<String> deadClasses, @Nonnull Iterable<String> classesToIgnore) {
-        final int numberOfUnusedClasses = deadClasses.size();
-        for (String ignoredClass : classesToIgnore) {
-            if (!deadClasses.remove(ignoredClass)) {
-                log.warn("Class [" + ignoredClass + "] should be ignored, but is not dead. You should remove the configuration entry.");
-            }
-        }
-
-        int removedClasses = numberOfUnusedClasses - deadClasses.size();
-        if (removedClasses != 0) {
-            log.info("Ignoring " + removedClasses + " class(es) which seem(s) to be unused.");
-        }
     }
 
     private void logDeadClasses(@Nonnull Collection<String> deadClasses) {
