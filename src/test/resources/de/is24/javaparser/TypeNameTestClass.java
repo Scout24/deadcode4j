@@ -55,4 +55,17 @@ public class TypeNameTestClass {
             }
         }
     }
+    private Object secondObject = new Object() {
+        String s = "de.is24.javaparser.TypeNameTestClass$4";
+    };
+    private static enum Count {
+        ONE, TWO, THREE;
+        String s = "de.is24.javaparser.TypeNameTestClass$Count";
+        Object object = new Object() {
+            String s = "de.is24.javaparser.TypeNameTestClass$Count$1";
+        };
+    }
+    private Object thirdObject = new Object() {
+        String s = "de.is24.javaparser.TypeNameTestClass$5";
+    };
 }

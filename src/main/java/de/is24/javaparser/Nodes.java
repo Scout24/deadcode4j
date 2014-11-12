@@ -2,6 +2,8 @@ package de.is24.javaparser;
 
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.Node;
+import japa.parser.ast.body.ClassOrInterfaceDeclaration;
+import japa.parser.ast.body.EnumDeclaration;
 import japa.parser.ast.body.TypeDeclaration;
 import japa.parser.ast.expr.NameExpr;
 import japa.parser.ast.expr.ObjectCreationExpr;
@@ -15,7 +17,6 @@ import java.util.List;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.newLinkedList;
 import static de.is24.deadcode4j.Utils.isEmpty;
-import static java.util.Collections.singleton;
 
 /**
  * Provides convenience methods for dealing with {@link japa.parser.ast.Node}s.
@@ -80,8 +81,8 @@ public class Nodes {
             return;
         }
         Boolean typeResolved = typeDeclaration.accept(new FixedGenericVisitorAdapter<Boolean, Void>() {
-            private Deque<Integer> indexOfAnonymousClasses = newLinkedList(singleton(0));
-            private Deque<Integer> indexOfNamedAnonymousClasses = newLinkedList(singleton(0));
+            private Deque<Integer> indexOfAnonymousClasses = newLinkedList();
+            private Deque<Integer> indexOfNamedAnonymousClasses = newLinkedList();
             private int indexOfNodeToFind = anonymousClasses.size() - 1;
 
             @Override
@@ -121,6 +122,30 @@ public class Nodes {
                 indexOfNamedAnonymousClasses.addLast(0);
                 try {
                     return super.visit(node, null);
+                } finally {
+                    indexOfAnonymousClasses.removeLast();
+                    indexOfNamedAnonymousClasses.removeLast();
+                }
+            }
+
+            @Override
+            public Boolean visit(ClassOrInterfaceDeclaration n, Void arg) {
+                indexOfAnonymousClasses.addLast(0);
+                indexOfNamedAnonymousClasses.addLast(0);
+                try {
+                    return super.visit(n, null);
+                } finally {
+                    indexOfAnonymousClasses.removeLast();
+                    indexOfNamedAnonymousClasses.removeLast();
+                }
+            }
+
+            @Override
+            public Boolean visit(EnumDeclaration n, Void arg) {
+                indexOfAnonymousClasses.addLast(0);
+                indexOfNamedAnonymousClasses.addLast(0);
+                try {
+                    return super.visit(n, null);
                 } finally {
                     indexOfAnonymousClasses.removeLast();
                     indexOfNamedAnonymousClasses.removeLast();
