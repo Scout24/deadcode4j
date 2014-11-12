@@ -38,7 +38,7 @@ public final class CtClasses {
     public static CtClass getCtClass(@Nonnull ClassPool classPool, @Nonnull String className) {
         CtClass clazz = classPool.getOrNull(className);
         if (clazz == null) {
-            handleMissingClass(className);
+            handleMissingClass(className, null);
         }
         return clazz;
     }
@@ -136,7 +136,7 @@ public final class CtClasses {
         try {
             return asList(clazz.getNestedClasses());
         } catch (NotFoundException e) {
-            handleMissingClass(e.getMessage());
+            handleMissingClass(e.getMessage(), e);
             return Collections.emptyList();
         }
     }
@@ -145,7 +145,7 @@ public final class CtClasses {
         return LoggerFactory.getLogger(CtClasses.class);
     }
 
-    private static void handleMissingClass(@Nonnull String className) {
+    private static void handleMissingClass(@Nonnull String className, NotFoundException notFoundException) {
         if ("java.lang.annotation.Repeatable".equals(className)) {
             if (issuedWarningForJavaLangAnnotationRepeatable) {
                 return;
@@ -153,6 +153,10 @@ public final class CtClasses {
             getLogger().warn("Running with JDK < 8, but classes or libraries refer to JDK8 annotation {}.", className);
             issuedWarningForJavaLangAnnotationRepeatable = true;
         } else {
+            if (getLogger().isDebugEnabled()) {
+                getLogger().debug("Failed to load {}!", className,
+                        notFoundException != null ? notFoundException : new RuntimeException("Providing stack trace!"));
+            }
             getLogger().warn("The class path is not correctly set up; could not load {}!", className);
         }
     }
@@ -167,7 +171,7 @@ public final class CtClasses {
         try {
             return clazz.getDeclaringClass();
         } catch (NotFoundException e) {
-            handleMissingClass(e.getMessage());
+            handleMissingClass(e.getMessage(), e);
             return null;
         }
     }
