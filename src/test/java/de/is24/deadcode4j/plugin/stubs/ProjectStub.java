@@ -10,6 +10,8 @@ import static com.google.common.collect.Lists.newArrayList;
 
 public class ProjectStub extends MavenProjectStub {
 
+    private final Properties properties = super.getProperties();
+
     public ProjectStub() {
         ArtifactStub artifact = new ArtifactStub();
         artifact.setGroupId("de.is24.junit");
@@ -22,12 +24,12 @@ public class ProjectStub extends MavenProjectStub {
         setPackaging("jar");
 
         setCompileSourceRoots(newArrayList("src/test/java/"));
+
+        properties.setProperty("project.build.sourceEncoding", "UTF-8");
     }
 
     @Override
     public Properties getProperties() {
-        Properties properties = super.getProperties();
-        properties.setProperty("project.build.sourceEncoding", "UTF-8");
         return properties;
     }
 
