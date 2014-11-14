@@ -20,7 +20,11 @@
                             <endOfFileName>.xml</endOfFileName>
                         </customXml>
                     </customXmls>
+                    <project implementation="de.is24.deadcode4j.plugin.stubs.ProjectStub">
+                        <mavenCompilerSource>1.7</mavenCompilerSource>
+                    </project>
                     <skipSendingUsageStatistics>true</skipSendingUsageStatistics>
+                    <skipUpdateCheck>true</skipUpdateCheck>
                 </configuration>
             </plugin>
         </plugins>

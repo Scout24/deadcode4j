@@ -1,18 +1,23 @@
 package de.is24.deadcode4j.plugin;
 
 import de.is24.deadcode4j.junit.LoggingRule;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.testing.MojoRule;
+import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.ReflectionUtils;
 import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.File;
 import java.net.URL;
 
+import static org.codehaus.plexus.util.ReflectionUtils.getValueIncludingSuperclasses;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 public class IT_PuttingItAllTogether {
     @Rule
@@ -27,6 +32,8 @@ public class IT_PuttingItAllTogether {
 
         findDeadCodeMojo.execute();
 
+        verify(logMock).warn("deadcode4j can only parse files for Java versions <= 7; " +
+                "therefore type erasure & constants inlining may not be recognized correctly and thus more false positives may be reported.");
         verify(logMock).info("Analyzed 26 class(es).");
         verify(logMock).info("Ignoring 1 class(es) which seem(s) to be unused.");
         verify(logMock).warn("Class [com.acme.Foo] should be ignored, but does not exist. You should remove the configuration entry.");
@@ -45,6 +52,9 @@ public class IT_PuttingItAllTogether {
             fail("Should throw an exception");
         } catch (IllegalArgumentException ignored) {
         }
+
+        verify(logMock, never()).warn("deadcode4j can only parse files for Java versions <= 7; " +
+                "therefore type erasure & constants inlining may not be recognized correctly and thus more false positives may be reported.");
         verify(logMock).error(eq("An unexpected exception occurred. " +
                 "Please consider reporting an issue at https://github.com/ImmobilienScout24/deadcode4j/issues"), any(IllegalArgumentException.class));
     }
@@ -60,6 +70,14 @@ public class IT_PuttingItAllTogether {
 
         logMock = LoggingRule.createMock();
         findDeadCodeMojo.setLog(logMock);
+
+        MavenSession mavenSession = mock(MavenSession.class);
+        when(mavenSession.getCurrentProject()).thenReturn(
+                (MavenProject) getValueIncludingSuperclasses("project", findDeadCodeMojo));
+        LegacySupport legacySupport = mock(LegacySupport.class);
+        when(legacySupport.getSession()).thenReturn(mavenSession);
+        ReflectionUtils.setVariableValueInObject(getValueIncludingSuperclasses("javaVersionDetector", findDeadCodeMojo),
+                "legacySupport", legacySupport);
     }
 
 }

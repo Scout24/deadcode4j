@@ -40,4 +40,9 @@ public class ProjectStub extends MavenProjectStub {
         setBuild(build);
     }
 
+    @SuppressWarnings("UnusedDeclaration") // configured via POM
+    public void setMavenCompilerSource(String version) {
+        properties.setProperty("maven.compiler.source", version);
+    }
+
 }

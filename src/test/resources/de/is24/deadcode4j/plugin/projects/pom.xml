@@ -35,6 +35,9 @@
                         <param>java.lang.Cloneable</param>
                         <param>java.io.Externalizable</param>
                     </interfacesMarkingLiveCode>
+                    <project implementation="de.is24.deadcode4j.plugin.stubs.ProjectStub">
+                        <mavenCompilerSource>8</mavenCompilerSource>
+                    </project>
                     <reactorProjects>
                         <project implementation="de.is24.deadcode4j.plugin.stubs.ProjectStub">
                             <outputDirectory>${testScenarios.directory}</outputDirectory>
