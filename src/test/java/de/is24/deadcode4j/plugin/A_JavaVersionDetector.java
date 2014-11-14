@@ -1,8 +1,14 @@
 package de.is24.deadcode4j.plugin;
 
 import de.is24.deadcode4j.plugin.stubs.ProjectStub;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.LegacySupport;
+import org.codehaus.plexus.util.ReflectionUtils;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -11,32 +17,63 @@ import java.math.BigDecimal;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @RunWith(Enclosed.class)
 public final class A_JavaVersionDetector {
 
+    private static class TestScenario extends TestWatcher {
+        private JavaVersionDetector objectUnderTest;
+        private ProjectStub projectStub;
+
+        @Override
+        protected void starting(Description description) {
+            objectUnderTest = new JavaVersionDetector();
+            MavenSession mavenSession = mock(MavenSession.class);
+            projectStub = new ProjectStub();
+            when(mavenSession.getCurrentProject()).thenReturn(projectStub);
+            LegacySupport legacySupport = mock(LegacySupport.class);
+            when(legacySupport.getSession()).thenReturn(mavenSession);
+            try {
+                ReflectionUtils.setVariableValueInObject(objectUnderTest, "legacySupport", legacySupport);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public void givenMavenCompilerSource(String version) {
+            projectStub.getProperties().setProperty("maven.compiler.source", version);
+        }
+
+        public BigDecimal whenVersionIsDetected() {
+            return objectUnderTest.getJavaVersion();
+        }
+    }
+
     public static class Does {
+        @Rule
+        public final TestScenario testScenario = new TestScenario();
+
         @Test
         public void detectVersion5IfNothingIsConfigured() {
-            JavaVersionDetector objectUnderTest = new JavaVersionDetector(new ProjectStub());
-
-            BigDecimal version = objectUnderTest.getJavaVersion();
+            BigDecimal version = testScenario.whenVersionIsDetected();
 
             assertThat(version, is(new BigDecimal("1.5")));
         }
 
         @Test(expected = IllegalStateException.class)
         public void failsIfConfigurationIsWeird() {
-            ProjectStub projectStub = new ProjectStub();
-            projectStub.getProperties().setProperty("maven.compiler.source", "weirdo");
-            JavaVersionDetector objectUnderTest = new JavaVersionDetector(projectStub);
+            testScenario.givenMavenCompilerSource("weirdo");
 
-            objectUnderTest.getJavaVersion();
+            testScenario.whenVersionIsDetected();
         }
     }
 
     @RunWith(Parameterized.class)
     public static class RecognizesValidVersions {
+        @Rule
+        public final TestScenario testScenario = new TestScenario();
         @Parameterized.Parameter(0)
         public String configuredVersion;
         @Parameterized.Parameter(1)
@@ -66,13 +103,11 @@ public final class A_JavaVersionDetector {
 
         @Test
         public void detectsConfiguredVersion() {
-            ProjectStub projectStub = new ProjectStub();
-            projectStub.getProperties().setProperty("maven.compiler.source", configuredVersion);
-            JavaVersionDetector objectUnderTest = new JavaVersionDetector(projectStub);
+            testScenario.givenMavenCompilerSource(configuredVersion);
 
-            BigDecimal calculatedVersion = objectUnderTest.getJavaVersion();
+            BigDecimal version = testScenario.whenVersionIsDetected();
 
-            assertThat(calculatedVersion, is(new BigDecimal(expectedVersion)));
+            assertThat(version, is(new BigDecimal(expectedVersion)));
         }
 
     }

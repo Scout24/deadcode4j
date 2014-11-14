@@ -15,6 +15,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.repository.RepositorySystem;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -81,6 +82,8 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
      */
     @Parameter
     private Set<String> interfacesMarkingLiveCode = emptySet();
+    @Component
+    private JavaVersionDetector javaVersionDetector;
     @Component
     private MavenProject project;
     /**
@@ -189,6 +192,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     }
 
     private DeadCode analyzeCode() throws MojoExecutionException {
+        checkSourceVersion();
         Set<Analyzer> analyzers = Sets.<Analyzer>newHashSet(
                 new AopXmlAnalyzer(),
                 new ApacheTilesAnalyzer(),
@@ -220,6 +224,26 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
         addMainClassAnalyzerIfConfigured(analyzers);
         DeadCodeFinder deadCodeFinder = new DeadCodeFinder(deadCodeComputer, analyzers);
         return deadCodeFinder.findDeadCode(gatherModules());
+    }
+
+    private void checkSourceVersion() {
+        final BigDecimal version;
+        try {
+            version = javaVersionDetector.getJavaVersion();
+        } catch (IllegalStateException e) {
+            if (getLog().isWarnEnabled()) {
+                getLog().warn(e.getMessage());
+            }
+            return;
+        }
+        BigDecimal integerVersion = version.subtract(BigDecimal.ONE).movePointRight(version.precision() - 1);
+        if (integerVersion.compareTo(new BigDecimal(7)) <= 0) {
+            return;
+        }
+        if (getLog().isWarnEnabled()) {
+            getLog().warn("deadcode4j can only parse files for Java versions <= 7; " +
+                    "therefore type erasure & constants inlining may not be recognized correctly and thus more false positives may be reported.");
+        }
     }
 
     private void addCustomAnnotationsAnalyzerIfConfigured(Set<Analyzer> analyzers) {

@@ -1,6 +1,8 @@
 package de.is24.deadcode4j.plugin;
 
-import org.apache.maven.project.MavenProject;
+import org.apache.maven.plugin.LegacySupport;
+import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Requirement;
 
 import javax.annotation.Nonnull;
 import java.math.BigDecimal;
@@ -10,13 +12,11 @@ import java.math.BigDecimal;
  *
  * @since 2.1.0
  */
+@Component(role = JavaVersionDetector.class)
 public class JavaVersionDetector {
     @Nonnull
-    private final MavenProject mavenProject;
-
-    public JavaVersionDetector(@Nonnull MavenProject mavenProject) {
-        this.mavenProject = mavenProject;
-    }
+    @Requirement
+    private LegacySupport legacySupport;
 
     /**
      * Returns the <tt>-source</tt> argument for the compiler, denormalizing "modern" versions to the traditional
@@ -25,7 +25,8 @@ public class JavaVersionDetector {
      * @throws IllegalStateException if the version cannot be recognized
      */
     public BigDecimal getJavaVersion() throws IllegalStateException {
-        String rawVersion = mavenProject.getProperties().getProperty("maven.compiler.source");
+        String rawVersion = legacySupport.getSession().getCurrentProject().getProperties()
+                .getProperty("maven.compiler.source");
         if (rawVersion == null) {
             return new BigDecimal("1.5");
         }
