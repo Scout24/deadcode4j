@@ -18,7 +18,7 @@ class A_SpockJavaVersionDetector extends Specification {
         legacySupport.getSession() >> mavenSession
 
         objectUnderTest = new JavaVersionDetector()
-        JavaVersionDetector.metaClass.setProperty(objectUnderTest, "legacySupport", legacySupport)
+        objectUnderTest.legacySupport = legacySupport
     }
 
     def mavenCompilerSource(String version) {
