@@ -2,12 +2,12 @@ package de.is24.javaparser;
 
 import de.is24.deadcode4j.junit.AUtilityClass;
 import de.is24.deadcode4j.junit.FileLoader;
-import japa.parser.JavaParser;
-import japa.parser.ParseException;
-import japa.parser.ast.CompilationUnit;
-import japa.parser.ast.expr.NameExpr;
-import japa.parser.ast.expr.QualifiedNameExpr;
-import japa.parser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.JavaParser;
+import com.github.javaparser.ParseException;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.QualifiedNameExpr;
+import com.github.javaparser.ast.expr.StringLiteralExpr;
 import org.junit.Test;
 
 import java.io.IOException;

@@ -1,7 +1,7 @@
 package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.AnalysisContext;
-import japa.parser.ast.CompilationUnit;
+import com.github.javaparser.ast.CompilationUnit;
 import org.junit.Before;
 import org.junit.Test;
 
