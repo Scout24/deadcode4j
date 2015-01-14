@@ -8,15 +8,18 @@ import de.is24.guava.NonNullFunction;
 import de.is24.guava.SequentialLoadingCache;
 import de.is24.javaparser.Nodes;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import japa.parser.JavaParser;
-import japa.parser.TokenMgrError;
-import japa.parser.ast.CompilationUnit;
-import japa.parser.ast.ImportDeclaration;
-import japa.parser.ast.Node;
-import japa.parser.ast.PackageDeclaration;
-import japa.parser.ast.body.BodyDeclaration;
-import japa.parser.ast.body.TypeDeclaration;
+import com.github.javaparser.JavaParser;
+import com.github.javaparser.ParseException;
+import com.github.javaparser.TokenMgrError;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.PackageDeclaration;
+import com.github.javaparser.ast.body.BodyDeclaration;
+import com.github.javaparser.ast.body.TypeDeclaration;
 import javassist.CtClass;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -53,34 +56,7 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
 
     private static final String JAVA_PARSER_KEY = JavaFileAnalyzer.class.getName() + ":JavaParser";
     private static final NonNullFunction<AnalysisContext, LoadingCache<File, Optional<CompilationUnit>>>
-            JAVA_PARSER_SUPPLIER =
-            new NonNullFunction<AnalysisContext, LoadingCache<File, Optional<CompilationUnit>>>() {
-                @Nonnull
-                @Override
-                public LoadingCache<File, Optional<CompilationUnit>> apply(@Nonnull final AnalysisContext analysisContext) {
-                    return SequentialLoadingCache.createSingleValueCache(toFunction(new NonNullFunction<File, Optional<CompilationUnit>>() {
-                        @Nonnull
-                        @Override
-                        @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "The MavenProject does not provide the proper encoding")
-                        public Optional<CompilationUnit> apply(@Nonnull File file) {
-                            Reader reader = null;
-                            try {
-                                reader = analysisContext.getModule().getEncoding() != null
-                                        ? new InputStreamReader(new FileInputStream(file),
-                                        analysisContext.getModule().getEncoding())
-                                        : new FileReader(file);
-                                return of(JavaParser.parse(reader, false));
-                            } catch (TokenMgrError e) {
-                                throw new RuntimeException("Failed to parse [" + file + "]!", e);
-                            } catch (Exception e) {
-                                throw new RuntimeException("Failed to parse [" + file + "]!", e);
-                            } finally {
-                                closeQuietly(reader);
-                            }
-                        }
-                    }));
-                }
-            };
+            JAVA_PARSER_SUPPLIER = new JavaParserSupplier(true);
 
     private static final String TYPE_RESOLVER_KEY = JavaFileAnalyzer.class.getName() + ":TypeResolver";
     private static final NonNullFunction<AnalysisContext, NonNullFunction<Qualifier<?>, Optional<String>>>
@@ -141,9 +117,11 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
     @Override
     public final void doAnalysis(@Nonnull AnalysisContext analysisContext, @Nonnull File file) {
         if (file.getName().endsWith(".java")) {
-            CompilationUnit compilationUnit = getJavaFileParser(analysisContext).getUnchecked(file).get();
-            logger.debug("Analyzing Java file [{}]...", file);
-            analyzeCompilationUnit(analysisContext, compilationUnit);
+            Optional<CompilationUnit> compilationUnit = getJavaFileParser(analysisContext).getUnchecked(file);
+            if (compilationUnit.isPresent()) {
+                logger.debug("Analyzing Java file [{}]...", file);
+                analyzeCompilationUnit(analysisContext, compilationUnit.get());
+            }
         }
     }
 
@@ -568,4 +546,50 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
 
     }
 
+    private static class JavaParserSupplier implements NonNullFunction<AnalysisContext, LoadingCache<File, Optional<CompilationUnit>>> {
+
+        private final Logger logger = LoggerFactory.getLogger(getClass());
+        private final boolean ignoreParsingErrors;
+
+        private JavaParserSupplier(boolean ignoreParsingErrors) {
+            this.ignoreParsingErrors = ignoreParsingErrors;
+        }
+
+        @Nonnull
+        @Override
+        public LoadingCache<File, Optional<CompilationUnit>> apply(@Nonnull final AnalysisContext analysisContext) {
+            return SequentialLoadingCache.createSingleValueCache(toFunction(new NonNullFunction<File, Optional<CompilationUnit>>() {
+                @Nonnull
+                @Override
+                @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "The MavenProject does not provide the proper encoding")
+                public Optional<CompilationUnit> apply(@Nonnull File file) {
+                    Reader reader = null;
+                    try {
+                        reader = analysisContext.getModule().getEncoding() != null
+                                ? new InputStreamReader(new FileInputStream(file),
+                                analysisContext.getModule().getEncoding())
+                                : new FileReader(file);
+                        return of(JavaParser.parse(reader, false));
+                    } catch (Throwable t) {
+                        return handleThrowable(file, t);
+                    } finally {
+                        closeQuietly(reader);
+                    }
+                }
+            }));
+        }
+
+        private Optional<CompilationUnit> handleThrowable(File file, Throwable t) {
+            String message = "Failed to parse [" + file + "]!";
+            if (TokenMgrError.class.isInstance(t) || ParseException.class.isInstance(t)) {
+                if (ignoreParsingErrors) {
+                    logger.debug(message, t);
+                    return absent();
+                }
+            }
+            if (Error.class.isInstance(t) && !TokenMgrError.class.isInstance(t))
+                throw Error.class.cast(t);
+            throw new RuntimeException(message, t);
+        }
+    }
 }

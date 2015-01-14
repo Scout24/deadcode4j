@@ -1,7 +1,7 @@
 package de.is24.javaparser;
 
 import com.google.common.base.Predicate;
-import japa.parser.ast.ImportDeclaration;
+import com.github.javaparser.ast.ImportDeclaration;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 import static de.is24.deadcode4j.Utils.checkNotNull;
 
 /**
- * Provides convenience methods for dealing with {@link japa.parser.ast.ImportDeclaration}s.
+ * Provides convenience methods for dealing with {@link ImportDeclaration}s.
  *
  * @since 2.0.0
  */

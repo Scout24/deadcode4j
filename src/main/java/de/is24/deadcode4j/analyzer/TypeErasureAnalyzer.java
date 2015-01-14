@@ -1,14 +1,14 @@
 package de.is24.deadcode4j.analyzer;
 
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.TypeParameter;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.type.*;
 import com.google.common.base.Optional;
 import de.is24.deadcode4j.AnalysisContext;
 import de.is24.javaparser.FixedVoidVisitorAdapter;
-import japa.parser.ast.CompilationUnit;
-import japa.parser.ast.TypeParameter;
-import japa.parser.ast.body.ClassOrInterfaceDeclaration;
-import japa.parser.ast.body.ConstructorDeclaration;
-import japa.parser.ast.body.MethodDeclaration;
-import japa.parser.ast.type.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

@@ -1,20 +1,20 @@
 package de.is24.javaparser;
 
+import com.github.javaparser.ast.body.AnnotationMemberDeclaration;
+import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.VariableDeclarationExpr;
+import com.github.javaparser.ast.stmt.TryStmt;
+import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import de.is24.deadcode4j.Utils;
-import japa.parser.ast.body.AnnotationMemberDeclaration;
-import japa.parser.ast.expr.Expression;
-import japa.parser.ast.expr.VariableDeclarationExpr;
-import japa.parser.ast.stmt.TryStmt;
-import japa.parser.ast.visitor.VoidVisitorAdapter;
 
 /**
  * Fixes several bugs:
  * <ul>
- *     <li>in {@link japa.parser.ast.body.AnnotationMemberDeclaration}, the default value expression isn't set as a
+ *     <li>in {@link AnnotationMemberDeclaration}, the default value expression isn't set as a
  *     child of the declaration</li>
- *     <li>in {@link japa.parser.ast.stmt.TryStmt}, the variable declarations aren't set as a child of the try
+ *     <li>in {@link TryStmt}, the variable declarations aren't set as a child of the try
  *     statement</li>
- *     <li>in {@link japa.parser.ast.visitor.VoidVisitorAdapter#visit(japa.parser.ast.stmt.TryStmt, Object)},
+ *     <li>in {@link VoidVisitorAdapter#visit(TryStmt, Object)},
  *     the variable declarations aren't visited</li>
  * </ul>
  *
