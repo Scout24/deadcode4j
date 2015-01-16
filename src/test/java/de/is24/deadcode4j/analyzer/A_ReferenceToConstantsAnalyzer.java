@@ -492,6 +492,15 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer<ReferenceTo
                 "de.is24.deadcode4j.analyzer.constants.InnerClassUsingConstantOfOuterClassInFieldDirectly");
     }
 
+    @Test
+    public void recognizesReferenceOfAnonymousClassToOuterClassInFieldDirectly() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/AnonymousClassUsingConstantOfOuterClassInFieldDirectly.java");
+        triggerFinishAnalysisEvent();
+
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.AnonymousClassUsingConstantOfOuterClassInFieldDirectly$1",
+                "de.is24.deadcode4j.analyzer.constants.AnonymousClassUsingConstantOfOuterClassInFieldDirectly");
+    }
+
     @Ignore("Although this is no inlined constant it screws performance a bit, as we have no way of identifying the reference and thus perform many unnecessary class resolvings.")
     @Test
     public void recognizesReferenceToEnumerationInSwitch() {
