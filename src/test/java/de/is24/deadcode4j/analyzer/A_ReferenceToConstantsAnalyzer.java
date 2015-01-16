@@ -33,10 +33,10 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer<ReferenceTo
     @After
     public void assertNoOtherDependenciesExist() {
         Map<String, ? extends Iterable<String>> codeDependencies = analysisContext.getAnalyzedCode().getCodeDependencies();
-        assertThat(codeDependencies.keySet(), equalTo(this.dependers));
+        assertThat("Classes with dependencies", codeDependencies.keySet(), equalTo(this.dependers));
 
         List<String> allReportedClasses = newArrayList(concat(codeDependencies.values()));
-        assertThat(allReportedClasses, containsInAnyOrder(this.dependees.toArray()));
+        assertThat("Classes being referenced", allReportedClasses, containsInAnyOrder(this.dependees.toArray()));
     }
 
     @Override
@@ -490,6 +490,23 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer<ReferenceTo
 
         assertDependencyExists("de.is24.deadcode4j.analyzer.constants.InnerClassUsingConstantOfOuterClassInFieldDirectly$InnerClass",
                 "de.is24.deadcode4j.analyzer.constants.InnerClassUsingConstantOfOuterClassInFieldDirectly");
+    }
+
+    @Test
+    public void recognizesReferenceOfAnonymousClassToOuterClassInFieldDirectly() {
+        analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/AnonymousClassUsingConstantOfOuterClassInFieldDirectly.java");
+        triggerFinishAnalysisEvent();
+
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.AnonymousClassUsingConstantOfOuterClassInFieldDirectly$1",
+                "de.is24.deadcode4j.analyzer.constants.AnonymousClassUsingConstantOfOuterClassInFieldDirectly");
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.AnonymousClassUsingConstantOfOuterClassInFieldDirectly$1$1",
+                "de.is24.deadcode4j.analyzer.constants.AnonymousClassUsingConstantOfOuterClassInFieldDirectly");
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.AnonymousClassUsingConstantOfOuterClassInFieldDirectly$1$1",
+                "de.is24.deadcode4j.analyzer.constants.AnonymousClassUsingConstantOfOuterClassInFieldDirectly$1");
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.AnonymousClassUsingConstantOfOuterClassInFieldDirectly$1$1",
+                "de.is24.deadcode4j.analyzer.constants.AnonymousClassUsingConstantOfOuterClassInFieldDirectly$Inner");
+        assertDependencyExists("de.is24.deadcode4j.analyzer.constants.AnonymousClassUsingConstantOfOuterClassInFieldDirectly$Inner",
+                "de.is24.deadcode4j.analyzer.constants.AnonymousClassUsingConstantOfOuterClassInFieldDirectly");
     }
 
     @Ignore("Although this is no inlined constant it screws performance a bit, as we have no way of identifying the reference and thus perform many unnecessary class resolvings.")

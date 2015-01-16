@@ -246,8 +246,8 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                     return false;
                 }
                 for (CtField ctField : clazz.getDeclaredFields()) {
-                    if (ctField.getName().equals(reference.getName()) && ctField.visibleFrom(referencingClazz)) {
-                        if (isConstant(ctField)) {
+                    if (ctField.getName().equals(reference.getName()) && fieldIsVisibleFrom(ctField, referencingClazz)) {
+                        if (isConstant(ctField)) { // we only care for static references
                             analysisContext.addDependencies(referencingClazz.getName(), clazz.getName());
                         }
                         return true;
@@ -262,6 +262,28 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                     }
                 }
                 return false;
+            }
+
+            /**
+             * Unfortunately, {@link CtField#visibleFrom(CtClass)} is not entirely correct, as anonymous and inner
+             * classes have access to private fields of the declaring class.
+             */
+            private boolean fieldIsVisibleFrom(CtField ctField, CtClass referencingClazz) {
+                return ctField.visibleFrom(referencingClazz) ||
+                        (isNestedClass(referencingClazz, ctField.getDeclaringClass())
+                                && (isStaticField(ctField) || !isStaticClass(referencingClazz)));
+            }
+
+            private boolean isNestedClass(CtClass nestedClass, CtClass parentClass) {
+                return nestedClass.getName().startsWith(parentClass.getName() + "$");
+            }
+
+            private boolean isStaticClass(CtClass referencingClazz) {
+                return Modifier.isStatic(referencingClazz.getModifiers());
+            }
+
+            private boolean isStaticField(CtField ctField) {
+                return Modifier.isStatic(ctField.getModifiers());
             }
 
             private boolean refersToStaticImport(NameExpr reference) {
