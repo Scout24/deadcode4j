@@ -45,11 +45,6 @@ public final class A_ReferenceToConstantsAnalyzer extends AnAnalyzer<ReferenceTo
     }
 
     @Test
-    public void dontCommit() {
-        analyzeFile("../../../../is24/checkout/app/src/main/java/de/is24/checkout/controller/internal/LocalLoginController.java");
-    }
-
-    @Test
     public void recognizesDependencyToConstantInExpression() {
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/constants/ClassUsingConstantInExpression.java");
         triggerFinishAnalysisEvent();
