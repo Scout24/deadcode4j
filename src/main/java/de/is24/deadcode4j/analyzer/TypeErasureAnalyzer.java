@@ -5,6 +5,7 @@ import com.github.javaparser.ast.TypeParameter;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.expr.MethodReferenceExpr;
 import com.github.javaparser.ast.type.*;
 import com.google.common.base.Optional;
 import de.is24.deadcode4j.AnalysisContext;
@@ -142,6 +143,16 @@ public class TypeErasureAnalyzer extends JavaFileAnalyzer {
 
         @Override
         public void visit(MethodDeclaration n, A arg) {
+            this.definedTypeParameters.addLast(getTypeParameterNames(n.getTypeParameters()));
+            try {
+                super.visit(n, arg);
+            } finally {
+                this.definedTypeParameters.removeLast();
+            }
+        }
+
+        @Override
+        public void visit(MethodReferenceExpr n, A arg) {
             this.definedTypeParameters.addLast(getTypeParameterNames(n.getTypeParameters()));
             try {
                 super.visit(n, arg);
