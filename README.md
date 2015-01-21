@@ -11,7 +11,7 @@ to analyze your project.
 *deadcode4j* will trigger the _package phase_ to be executed for a project (and for all modules listed in a reactor project) before analyzing the output directories.
 The output will look something like this:
 
-    [INFO] --- deadcode4j-maven-plugin:2.0.0:find (default-cli) @ someProject ---
+    [INFO] --- deadcode4j-maven-plugin:2.0.1:find (default-cli) @ someProject ---
     [INFO] Analyzed 42 class(es).
     [WARNING] Found 2 unused class(es):
     [WARNING]   de.is24.deadcode4j.Foo
