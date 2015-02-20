@@ -13,3 +13,11 @@ before_install: sudo rm /etc/mavenrc
 install: mvn clean verify war:war -B -U -T 4 -PenableCoverage,travis -Dmaven.main.skip=true -Dmaven.test.skip=true -Dinvoker.skip=true -DfailOnMissingWebXml=false
 script: mvn verify -B -T 4 -PenableCoverage,travis
 after_success: mvn jacoco:report coveralls:jacoco
+
+notifications:
+  webhooks:
+    urls:
+      - https://webhooks.gitter.im/e/217ded7d3afc66dca26a
+    on_success: always
+    on_failure: always
+    on_start: false
