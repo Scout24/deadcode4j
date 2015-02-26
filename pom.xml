@@ -66,6 +66,7 @@
         <testScenarios.directory>${java.io.tmpdir}/deadcode4j</testScenarios.directory>
         <!-- Dependency Management -->
         <version.findbugs>2.0.3</version.findbugs>
+        <version.junit>4.11</version.junit>
         <version.maven>3.2.2</version.maven>
     </properties>
 
@@ -318,6 +319,11 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${version.junit}</version>
+            </dependency>
+            <dependency>
                 <!-- This is needed to fix a compatibility issue between maven-plugin-api and guava -->
                 <groupId>org.sonatype.sisu</groupId>
                 <artifactId>sisu-guice</artifactId>
@@ -427,7 +433,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.11</version>
             <scope>test</scope>
         </dependency>
         <dependency>
