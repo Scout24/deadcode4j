@@ -251,7 +251,8 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
             checkArgument(!customXml.getXPaths().isEmpty(), "At least one entry for [xPaths] must be set!");
             for (String xPath : customXml.getXPaths()) {
                 customXmlAnalyzer.registerXPath(xPath);
-                getLog().info("Treating classes found at [/" + customXml.getRootElement() + "//" + xPath + "] in [" + customXml.getEndOfFileName() + "] files as live code.");
+                String rootPath = customXml.getRootElement() == null ? "" : "/" + customXml.getRootElement();
+                getLog().info("Treating classes found at [" + rootPath + "//" + xPath + "] in [" + customXml.getEndOfFileName() + "] files as live code.");
             }
             analyzers.add(customXmlAnalyzer);
         }
