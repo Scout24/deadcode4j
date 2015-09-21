@@ -31,8 +31,9 @@ public final class A_SimpleXmlAnalyzer extends AnAnalyzer<SimpleXmlAnalyzer> {
     public void ignoresFilesWithNonMatchingRootElement() {
         objectUnderTest = new SimpleXmlAnalyzer("junit", ".xml", "acme") {
         };
+        objectUnderTest.registerClassElement("elementWithClass");
 
-        analyzeFile("de/is24/deadcode4j/analyzer/empty.xml");
+        analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
 
         assertThatNoDependenciesAreReported();
     }
