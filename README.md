@@ -1,4 +1,4 @@
-# deadcode4j [![Build Status](https://api.travis-ci.org/ImmobilienScout24/deadcode4j.svg?branch=master)](https://travis-ci.org/ImmobilienScout24/deadcode4j) [![Coverage Status](https://img.shields.io/coveralls/ImmobilienScout24/deadcode4j.svg?branch=master)](https://coveralls.io/r/ImmobilienScout24/deadcode4j?branch=master)
+# deadcode4j [![Latest version](https://maven-badges.herokuapp.com/maven-central/de.is24.mavenplugins/deadcode4j-maven-plugin/badge.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22de.is24.mavenplugins%22%20AND%20a%3A%22deadcode4j-maven-plugin%22) [![Build Status](https://api.travis-ci.org/ImmobilienScout24/deadcode4j.svg?branch=master)](https://travis-ci.org/ImmobilienScout24/deadcode4j) [![Coverage Status](https://img.shields.io/coveralls/ImmobilienScout24/deadcode4j.svg?branch=master)](https://coveralls.io/r/ImmobilienScout24/deadcode4j?branch=master)
 
 [![Join the chat at https://gitter.im/ImmobilienScout24/deadcode4j](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ImmobilienScout24/deadcode4j?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
