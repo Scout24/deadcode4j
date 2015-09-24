@@ -18,7 +18,7 @@ public final class An_ExtendedXmlAnalyzer extends AnAnalyzer<ExtendedXmlAnalyzer
 
     @Test
     public void usesTheSpecifiedDependerIdToReportDependencies() {
-        objectUnderTest.anyElementNamed("elementWithClass").register();
+        objectUnderTest.anyElementNamed("elementWithClass").registerTextAsClass();
 
         analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
 
@@ -29,7 +29,7 @@ public final class An_ExtendedXmlAnalyzer extends AnAnalyzer<ExtendedXmlAnalyzer
 
     @Test
     public void reportsTheClassFoundForTheRegisteredElement() {
-        objectUnderTest.anyElementNamed("elementWithClass").register();
+        objectUnderTest.anyElementNamed("elementWithClass").registerTextAsClass();
 
         analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
 
@@ -38,7 +38,7 @@ public final class An_ExtendedXmlAnalyzer extends AnAnalyzer<ExtendedXmlAnalyzer
 
     @Test
     public void reportsTheClassFoundForElementsInVariousPaths() {
-        objectUnderTest.anyElementNamed("nestedElementWithClass").register();
+        objectUnderTest.anyElementNamed("nestedElementWithClass").registerTextAsClass();
 
         analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
 
@@ -48,11 +48,20 @@ public final class An_ExtendedXmlAnalyzer extends AnAnalyzer<ExtendedXmlAnalyzer
 
     @Test
     public void reportsNothingIfElementHasNoText() {
-        objectUnderTest.anyElementNamed("emptyElement").register();
+        objectUnderTest.anyElementNamed("emptyElement").registerTextAsClass();
 
         analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
 
         assertThatNoDependenciesAreReported();
+    }
+
+    @Test
+    public void reportsTheClassFoundForTheRegisteredAttribute() {
+        objectUnderTest.anyElementNamed("element").registerAttributeAsClass("attributeWithClass");
+
+        analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
+
+        assertThatDependenciesAreReported("de.is24.deadcode4j.ClassInAttribute");
     }
 
 }

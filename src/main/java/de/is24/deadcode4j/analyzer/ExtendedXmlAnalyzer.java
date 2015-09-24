@@ -12,6 +12,7 @@ import java.util.*;
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.fromNullable;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Iterables.getLast;
 import static de.is24.deadcode4j.Utils.checkNotNull;
 
 /**
@@ -63,7 +64,9 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
     }
 
     public Path anyElementNamed(String name) {
-        return new Path(new Element(name));
+        Path path = new Path(new Element(name));
+        pathsToMatch.add(path);
+        return path;
     }
 
     /**
@@ -108,16 +111,20 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
      *
      * @since 2.1.0
      */
-    protected class Path {
+    protected static class Path {
 
         private final List<Element> pathElements = new ArrayList<Element>();
 
         Path(@Nonnull Element firstElement) {
-            this.pathElements.add(firstElement);
+            pathElements.add(firstElement);
         }
 
-        public void register() {
-            ExtendedXmlAnalyzer.this.pathsToMatch.add(this);
+        public void registerTextAsClass() {
+            getLast(pathElements).registerTextAsClass();
+        }
+
+        public void registerAttributeAsClass(String attributeWithClass) {
+            getLast(pathElements).registerAttributeAsClass(attributeWithClass);
         }
 
         public Optional<String> elementEnds(Deque<XmlElement> xmlElements, Optional<String> containedText) {
@@ -152,6 +159,7 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
             }
             return lastPathElement.extract(xmlElement, containedText);
         }
+
     }
 
     /**
@@ -177,6 +185,8 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
      */
     protected static class Element {
         private final String name;
+        private boolean extractText = false;
+        private String attributeToExtract;
 
         public Element(@Nonnull String name) {
             checkArgument(name.trim().length() > 0, "The element's [name] must be set!");
@@ -184,11 +194,25 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
         }
 
         public boolean matches(XmlElement xmlElement) {
-            return this.name.equals(xmlElement.name);
+            return name.equals(xmlElement.name);
         }
 
         public Optional<String> extract(XmlElement xmlElement, Optional<String> containedText) {
-            return containedText;
+            if (extractText) {
+                return containedText;
+            }
+            if (attributeToExtract != null) {
+                return fromNullable(xmlElement.attributes.getValue(attributeToExtract));
+            }
+            return absent(); // TODO or thrown an exception?
+        }
+
+        public void registerTextAsClass() {
+            extractText = true;
+        }
+
+        public void registerAttributeAsClass(String attributeWithClass) {
+            attributeToExtract = attributeWithClass;
         }
     }
 
