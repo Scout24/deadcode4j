@@ -36,4 +36,23 @@ public final class An_ExtendedXmlAnalyzer extends AnAnalyzer<ExtendedXmlAnalyzer
         assertThatDependenciesAreReported("de.is24.deadcode4j.ClassInElement");
     }
 
+    @Test
+    public void reportsTheClassFoundForElementsInVariousPaths() {
+        objectUnderTest.anyElementNamed("nestedElementWithClass").register();
+
+        analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
+
+        assertThatDependenciesAreReported("de.is24.deadcode4j.ClassInElement",
+                "de.is24.deadcode4j.ClassInNestedElement");
+    }
+
+    @Test
+    public void reportsNothingIfElementHasNoText() {
+        objectUnderTest.anyElementNamed("emptyElement").register();
+
+        analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
+
+        assertThatNoDependenciesAreReported();
+    }
+
 }

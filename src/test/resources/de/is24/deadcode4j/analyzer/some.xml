@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--suppress CheckTagEmptyBody -->
 <root>
     <elementWithClass>de.is24.deadcode4j.ClassInElement</elementWithClass>
-    <anotherElementWithClass>de.is24.deadcode4j.FirstClassInAnotherElement</anotherElementWithClass>
+    <nestedElementWithClass>de.is24.deadcode4j.ClassInElement</nestedElementWithClass>
+    <parentElement>
+        <nestedElementWithClass>de.is24.deadcode4j.ClassInNestedElement</nestedElementWithClass>
+    </parentElement>
+    <emptyElement></emptyElement>
+    <emptyElement/>
     <element attributeWithClass="de.is24.deadcode4j.ClassInAttribute" />
+    <anotherElementWithClass>de.is24.deadcode4j.FirstClassInAnotherElement</anotherElementWithClass>
     <anotherElementWithClass>de.is24.deadcode4j.SecondClassInAnotherElement</anotherElementWithClass>
     <anotherElement attributeWithClass="de.is24.deadcode4j.ClassInAttributeOfOtherElement" />
     <restrictedElement attributeWithClass="de.is24.deadcode4j.UnlockedClassInAttribute" locked="false" />
