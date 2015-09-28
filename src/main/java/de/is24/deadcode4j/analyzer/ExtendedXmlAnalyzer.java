@@ -1,6 +1,7 @@
 package de.is24.deadcode4j.analyzer;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.Maps;
 import de.is24.deadcode4j.AnalysisContext;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
@@ -127,6 +128,11 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
             getLast(pathElements).registerAttributeAsClass(attributeWithClass);
         }
 
+        public Path withAttributeValue(@Nonnull String attribute, @Nonnull String value) {
+            getLast(pathElements).restrictAttribute(attribute, value);
+            return this;
+        }
+
         public Optional<String> elementEnds(Deque<XmlElement> xmlElements, Optional<String> containedText) {
             for (int i = xmlElements.size(); i-- > 0; ) {
                 Iterator<XmlElement> xmlElementIterator = xmlElements.iterator();
@@ -185,6 +191,7 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
      */
     protected static class Element {
         private final String name;
+        private final Map<String, String> attributeRestrictions = Maps.newHashMapWithExpectedSize(0);
         private boolean extractText = false;
         private String attributeToExtract;
 
@@ -194,7 +201,7 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
         }
 
         public boolean matches(XmlElement xmlElement) {
-            return name.equals(xmlElement.name);
+            return name.equals(xmlElement.name) && matchesAttributes(xmlElement);
         }
 
         public Optional<String> extract(XmlElement xmlElement, Optional<String> containedText) {
@@ -213,6 +220,20 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
 
         public void registerAttributeAsClass(String attributeWithClass) {
             attributeToExtract = attributeWithClass;
+        }
+
+        public void restrictAttribute(@Nonnull String attribute, @Nonnull String value) {
+            attributeRestrictions.put(attribute, value);
+        }
+
+        private boolean matchesAttributes(XmlElement xmlElement) {
+            for (Map.Entry<String, String> attributeRestriction : attributeRestrictions.entrySet()) {
+                String value = xmlElement.attributes.getValue(attributeRestriction.getKey());
+                if (!attributeRestriction.getValue().equals(value)) {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 

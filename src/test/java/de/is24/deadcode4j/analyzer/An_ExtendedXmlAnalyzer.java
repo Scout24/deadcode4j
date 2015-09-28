@@ -94,4 +94,34 @@ public final class An_ExtendedXmlAnalyzer extends AnAnalyzer<ExtendedXmlAnalyzer
                 "de.is24.deadcode4j.ClassInAttribute");
     }
 
+    @Test
+    public void reportsTheClassFound_ForTheRegisteredElement_HavingASpecificAttributeValue() {
+        objectUnderTest.anyElementNamed("restrictedElement").withAttributeValue("locked", "false").registerTextAsClass();
+
+        analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
+
+        assertThatDependenciesAreReported("de.is24.deadcode4j.UnlockedClassInElement");
+    }
+
+    @Test
+    public void reportsTheClassFound_ForTheRegisteredAttribute_HavingASpecificAttributeValue() {
+        objectUnderTest.anyElementNamed("restrictedElement").withAttributeValue("locked", "false").registerAttributeAsClass("attributeWithClass");
+
+        analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
+
+        assertThatDependenciesAreReported("de.is24.deadcode4j.UnlockedClassInAttribute");
+    }
+
+    @Test
+    public void reportsTheClassesFound_ForTheRegisteredElementAndForTheRegisteredAttribute_BothHavingASpecificAttributeValue() {
+        objectUnderTest.anyElementNamed("restrictedElement").withAttributeValue("locked", "false").registerTextAsClass();
+        objectUnderTest.anyElementNamed("restrictedElement").withAttributeValue("locked", "false").registerAttributeAsClass("attributeWithClass");
+
+        analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
+
+        assertThatDependenciesAreReported(
+                "de.is24.deadcode4j.UnlockedClassInAttribute",
+                "de.is24.deadcode4j.UnlockedClassInElement");
+    }
+
 }
