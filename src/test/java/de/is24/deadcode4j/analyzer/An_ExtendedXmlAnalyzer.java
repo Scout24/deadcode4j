@@ -64,4 +64,34 @@ public final class An_ExtendedXmlAnalyzer extends AnAnalyzer<ExtendedXmlAnalyzer
         assertThatDependenciesAreReported("de.is24.deadcode4j.ClassInAttribute");
     }
 
+    @Test
+    public void reportsClassesForDifferentRegistrations() {
+        objectUnderTest.anyElementNamed("elementWithClass").registerTextAsClass();
+        objectUnderTest.anyElementNamed("anotherElementWithClass").registerTextAsClass();
+        objectUnderTest.anyElementNamed("element").registerAttributeAsClass("attributeWithClass");
+
+        analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
+
+        assertThatDependenciesAreReported(
+                "de.is24.deadcode4j.ClassInElement",
+                "de.is24.deadcode4j.FirstClassInAnotherElement",
+                "de.is24.deadcode4j.SecondClassInAnotherElement",
+                "de.is24.deadcode4j.ClassInAttribute");
+    }
+
+    @Test
+    public void parsesXmlFilesUsingNamespacePrefixes() {
+        objectUnderTest.anyElementNamed("elementWithClass").registerTextAsClass();
+        objectUnderTest.anyElementNamed("anotherElementWithClass").registerTextAsClass();
+        objectUnderTest.anyElementNamed("element").registerAttributeAsClass("attributeWithClass");
+
+        analyzeFile("de/is24/deadcode4j/analyzer/prefixed.xml");
+
+        assertThatDependenciesAreReported(
+                "de.is24.deadcode4j.ClassInElement",
+                "de.is24.deadcode4j.FirstClassInAnotherElement",
+                "de.is24.deadcode4j.SecondClassInAnotherElement",
+                "de.is24.deadcode4j.ClassInAttribute");
+    }
+
 }
