@@ -77,6 +77,7 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
         private final AnalysisContext analysisContext;
         private final Deque<XmlElement> xmlElements = new ArrayDeque<XmlElement>();
         private final Deque<StringBuilder> textBuffers = new ArrayDeque<StringBuilder>();
+        private boolean firstElement = true;
 
         public XmlHandler(AnalysisContext analysisContext) {
             this.analysisContext = analysisContext;
@@ -84,6 +85,12 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
 
         @Override
         public void startElement(String ignoredUri, String localName, String ignoredQName, Attributes attributes) throws StopParsing {
+            if (firstElement) {
+                if (rootElement != null && !rootElement.equals(localName)) {
+                    throw new StopParsing();
+                }
+                firstElement = false;
+            }
             xmlElements.addLast(new XmlElement(localName, attributes));
             this.textBuffers.addLast(new StringBuilder(128));
         }
