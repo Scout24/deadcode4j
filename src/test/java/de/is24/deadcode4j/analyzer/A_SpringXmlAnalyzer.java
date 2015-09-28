@@ -16,8 +16,9 @@ public final class A_SpringXmlAnalyzer extends AnAnalyzer<SpringXmlAnalyzer> {
         assertThatDependenciesAreReported(
                 "SpringXmlBean",
                 "de.is24.deadcode4j.MapFactory",
+                "java.lang.Runtime",
                 "java.lang.System",
-                "java.util.regex.Pattern",
+                //"java.util.regex.Pattern", // this would require regex postprocessing or something :/
                 "org.springframework.beans.factory.config.MethodInvokingFactoryBean");
     }
 
