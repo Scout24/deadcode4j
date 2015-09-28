@@ -1,11 +1,14 @@
 package de.is24.deadcode4j.analyzer;
 
+import com.google.common.base.Optional;
 import de.is24.deadcode4j.AnalysisContext;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Map;
 import java.util.Set;
 
@@ -159,7 +162,7 @@ public abstract class SimpleXmlAnalyzer extends XmlAnalyzer {
     private class XmlHandler extends DefaultHandler {
         private final AnalysisContext analysisContext;
         private boolean firstElement = true;
-        private StringBuilder buffer;
+        private final Deque<Optional<StringBuilder>> textBuffers = new ArrayDeque<Optional<StringBuilder>>();
 
         public XmlHandler(AnalysisContext analysisContext) {
             this.analysisContext = analysisContext;
@@ -172,10 +175,11 @@ public abstract class SimpleXmlAnalyzer extends XmlAnalyzer {
             } else {
                 firstElement = false;
             }
+            boolean recordText = false;
             for (Element registeredElement : registeredElements) {
                 if (registeredElement.matches(localName, attributes)) {
                     if (registeredElement.shouldReportTextAsClass()) {
-                        buffer = new StringBuilder(128);
+                        recordText = true;
                     }
                     String attributeToReportAsClass = registeredElement.getAttributeToReportAsClass();
                     if (attributeToReportAsClass != null) {
@@ -186,21 +190,26 @@ public abstract class SimpleXmlAnalyzer extends XmlAnalyzer {
                     }
                 }
             }
-
+            textBuffers.addLast(recordText ? Optional.of(new StringBuilder()) : Optional.<StringBuilder>absent());
         }
 
         @Override
         public void characters(char[] ch, int start, int length) {
-            if (buffer != null) {
-                buffer.append(new String(ch, start, length).trim());
+            Optional<StringBuilder> buffer = textBuffers.getLast();
+            if (buffer.isPresent()) {
+                buffer.get().append(new String(ch, start, length).trim());
             }
         }
 
         @Override
         public void endElement(String uri, String localName, String qName) {
-            if (buffer != null && buffer.length() > 0) {
+            Optional<StringBuilder> optionalBuffer = textBuffers.removeLast();
+            if (!optionalBuffer.isPresent()) {
+                return;
+            }
+            StringBuilder buffer = optionalBuffer.get();
+            if (buffer.length() > 0) {
                 analysisContext.addDependencies(dependerId, buffer.toString());
-                buffer = null;
             }
         }
 
