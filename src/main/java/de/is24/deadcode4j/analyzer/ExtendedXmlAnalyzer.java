@@ -2,6 +2,7 @@ package de.is24.deadcode4j.analyzer;
 
 import com.google.common.base.Optional;
 import de.is24.deadcode4j.AnalysisContext;
+import org.slf4j.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -17,7 +18,9 @@ import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static de.is24.deadcode4j.Utils.checkNotNull;
 
 /**
- * TODO
+ * Serves as base class with which to analyze XML files by defining which element nodes' text or attributes
+ * contain a fqcn. It allows restricting matches to elements having a specific attribute value and certain parent
+ * elements.
  *
  * @since 2.1.0
  */
@@ -28,7 +31,7 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
 
     /**
      * Creates a new <code>ExtendedXmlAnalyzer</code>.
-     * Be sure to call TODO
+     * Be sure to call {@link #anyElementNamed(String)} and so forth in the subclasses' constructor.
      *
      * @param dependerId    a description of the <i>depending entity</i> with which to
      *                      call {@link de.is24.deadcode4j.AnalysisContext#addDependencies(String, Iterable)}
@@ -45,13 +48,9 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
     }
 
     /**
-     * Creates a new <code>ExtendedXmlAnalyzer</code>.
-     * Be sure to call TODO
+     * Creates a new <code>ExtendedXmlAnalyzer</code> that is not restricted to a specific XML root element.
      *
-     * @param dependerId    a description of the <i>depending entity</i> with which to
-     *                      call {@link de.is24.deadcode4j.AnalysisContext#addDependencies(String, Iterable)}
-     * @param endOfFileName the file suffix used to determine if a file should be analyzed; this can be a mere file
-     *                      extension like <tt>.xml</tt> or a partial path like <tt>WEB-INF/web.xml</tt>
+     * @see #ExtendedXmlAnalyzer(String, String, String)
      * @since 2.1.0
      */
     protected ExtendedXmlAnalyzer(@Nonnull String dependerId, @Nonnull String endOfFileName) {
@@ -64,8 +63,14 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
         return new XmlHandler(analysisContext);
     }
 
+    /**
+     * Sets up a path to an element to match.
+     * Be sure to call {@link Path#registerTextAsClass()} or {@link Path#registerAttributeAsClass(String)} eventually.
+     *
+     * @param name the name of the XML element to match
+     */
     public Path anyElementNamed(String name) {
-        Path path = new Path(new Element(name));
+        Path path = new Path(logger, new Element(logger, name));
         pathsToMatch.add(path);
         return path;
     }
@@ -121,27 +126,55 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
      * @since 2.1.0
      */
     protected static class Path {
-
+        private final Logger logger;
         private final List<Element> pathElements = new ArrayList<Element>();
 
-        Path(@Nonnull Element firstElement) {
+        private Path(@Nonnull Logger logger, @Nonnull Element firstElement) {
+            this.logger = logger;
             pathElements.add(firstElement);
         }
 
+        /**
+         * Extends the path to match with a subsequent XML element.
+         *
+         * @param name the name of the XML element to match
+         * @since 2.1.0
+         */
+        public Path anyElementNamed(String name) {
+            pathElements.add(new Element(logger, name));
+            return this;
+        }
+
+        /**
+         * Restricts the last XML element to only be matched if it has an attribute with the specified value.
+         *
+         * @since 2.1.0
+         */
+        public Path withAttributeValue(@Nonnull String attributeName, @Nonnull String requiredValue) {
+            getLast(pathElements).restrictAttribute(attributeName, requiredValue);
+            return this;
+        }
+
+        /**
+         * Registers the last XML element's text to be treated as a fully qualified class name.
+         *
+         * @since 2.1.0
+         */
         public void registerTextAsClass() {
             getLast(pathElements).registerTextAsClass();
         }
 
-        public void registerAttributeAsClass(String attributeWithClass) {
-            getLast(pathElements).registerAttributeAsClass(attributeWithClass);
+        /**
+         * Registers an attribute of the last XML element to be treated as a fully qualified class name.
+         *
+         * @param attributeName the name of the attribute to register
+         * @since 2.1.0
+         */
+        public void registerAttributeAsClass(String attributeName) {
+            getLast(pathElements).registerAttributeAsClass(attributeName);
         }
 
-        public Path withAttributeValue(@Nonnull String attribute, @Nonnull String value) {
-            getLast(pathElements).restrictAttribute(attribute, value);
-            return this;
-        }
-
-        public Optional<String> elementEnds(Deque<XmlElement> xmlElements, Optional<String> containedText) {
+        private Optional<String> elementEnds(Deque<XmlElement> xmlElements, Optional<String> containedText) {
             for (int i = xmlElements.size(); i-- > 0; ) {
                 Iterator<XmlElement> xmlElementIterator = xmlElements.iterator();
                 for (int j = i; j-- > 0; ) {
@@ -172,11 +205,6 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
                 return absent();
             }
             return lastPathElement.extract(xmlElement, containedText);
-        }
-
-        public Path anyElementNamed(String name) {
-            pathElements.add(new Element(name));
-            return this;
         }
 
     }
@@ -219,15 +247,29 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
      *
      * @since 2.1.0
      */
-    protected static class Element {
+    private static class Element {
+        private final Logger logger;
         private final String name;
         private final Map<String, String> attributeRestrictions = newHashMapWithExpectedSize(0);
         private boolean extractText = false;
         private String attributeToExtract;
 
-        public Element(@Nonnull String name) {
+        public Element(@Nonnull Logger logger, @Nonnull String name) {
+            this.logger = logger;
             checkArgument(name.trim().length() > 0, "The element's [name] must be set!");
             this.name = name;
+        }
+
+        public void restrictAttribute(@Nonnull String attribute, @Nonnull String value) {
+            attributeRestrictions.put(attribute, value);
+        }
+
+        public void registerTextAsClass() {
+            extractText = true;
+        }
+
+        public void registerAttributeAsClass(String attributeWithClass) {
+            attributeToExtract = attributeWithClass;
         }
 
         public boolean matches(XmlElement xmlElement) {
@@ -241,19 +283,8 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
             if (attributeToExtract != null) {
                 return fromNullable(xmlElement.attributes.get(attributeToExtract));
             }
-            return absent(); // TODO or throw an exception?
-        }
-
-        public void registerTextAsClass() {
-            extractText = true;
-        }
-
-        public void registerAttributeAsClass(String attributeWithClass) {
-            attributeToExtract = attributeWithClass;
-        }
-
-        public void restrictAttribute(@Nonnull String attribute, @Nonnull String value) {
-            attributeRestrictions.put(attribute, value);
+            logger.warn("Could not extract fqcn of matched element!");
+            return absent();
         }
 
         private boolean matchesAttributes(XmlElement xmlElement) {
@@ -265,6 +296,7 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
             }
             return true;
         }
+
     }
 
 }
