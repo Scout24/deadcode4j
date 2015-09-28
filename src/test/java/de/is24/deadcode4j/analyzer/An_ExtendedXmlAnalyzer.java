@@ -124,4 +124,42 @@ public final class An_ExtendedXmlAnalyzer extends AnAnalyzer<ExtendedXmlAnalyzer
                 "de.is24.deadcode4j.UnlockedClassInElement");
     }
 
+    @Test
+    public void reportsTheClassFoundForANestedElement() {
+        objectUnderTest.anyElementNamed("parentElement").anyElementNamed("nestedElementWithClass").registerTextAsClass();
+
+        analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
+
+        assertThatDependenciesAreReported("de.is24.deadcode4j.ClassInNestedElement");
+    }
+
+    @Test
+    public void reportsTheClassFoundForANestedElement_WithPathHavingASpecificAttributeValue() {
+        objectUnderTest.anyElementNamed("restrictedElement").withAttributeValue("locked", "false").anyElementNamed("nestedElementInRestriction").registerTextAsClass();
+
+        analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
+
+        assertThatDependenciesAreReported("de.is24.deadcode4j.UnlockedClassInUnlockedNestedElement",
+                "de.is24.deadcode4j.UnlockedClassInLockedNestedElement");
+    }
+
+    @Test
+    public void reportsTheClassFoundForANestedElement_WithPathHavingSpecificAttributes() {
+        objectUnderTest.anyElementNamed("restrictedElement").withAttributeValue("locked", "false").
+                anyElementNamed("nestedElementInRestriction").withAttributeValue("locked", "false").registerTextAsClass();
+
+        analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
+
+        assertThatDependenciesAreReported("de.is24.deadcode4j.UnlockedClassInUnlockedNestedElement");
+    }
+
+    @Test
+    public void reportsNothingIfPathDoesNotMatchAttributeValue() {
+        objectUnderTest.anyElementNamed("parentElement").withAttributeValue("foo", "bar").anyElementNamed("nestedElementWithClass").registerTextAsClass();
+
+        analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
+
+        assertThatNoDependenciesAreReported();
+    }
+
 }

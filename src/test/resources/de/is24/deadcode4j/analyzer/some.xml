@@ -16,4 +16,13 @@
     <restrictedElement attributeWithClass="de.is24.deadcode4j.LockedClassInAttribute" locked="true" />
     <restrictedElement locked="false">de.is24.deadcode4j.UnlockedClassInElement</restrictedElement>
     <restrictedElement locked="true">de.is24.deadcode4j.LockedClassInElement</restrictedElement>
+    <restrictedElement locked="false">
+        <nestedElementInRestriction locked="false">de.is24.deadcode4j.UnlockedClassInUnlockedNestedElement</nestedElementInRestriction>
+    </restrictedElement>
+    <restrictedElement locked="false">
+        <nestedElementInRestriction locked="true">de.is24.deadcode4j.UnlockedClassInLockedNestedElement</nestedElementInRestriction>
+    </restrictedElement>
+    <restrictedElement locked="true">
+        <nestedElementInRestriction>de.is24.deadcode4j.LockedClassInNestedElement</nestedElementInRestriction>
+    </restrictedElement>
 </root>

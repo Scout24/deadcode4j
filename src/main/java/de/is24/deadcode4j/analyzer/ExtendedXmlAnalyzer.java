@@ -1,7 +1,6 @@
 package de.is24.deadcode4j.analyzer;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.Maps;
 import de.is24.deadcode4j.AnalysisContext;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
@@ -14,6 +13,7 @@ import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.fromNullable;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Iterables.getLast;
+import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static de.is24.deadcode4j.Utils.checkNotNull;
 
 /**
@@ -76,25 +76,26 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
     private class XmlHandler extends DefaultHandler {
         private final AnalysisContext analysisContext;
         private final Deque<XmlElement> xmlElements = new ArrayDeque<XmlElement>();
-        private StringBuilder buffer;
+        private final Deque<StringBuilder> textBuffers = new ArrayDeque<StringBuilder>();
 
         public XmlHandler(AnalysisContext analysisContext) {
             this.analysisContext = analysisContext;
         }
 
         @Override
-        public void startElement(String uri, String localName, String qName, Attributes attributes) throws StopParsing {
+        public void startElement(String ignoredUri, String localName, String ignoredQName, Attributes attributes) throws StopParsing {
             xmlElements.addLast(new XmlElement(localName, attributes));
-            buffer = new StringBuilder(128);
+            this.textBuffers.addLast(new StringBuilder(128));
         }
 
         @Override
         public void characters(char[] ch, int start, int length) {
-            buffer.append(new String(ch, start, length).trim());
+            this.textBuffers.getLast().append(new String(ch, start, length).trim());
         }
 
         @Override
         public void endElement(String uri, String localName, String qName) {
+            StringBuilder buffer = textBuffers.removeLast();
             Optional<String> text = fromNullable(buffer.length() > 0 ? buffer.toString() : null);
             for (Path path : pathsToMatch) {
                 Optional<String> dependee = path.elementEnds(xmlElements, text);
@@ -160,10 +161,15 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
                 }
                 lastPathElement = pathElement;
             }
-            if (xmlElement == null) {
+            if (xmlElement == null || xmlElementIterator.hasNext()) {
                 return absent();
             }
             return lastPathElement.extract(xmlElement, containedText);
+        }
+
+        public Path anyElementNamed(String name) {
+            pathElements.add(new Element(name));
+            return this;
         }
 
     }
@@ -175,11 +181,28 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
      */
     private static class XmlElement {
         public final String name;
-        public final Attributes attributes;
+        public final Map<String, String> attributes;
 
         private XmlElement(String name, Attributes attributes) {
             this.name = name;
-            this.attributes = attributes;
+            Map<String, String> attributeMap = newHashMapWithExpectedSize(0);
+            for (int i = attributes.getLength(); i-- > 0; ) {
+                attributeMap.put(attributes.getLocalName(i), attributes.getValue(i));
+            }
+            this.attributes = Collections.unmodifiableMap(attributeMap);
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder result = new StringBuilder(name);
+            for (Map.Entry<String, String> attribute : attributes.entrySet()) {
+                result.append(attribute.getKey()).append("='").append(attribute.getValue()).append("',");
+            }
+            if (result.length() > name.length()) {
+                result.insert(name.length(), "[");
+                result.replace(result.length() - 1, result.length(), "]");
+            }
+            return result.toString();
         }
 
     }
@@ -191,7 +214,7 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
      */
     protected static class Element {
         private final String name;
-        private final Map<String, String> attributeRestrictions = Maps.newHashMapWithExpectedSize(0);
+        private final Map<String, String> attributeRestrictions = newHashMapWithExpectedSize(0);
         private boolean extractText = false;
         private String attributeToExtract;
 
@@ -209,9 +232,9 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
                 return containedText;
             }
             if (attributeToExtract != null) {
-                return fromNullable(xmlElement.attributes.getValue(attributeToExtract));
+                return fromNullable(xmlElement.attributes.get(attributeToExtract));
             }
-            return absent(); // TODO or thrown an exception?
+            return absent(); // TODO or throw an exception?
         }
 
         public void registerTextAsClass() {
@@ -228,7 +251,7 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
 
         private boolean matchesAttributes(XmlElement xmlElement) {
             for (Map.Entry<String, String> attributeRestriction : attributeRestrictions.entrySet()) {
-                String value = xmlElement.attributes.getValue(attributeRestriction.getKey());
+                String value = xmlElement.attributes.get(attributeRestriction.getKey());
                 if (!attributeRestriction.getValue().equals(value)) {
                     return false;
                 }
