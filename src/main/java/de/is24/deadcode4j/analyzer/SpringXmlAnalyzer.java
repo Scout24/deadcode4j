@@ -5,8 +5,8 @@ package de.is24.deadcode4j.analyzer;
  * <ul>
  * <li>lists the <code>bean</code> classes being referenced</li>
  * <li>lists the classes being referenced by a <a href="http://docs.spring.io/autorepo/docs/spring-framework/3.2.x/javadoc-api/org/springframework/beans/factory/config/MethodInvokingFactoryBean.html">
- *     MethodInvokingFactoryBean</a>; note however that the <tt>staticMethod</tt> property is not supported, but the
- *     more verbose approach using the <tt>targetClass</tt> and <tt>targetMethod</tt> properties</li>
+ * MethodInvokingFactoryBean</a>; note however that the <tt>staticMethod</tt> property is not supported, but the
+ * more verbose approach using the <tt>targetClass</tt> and <tt>targetMethod</tt> properties</li>
  * <li>lists the <a href="http://cxf.apache.org/schemas/jaxws.xsd">CXF <code>endpoint</code></a> implementor classes
  * being referenced</li>
  * <li>lists the classes executed by
@@ -24,16 +24,18 @@ public class SpringXmlAnalyzer extends ExtendedXmlAnalyzer {
     public SpringXmlAnalyzer() {
         super("_Spring-XML_", ".xml", "beans");
         anyElementNamed("bean").registerAttributeAsClass("class");
-        anyElementNamed("bean").withAttributeValue("class", "org.springframework.beans.factory.config.MethodInvokingFactoryBean").
-                anyElementNamed("property").withAttributeValue("name", "targetClass").
-                anyElementNamed("value").registerTextAsClass();
-        anyElementNamed("bean").withAttributeValue("class", "org.springframework.beans.factory.config.MethodInvokingFactoryBean").
-                anyElementNamed("property").withAttributeValue("name", "targetClass").
-                registerAttributeAsClass("value");
+        targetClassPropertyOfMethodInvokingFactoryBean().anyElementNamed("value").registerTextAsClass();
+        targetClassPropertyOfMethodInvokingFactoryBean().registerAttributeAsClass("value");
         anyElementNamed("endpoint").registerAttributeAsClass("implementor");
         anyElementNamed("endpoint").registerAttributeAsClass("implementorClass");
         anyElementNamed("property").withAttributeValue("name", "jobClass").registerAttributeAsClass("value");
         anyElementNamed("property").withAttributeValue("name", "viewClass").registerAttributeAsClass("value");
+    }
+
+    private Path targetClassPropertyOfMethodInvokingFactoryBean() {
+        return anyElementNamed("bean").
+                withAttributeValue("class", "org.springframework.beans.factory.config.MethodInvokingFactoryBean").
+                anyElementNamed("property").withAttributeValue("name", "targetClass");
     }
 
 }
