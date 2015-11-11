@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app
+        xmlns="http://java.sun.com/xml/ns/javaee"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+        version="3.0">
+    <context-param>
+        <param-name>
+            <!-- a distracting comment -->
+            dummy name
+        </param-name>
+        <param-value>
+            <!-- a distracting comment -->
+            dummy value
+        </param-value>
+    </context-param>
+    <listener>
+        <listener-class>
+            <!-- a distracting comment -->
+            dummy.listener.class
+        </listener-class>
+    </listener>
+    <filter>
+        <filter-name>
+            <!-- a distracting comment -->
+            dummy filter
+        </filter-name>
+        <filter-class>
+            <!-- a distracting comment -->
+            dummy.filter.class
+        </filter-class>
+    </filter>
+    <servlet>
+        <servlet-name>
+            <!-- a distracting comment -->
+            dummy servlet
+        </servlet-name>
+        <servlet-class>
+            <!-- a distracting comment -->
+            dummy.servlet.class
+        </servlet-class>
+        <init-param>
+            <param-name>
+                <!-- a distracting comment -->
+                dummy name
+            </param-name>
+            <param-value>
+                <!-- a distracting comment -->
+                dummy value
+            </param-value>
+        </init-param>
+    </servlet>
+</web-app>
