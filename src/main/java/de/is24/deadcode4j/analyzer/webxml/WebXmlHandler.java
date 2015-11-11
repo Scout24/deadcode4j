@@ -4,7 +4,7 @@ import java.util.List;
 
 /**
  * Base class for web.xml event handlers. {@code WebXmlHandler}s are used by
- * {@link WebXmlAdapter} that translates general XML events into web.xml
+ * {@link BaseWebXmlAnalyzer} that translates general XML events into web.xml
  * events.
  *
  * @since 2.1.0

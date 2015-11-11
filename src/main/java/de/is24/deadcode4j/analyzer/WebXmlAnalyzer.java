@@ -1,10 +1,9 @@
 package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.AnalysisContext;
+import de.is24.deadcode4j.analyzer.webxml.BaseWebXmlAnalyzer;
 import de.is24.deadcode4j.analyzer.webxml.Param;
-import de.is24.deadcode4j.analyzer.webxml.WebXmlAdapter;
 import de.is24.deadcode4j.analyzer.webxml.WebXmlHandler;
-import org.xml.sax.helpers.DefaultHandler;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -14,16 +13,12 @@ import java.util.List;
  *
  * @since 1.2.0
  */
-public final class WebXmlAnalyzer extends XmlAnalyzer {
-
-    public WebXmlAnalyzer() {
-        super("web.xml");
-    }
+public final class WebXmlAnalyzer extends BaseWebXmlAnalyzer {
 
     @Nonnull
     @Override
-    protected DefaultHandler createHandlerFor(@Nonnull final AnalysisContext analysisContext) {
-        return new WebXmlAdapter(new WebXmlHandler() {
+    protected WebXmlHandler createWebXmlHandlerFor(@Nonnull final AnalysisContext analysisContext) {
+        return new WebXmlHandler() {
             @Override
             public void filter(String className) {
                 addDependency(className);
@@ -42,6 +37,6 @@ public final class WebXmlAnalyzer extends XmlAnalyzer {
             private void addDependency(String className) {
                 analysisContext.addDependencies("_web.xml_", className);
             }
-        });
+        };
     }
 }

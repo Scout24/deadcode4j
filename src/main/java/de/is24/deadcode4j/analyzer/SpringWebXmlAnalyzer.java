@@ -2,23 +2,14 @@ package de.is24.deadcode4j.analyzer;
 
 import com.google.common.base.Optional;
 import de.is24.deadcode4j.AnalysisContext;
+import de.is24.deadcode4j.analyzer.webxml.BaseWebXmlAnalyzer;
 import de.is24.deadcode4j.analyzer.webxml.Param;
-import de.is24.deadcode4j.analyzer.webxml.WebXmlAdapter;
 import de.is24.deadcode4j.analyzer.webxml.WebXmlHandler;
-import org.xml.sax.Attributes;
-import org.xml.sax.helpers.DefaultHandler;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayDeque;
-import java.util.Collection;
-import java.util.Deque;
 import java.util.List;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
-import static com.google.common.collect.Iterables.elementsEqual;
-import static com.google.common.collect.Iterables.paddedPartition;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
-import static java.util.Arrays.asList;
 
 
 /**
@@ -30,15 +21,12 @@ import static java.util.Arrays.asList;
  *
  * @since 1.4
  */
-public final class SpringWebXmlAnalyzer extends XmlAnalyzer {
-    public SpringWebXmlAnalyzer() {
-        super("web.xml");
-    }
+public final class SpringWebXmlAnalyzer extends BaseWebXmlAnalyzer {
 
     @Nonnull
     @Override
-    protected DefaultHandler createHandlerFor(@Nonnull final AnalysisContext analysisContext) {
-        return new WebXmlAdapter(new WebXmlHandler() {
+    protected WebXmlHandler createWebXmlHandlerFor(@Nonnull final AnalysisContext analysisContext) {
+        return new WebXmlHandler() {
             @Override
             public void contextParam(Param param) {
                 param(param);
@@ -74,6 +62,6 @@ public final class SpringWebXmlAnalyzer extends XmlAnalyzer {
                     }
                 }
             }
-        });
+        };
     }
 }
