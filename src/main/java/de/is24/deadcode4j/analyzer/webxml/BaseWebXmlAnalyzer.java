@@ -44,12 +44,15 @@ public abstract class BaseWebXmlAnalyzer extends XmlAnalyzer {
                 asList("web-app", "context-param", "param-name"),
                 asList("web-app", "context-param", "param-value"),
                 asList("web-app", "filter", "filter-class"),
+                asList("web-app", "filter", "init-param", "param-name"),
+                asList("web-app", "filter", "init-param", "param-value"),
                 asList("web-app", "listener", "listener-class"),
                 asList("web-app", "servlet", "servlet-class"),
                 asList("web-app", "servlet", "init-param", "param-name"),
                 asList("web-app", "servlet", "init-param", "param-value"));
         static final Collection<String> CONTEXT_PARAM_PATH = asList("web-app", "context-param");
         static final Collection<String> FILTER_PATH = asList("web-app", "filter");
+        static final Collection<String> FILTER_INIT_PARAM_PATH = asList("web-app", "filter", "init-param");
         static final Collection<String> LISTENER_PATH = asList("web-app", "listener");
         static final Collection<String> SERVLET_INIT_PARAM_PATH = asList("web-app", "servlet", "init-param");
         static final Collection<String> SERVLET_PATH = asList("web-app", "servlet");
@@ -85,6 +88,8 @@ public abstract class BaseWebXmlAnalyzer extends XmlAnalyzer {
                 storeCharacters(localName);
             } else if (matchesPath(CONTEXT_PARAM_PATH)) {
                 reportContextParam();
+            } else if (matchesPath(FILTER_INIT_PARAM_PATH)) {
+                storeInitParam();
             } else if (matchesPath(FILTER_PATH)) {
                 reportFilter();
             } else if (matchesPath(LISTENER_PATH)) {
@@ -119,7 +124,10 @@ public abstract class BaseWebXmlAnalyzer extends XmlAnalyzer {
         }
 
         void reportFilter() {
-            webXmlHandler.filter(getText("filter-class"));
+            webXmlHandler.filter(
+                    getText("filter-class"),
+                    new ArrayList<Param>(initParams));
+            initParams.clear();
         }
 
         void reportListener() {

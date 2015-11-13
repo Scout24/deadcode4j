@@ -20,7 +20,7 @@ public final class WebXmlAnalyzer extends BaseWebXmlAnalyzer {
     protected WebXmlHandler createWebXmlHandlerFor(@Nonnull final AnalysisContext analysisContext) {
         return new WebXmlHandler() {
             @Override
-            public void filter(String className) {
+            public void filter(String className, List<Param> initParams) {
                 addDependency(className);
             }
 
