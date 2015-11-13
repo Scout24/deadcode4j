@@ -124,16 +124,6 @@ public final class Utils {
     }
 
     /**
-     * Returns {@code null} if the given String is {@code null} or empty; or the argument otherwise.
-     *
-     * @since 2.0.0
-     */
-    @Nullable
-    public static String nullIfEmpty(@Nullable String string) {
-        return string == null || "".equals(string.trim()) ? null : string;
-    }
-
-    /**
      * A properly annotated implementation of {@link com.google.common.base.Preconditions#checkNotNull(Object)}.
      *
      * @since 2.0.0

@@ -32,6 +32,7 @@ import java.util.Map;
 
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
+import static com.google.common.base.Strings.emptyToNull;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
@@ -115,7 +116,7 @@ class ModuleGenerator {
             @Nonnull MavenProject project,
             @Nonnull Map<String, Module> knownModules) throws MojoExecutionException {
         String projectId = getKeyFor(project);
-        String encoding = nullIfEmpty(project.getProperties().getProperty("project.build.sourceEncoding"));
+        String encoding = emptyToNull(project.getProperties().getProperty("project.build.sourceEncoding"));
         if (encoding == null) {
             logger.warn("No encoding set for [{}]! Parsing source files may cause issues.", projectId);
         }

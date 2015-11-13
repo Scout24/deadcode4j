@@ -27,8 +27,8 @@ import java.net.URLEncoder;
 import java.util.List;
 import java.util.UUID;
 
+import static com.google.common.base.Strings.emptyToNull;
 import static com.google.common.collect.Lists.newArrayList;
-import static de.is24.deadcode4j.Utils.nullIfEmpty;
 import static de.is24.deadcode4j.plugin.UsageStatisticsManager.DeadCodeStatistics;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
@@ -137,7 +137,7 @@ public final class A_UsageStatisticsManager {
         deadCodeStatistics.config_skipUpdateCheck = false;
         expectedValues.add(deadCodeStatistics.config_skipUpdateCheck);
         for (String key : UsageStatisticsManager.SystemProperties.KEYS.keySet()) {
-            String value = nullIfEmpty(System.getProperties().getProperty(key));
+            String value = emptyToNull(System.getProperties().getProperty(key));
             if (value == null) {
                 value = UUID.randomUUID().toString();
                 System.getProperties().setProperty(key, value);

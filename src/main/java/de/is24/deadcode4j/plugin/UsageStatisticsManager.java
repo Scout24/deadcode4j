@@ -20,9 +20,9 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.*;
 
+import static com.google.common.base.Strings.emptyToNull;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
-import static de.is24.deadcode4j.Utils.nullIfEmpty;
 import static java.util.Arrays.asList;
 
 /**
@@ -246,7 +246,7 @@ public class UsageStatisticsManager {
         }
 
         public void setUsageStatisticsComment(String usageStatisticsComment) {
-            this.usageStatisticsComment = nullIfEmpty(usageStatisticsComment);
+            this.usageStatisticsComment = emptyToNull(usageStatisticsComment);
         }
 
         public void addRequestParameters(HashMap<String, String> parameters) {
@@ -308,7 +308,7 @@ public class UsageStatisticsManager {
             }
             Properties properties = legacySupport.getSession().getRequest().getSystemProperties();
             for (String key : KEYS.keySet()) {
-                String property = nullIfEmpty(properties.getProperty(key));
+                String property = emptyToNull(properties.getProperty(key));
                 if (property != null) {
                     systemProperties.values.put(key, property);
                 }
