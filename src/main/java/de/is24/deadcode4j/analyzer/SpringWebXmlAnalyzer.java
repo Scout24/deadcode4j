@@ -2,18 +2,14 @@ package de.is24.deadcode4j.analyzer;
 
 import com.google.common.base.Optional;
 import de.is24.deadcode4j.AnalysisContext;
-import org.xml.sax.Attributes;
-import org.xml.sax.helpers.DefaultHandler;
+import de.is24.deadcode4j.analyzer.webxml.BaseWebXmlAnalyzer;
+import de.is24.deadcode4j.analyzer.webxml.Param;
+import de.is24.deadcode4j.analyzer.webxml.WebXmlHandler;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayDeque;
-import java.util.Collection;
-import java.util.Deque;
+import java.util.List;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
-import static com.google.common.collect.Iterables.elementsEqual;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
-import static java.util.Arrays.asList;
 
 
 /**
@@ -25,102 +21,47 @@ import static java.util.Arrays.asList;
  *
  * @since 1.4
  */
-public final class SpringWebXmlAnalyzer extends XmlAnalyzer {
-    private static final Collection<String> CONTEXT_PARAM_PATH = asList("web-app", "context-param");
-    private static final Collection<String> SERVLET_INIT_PARAM_PATH = asList("web-app", "servlet", "init-param");
-
-    public SpringWebXmlAnalyzer() {
-        super("web.xml");
-    }
+public final class SpringWebXmlAnalyzer extends BaseWebXmlAnalyzer {
 
     @Nonnull
     @Override
-    protected DefaultHandler createHandlerFor(@Nonnull final AnalysisContext analysisContext) {
-        return new DefaultHandler() {
-            private final Deque<String> deque = new ArrayDeque<String>();
-            private StringBuilder buffer;
-            public String paramName;
-            public String paramValue;
-
+    protected WebXmlHandler createWebXmlHandlerFor(@Nonnull final AnalysisContext analysisContext) {
+        return new WebXmlHandler() {
             @Override
-            public void startElement(String uri, String localName, String qName, Attributes attributes) throws StopParsing {
-                if (isAtParameterLevel()) {
-                    buffer = new StringBuilder(128);
-                }
-                deque.add(localName);
+            public void contextParam(Param param) {
+                param(param);
             }
 
             @Override
-            public void characters(char[] ch, int start, int length) {
-                if (buffer != null) {
-                    buffer.append(new String(ch, start, length).trim());
+            public void servlet(String className, List<Param> initParams) {
+                for (Param initParam : initParams) {
+                    param(initParam);
                 }
             }
 
-            @Override
-            public void endElement(String uri, String localName, String qName) {
-                if (isAtParameterLevel()) {
-                    reportDependencies();
-                    clearParameter();
-                } else {
-                    storeCharacters(localName);
-                }
-                deque.removeLast();
-            }
-
-            private boolean isAtParameterLevel() {
-                return matchesPath(CONTEXT_PARAM_PATH) || matchesPath(SERVLET_INIT_PARAM_PATH);
-            }
-
-            private boolean matchesPath(Collection<String> path) {
-                return path.size() == deque.size() && elementsEqual(path, deque);
-            }
-
-            private void reportDependencies() {
-                if (paramValue == null) {
-                    return;
-                }
-                if ("contextClass".equals(paramName)) {
-                    analysisContext.addDependencies("_Spring-Context_", paramValue);
-                } else if ("contextInitializerClasses".equals(paramName)) {
-                    for (String initializerClass : paramValue.split(",")) {
-                        initializerClass=initializerClass.trim();
-                        if (!isNullOrEmpty(initializerClass)) {
+            private void param(Param param) {
+                if ("contextClass".equals(param.getName())) {
+                    analysisContext.addDependencies("_Spring-Context_", param.getValue());
+                } else if ("contextInitializerClasses".equals(param.getName())) {
+                    for (String initializerClass : param.getValue().split(",")) {
+                        initializerClass = initializerClass.trim();
+                        if (!initializerClass.isEmpty()) {
                             analysisContext.addDependencies("_Spring-ContextInitializer_", initializerClass);
                         }
                     }
-                } else if ("contextConfigLocation".equals(paramName)) {
-                    for (String configLocation : paramValue.split(",")) {
-                        configLocation=configLocation.trim();
-                        if (isNullOrEmpty(configLocation)) {
-                            continue;
-                        }
-                        Optional<String> referencedClass =
-                                classPoolAccessorFor(analysisContext).resolveClass(configLocation);
-                        if (referencedClass.isPresent()) {
-                            analysisContext.addDependencies("_Spring-ContextInitializer_", referencedClass.get());
+                } else if ("contextConfigLocation".equals(param.getName())) {
+                    for (String configLocation : param.getValue().split(",")) {
+                        configLocation = configLocation.trim();
+                        if (!configLocation.isEmpty()) {
+                            Optional<String> referencedClass =
+                                    classPoolAccessorFor(analysisContext).resolveClass(configLocation);
+                            if (referencedClass.isPresent()) {
+                                analysisContext.addDependencies("_Spring-ContextInitializer_", referencedClass.get());
+                            }
                         }
                     }
                 }
             }
-
-            private void clearParameter() {
-                paramName = null;
-                paramValue = null;
-            }
-
-            private void storeCharacters(String localName) {
-                if (buffer != null) {
-                    if ("param-name".equals(localName)) {
-                        paramName = buffer.toString();
-                    } else if ("param-value".equals(localName)) {
-                        paramValue = buffer.toString();
-                    }
-                    buffer = null;
-                }
-            }
-
         };
-
     }
 }
