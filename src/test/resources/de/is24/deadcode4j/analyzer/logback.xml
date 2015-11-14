@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" debug="true">
+    <define name="prop" class="dummy.logback.Property" />
+    <contextListener class="dummy.logback.ContextListener" />
+    <statusListener class="dummy.logback.StatusListener" />
+    <appender name="APPENDER" class="dummy.logback.Appender" />
+    <root level="WARN">
+        <appender-ref ref="APPENDER" />
+    </root>
+</configuration>
