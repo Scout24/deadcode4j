@@ -35,7 +35,9 @@ public class A_BaseWebXmlAnalyzer extends AnAnalyzer<BaseWebXmlAnalyzer>{
     @Test
     public void sendsFilterEventForAFilterNode() throws Exception {
         analyzeFile("de/is24/deadcode4j/analyzer/webxml/web.xml");
-        verify(handler).filter("dummy.filter.class");
+        verify(handler).filter(
+                eq("dummy.filter.class"),
+                eq(asList(new Param("dummy name", "dummy value"))));
     }
 
     @Test

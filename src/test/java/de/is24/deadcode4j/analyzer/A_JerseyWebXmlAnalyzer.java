@@ -12,6 +12,8 @@ public class A_JerseyWebXmlAnalyzer extends AnAnalyzer<JerseyWebXmlAnalyzer> {
     @Test
     public void shouldParseWebXmlFiles() {
         analyzeFile("de/is24/deadcode4j/analyzer/jersey.web.xml");
-        assertThatDependenciesAreReported("jersey.dummy.Application");
+        assertThatDependenciesAreReported(
+                "jersey.dummy.filter.Application",
+                "jersey.dummy.servlet.Application");
     }
 }

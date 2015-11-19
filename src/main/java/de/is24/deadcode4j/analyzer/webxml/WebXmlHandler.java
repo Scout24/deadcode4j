@@ -22,8 +22,9 @@ public class WebXmlHandler {
      * Receive notification about a {@code filter} node.
      *
      * @param className the text of the {@code filter-class} node.
+     * @param initParams the filters init params.
      */
-    public void filter(String className) {
+    public void filter(String className, List<Param> initParams) {
     }
 
     /**
