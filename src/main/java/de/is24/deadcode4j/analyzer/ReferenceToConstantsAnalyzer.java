@@ -6,13 +6,13 @@ import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.*;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Sets;
 import de.is24.deadcode4j.AnalysisContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
-import de.is24.javaparser.FixedVoidVisitorAdapter;
 import javassist.CtClass;
 import javassist.CtField;
 import javassist.Modifier;
@@ -381,7 +381,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
         }, null);
     }
 
-    private static class LocalVariableRecordingVisitor<A> extends FixedVoidVisitorAdapter<A> {
+    private static class LocalVariableRecordingVisitor<A> extends VoidVisitorAdapter<A> {
 
         @Nonnull
         private final Deque<Set<String>> localVariables = newLinkedList();
