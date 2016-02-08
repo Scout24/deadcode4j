@@ -7,9 +7,9 @@ import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.MethodReferenceExpr;
 import com.github.javaparser.ast.type.*;
+import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.google.common.base.Optional;
 import de.is24.deadcode4j.AnalysisContext;
-import de.is24.javaparser.FixedVoidVisitorAdapter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -118,7 +118,7 @@ public class TypeErasureAnalyzer extends JavaFileAnalyzer {
         }, null);
     }
 
-    private static class TypeParameterRecordingVisitor<A> extends FixedVoidVisitorAdapter<A> {
+    private static class TypeParameterRecordingVisitor<A> extends VoidVisitorAdapter<A> {
         private final Deque<Set<String>> definedTypeParameters = newLinkedList();
 
         @Override

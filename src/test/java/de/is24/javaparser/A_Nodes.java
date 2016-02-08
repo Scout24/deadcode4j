@@ -8,6 +8,7 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.QualifiedNameExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -52,7 +53,7 @@ public final class A_Nodes extends AUtilityClass {
         CompilationUnit compilationUnit = JavaParser.parse(
                 FileLoader.getFile("de/is24/javaparser/TypeNameTestClass.java"));
 
-        compilationUnit.accept(new FixedVoidVisitorAdapter<Void>() {
+        compilationUnit.accept(new VoidVisitorAdapter<Void>() {
             @Override
             public void visit(StringLiteralExpr n, Void arg) {
                 assertThat("Name of anonymous class is invalid!", Nodes.getTypeName(n), is(n.getValue()));

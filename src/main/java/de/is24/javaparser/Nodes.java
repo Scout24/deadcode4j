@@ -9,6 +9,7 @@ import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.QualifiedNameExpr;
 import com.github.javaparser.ast.stmt.TypeDeclarationStmt;
+import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
 
 import javax.annotation.Nonnull;
 import java.util.Deque;
@@ -80,7 +81,7 @@ public class Nodes {
         if (anonymousClasses.isEmpty()) {
             return;
         }
-        Boolean typeResolved = typeDeclaration.accept(new FixedGenericVisitorAdapter<Boolean, Void>() {
+        Boolean typeResolved = typeDeclaration.accept(new GenericVisitorAdapter<Boolean, Void>() {
             private Deque<Integer> indexOfAnonymousClasses = newLinkedList();
             private Deque<Integer> indexOfNamedAnonymousClasses = newLinkedList();
             private int indexOfNodeToFind = anonymousClasses.size() - 1;
