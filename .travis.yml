@@ -11,7 +11,7 @@ cache:
 
 before_install:
   # https://github.com/travis-ci/travis-ci/issues/1689 & https://github.com/travis-ci/travis-ci/issues/4613
-  - export MAVEN_SKIP_RC="true"
+  - export MAVEN_SKIP_RC=true
   # https://github.com/travis-ci/travis-ci/issues/5227
   - sudo hostname "$(hostname | cut -c1-63)"
   - sed -e "s/^\\(127\\.0\\.0\\.1.*\\)/\\1 $(hostname | cut -c1-63)/" /etc/hosts | sudo tee /etc/hosts
