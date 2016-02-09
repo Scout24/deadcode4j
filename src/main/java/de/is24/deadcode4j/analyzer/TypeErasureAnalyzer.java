@@ -1,14 +1,15 @@
 package de.is24.deadcode4j.analyzer;
 
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.TypeParameter;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.expr.MethodReferenceExpr;
+import com.github.javaparser.ast.type.*;
+import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.google.common.base.Optional;
 import de.is24.deadcode4j.AnalysisContext;
-import de.is24.javaparser.FixedVoidVisitorAdapter;
-import japa.parser.ast.CompilationUnit;
-import japa.parser.ast.TypeParameter;
-import japa.parser.ast.body.ClassOrInterfaceDeclaration;
-import japa.parser.ast.body.ConstructorDeclaration;
-import japa.parser.ast.body.MethodDeclaration;
-import japa.parser.ast.type.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -117,7 +118,7 @@ public class TypeErasureAnalyzer extends JavaFileAnalyzer {
         }, null);
     }
 
-    private static class TypeParameterRecordingVisitor<A> extends FixedVoidVisitorAdapter<A> {
+    private static class TypeParameterRecordingVisitor<A> extends VoidVisitorAdapter<A> {
         private final Deque<Set<String>> definedTypeParameters = newLinkedList();
 
         @Override
@@ -142,6 +143,16 @@ public class TypeErasureAnalyzer extends JavaFileAnalyzer {
 
         @Override
         public void visit(MethodDeclaration n, A arg) {
+            this.definedTypeParameters.addLast(getTypeParameterNames(n.getTypeParameters()));
+            try {
+                super.visit(n, arg);
+            } finally {
+                this.definedTypeParameters.removeLast();
+            }
+        }
+
+        @Override
+        public void visit(MethodReferenceExpr n, A arg) {
             this.definedTypeParameters.addLast(getTypeParameterNames(n.getTypeParameters()));
             try {
                 super.visit(n, arg);

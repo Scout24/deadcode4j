@@ -1,14 +1,15 @@
 package de.is24.javaparser;
 
-import japa.parser.ast.CompilationUnit;
-import japa.parser.ast.Node;
-import japa.parser.ast.body.ClassOrInterfaceDeclaration;
-import japa.parser.ast.body.EnumDeclaration;
-import japa.parser.ast.body.TypeDeclaration;
-import japa.parser.ast.expr.NameExpr;
-import japa.parser.ast.expr.ObjectCreationExpr;
-import japa.parser.ast.expr.QualifiedNameExpr;
-import japa.parser.ast.stmt.TypeDeclarationStmt;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.EnumDeclaration;
+import com.github.javaparser.ast.body.TypeDeclaration;
+import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.expr.QualifiedNameExpr;
+import com.github.javaparser.ast.stmt.TypeDeclarationStmt;
+import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
 
 import javax.annotation.Nonnull;
 import java.util.Deque;
@@ -19,7 +20,7 @@ import static com.google.common.collect.Lists.newLinkedList;
 import static de.is24.deadcode4j.Utils.isEmpty;
 
 /**
- * Provides convenience methods for dealing with {@link japa.parser.ast.Node}s.
+ * Provides convenience methods for dealing with {@link Node}s.
  *
  * @since 2.0.0
  */
@@ -80,7 +81,7 @@ public class Nodes {
         if (anonymousClasses.isEmpty()) {
             return;
         }
-        Boolean typeResolved = typeDeclaration.accept(new FixedGenericVisitorAdapter<Boolean, Void>() {
+        Boolean typeResolved = typeDeclaration.accept(new GenericVisitorAdapter<Boolean, Void>() {
             private Deque<Integer> indexOfAnonymousClasses = newLinkedList();
             private Deque<Integer> indexOfNamedAnonymousClasses = newLinkedList();
             private int indexOfNodeToFind = anonymousClasses.size() - 1;

@@ -1,18 +1,18 @@
 package de.is24.deadcode4j.analyzer;
 
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.body.*;
+import com.github.javaparser.ast.expr.*;
+import com.github.javaparser.ast.stmt.*;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Sets;
 import de.is24.deadcode4j.AnalysisContext;
 import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
-import de.is24.javaparser.FixedVoidVisitorAdapter;
-import japa.parser.ast.CompilationUnit;
-import japa.parser.ast.ImportDeclaration;
-import japa.parser.ast.body.*;
-import japa.parser.ast.expr.*;
-import japa.parser.ast.stmt.*;
-import japa.parser.ast.type.ClassOrInterfaceType;
 import javassist.CtClass;
 import javassist.CtField;
 import javassist.Modifier;
@@ -32,13 +32,11 @@ import static com.google.common.collect.Iterables.*;
 import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
-import static de.is24.deadcode4j.Utils.checkNotNull;
-import static de.is24.deadcode4j.Utils.emptyIfNull;
-import static de.is24.deadcode4j.Utils.getOrAddMappedSet;
+import static de.is24.deadcode4j.Utils.*;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
-import static de.is24.javassist.CtClasses.*;
 import static de.is24.javaparser.ImportDeclarations.*;
 import static de.is24.javaparser.Nodes.getTypeName;
+import static de.is24.javassist.CtClasses.*;
 
 /**
  * Analyzes Java files and reports dependencies to classes that are not part of the byte code due to constant inlining.
@@ -357,11 +355,21 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             }
 
             @Override
+            public void visit(MethodReferenceExpr n, Void arg) {
+                // performance; only possible scope is TypeExpr - and types are irrelevant
+            }
+
+            @Override
             public void visit(NormalAnnotationExpr n, Void arg) {
                 // performance
                 for (final MemberValuePair m : emptyIfNull(n.getPairs())) {
                     m.accept(this, arg);
                 }
+            }
+
+            @Override
+            public void visit(Parameter n, Void arg) {
+                // performance
             }
 
             @Override
@@ -373,7 +381,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
         }, null);
     }
 
-    private static class LocalVariableRecordingVisitor<A> extends FixedVoidVisitorAdapter<A> {
+    private static class LocalVariableRecordingVisitor<A> extends VoidVisitorAdapter<A> {
 
         @Nonnull
         private final Deque<Set<String>> localVariables = newLinkedList();
@@ -531,6 +539,20 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                     for (VariableDeclarator variableDeclarator : variableDeclarationExpr.getVars()) {
                         blockVariables.add(variableDeclarator.getId().getName());
                     }
+                }
+                super.visit(n, arg);
+            } finally {
+                this.localVariables.removeLast();
+            }
+        }
+
+        @Override
+        public void visit(LambdaExpr n, A arg) {
+            HashSet<String> blockVariables = newHashSet();
+            this.localVariables.addLast(blockVariables);
+            try {
+                for (Parameter parameter : emptyIfNull(n.getParameters())) {
+                    blockVariables.add(parameter.getId().getName());
                 }
                 super.visit(n, arg);
             } finally {

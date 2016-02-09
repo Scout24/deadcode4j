@@ -80,6 +80,13 @@ public final class A_TypeErasureAnalyzer extends AnAnalyzer<TypeErasureAnalyzer>
     }
 
     @Test
+    public void recognizesLambdaMethodReference() {
+        analyzeFile("../../src/test/resources/de/is24/deadcode4j/java8/Lambda.java");
+
+        assertThatDependenciesAreReportedFor("de.is24.deadcode4j.java8.Lambda", "java.lang.String");
+    }
+
+    @Test
     public void gracefullyHandlesIrrelevantTypes() {
         analyzeFile("../../src/test/java/de/is24/deadcode4j/analyzer/typeerasure/ClassWithTypesThatShouldNotBeRecognized.java");
 
