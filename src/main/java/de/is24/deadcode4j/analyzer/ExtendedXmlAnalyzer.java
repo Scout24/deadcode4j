@@ -1,21 +1,22 @@
 package de.is24.deadcode4j.analyzer;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.Iterables;
 import de.is24.deadcode4j.AnalysisContext;
-import org.slf4j.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 import java.util.*;
 
-import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.fromNullable;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Iterables.getLast;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static de.is24.deadcode4j.Utils.checkNotNull;
+import static java.util.Collections.emptyMap;
 
 /**
  * Serves as base class with which to analyze XML files by defining which element nodes' text or attributes
@@ -25,9 +26,12 @@ import static de.is24.deadcode4j.Utils.checkNotNull;
  * @since 2.1.0
  */
 public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
+    @Nonnull
     protected final String dependerId;
+    @Nullable
     private final String rootElement;
-    private final Collection<Path> pathsToMatch = new ArrayList<Path>();
+    @Nonnull
+    private final Collection<XPath> pathsToMatch = new ArrayList<XPath>();
 
     /**
      * Creates a new <code>ExtendedXmlAnalyzer</code>.
@@ -69,144 +73,9 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
      *
      * @param name the name of the XML element to match
      */
-    public Path anyElementNamed(String name) {
-        Path path = new Path(logger, new Element(logger, name));
-        pathsToMatch.add(path);
-        return path;
-    }
-
-    /**
-     * @since 2.1.0
-     */
-    private class XmlHandler extends DefaultHandler {
-        private final AnalysisContext analysisContext;
-        private final Deque<XmlElement> xmlElements = new ArrayDeque<XmlElement>();
-        private final Deque<StringBuilder> textBuffers = new ArrayDeque<StringBuilder>();
-        private boolean firstElement = true;
-
-        public XmlHandler(AnalysisContext analysisContext) {
-            this.analysisContext = analysisContext;
-        }
-
-        @Override
-        public void startElement(String ignoredUri, String localName, String ignoredQName, Attributes attributes) throws StopParsing {
-            if (firstElement) {
-                if (rootElement != null && !rootElement.equals(localName)) {
-                    throw new StopParsing();
-                }
-                firstElement = false;
-            }
-            xmlElements.addLast(new XmlElement(localName, attributes));
-            this.textBuffers.addLast(new StringBuilder(128));
-        }
-
-        @Override
-        public void characters(char[] ch, int start, int length) {
-            this.textBuffers.getLast().append(new String(ch, start, length).trim());
-        }
-
-        @Override
-        public void endElement(String uri, String localName, String qName) {
-            StringBuilder buffer = textBuffers.removeLast();
-            Optional<String> text = fromNullable(buffer.length() > 0 ? buffer.toString() : null);
-            for (Path path : pathsToMatch) {
-                Optional<String> dependee = path.elementEnds(xmlElements, text);
-                if (dependee.isPresent()) {
-                    analysisContext.addDependencies(dependerId, dependee.get().trim());
-                }
-            }
-            xmlElements.removeLast();
-        }
-
-    }
-
-    /**
-     * Represents a path of XML elements to match and extract.
-     *
-     * @since 2.1.0
-     */
-    protected static class Path {
-        private final Logger logger;
-        private final List<Element> pathElements = new ArrayList<Element>();
-
-        private Path(@Nonnull Logger logger, @Nonnull Element firstElement) {
-            this.logger = logger;
-            pathElements.add(firstElement);
-        }
-
-        /**
-         * Extends the path to match with a subsequent XML element.
-         *
-         * @param name the name of the XML element to match
-         * @since 2.1.0
-         */
-        public Path anyElementNamed(String name) {
-            pathElements.add(new Element(logger, name));
-            return this;
-        }
-
-        /**
-         * Restricts the last XML element to only be matched if it has an attribute with the specified value.
-         *
-         * @since 2.1.0
-         */
-        public Path withAttributeValue(@Nonnull String attributeName, @Nonnull String requiredValue) {
-            getLast(pathElements).restrictAttribute(attributeName, requiredValue);
-            return this;
-        }
-
-        /**
-         * Registers the last XML element's text to be treated as a fully qualified class name.
-         *
-         * @since 2.1.0
-         */
-        public void registerTextAsClass() {
-            getLast(pathElements).registerTextAsClass();
-        }
-
-        /**
-         * Registers an attribute of the last XML element to be treated as a fully qualified class name.
-         *
-         * @param attributeName the name of the attribute to register
-         * @since 2.1.0
-         */
-        public void registerAttributeAsClass(String attributeName) {
-            getLast(pathElements).registerAttributeAsClass(attributeName);
-        }
-
-        private Optional<String> elementEnds(Deque<XmlElement> xmlElements, Optional<String> containedText) {
-            for (int i = xmlElements.size(); i-- > 0; ) {
-                Iterator<XmlElement> xmlElementIterator = xmlElements.iterator();
-                for (int j = i; j-- > 0; ) {
-                    xmlElementIterator.next();
-                }
-                Optional<String> result = findMatch(xmlElementIterator, containedText);
-                if (result.isPresent()) {
-                    return result;
-                }
-            }
-            return Optional.absent();
-        }
-
-        private Optional<String> findMatch(Iterator<XmlElement> xmlElementIterator, Optional<String> containedText) {
-            XmlElement xmlElement = null;
-            Element lastPathElement = null;
-            for (Element pathElement : pathElements) {
-                if (!xmlElementIterator.hasNext()) {
-                    return absent();
-                }
-                xmlElement = xmlElementIterator.next();
-                if (!pathElement.matches(xmlElement)) {
-                    return absent();
-                }
-                lastPathElement = pathElement;
-            }
-            if (xmlElement == null || xmlElementIterator.hasNext()) {
-                return absent();
-            }
-            return lastPathElement.extract(xmlElement, containedText);
-        }
-
+    @Nonnull
+    public final Path anyElementNamed(@Nonnull String name) {
+        return new Path(new Element(name));
     }
 
     /**
@@ -214,13 +83,16 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
      *
      * @since 2.1.0
      */
-    private static class XmlElement {
+    @Immutable
+    protected static class XmlElement {
+        @Nonnull
         public final String name;
+        @Nonnull
         public final Map<String, String> attributes;
 
-        private XmlElement(String name, Attributes attributes) {
+        public XmlElement(@Nonnull String name, @Nonnull Attributes attributes) {
             this.name = name;
-            Map<String, String> attributeMap = newHashMapWithExpectedSize(0);
+            Map<String, String> attributeMap = newHashMapWithExpectedSize(attributes.getLength());
             for (int i = attributes.getLength(); i-- > 0; ) {
                 attributeMap.put(attributes.getLocalName(i), attributes.getValue(i));
             }
@@ -243,51 +115,96 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
     }
 
     /**
+     * Represents an XPath equivalent to match against an {@link XmlElement} tree.
+     * This class handles the matching, subclasses will {@link #extractDependee(Iterable, Optional) extract the dependee} to report.
+     *
+     * @since 2.1.0
+     */
+    protected abstract static class XPath {
+        @Nonnull
+        protected final Path path;
+
+        /**
+         * Creates a new <code>XPath</code> expression for the specified path.
+         *
+         * @since 2.1.0
+         */
+        protected XPath(@Nonnull Path path) {
+            this.path = path;
+        }
+
+        @Nonnull
+        Optional<String> matchAndExtract(@Nonnull Deque<XmlElement> xmlElements, @Nonnull Optional<String> containedText) {
+            for (int i = xmlElements.size(); i-- > 0; ) {
+                Iterable<XmlElement> partialPath = Iterables.skip(xmlElements, i);
+                if (path.matches(partialPath)) {
+                    return extractDependee(partialPath, containedText);
+                }
+            }
+            return Optional.absent();
+        }
+
+        /**
+         * Called if a (sub-)tree of <code>XmlElement</code>s is found that this instance matches against in order to extract the dependee to report.
+         *
+         * @param xmlElements   the XML tree that matched for this XPath representation
+         * @param containedText the text of the last XML element
+         * @return the dependee to report
+         */
+        @Nonnull
+        protected abstract Optional<String> extractDependee(@Nonnull Iterable<XmlElement> xmlElements, @Nonnull Optional<String> containedText);
+
+    }
+
+    /**
      * Represents an XML element that is to be matched.
      *
      * @since 2.1.0
      */
+    @Immutable
     private static class Element {
-        private final Logger logger;
+        @Nonnull
         private final String name;
-        private final Map<String, String> attributeRestrictions = newHashMapWithExpectedSize(0);
-        private boolean extractText = false;
-        private String attributeToExtract;
+        @Nonnull
+        private final Map<String, String> attributeRestrictions;
 
-        public Element(@Nonnull Logger logger, @Nonnull String name) {
-            this.logger = logger;
-            checkArgument(name.trim().length() > 0, "The element's [name] must be set!");
+        Element(@Nonnull String name) {
+            checkArgument(name.trim().length() > 0, "The Element's [name] must be set!");
             this.name = name;
+            attributeRestrictions = emptyMap();
         }
 
-        public void restrictAttribute(@Nonnull String attribute, @Nonnull String value) {
-            attributeRestrictions.put(attribute, value);
+        private Element(@Nonnull Element original, @Nonnull String attribute, @Nonnull String value) {
+            name = original.name;
+            HashMap<String, String> newAttributeRestrictions = new HashMap<String, String>(original.attributeRestrictions);
+            newAttributeRestrictions.put(attribute, value);
+            attributeRestrictions = newAttributeRestrictions;
         }
 
-        public void registerTextAsClass() {
-            extractText = true;
+        @Override
+        public String toString() {
+            StringBuilder buffy = new StringBuilder(name);
+            if (!attributeRestrictions.isEmpty()) {
+                buffy.append("[");
+                for (Map.Entry<String, String> entry : attributeRestrictions.entrySet()) {
+                    buffy.append("@").append(entry.getKey()).append("='").append(entry.getValue()).append("' and ");
+                }
+                buffy.setLength(buffy.length() - 5);
+                buffy.append("]");
+            }
+            return buffy.toString();
         }
 
-        public void registerAttributeAsClass(String attributeWithClass) {
-            attributeToExtract = attributeWithClass;
+        @Nonnull
+        Element restrictAttribute(@Nonnull String attribute, @Nonnull String value) {
+            return new Element(this, attribute, value);
         }
 
-        public boolean matches(XmlElement xmlElement) {
+        boolean matches(@Nonnull XmlElement xmlElement) {
             return name.equals(xmlElement.name) && matchesAttributes(xmlElement);
         }
 
-        public Optional<String> extract(XmlElement xmlElement, Optional<String> containedText) {
-            if (extractText) {
-                return containedText;
-            }
-            if (attributeToExtract != null) {
-                return fromNullable(xmlElement.attributes.get(attributeToExtract));
-            }
-            logger.warn("Could not extract fqcn of matched element!");
-            return absent();
-        }
-
-        private boolean matchesAttributes(XmlElement xmlElement) {
+        private boolean matchesAttributes(@Nonnull XmlElement xmlElement) {
             for (Map.Entry<String, String> attributeRestriction : attributeRestrictions.entrySet()) {
                 String value = xmlElement.attributes.get(attributeRestriction.getKey());
                 if (!attributeRestriction.getValue().equals(value)) {
@@ -297,6 +214,165 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
             return true;
         }
 
+    }
+
+    /**
+     * @since 2.1.0
+     */
+    private class XmlHandler extends DefaultHandler {
+        @Nonnull
+        private final AnalysisContext analysisContext;
+        @Nonnull
+        private final Deque<XmlElement> xmlElements = new ArrayDeque<XmlElement>();
+        @Nonnull
+        private final Deque<StringBuilder> textBuffers = new ArrayDeque<StringBuilder>();
+        private boolean firstElement = true;
+
+        public XmlHandler(@Nonnull AnalysisContext analysisContext) {
+            this.analysisContext = analysisContext;
+        }
+
+        @Override
+        public void startElement(String ignoredUri, String localName, String ignoredQName, Attributes attributes) throws StopParsing {
+            if (firstElement) {
+                if (rootElement != null && !rootElement.equals(localName)) {
+                    throw new StopParsing();
+                }
+                firstElement = false;
+            }
+            xmlElements.addLast(new XmlElement(localName, attributes));
+            textBuffers.addLast(new StringBuilder(128));
+        }
+
+        @Override
+        public void characters(char[] ch, int start, int length) {
+            this.textBuffers.getLast().append(new String(ch, start, length).trim());
+        }
+
+        @Override
+        public void endElement(String uri, String localName, String qName) {
+            StringBuilder buffer = textBuffers.removeLast();
+            Optional<String> text = fromNullable(buffer.length() > 0 ? buffer.toString() : null);
+            for (XPath xPath : pathsToMatch) {
+                Optional<String> dependee = xPath.matchAndExtract(xmlElements, text);
+                if (dependee.isPresent()) {
+                    analysisContext.addDependencies(dependerId, dependee.get().trim());
+                }
+            }
+            xmlElements.removeLast();
+        }
+
+    }
+
+    /**
+     * Represents a path of XML elements to match.
+     *
+     * @since 2.1.0
+     */
+    @Immutable
+    protected class Path {
+        @Nonnull
+        private final List<Element> pathElements;
+
+        Path(@Nonnull Element firstElement) {
+            pathElements = Collections.singletonList(firstElement);
+        }
+
+        private Path(@Nonnull Path original, @Nonnull String elementName) {
+            pathElements = new ArrayList<Element>(original.pathElements);
+            pathElements.add(new Element(elementName));
+        }
+
+        private Path(@Nonnull Path original, @Nonnull Element lastElementReplacement) {
+            pathElements = new ArrayList<Element>(original.pathElements);
+            pathElements.set(pathElements.size() - 1, lastElementReplacement);
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder buffy = new StringBuilder("//");
+            for (Element pathElement : pathElements) {
+                buffy.append(pathElement).append("/");
+            }
+            buffy.setLength(buffy.length() - 1);
+            return buffy.toString();
+        }
+
+        /**
+         * Extends the path to match with a subsequent XML element.
+         *
+         * @param name the name of the XML element to match
+         * @since 2.1.0
+         */
+        @Nonnull
+        public Path anyElementNamed(@Nonnull String name) {
+            return new Path(this, name);
+        }
+
+        /**
+         * Restricts the last XML element to only be matched if it has an attribute with the specified value.
+         *
+         * @since 2.1.0
+         */
+        @Nonnull
+        public Path withAttributeValue(@Nonnull String attributeName, @Nonnull String requiredValue) {
+            return new Path(this, getLast(pathElements).restrictAttribute(attributeName, requiredValue));
+        }
+
+        /**
+         * Registers the last XML element's text to be treated as a fully qualified class name.
+         *
+         * @since 2.1.0
+         */
+        public void registerTextAsClass() {
+            pathsToMatch.add(new XPath(this) {
+                @Override
+                public String toString() {
+                    return path + "[text()]";
+                }
+
+                @Nonnull
+                @Override
+                protected Optional<String> extractDependee(@Nonnull Iterable<XmlElement> xmlElements, @Nonnull Optional<String> containedText) {
+                    return containedText;
+                }
+            });
+        }
+
+        /**
+         * Registers an attribute of the last XML element to be treated as a fully qualified class name.
+         *
+         * @param attributeName the name of the attribute to register
+         * @since 2.1.0
+         */
+        public void registerAttributeAsClass(final String attributeName) {
+            pathsToMatch.add(new XPath(this) {
+                @Override
+                public String toString() {
+                    return path + "/@" + attributeName;
+                }
+
+                @Nonnull
+                @Override
+                protected Optional<String> extractDependee(@Nonnull Iterable<XmlElement> xmlElements, @Nonnull Optional<String> containedText) {
+                    return fromNullable(getLast(xmlElements).attributes.get(attributeName));
+                }
+            });
+        }
+
+        boolean matches(@Nonnull Iterable<XmlElement> xmlElements) {
+            if (pathElements.size() != Iterables.size(xmlElements)) {
+                return false;
+            }
+
+            Iterator<XmlElement> xmlElementIterator = xmlElements.iterator();
+            for (Element pathElement : pathElements) {
+                if (!pathElement.matches(xmlElementIterator.next())) {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 
 }

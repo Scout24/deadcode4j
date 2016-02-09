@@ -24,18 +24,20 @@ public class SpringXmlAnalyzer extends ExtendedXmlAnalyzer {
     public SpringXmlAnalyzer() {
         super("_Spring-XML_", ".xml", "beans");
         anyElementNamed("bean").registerAttributeAsClass("class");
-        targetClassPropertyOfMethodInvokingFactoryBean().anyElementNamed("value").registerTextAsClass();
-        targetClassPropertyOfMethodInvokingFactoryBean().registerAttributeAsClass("value");
+
+        Path methodInvokingFactoryBean = anyElementNamed("bean").withAttributeValue("class", "org.springframework.beans.factory.config.MethodInvokingFactoryBean");
+        registerPropertyValueAsClass(methodInvokingFactoryBean, "targetClass");
+
         anyElementNamed("endpoint").registerAttributeAsClass("implementor");
         anyElementNamed("endpoint").registerAttributeAsClass("implementorClass");
         anyElementNamed("property").withAttributeValue("name", "jobClass").registerAttributeAsClass("value");
         anyElementNamed("property").withAttributeValue("name", "viewClass").registerAttributeAsClass("value");
     }
 
-    private Path targetClassPropertyOfMethodInvokingFactoryBean() {
-        return anyElementNamed("bean").
-                withAttributeValue("class", "org.springframework.beans.factory.config.MethodInvokingFactoryBean").
-                anyElementNamed("property").withAttributeValue("name", "targetClass");
+    private void registerPropertyValueAsClass(Path beanPath, String propertyName) {
+        Path propertyPath = beanPath.anyElementNamed("property").withAttributeValue("name", propertyName);
+        propertyPath.registerAttributeAsClass("value");
+        propertyPath.anyElementNamed("value").registerTextAsClass();
     }
 
 }
