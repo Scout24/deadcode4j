@@ -40,6 +40,7 @@ public abstract class BaseWebXmlAnalyzer extends XmlAnalyzer {
 
     // Translates XML events into web.xml events that can be consumed by a WebXmlHandler
     private static class WebXmlAdapter extends DefaultHandler {
+        @SuppressWarnings("unchecked")
         static final Collection<List<String>> NODES_WITH_TEXT = asList(
                 asList("web-app", "context-param", "param-name"),
                 asList("web-app", "context-param", "param-value"),
