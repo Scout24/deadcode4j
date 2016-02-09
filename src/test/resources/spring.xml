@@ -16,6 +16,6 @@
     </bean>
     <bean id="someOtherThing" class="de.is24.deadcode4j.MapFactory">
         <property name="key" value="value"/>
-        <property name="targetClass" value="java.lang.Runtime"/>
+        <property name="targetClass" value="java.lang.Thread"/>
     </bean>
 </beans>
