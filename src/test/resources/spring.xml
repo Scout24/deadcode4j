@@ -50,6 +50,18 @@
     <bean id="otherJob" class="de.is24.deadcode4j.jdb.Factory">
         <property name="jobClass" value="de.is24.deadcode4j.jdb.Three"/>
     </bean>
+    <!-- JobDetailFactoryBean -->
+    <bean id="simpleJobFactory" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+        <property name="jobClass" value="de.is24.deadcode4j.jdfb.One"/>
+    </bean>
+    <bean id="nestedJobFactory" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+        <property name="jobClass">
+            <value>de.is24.deadcode4j.jdfb.Two</value>
+        </property>
+    </bean>
+    <bean id="otherJobFactory" class="de.is24.deadcode4j.jdfb.Factory">
+        <property name="jobClass" value="de.is24.deadcode4j.jdfb.Three"/>
+    </bean>
     <!-- view resolver -->
     <bean id="simpleView" class="org.springframework.web.servlet.view.UrlBasedViewResolver">
         <property name="viewClass" value="de.is24.deadcode4j.vr.One"/>
