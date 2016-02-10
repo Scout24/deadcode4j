@@ -43,10 +43,23 @@
         <property name="jobClass" value="de.is24.deadcode4j.jdb.One"/>
     </bean>
     <bean id="nestedJob" class="org.springframework.scheduling.quartz.JobDetailBean">
-        <property name="jobClass"><value>de.is24.deadcode4j.jdb.Two</value>
-                </property>
+        <property name="jobClass">
+            <value>de.is24.deadcode4j.jdb.Two</value>
+        </property>
     </bean>
     <bean id="otherJob" class="de.is24.deadcode4j.jdb.Factory">
         <property name="jobClass" value="de.is24.deadcode4j.jdb.Three"/>
+    </bean>
+    <!-- view resolver -->
+    <bean id="simpleView" class="org.springframework.web.servlet.view.UrlBasedViewResolver">
+        <property name="viewClass" value="de.is24.deadcode4j.vr.One"/>
+    </bean>
+    <bean id="nestedView" class="org.springframework.web.servlet.view.UrlBasedViewResolver">
+        <property name="viewClass">
+            <value>de.is24.deadcode4j.vr.Two</value>
+        </property>
+    </bean>
+    <bean id="otherView" class="de.is24.deadcode4j.vr.ViewResolver">
+        <property name="viewClass" value="de.is24.deadcode4j.vr.Three"/>
     </bean>
 </beans>

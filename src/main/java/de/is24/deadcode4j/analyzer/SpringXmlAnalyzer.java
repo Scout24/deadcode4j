@@ -23,6 +23,12 @@ import javax.annotation.Nonnull;
  */
 public class SpringXmlAnalyzer extends ExtendedXmlAnalyzer {
 
+    private static void registerPropertyValueAsClass(@Nonnull Path beanPath, @Nonnull String propertyName) {
+        Path propertyPath = beanPath.anyElementNamed("property").withAttributeValue("name", propertyName);
+        propertyPath.registerAttributeAsClass("value");
+        propertyPath.anyElementNamed("value").registerTextAsClass();
+    }
+
     public SpringXmlAnalyzer() {
         super("_Spring-XML_", ".xml", "beans");
         // regular spring beans
@@ -39,18 +45,13 @@ public class SpringXmlAnalyzer extends ExtendedXmlAnalyzer {
         registerPropertyValueAsClass(
                 beanOfClass("org.springframework.scheduling.quartz.JobDetailBean"),
                 "jobClass");
-        anyElementNamed("property").withAttributeValue("name", "viewClass").registerAttributeAsClass("value");
+        // view resolver; this is not restricted to a class bc there are loads of subclasses
+        registerPropertyValueAsClass(anyElementNamed("bean"), "viewClass");
     }
 
     @Nonnull
     private Path beanOfClass(@Nonnull String beanClass) {
         return anyElementNamed("bean").withAttributeValue("class", beanClass);
-    }
-
-    private static void registerPropertyValueAsClass(@Nonnull Path beanPath, @Nonnull String propertyName) {
-        Path propertyPath = beanPath.anyElementNamed("property").withAttributeValue("name", propertyName);
-        propertyPath.registerAttributeAsClass("value");
-        propertyPath.anyElementNamed("value").registerTextAsClass();
     }
 
 }

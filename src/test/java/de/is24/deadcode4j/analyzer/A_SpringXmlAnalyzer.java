@@ -30,8 +30,14 @@ public final class A_SpringXmlAnalyzer extends AnAnalyzer<SpringXmlAnalyzer> {
                 "org.springframework.scheduling.quartz.JobDetailBean",
                 "de.is24.deadcode4j.jdb.Factory",
                 "de.is24.deadcode4j.jdb.One",
-                "de.is24.deadcode4j.jdb.Two"
-                );
+                "de.is24.deadcode4j.jdb.Two",
+                // view resolver
+                "org.springframework.web.servlet.view.UrlBasedViewResolver",
+                "de.is24.deadcode4j.vr.ViewResolver",
+                "de.is24.deadcode4j.vr.One",
+                "de.is24.deadcode4j.vr.Two",
+                "de.is24.deadcode4j.vr.Three"
+        );
     }
 
 }
