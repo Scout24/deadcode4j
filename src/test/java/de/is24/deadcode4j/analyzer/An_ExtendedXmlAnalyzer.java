@@ -1,12 +1,17 @@
 package de.is24.deadcode4j.analyzer;
 
+import com.google.common.base.Optional;
+import junit.framework.Assert;
 import org.junit.Test;
 
+import javax.annotation.Nonnull;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertTrue;
 
 public final class An_ExtendedXmlAnalyzer extends AnAnalyzer<ExtendedXmlAnalyzer> {
 
@@ -171,6 +176,21 @@ public final class An_ExtendedXmlAnalyzer extends AnAnalyzer<ExtendedXmlAnalyzer
         analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
 
         assertThatNoDependenciesAreReported();
+    }
+
+    @Test
+    public void reportsResultOfRegisteredDependeeExtractor() {
+        objectUnderTest.anyElementNamed("restrictedElement").withAttributeValue("locked", "false").registerDependeeExtractor(new ExtendedXmlAnalyzer.DependeeExtractor() {
+            @Nonnull
+            @Override
+            public Optional<String> extractDependee(@Nonnull Iterable<ExtendedXmlAnalyzer.XmlElement> xmlElements, @Nonnull Optional<String> containedText) {
+                return Optional.of("foo");
+            }
+        });
+
+        analyzeFile("de/is24/deadcode4j/analyzer/some.xml");
+
+        assertThatDependenciesAreReported("foo");
     }
 
 }

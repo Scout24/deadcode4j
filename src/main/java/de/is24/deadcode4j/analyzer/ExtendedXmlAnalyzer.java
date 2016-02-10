@@ -88,7 +88,7 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
         @Nonnull
         public final String name;
         @Nonnull
-        public final Map<String, String> attributes;
+        private final Map<String, String> attributes;
 
         public XmlElement(@Nonnull String name, @Nonnull Attributes attributes) {
             this.name = name;
@@ -112,25 +112,62 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
             return result.toString();
         }
 
+        @Nonnull
+        public Optional<String> getAttribute(@Nonnull String name) {
+            return fromNullable(attributes.get(name));
+        }
+
+    }
+
+    /**
+     * A <code>DependeeExtractor</code> is used to extract the dependee to report
+     * if a (sub-)tree of <code>XmlElement</code>s is found that matches against an XPath-like expression.
+     *
+     * @since 2.1.0
+     */
+    protected interface DependeeExtractor {
+
+        /**
+         * Called to extract the dependee to report.
+         *
+         * @param xmlElements   the XML tree that matched for a given XPath-like expression
+         * @param containedText the text of the last XML element
+         */
+        @Nonnull
+        Optional<String> extractDependee(@Nonnull Iterable<XmlElement> xmlElements, @Nonnull Optional<String> containedText);
+
+        /**
+         * Subclasses are requested to override this, as the outcome will be appended to {@link XPath}'s string representation.
+         */
+        @Override
+        String toString();
     }
 
     /**
      * Represents an XPath equivalent to match against an {@link XmlElement} tree.
-     * This class handles the matching, subclasses will {@link #extractDependee(Iterable, Optional) extract the dependee} to report.
+     * This class handles the matching, extracting a class to report is delegated to the provided {@link DependeeExtractor}.
      *
      * @since 2.1.0
      */
-    protected abstract static class XPath {
+    protected static class XPath {
         @Nonnull
-        protected final Path path;
+        private final Path path;
+        @Nonnull
+        private final DependeeExtractor dependeeExtractor;
 
         /**
          * Creates a new <code>XPath</code> expression for the specified path.
          *
          * @since 2.1.0
          */
-        protected XPath(@Nonnull Path path) {
+        protected XPath(@Nonnull Path path, @Nonnull DependeeExtractor dependeeExtractor) {
             this.path = path;
+            this.dependeeExtractor = dependeeExtractor;
+        }
+
+        @Override
+        public String toString() {
+            return path.toString() + dependeeExtractor.toString();
         }
 
         @Nonnull
@@ -138,21 +175,11 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
             for (int i = xmlElements.size(); i-- > 0; ) {
                 Iterable<XmlElement> partialPath = Iterables.skip(xmlElements, i);
                 if (path.matches(partialPath)) {
-                    return extractDependee(partialPath, containedText);
+                    return dependeeExtractor.extractDependee(partialPath, containedText);
                 }
             }
             return Optional.absent();
         }
-
-        /**
-         * Called if a (sub-)tree of <code>XmlElement</code>s is found that this instance matches against in order to extract the dependee to report.
-         *
-         * @param xmlElements   the XML tree that matched for this XPath representation
-         * @param containedText the text of the last XML element
-         * @return the dependee to report
-         */
-        @Nonnull
-        protected abstract Optional<String> extractDependee(@Nonnull Iterable<XmlElement> xmlElements, @Nonnull Optional<String> containedText);
 
     }
 
@@ -206,8 +233,8 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
 
         private boolean matchesAttributes(@Nonnull XmlElement xmlElement) {
             for (Map.Entry<String, String> attributeRestriction : attributeRestrictions.entrySet()) {
-                String value = xmlElement.attributes.get(attributeRestriction.getKey());
-                if (!attributeRestriction.getValue().equals(value)) {
+                Optional<String> value = xmlElement.getAttribute(attributeRestriction.getKey());
+                if (!(value.isPresent() && attributeRestriction.getValue().equals(value.get()))) {
                     return false;
                 }
             }
@@ -320,20 +347,30 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
         }
 
         /**
+         * Registers the specified <code>DependeeExtractor</code> to be called if this XML path is found.
+         *
+         * @see #registerTextAsClass()
+         * @see #registerAttributeAsClass(String)
+         * @since 2.1.0
+         */
+        public void registerDependeeExtractor(DependeeExtractor dependeeExtractor) {
+            pathsToMatch.add(new XPath(this, dependeeExtractor));
+        }
+
+        /**
          * Registers the last XML element's text to be treated as a fully qualified class name.
          *
          * @since 2.1.0
          */
         public void registerTextAsClass() {
-            pathsToMatch.add(new XPath(this) {
+            registerDependeeExtractor(new DependeeExtractor() {
                 @Override
                 public String toString() {
-                    return path + "[text()]";
+                    return "[text()]";
                 }
-
                 @Nonnull
                 @Override
-                protected Optional<String> extractDependee(@Nonnull Iterable<XmlElement> xmlElements, @Nonnull Optional<String> containedText) {
+                public Optional<String> extractDependee(@Nonnull Iterable<XmlElement> xmlElements, @Nonnull Optional<String> containedText) {
                     return containedText;
                 }
             });
@@ -346,16 +383,16 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
          * @since 2.1.0
          */
         public void registerAttributeAsClass(final String attributeName) {
-            pathsToMatch.add(new XPath(this) {
+            registerDependeeExtractor(new DependeeExtractor() {
                 @Override
                 public String toString() {
-                    return path + "/@" + attributeName;
+                    return "/@" + attributeName;
                 }
 
                 @Nonnull
                 @Override
-                protected Optional<String> extractDependee(@Nonnull Iterable<XmlElement> xmlElements, @Nonnull Optional<String> containedText) {
-                    return fromNullable(getLast(xmlElements).attributes.get(attributeName));
+                public Optional<String> extractDependee(@Nonnull Iterable<XmlElement> xmlElements, @Nonnull Optional<String> containedText) {
+                    return getLast(xmlElements).getAttribute(attributeName);
                 }
             });
         }
