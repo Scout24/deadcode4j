@@ -25,7 +25,13 @@ public final class A_SpringXmlAnalyzer extends AnAnalyzer<SpringXmlAnalyzer> {
                 // CXF
                 "de.is24.deadcode4j.jaxws.One",
                 "de.is24.deadcode4j.jaxws.Two",
-                "de.is24.deadcode4j.jaxws.Three");
+                "de.is24.deadcode4j.jaxws.Three",
+                // JobDetailBean
+                "org.springframework.scheduling.quartz.JobDetailBean",
+                "de.is24.deadcode4j.jdb.Factory",
+                "de.is24.deadcode4j.jdb.One",
+                "de.is24.deadcode4j.jdb.Two"
+                );
     }
 
 }

@@ -1,5 +1,7 @@
 package de.is24.deadcode4j.analyzer;
 
+import javax.annotation.Nonnull;
+
 /**
  * Analyzes Spring XML files:
  * <ul>
@@ -25,19 +27,27 @@ public class SpringXmlAnalyzer extends ExtendedXmlAnalyzer {
         super("_Spring-XML_", ".xml", "beans");
         // regular spring beans
         anyElementNamed("bean").registerAttributeAsClass("class");
-        // MethodInvokingFactoryBean stuff
-        Path methodInvokingFactoryBean = anyElementNamed("bean").withAttributeValue("class", "org.springframework.beans.factory.config.MethodInvokingFactoryBean");
-        registerPropertyValueAsClass(methodInvokingFactoryBean, "targetClass");
+        // MethodInvokingFactoryBean
+        registerPropertyValueAsClass(
+                beanOfClass("org.springframework.beans.factory.config.MethodInvokingFactoryBean"),
+                "targetClass");
         // CXF endpoints
         anyElementNamed("endpoint").registerAttributeAsClass("implementor");
         anyElementNamed("endpoint").anyElementNamed("implementor").registerTextAsClass();
         anyElementNamed("endpoint").registerAttributeAsClass("implementorClass");
-
-        anyElementNamed("property").withAttributeValue("name", "jobClass").registerAttributeAsClass("value");
+        // JobDetailBean
+        registerPropertyValueAsClass(
+                beanOfClass("org.springframework.scheduling.quartz.JobDetailBean"),
+                "jobClass");
         anyElementNamed("property").withAttributeValue("name", "viewClass").registerAttributeAsClass("value");
     }
 
-    private void registerPropertyValueAsClass(Path beanPath, String propertyName) {
+    @Nonnull
+    private Path beanOfClass(@Nonnull String beanClass) {
+        return anyElementNamed("bean").withAttributeValue("class", beanClass);
+    }
+
+    private static void registerPropertyValueAsClass(@Nonnull Path beanPath, @Nonnull String propertyName) {
         Path propertyPath = beanPath.anyElementNamed("property").withAttributeValue("name", propertyName);
         propertyPath.registerAttributeAsClass("value");
         propertyPath.anyElementNamed("value").registerTextAsClass();

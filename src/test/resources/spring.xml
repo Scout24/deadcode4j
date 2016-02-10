@@ -38,4 +38,15 @@
         <foo:something implementor="java.lang.Thread" implementorClass="java.lang.Thread"/>
         <foo:implementor>de.is24.deadcode4j.jaxws.Four</foo:implementor>
     </bean>
+    <!-- JobDetailBean -->
+    <bean id="simpleJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass" value="de.is24.deadcode4j.jdb.One"/>
+    </bean>
+    <bean id="nestedJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass"><value>de.is24.deadcode4j.jdb.Two</value>
+                </property>
+    </bean>
+    <bean id="otherJob" class="de.is24.deadcode4j.jdb.Factory">
+        <property name="jobClass" value="de.is24.deadcode4j.jdb.Three"/>
+    </bean>
 </beans>
