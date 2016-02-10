@@ -23,13 +23,16 @@ public class SpringXmlAnalyzer extends ExtendedXmlAnalyzer {
 
     public SpringXmlAnalyzer() {
         super("_Spring-XML_", ".xml", "beans");
+        // regular spring beans
         anyElementNamed("bean").registerAttributeAsClass("class");
-
+        // MethodInvokingFactoryBean stuff
         Path methodInvokingFactoryBean = anyElementNamed("bean").withAttributeValue("class", "org.springframework.beans.factory.config.MethodInvokingFactoryBean");
         registerPropertyValueAsClass(methodInvokingFactoryBean, "targetClass");
-
+        // CXF endpoints
         anyElementNamed("endpoint").registerAttributeAsClass("implementor");
+        anyElementNamed("endpoint").anyElementNamed("implementor").registerTextAsClass();
         anyElementNamed("endpoint").registerAttributeAsClass("implementorClass");
+
         anyElementNamed("property").withAttributeValue("name", "jobClass").registerAttributeAsClass("value");
         anyElementNamed("property").withAttributeValue("name", "viewClass").registerAttributeAsClass("value");
     }

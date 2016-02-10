@@ -1,21 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:foo="http://foo.bar"
+       xmlns:jaxws="http://cxf.apache.org/jaxws"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+            http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">
+    <!-- regular beans -->
     <bean id="foo" class="SpringXmlBean"/>
+    <!-- MethodInvokingFactoryBean -->
     <bean id="easyStaticCall" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-        <property name="targetClass" value="java.lang.System"/>
-        <property name="targetMethod" value="getProperties"/>
+        <property name="targetClass" value="de.is24.deadcode4j.mifb.One"/>
+        <property name="targetMethod" value="foo"/>
     </bean>
     <bean id="easyStaticCallWithValueAsText" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-        <property name="targetClass"><value>java.lang.Runtime</value></property>
-        <property name="targetMethod"><value>getRuntime</value></property>
+        <property name="targetClass">
+            <value>de.is24.deadcode4j.mifb.Two</value>
+        </property>
+        <property name="targetMethod">
+            <value>foo</value>
+        </property>
     </bean>
     <bean id="allInOneStaticCall" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-        <property name="staticMethod" value="java.util.regex.Pattern.compile"/>
+        <property name="staticMethod" value="de.is24.deadcode4j.mifb.Three.foo"/>
     </bean>
-    <bean id="someOtherThing" class="de.is24.deadcode4j.MapFactory">
+    <bean id="someOtherThing" class="de.is24.deadcode4j.mifb.Factory">
         <property name="key" value="value"/>
-        <property name="targetClass" value="java.lang.Thread"/>
+        <property name="targetClass" value="de.is24.deadcode4j.mifb.Four"/>
+    </bean>
+    <!-- CXF -->
+    <jaxws:endpoint id="jax1" implementor="de.is24.deadcode4j.jaxws.One"/>
+    <jaxws:endpoint id="jax2" implementorClass="de.is24.deadcode4j.jaxws.Two"/>
+    <jaxws:endpoint id="jax3">
+        <jaxws:implementor>de.is24.deadcode4j.jaxws.Three</jaxws:implementor>
+    </jaxws:endpoint>
+    <bean id="jax4">
+        <foo:something implementor="java.lang.Thread" implementorClass="java.lang.Thread"/>
+        <foo:implementor>de.is24.deadcode4j.jaxws.Four</foo:implementor>
     </bean>
 </beans>

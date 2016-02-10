@@ -14,12 +14,18 @@ public final class A_SpringXmlAnalyzer extends AnAnalyzer<SpringXmlAnalyzer> {
         analyzeFile("spring.xml");
 
         assertThatDependenciesAreReported(
+                // regular beans
                 "SpringXmlBean",
-                "de.is24.deadcode4j.MapFactory",
-                "java.lang.Runtime",
-                "java.lang.System",
-                //"java.util.regex.Pattern", // this would require regex postprocessing or something :/
-                "org.springframework.beans.factory.config.MethodInvokingFactoryBean");
+                // MethodInvokingFactoryBean,
+                "org.springframework.beans.factory.config.MethodInvokingFactoryBean",
+                "de.is24.deadcode4j.mifb.Factory",
+                "de.is24.deadcode4j.mifb.One",
+                "de.is24.deadcode4j.mifb.Two",
+                //"de.is24.deadcode4j.mifb.Three", // this would require regex postprocessing or something :/
+                // CXF
+                "de.is24.deadcode4j.jaxws.One",
+                "de.is24.deadcode4j.jaxws.Two",
+                "de.is24.deadcode4j.jaxws.Three");
     }
 
 }
