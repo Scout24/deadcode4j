@@ -21,7 +21,8 @@ public final class A_SpringXmlAnalyzer extends AnAnalyzer<SpringXmlAnalyzer> {
                 "de.is24.deadcode4j.mifb.Factory",
                 "de.is24.deadcode4j.mifb.One",
                 "de.is24.deadcode4j.mifb.Two",
-                //"de.is24.deadcode4j.mifb.Three", // this would require regex postprocessing or something :/
+                "de.is24.deadcode4j.mifb.Three",
+                "de.is24.deadcode4j.mifb.Four",
                 // CXF
                 "de.is24.deadcode4j.jaxws.One",
                 "de.is24.deadcode4j.jaxws.Two",

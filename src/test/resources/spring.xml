@@ -24,6 +24,11 @@
     <bean id="allInOneStaticCall" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="staticMethod" value="de.is24.deadcode4j.mifb.Three.foo"/>
     </bean>
+    <bean id="allInOneStaticCallWithValueAsText" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="staticMethod">
+            <value>de.is24.deadcode4j.mifb.Four.foo</value>
+        </property>
+    </bean>
     <bean id="someOtherThing" class="de.is24.deadcode4j.mifb.Factory">
         <property name="key" value="value"/>
         <property name="targetClass" value="de.is24.deadcode4j.mifb.Four"/>

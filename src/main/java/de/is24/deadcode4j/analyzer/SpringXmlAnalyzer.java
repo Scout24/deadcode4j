@@ -1,6 +1,12 @@
 package de.is24.deadcode4j.analyzer;
 
+import com.google.common.base.Optional;
+import com.google.common.collect.Iterables;
+
 import javax.annotation.Nonnull;
+
+import static com.google.common.base.Optional.absent;
+import static com.google.common.base.Optional.of;
 
 /**
  * Analyzes Spring XML files:
@@ -29,14 +35,39 @@ public class SpringXmlAnalyzer extends ExtendedXmlAnalyzer {
         propertyPath.anyElementNamed("value").registerTextAsClass();
     }
 
+    private static Optional<String> extractClassName(Optional<String> staticMethodCallNotation) {
+        if (!staticMethodCallNotation.isPresent()) {
+            return absent();
+        }
+        int lastDot = staticMethodCallNotation.get().lastIndexOf('.');
+        if (lastDot < 1) {
+            return absent();
+        }
+        return of(staticMethodCallNotation.get().substring(0, lastDot));
+    }
+
     public SpringXmlAnalyzer() {
         super("_Spring-XML_", ".xml", "beans");
         // regular spring beans
         anyElementNamed("bean").registerAttributeAsClass("class");
         // MethodInvokingFactoryBean
-        registerPropertyValueAsClass(
-                beanOfClass("org.springframework.beans.factory.config.MethodInvokingFactoryBean"),
-                "targetClass");
+        Path methodInvokingFactoryBean = beanOfClass("org.springframework.beans.factory.config.MethodInvokingFactoryBean");
+        registerPropertyValueAsClass(methodInvokingFactoryBean, "targetClass");
+        Path staticMethodProperty = methodInvokingFactoryBean.anyElementNamed("property").withAttributeValue("name", "staticMethod");
+        staticMethodProperty.registerDependeeExtractor(new DependeeExtractor() {
+            @Nonnull
+            @Override
+            public Optional<String> extractDependee(@Nonnull Iterable<XmlElement> xmlElements, @Nonnull Optional<String> containedText) {
+                return extractClassName(Iterables.getLast(xmlElements).getAttribute("value"));
+            }
+        });
+        staticMethodProperty.anyElementNamed("value").registerDependeeExtractor(new DependeeExtractor() {
+            @Nonnull
+            @Override
+            public Optional<String> extractDependee(@Nonnull Iterable<XmlElement> xmlElements, @Nonnull Optional<String> containedText) {
+                return extractClassName(containedText);
+            }
+        });
         // CXF endpoints
         anyElementNamed("endpoint").registerAttributeAsClass("implementor");
         anyElementNamed("endpoint").anyElementNamed("implementor").registerTextAsClass();
