@@ -19,7 +19,7 @@ public class CustomXml {
     @java.lang.SuppressWarnings("UnusedDeclaration")
     @SuppressFBWarnings(value = "UWF_UNWRITTEN_FIELD", justification = "Set by Plexus when configuring the plugin")
     private String rootElement;
-    private List<String> xPaths = newArrayList();
+    private final List<String> xPaths = newArrayList();
 
     public String getEndOfFileName() {
         return endOfFileName;

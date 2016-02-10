@@ -21,7 +21,7 @@ import static de.is24.javassist.CtClasses.getAllImplementedInterfaces;
  */
 public class SpringDataCustomRepositoriesAnalyzer extends ByteCodeAnalyzer {
 
-    private List<String> customRepositoryNames = newArrayList();
+    private final List<String> customRepositoryNames = newArrayList();
 
     @Override
     protected void analyzeClass(@Nonnull AnalysisContext analysisContext, @Nonnull CtClass clazz) {

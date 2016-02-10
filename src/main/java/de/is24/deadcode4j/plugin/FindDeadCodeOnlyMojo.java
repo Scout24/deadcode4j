@@ -42,7 +42,6 @@ import static org.apache.maven.plugins.annotations.ResolutionScope.COMPILE;
         requiresProject = true,
         requiresDependencyCollection = COMPILE,
         threadSafe = true)
-@SuppressWarnings("PMD.TooManyStaticImports")
 public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
 
     /**
@@ -51,6 +50,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
      * @since 1.3
      */
     @Parameter
+    @SuppressWarnings("PMD.ImmutableField")
     private Set<String> annotationsMarkingLiveCode = emptySet();
     /**
      * Lists the "dead" classes that should be ignored.
@@ -58,6 +58,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
      * @since 1.0.1
      */
     @Parameter
+    @SuppressWarnings("PMD.ImmutableField")
     private Set<String> classesToIgnore = emptySet();
     /**
      * Lists the custom XML analysis configurations to set up.
@@ -66,6 +67,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
      * @since 1.3
      */
     @Parameter
+    @SuppressWarnings("PMD.ImmutableField")
     private List<CustomXml> customXmls = emptyList();
     /**
      * Mark all classes with a main method as being "live code".
@@ -73,6 +75,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
      * @since 2.0.0
      */
     @Parameter
+    @SuppressWarnings("PMD.ImmutableField")
     private boolean ignoreMainClasses = false;
     /**
      * Lists the fqcn of the interfaces marking a class as being "live code".
@@ -80,6 +83,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
      * @since 1.4
      */
     @Parameter
+    @SuppressWarnings("PMD.ImmutableField")
     private Set<String> interfacesMarkingLiveCode = emptySet();
     @Component
     private MavenProject project;
@@ -89,6 +93,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
      * @since 1.4
      */
     @Parameter
+    @SuppressWarnings("PMD.ImmutableField")
     private List<String> modulesToSkip = emptyList();
     @Component
     private MojoExecution mojoExecution;
@@ -114,6 +119,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
      * @since 2.0.0
      */
     @Parameter(property = "deadcode4j.skipUpdate")
+    @SuppressWarnings("PMD.ImmutableField")
     private boolean skipUpdateCheck = false;
     /**
      * Lists the fqcn of the classes marking a direct subclass as being "live code".
@@ -121,6 +127,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
      * @since 1.4
      */
     @Parameter
+    @SuppressWarnings("PMD.ImmutableField")
     private Set<String> superClassesMarkingLiveCode = emptySet();
     @Component
     private UpdateChecker updateChecker;
@@ -224,29 +231,33 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     }
 
     private void addCustomAnnotationsAnalyzerIfConfigured(Set<Analyzer> analyzers) {
-        if (annotationsMarkingLiveCode.isEmpty())
+        if (annotationsMarkingLiveCode.isEmpty()) {
             return;
+        }
         analyzers.add(new CustomAnnotationsAnalyzer(annotationsMarkingLiveCode));
         getLog().info("Treating classes annotated with any of " + annotationsMarkingLiveCode + " as live code.");
     }
 
     private void addCustomInterfacesAnalyzerIfConfigured(Set<Analyzer> analyzers) {
-        if (interfacesMarkingLiveCode.isEmpty())
+        if (interfacesMarkingLiveCode.isEmpty()) {
             return;
+        }
         analyzers.add(new CustomInterfacesAnalyzer(interfacesMarkingLiveCode));
         getLog().info("Treating classes implementing any of " + interfacesMarkingLiveCode + " as live code.");
     }
 
     private void addCustomSuperClassesAnalyzerIfConfigured(Set<Analyzer> analyzers) {
-        if (superClassesMarkingLiveCode.isEmpty())
+        if (superClassesMarkingLiveCode.isEmpty()) {
             return;
+        }
         analyzers.add(new CustomSuperClassAnalyzer(superClassesMarkingLiveCode));
         getLog().info("Treating classes being subclasses of any of " + superClassesMarkingLiveCode + " as live code.");
     }
 
     private void addCustomXmlAnalyzerIfConfigured(Set<Analyzer> analyzers) {
-        if (customXmls.isEmpty())
+        if (customXmls.isEmpty()) {
             return;
+        }
         for (CustomXml customXml : customXmls) {
             CustomXmlAnalyzer customXmlAnalyzer = new CustomXmlAnalyzer(customXml.getEndOfFileName(), customXml.getRootElement());
             checkArgument(!customXml.getXPaths().isEmpty(), "At least one entry for [xPaths] must be set!");
@@ -260,14 +271,16 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
     }
 
     private void addIgnoreClassesAnalyzerIfConfigured(DeadCodeComputer deadCodeComputer, Set<Analyzer> analyzers) {
-        if (classesToIgnore.isEmpty())
+        if (classesToIgnore.isEmpty()) {
             return;
+        }
         analyzers.add(new IgnoreClassesAnalyzer(deadCodeComputer, classesToIgnore));
     }
 
     private void addMainClassAnalyzerIfConfigured(Set<Analyzer> analyzers) {
-        if (!ignoreMainClasses)
+        if (!ignoreMainClasses) {
             return;
+        }
         analyzers.add(new MainClassAnalyzer());
         getLog().info("Treating classes with a main method as live code.");
     }
@@ -295,7 +308,7 @@ public class FindDeadCodeOnlyMojo extends AbstractSlf4jMojo {
                 getLog().info("Project [" + getKeyFor(mavenProject) + "] will be skipped.");
                 mavenProjects.remove(mavenProject);
                 List<MavenProject> collectedProjects = mavenProject.getCollectedProjects();
-                if (collectedProjects.size() > 0) {
+                if (!collectedProjects.isEmpty()) {
                     getLog().info("  Aggregated Projects " + transform(collectedProjects, toKey()) + " will be skipped.");
                     mavenProjects.removeAll(collectedProjects);
                 }

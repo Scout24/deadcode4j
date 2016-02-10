@@ -129,7 +129,8 @@ public final class Utils {
      * @since 2.0.0
      */
     @Nonnull
-    @SuppressFBWarnings(value = "NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
+    @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
+    @SuppressWarnings("PMD.AvoidThrowingNullPointerException")
     public static <T> T checkNotNull(@Nullable T reference) {
         if (reference == null) {
             throw new NullPointerException();

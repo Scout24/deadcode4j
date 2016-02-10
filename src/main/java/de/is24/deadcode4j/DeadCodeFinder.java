@@ -21,7 +21,6 @@ import static java.util.Arrays.asList;
  *
  * @since 1.0.0
  */
-@SuppressWarnings("PMD.TooManyStaticImports")
 public class DeadCodeFinder {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());

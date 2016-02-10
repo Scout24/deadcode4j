@@ -16,9 +16,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 import static de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor.classPoolAccessorFor;
-import static de.is24.javassist.CtClasses.getCtClass;
-import static de.is24.javassist.CtClasses.getSuperclassOf;
-import static de.is24.javassist.CtClasses.isJavaLangObject;
+import static de.is24.javassist.CtClasses.*;
 import static java.lang.annotation.ElementType.PACKAGE;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.util.Collections.disjoint;
@@ -29,7 +27,6 @@ import static java.util.Collections.emptySet;
  *
  * @since 1.3
  */
-@SuppressWarnings("PMD.TooManyStaticImports")
 public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
     private static final Set<String> DEAD_ENDS = newHashSet(
             "java.lang.annotation.Documented",
@@ -115,10 +112,12 @@ public abstract class AnnotationsAnalyzer extends ByteCodeAnalyzer {
     private void addAnnotations(@Nonnull CtClass clazz, Set<String> knownAnnotations) {
         for (Annotation annotation : getAnnotations(clazz, PACKAGE, TYPE)) {
             String annotationClassName = annotation.getTypeName();
-            if (!knownAnnotations.add(annotationClassName))
+            if (!knownAnnotations.add(annotationClassName)) {
                 continue;
-            if (DEAD_ENDS.contains(annotationClassName))
+            }
+            if (DEAD_ENDS.contains(annotationClassName)) {
                 continue;
+            }
             CtClass annotationClazz = getCtClass(clazz.getClassPool(), annotationClassName);
             if (annotationClazz != null) {
                 addAnnotations(annotationClazz, knownAnnotations);

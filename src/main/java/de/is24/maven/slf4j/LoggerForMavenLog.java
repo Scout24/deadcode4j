@@ -16,6 +16,7 @@ import static org.slf4j.helpers.MessageFormatter.format;
  * @author <a href="https://github.com/sebastiankirsch">Sebastian Kirsch</a>
  * @since 1.5
  */
+@SuppressWarnings("PMD.GodClass")
 public class LoggerForMavenLog extends MarkerIgnoringBase {
 
     private final Log log;

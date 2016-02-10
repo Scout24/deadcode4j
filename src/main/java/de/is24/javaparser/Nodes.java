@@ -24,7 +24,7 @@ import static de.is24.deadcode4j.Utils.isEmpty;
  *
  * @since 2.0.0
  */
-public class Nodes {
+public final class Nodes {
 
     private Nodes() {}
 

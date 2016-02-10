@@ -1,8 +1,8 @@
 package de.is24.deadcode4j.analyzer;
 
 import com.google.common.collect.Maps;
-import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.AnalysisContext;
+import de.is24.deadcode4j.Analyzer;
 import de.is24.deadcode4j.IntermediateResult;
 import de.is24.deadcode4j.Module;
 import org.xml.sax.Attributes;
@@ -95,7 +95,7 @@ public class ServletContainerInitializerAnalyzer extends AnalyzerAdapter {
         private AnalysisContext originalContext;
         private boolean metadataComplete = false;
 
-        private ServletContainerInitializerAnalysisContext(Module module) {
+        ServletContainerInitializerAnalysisContext(Module module) {
             super(module, Maps.<Object, IntermediateResult>newHashMap());
         }
 

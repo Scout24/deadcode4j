@@ -9,7 +9,7 @@ import java.util.List;
  *
  * @since 2.1.0
  */
-public class WebXmlHandler {
+public abstract class WebXmlHandler {
     /**
      * Receive notification about a {@code context-param} node.
      *

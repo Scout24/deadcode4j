@@ -55,7 +55,6 @@ import static java.util.Collections.emptyList;
  *
  * @since 1.4
  */
-@SuppressWarnings("PMD.TooManyStaticImports")
 public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
 
     private final Map<String, String> typeDefinitions = newHashMap();
@@ -76,8 +75,9 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
     @Nullable
     private static String getStringFrom(@Nonnull Annotation annotation, @Nonnull String memberName) {
         MemberValue memberValue = annotation.getMemberValue(memberName);
-        if (memberValue == null)
+        if (memberValue == null) {
             return null;
+        }
         checkState(StringMemberValue.class.isInstance(memberValue),
                 "The member [" + memberName + "] is no StringMemberValue!");
         return StringMemberValue.class.cast(memberValue).getValue();
@@ -97,8 +97,9 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
     @Nonnull
     private static Iterable<Annotation> getAnnotationsFrom(@Nonnull Annotation annotation, @Nonnull String memberName) {
         MemberValue memberValue = annotation.getMemberValue(memberName);
-        if (memberValue == null)
+        if (memberValue == null) {
             return emptyList();
+        }
         checkState(ArrayMemberValue.class.isInstance(memberValue),
                 "The member [" + memberName + "] is no ArrayMemberValue!");
         MemberValue[] nestedMembers = ArrayMemberValue.class.cast(memberValue).getValue();
@@ -134,11 +135,11 @@ public final class HibernateAnnotationsAnalyzer extends ByteCodeAnalyzer {
     }
 
     private void processTypeDefinition(@Nonnull CtClass clazz, @Nonnull Annotation annotation) {
-        String className = clazz.getName();
         String typeName = getStringFrom(annotation, "name");
         if (typeName == null) {
             return;
         }
+        String className = clazz.getName();
         String previousEntry = this.typeDefinitions.put(typeName, className);
         if (previousEntry != null) {
             logger.warn("The @TypeDef named [{}] is defined both by {} and {}.", typeName, previousEntry, className);

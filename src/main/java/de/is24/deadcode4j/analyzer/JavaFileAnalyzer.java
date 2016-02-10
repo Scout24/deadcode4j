@@ -1,13 +1,5 @@
 package de.is24.deadcode4j.analyzer;
 
-import com.google.common.base.Optional;
-import com.google.common.cache.LoadingCache;
-import de.is24.deadcode4j.AnalysisContext;
-import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
-import de.is24.guava.NonNullFunction;
-import de.is24.guava.SequentialLoadingCache;
-import de.is24.javaparser.Nodes;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseException;
 import com.github.javaparser.TokenMgrError;
@@ -17,6 +9,14 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
+import com.google.common.base.Optional;
+import com.google.common.cache.LoadingCache;
+import de.is24.deadcode4j.AnalysisContext;
+import de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor;
+import de.is24.guava.NonNullFunction;
+import de.is24.guava.SequentialLoadingCache;
+import de.is24.javaparser.Nodes;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javassist.CtClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +51,6 @@ import static org.apache.commons.io.IOUtils.closeQuietly;
  *
  * @since 2.0.0
  */
-@SuppressWarnings("PMD.TooManyStaticImports")
 public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
 
     private static final String JAVA_PARSER_KEY = JavaFileAnalyzer.class.getName() + ":JavaParser";
@@ -353,8 +352,9 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
                     }
                 } else if (CompilationUnit.class.isInstance(loopNode)) {
                     reference = resolveInnerReference(firstQualifier, CompilationUnit.class.cast(loopNode).getTypes());
-                    if (reference.isPresent())
+                    if (reference.isPresent()) {
                         return reference;
+                    }
                 }
                 loopNode = loopNode.getParentNode();
                 if (loopNode == null) {
@@ -551,12 +551,13 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
         private final Logger logger = LoggerFactory.getLogger(getClass());
         private final boolean ignoreParsingErrors;
 
-        private JavaParserSupplier(boolean ignoreParsingErrors) {
+        JavaParserSupplier(boolean ignoreParsingErrors) {
             this.ignoreParsingErrors = ignoreParsingErrors;
         }
 
         @Nonnull
         @Override
+        @SuppressWarnings("PMD.AvoidCatchingThrowable") // unfortunately, JavaParser throws an Error when parsing fails
         public LoadingCache<File, Optional<CompilationUnit>> apply(@Nonnull final AnalysisContext analysisContext) {
             return SequentialLoadingCache.createSingleValueCache(toFunction(new NonNullFunction<File, Optional<CompilationUnit>>() {
                 @Nonnull
@@ -578,17 +579,16 @@ public abstract class JavaFileAnalyzer extends AnalyzerAdapter {
                 }
             }));
         }
-
         private Optional<CompilationUnit> handleThrowable(File file, Throwable t) {
             String message = "Failed to parse [" + file + "]!";
-            if (TokenMgrError.class.isInstance(t) || ParseException.class.isInstance(t)) {
-                if (ignoreParsingErrors) {
-                    logger.debug(message, t);
-                    return absent();
-                }
+            if ((TokenMgrError.class.isInstance(t) || ParseException.class.isInstance(t))
+                    && ignoreParsingErrors) {
+                logger.debug(message, t);
+                return absent();
             }
-            if (Error.class.isInstance(t) && !TokenMgrError.class.isInstance(t))
+            if (Error.class.isInstance(t) && !TokenMgrError.class.isInstance(t)) {
                 throw Error.class.cast(t);
+            }
             throw new RuntimeException(message, t);
         }
     }

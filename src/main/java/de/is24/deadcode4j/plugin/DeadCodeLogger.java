@@ -42,6 +42,9 @@ class DeadCodeLogger {
                     break;
                 case DEADCODE_ANALYSIS:
                     log.warn("Failed to determine dead code. Analysis was certainly inaccurate.");
+                    break;
+                default:
+                    log.warn("An unexpected error occurred.");
             }
         }
     }

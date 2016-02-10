@@ -35,7 +35,6 @@ import static java.util.Arrays.asList;
  * @see de.is24.deadcode4j.analyzer.javassist.ClassPoolAccessor
  * @since 1.3
  */
-@SuppressWarnings("PMD.TooManyStaticImports")
 public abstract class ByteCodeAnalyzer extends AnalyzerAdapter {
 
     private static final NonNullFunction<AnalysisContext, LoadingCache<File, Optional<CtClass>>> SUPPLIER =

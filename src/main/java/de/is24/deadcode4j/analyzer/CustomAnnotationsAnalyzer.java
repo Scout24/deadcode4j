@@ -5,7 +5,7 @@ import de.is24.deadcode4j.AnalysisSink;
 import de.is24.deadcode4j.AnalyzedCode;
 
 import javax.annotation.Nonnull;
-import java.util.HashSet;
+import java.util.Set;
 
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -17,7 +17,7 @@ import static com.google.common.collect.Sets.newHashSet;
 public final class CustomAnnotationsAnalyzer extends AnnotationsAnalyzer {
 
     @Nonnull
-    private final HashSet<String> annotationsNotFoundInClassPath;
+    private final Set<String> annotationsNotFoundInClassPath;
 
     /**
      * Creates a new <code>CustomAnnotationsAnalyzer</code>.

@@ -31,7 +31,6 @@ import static java.util.Collections.emptySet;
  *
  * @since 2.0.0
  */
-@SuppressWarnings("PMD.TooManyStaticImports")
 public class TypeErasureAnalyzer extends JavaFileAnalyzer {
 
     @Nonnull
@@ -175,8 +174,9 @@ public class TypeErasureAnalyzer extends JavaFileAnalyzer {
 
         @Nonnull
         private Set<String> getTypeParameterNames(@Nullable List<TypeParameter> typeParameters) {
-            if (typeParameters == null)
+            if (typeParameters == null) {
                 return emptySet();
+            }
             Set<String> parameters = newHashSet();
             for (TypeParameter typeParameter : typeParameters) {
                 parameters.add(typeParameter.getName());

@@ -176,7 +176,7 @@ public class UsageStatisticsManager {
     }
 
     private StringBuilder listStatistics(DeadCodeStatistics deadCodeStatistics, SystemProperties systemProperties) {
-        StringBuilder buffy = new StringBuilder("I gathered the following system properties:");
+        StringBuilder buffy = new StringBuilder(1024).append("I gathered the following system properties:");
         for (String key : new TreeSet<String>(SystemProperties.KEYS.keySet())) {
             buffy.append("\n  ").append(key).append(": ").append(systemProperties.values.get(key));
         }
@@ -249,7 +249,7 @@ public class UsageStatisticsManager {
             this.usageStatisticsComment = emptyToNull(usageStatisticsComment);
         }
 
-        public void addRequestParameters(HashMap<String, String> parameters) {
+        public void addRequestParameters(Map<String, String> parameters) {
             parameters.put("entry.1074756797", String.valueOf(numberOfAnalyzedClasses));
             parameters.put("entry.1318897553", String.valueOf(numberOfAnalyzedModules));
             parameters.put("entry.582394579", String.valueOf(numberOfDeadClassesFound));
@@ -292,6 +292,7 @@ public class UsageStatisticsManager {
             KEYS = Collections.unmodifiableMap(keys);
         }
 
+        @SuppressWarnings("PMD.FieldDeclarationsShouldBeAtStartOfClass")
         private final Map<String, String> values = newHashMapWithExpectedSize(KEYS.size());
 
         private SystemProperties() {
@@ -316,7 +317,7 @@ public class UsageStatisticsManager {
             return systemProperties;
         }
 
-        public void addRequestParameters(HashMap<String, String> parameters) {
+        public void addRequestParameters(Map<String, String> parameters) {
             for (Map.Entry<String, String> entry : values.entrySet()) {
                 parameters.put(KEYS.get(entry.getKey()), entry.getValue());
             }

@@ -25,9 +25,6 @@ public final class IntermediateResults {
     @Nonnull
     private final Map<Module, Map<Object, IntermediateResult>> intermediateResults = newHashMap();
 
-    public IntermediateResults() {
-    }
-
     /**
      * Returns an <code>IntermediateResultSet</code> for the given <code>Set</code>.<br/>
      * This method is defined for type inference, as it could simply be replaced with a constructor call.

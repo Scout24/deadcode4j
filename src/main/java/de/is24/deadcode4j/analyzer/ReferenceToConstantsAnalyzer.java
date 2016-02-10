@@ -44,7 +44,6 @@ import static de.is24.javassist.CtClasses.*;
  *
  * @since 2.0.0
  */
-@SuppressWarnings("PMD.TooManyStaticImports")
 public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
 
     @Nonnull
@@ -110,8 +109,9 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
             @Nullable
             @Override
             public String apply(@Nullable ImportDeclaration input) {
-                if (input == null)
+                if (input == null) {
                     return null;
+                }
                 NameExpr name = input.getName();
                 if (input.isStatic() && !input.isAsterisk()) {
                     name = QualifiedNameExpr.class.cast(name).getQualifier();
@@ -206,7 +206,6 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                         && resolveType(analysisContext, new NameExprQualifier(reference)).isPresent()) {
                     return; // this is just a static method call
                 }
-                String referringType = getTypeName(reference);
                 if (refersToInheritedField(reference)
                         || refersToStaticImport(reference)
                         || refersToAsteriskStaticImport(reference)) {
@@ -216,7 +215,7 @@ public class ReferenceToConstantsAnalyzer extends JavaFileAnalyzer {
                     return; // see A_ReferenceToConstantsAnalyzer#recognizesReferenceToEnumerationInSwitch()
                 }
                 logger.debug("Could not resolve name reference [{}] found within [{}].",
-                        reference, referringType);
+                        reference, getTypeName(reference));
             }
 
             private boolean needsProcessing(NameExpr nameExpr) {

@@ -5,7 +5,7 @@ import de.is24.deadcode4j.AnalysisSink;
 import de.is24.deadcode4j.AnalyzedCode;
 
 import javax.annotation.Nonnull;
-import java.util.HashSet;
+import java.util.Set;
 
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -17,7 +17,7 @@ import static com.google.common.collect.Sets.newHashSet;
 public final class CustomInterfacesAnalyzer extends InterfacesAnalyzer {
 
     @Nonnull
-    private final HashSet<String> interfacesNotFoundInClassPath;
+    private final Set<String> interfacesNotFoundInClassPath;
 
     /**
      * Creates a new <code>CustomInterfacesAnalyzer</code>.

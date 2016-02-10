@@ -113,6 +113,9 @@
                         <excludeRoots>
                             <excludeRoot>${project.build.directory}/generated-sources/plugin</excludeRoot>
                         </excludeRoots>
+                        <rulesets>
+                            <ruleset>${project.basedir}/config/pmd-ruleset.xml</ruleset>
+                        </rulesets>
                     </configuration>
                 </plugin>
 

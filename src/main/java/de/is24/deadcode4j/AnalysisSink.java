@@ -24,7 +24,6 @@ import static java.util.Arrays.asList;
  *
  * @since 2.0.0
  */
-@SuppressWarnings("PMD.TooManyStaticImports")
 public class AnalysisSink {
     @Nonnull
     protected final org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());

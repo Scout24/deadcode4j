@@ -5,7 +5,7 @@ import de.is24.deadcode4j.AnalysisSink;
 import de.is24.deadcode4j.AnalyzedCode;
 
 import javax.annotation.Nonnull;
-import java.util.HashSet;
+import java.util.Set;
 
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -17,7 +17,7 @@ import static com.google.common.collect.Sets.newHashSet;
 public final class CustomSuperClassAnalyzer extends SuperClassAnalyzer {
 
     @Nonnull
-    private final HashSet<String> superClassesNotFoundInClassPath;
+    private final Set<String> superClassesNotFoundInClassPath;
 
     /**
      * Creates a new <code>CustomAnnotationsAnalyzer</code>.

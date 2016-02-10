@@ -44,7 +44,6 @@ import static de.is24.deadcode4j.Utils.*;
  * @see #getModulesFor(Iterable)
  * @since 2.0.0
  */
-@SuppressWarnings("PMD.TooManyStaticImports")
 class ModuleGenerator {
 
     @Nonnull

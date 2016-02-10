@@ -15,7 +15,7 @@ import javax.annotation.Nonnull;
  * @author <a href="https://github.com/sebastiankirsch">Sebastian Kirsch</a>
  * @since 1.5
  */
-public class StaticLoggerBinder implements LoggerFactoryBinder {
+public final class StaticLoggerBinder implements LoggerFactoryBinder {
 
     private static final StaticLoggerBinder INSTANCE = new StaticLoggerBinder();
 
