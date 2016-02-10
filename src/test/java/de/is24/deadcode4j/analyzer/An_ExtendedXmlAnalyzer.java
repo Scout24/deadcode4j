@@ -1,17 +1,14 @@
 package de.is24.deadcode4j.analyzer;
 
 import com.google.common.base.Optional;
-import junit.framework.Assert;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertTrue;
 
 public final class An_ExtendedXmlAnalyzer extends AnAnalyzer<ExtendedXmlAnalyzer> {
 
