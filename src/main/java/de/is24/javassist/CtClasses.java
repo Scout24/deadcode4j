@@ -23,8 +23,6 @@ import static java.util.Arrays.asList;
  */
 public final class CtClasses {
 
-    private static boolean issuedWarningForJavaLangAnnotationRepeatable = false;
-
     private CtClasses() {
     }
 
@@ -110,7 +108,7 @@ public final class CtClasses {
 
 
     /**
-     * Retrieves the declaring classes in bottom-up order.
+     * Retrieves the declaring classes (including itself) in bottom-up order.
      * This method swallows class loading issues, returning only those classes that are accessible by the
      * {@link javassist.CtClass#getClassPool() class pool}.
      *
@@ -147,19 +145,11 @@ public final class CtClasses {
     }
 
     private static void handleMissingClass(@Nonnull String className, NotFoundException notFoundException) {
-        if ("java.lang.annotation.Repeatable".equals(className)) {
-            if (issuedWarningForJavaLangAnnotationRepeatable) {
-                return;
-            }
-            getLogger().warn("Running with JDK < 8, but classes or libraries refer to JDK8 annotation {}.", className);
-            issuedWarningForJavaLangAnnotationRepeatable = true;
-        } else {
-            if (getLogger().isDebugEnabled()) {
-                getLogger().debug("Failed to load {}!", className,
-                        notFoundException != null ? notFoundException : new RuntimeException("Providing stack trace!"));
-            }
-            getLogger().warn("The class path is not correctly set up; could not load {}!", className);
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug("Failed to load {}!", className,
+                    notFoundException != null ? notFoundException : new RuntimeException("Providing stack trace!"));
         }
+        getLogger().warn("The class path is not correctly set up; could not load {}!", className);
     }
 
     @Nullable
