@@ -51,6 +51,31 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
         this.rootElement = rootElement;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder buffy = new StringBuilder(1024).append(super.toString());
+        buffy.append("; registered XPaths are:");
+        for (XPath xPath : pathsToMatch) {
+            buffy.append("\n");
+            if (rootElement != null) {
+                buffy.append("/").append(rootElement);
+            }
+            buffy.append(xPath);
+        }
+        return buffy.toString();
+    }
+
+    /**
+     * Sets up a path to an element to match.
+     * Be sure to call {@link Path#registerTextAsClass()} or {@link Path#registerAttributeAsClass(String)} eventually.
+     *
+     * @param name the name of the XML element to match
+     */
+    @Nonnull
+    public final Path anyElementNamed(@Nonnull String name) {
+        return new Path(new Element(name));
+    }
+
     /**
      * Creates a new <code>ExtendedXmlAnalyzer</code> that is not restricted to a specific XML root element.
      *
@@ -65,17 +90,6 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
     @Override
     protected final DefaultHandler createHandlerFor(@Nonnull AnalysisContext analysisContext) {
         return new XmlHandler(analysisContext);
-    }
-
-    /**
-     * Sets up a path to an element to match.
-     * Be sure to call {@link Path#registerTextAsClass()} or {@link Path#registerAttributeAsClass(String)} eventually.
-     *
-     * @param name the name of the XML element to match
-     */
-    @Nonnull
-    public final Path anyElementNamed(@Nonnull String name) {
-        return new Path(new Element(name));
     }
 
     /**

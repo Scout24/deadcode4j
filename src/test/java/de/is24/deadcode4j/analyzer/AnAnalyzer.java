@@ -47,6 +47,7 @@ public abstract class AnAnalyzer<T extends Analyzer> {
     }
 
     protected void analyzeFile(String fileName) {
+        System.out.println("Testing " + objectUnderTest);
         objectUnderTest.doAnalysis(analysisContext, FileLoader.getFile(fileName));
     }
 
