@@ -1,6 +1,82 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:foo="http://foo.bar"
+       xmlns:jaxws="http://cxf.apache.org/jaxws"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+            http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">
+    <!-- regular beans -->
     <bean id="foo" class="SpringXmlBean"/>
+    <!-- MethodInvokingFactoryBean -->
+    <bean id="easyStaticCall" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="targetClass" value="de.is24.deadcode4j.mifb.One"/>
+        <property name="targetMethod" value="foo"/>
+    </bean>
+    <bean id="easyStaticCallWithValueAsText" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="targetClass">
+            <value>de.is24.deadcode4j.mifb.Two</value>
+        </property>
+        <property name="targetMethod">
+            <value>foo</value>
+        </property>
+    </bean>
+    <bean id="allInOneStaticCall" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="staticMethod" value="de.is24.deadcode4j.mifb.Three.foo"/>
+    </bean>
+    <bean id="allInOneStaticCallWithValueAsText" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="staticMethod">
+            <value>de.is24.deadcode4j.mifb.Four.foo</value>
+        </property>
+    </bean>
+    <bean id="someOtherThing" class="de.is24.deadcode4j.mifb.Factory">
+        <property name="key" value="value"/>
+        <property name="targetClass" value="de.is24.deadcode4j.mifb.Four"/>
+    </bean>
+    <!-- CXF -->
+    <jaxws:endpoint id="jax1" implementor="de.is24.deadcode4j.jaxws.One"/>
+    <jaxws:endpoint id="jax2" implementorClass="de.is24.deadcode4j.jaxws.Two"/>
+    <jaxws:endpoint id="jax3">
+        <jaxws:implementor>de.is24.deadcode4j.jaxws.Three</jaxws:implementor>
+    </jaxws:endpoint>
+    <bean id="jax4">
+        <foo:something implementor="java.lang.Thread" implementorClass="java.lang.Thread"/>
+        <foo:implementor>de.is24.deadcode4j.jaxws.Four</foo:implementor>
+    </bean>
+    <!-- JobDetailBean -->
+    <bean id="simpleJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass" value="de.is24.deadcode4j.jdb.One"/>
+    </bean>
+    <bean id="nestedJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass">
+            <value>de.is24.deadcode4j.jdb.Two</value>
+        </property>
+    </bean>
+    <bean id="otherJob" class="de.is24.deadcode4j.jdb.Factory">
+        <property name="jobClass" value="de.is24.deadcode4j.jdb.Three"/>
+    </bean>
+    <!-- JobDetailFactoryBean -->
+    <bean id="simpleJobFactory" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+        <property name="jobClass" value="de.is24.deadcode4j.jdfb.One"/>
+    </bean>
+    <bean id="nestedJobFactory" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+        <property name="jobClass">
+            <value>de.is24.deadcode4j.jdfb.Two</value>
+        </property>
+    </bean>
+    <bean id="otherJobFactory" class="de.is24.deadcode4j.jdfb.Factory">
+        <property name="jobClass" value="de.is24.deadcode4j.jdfb.Three"/>
+    </bean>
+    <!-- view resolver -->
+    <bean id="simpleView" class="org.springframework.web.servlet.view.UrlBasedViewResolver">
+        <property name="viewClass" value="de.is24.deadcode4j.vr.One"/>
+    </bean>
+    <bean id="nestedView" class="org.springframework.web.servlet.view.UrlBasedViewResolver">
+        <property name="viewClass">
+            <value>de.is24.deadcode4j.vr.Two</value>
+        </property>
+    </bean>
+    <bean id="otherView" class="de.is24.deadcode4j.vr.ViewResolver">
+        <property name="viewClass" value="de.is24.deadcode4j.vr.Three"/>
+    </bean>
 </beans>
