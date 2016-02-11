@@ -11,7 +11,9 @@ import java.util.Collections;
 import java.util.EnumSet;
 
 import static java.util.Arrays.asList;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 public class A_DeadCodeLogger {
@@ -52,12 +54,39 @@ public class A_DeadCodeLogger {
     }
 
     @Test
-    public void logsThatAnExceptionOccurred() {
+    public void logsThatAnExceptionOccurredDuringFileAnalysis() {
         DeadCode deadCode = new DeadCode(exceptionAt(AnalysisStage.FILE_ANALYSIS), noClasses, noClasses);
 
         objectUnderTest.log(deadCode);
 
-        verify(logMock).warn("At least one file could not be parsed; analysis may be inaccurate!");
+        verify(logMock, times(1)).warn(anyString());
+    }
+
+    @Test
+    public void logsThatAnExceptionOccurredDuringGeneralSetup() {
+        DeadCode deadCode = new DeadCode(exceptionAt(AnalysisStage.GENERAL_SETUP), noClasses, noClasses);
+
+        objectUnderTest.log(deadCode);
+
+        verify(logMock, times(1)).error(anyString());
+    }
+
+    @Test
+    public void logsThatAnExceptionOccurredDuringModuleSetup() {
+        DeadCode deadCode = new DeadCode(exceptionAt(AnalysisStage.MODULE_SETUP), noClasses, noClasses);
+
+        objectUnderTest.log(deadCode);
+
+        verify(logMock, times(1)).warn(anyString());
+    }
+
+    @Test
+    public void logsThatAnExceptionOccurredDuringDeadCodeAnalysis() {
+        DeadCode deadCode = new DeadCode(exceptionAt(AnalysisStage.DEADCODE_ANALYSIS), noClasses, noClasses);
+
+        objectUnderTest.log(deadCode);
+
+        verify(logMock, times(1)).warn(anyString());
     }
 
     private EnumSet<AnalysisStage> noExceptions() {
