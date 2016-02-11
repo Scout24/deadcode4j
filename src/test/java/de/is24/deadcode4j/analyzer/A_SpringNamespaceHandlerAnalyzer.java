@@ -6,9 +6,9 @@ import mockit.integration.junit4.JMockit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -32,10 +32,10 @@ public final class A_SpringNamespaceHandlerAnalyzer extends AnAnalyzer<SpringNam
     }
 
     @Test
-    public void handlesException() throws Exception {
-        new MockUp<FileInputStream>() {
+    public void handlesIOExceptionWhenAnalyzingFile() {
+        new MockUp<Properties>() {
             @Mock
-            public void $init(File file) throws IOException {
+            public synchronized void load(InputStream inStream) throws IOException {
                 throw new IOException("JUnit");
             }
         };
