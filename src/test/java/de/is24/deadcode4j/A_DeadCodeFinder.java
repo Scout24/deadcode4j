@@ -1,6 +1,7 @@
 package de.is24.deadcode4j;
 
 import de.is24.deadcode4j.analyzer.AnalyzerAdapter;
+import de.is24.deadcode4j.junit.FileLoader;
 import de.is24.deadcode4j.junit.LoggingRule;
 import org.junit.Before;
 import org.junit.Rule;
@@ -78,7 +79,7 @@ public final class A_DeadCodeFinder {
             }
         });
 
-        DeadCode deadCode = objectUnderTest.findDeadCode(newArrayList(givenModule("A", new File("."))));
+        DeadCode deadCode = objectUnderTest.findDeadCode(newArrayList(givenModule("A", FileLoader.getFile("."))));
 
         assertThat(deadCode, is(notNullValue()));
         assertThat("Working directory should contain several files!", deadCode.getAnalyzedClasses(), hasSize(greaterThan(0)));
