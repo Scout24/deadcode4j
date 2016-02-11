@@ -2,7 +2,9 @@ package de.is24.deadcode4j.analyzer;
 
 import mockit.Mock;
 import mockit.MockUp;
+import mockit.integration.junit4.JMockit;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,6 +14,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.fail;
 
+@RunWith(JMockit.class)
 public final class A_SpringNamespaceHandlerAnalyzer extends AnAnalyzer<SpringNamespaceHandlerAnalyzer> {
 
     private static final String SPRING_HANDLER_FILE = "META-INF/spring.handlers";
