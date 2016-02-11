@@ -2,6 +2,7 @@ package de.is24.deadcode4j;
 
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -48,6 +49,16 @@ public final class A_Module {
         Iterable<Module> modules = Module.sort(unsortedModules);
 
         assertThat(modules, contains(z, c, y, b, x, a));
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void throwsExceptionIfSortingFails() {
+        ArrayList<Resource> dependencies = new ArrayList<Resource>();
+        Module a = givenModule("A", null, dependencies);
+        Module b = givenModule("B", a);
+        dependencies.add(Resource.of(b));
+
+        Module.sort(asList(a, b));
     }
 
 }

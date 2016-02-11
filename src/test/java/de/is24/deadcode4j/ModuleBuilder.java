@@ -4,6 +4,7 @@ import com.google.common.base.Function;
 
 import javax.annotation.Nullable;
 import java.io.File;
+import java.util.Collection;
 import java.util.Collections;
 
 import static com.google.common.collect.Lists.transform;
@@ -13,13 +14,17 @@ public final class ModuleBuilder {
     private ModuleBuilder() {
     }
 
-    public static Module givenModule(String moduleId, File repository, Module... dependencies) {
+    public static Module givenModule(String moduleId, File repository, Collection<Resource> dependencies) {
         return new Module(
                 moduleId,
                 "UTF-8",
-                transform(asList(dependencies), toResource()),
+                dependencies,
                 repository == null ? null : new Repository(repository),
                 Collections.<Repository>emptyList());
+    }
+
+    public static Module givenModule(String moduleId, File repository, Module... dependencies) {
+        return givenModule(moduleId, repository, transform(asList(dependencies), toResource()));
     }
 
     public static Module givenModule(String moduleId, Module... dependencies) {
