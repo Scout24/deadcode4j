@@ -192,6 +192,7 @@
                     <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
                     <debug>false</debug>
                     <localRepositoryPath>${invoker.localRepositoryPath}</localRepositoryPath>
+                    <parallelThreads>3</parallelThreads>
                     <postBuildHookScript>verify</postBuildHookScript>
                     <streamLogs>true</streamLogs>
                 </configuration>
