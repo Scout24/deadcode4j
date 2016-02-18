@@ -60,8 +60,6 @@
         <!-- own stuff -->
         <testScenarios.directory>${java.io.tmpdir}/deadcode4j</testScenarios.directory>
         <!-- Dependency Management -->
-        <version.findbugs>2.0.3</version.findbugs>
-        <version.junit>4.11</version.junit>
         <version.maven>3.2.2</version.maven>
     </properties>
 
@@ -394,7 +392,7 @@
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>${version.junit}</version>
+                <version>4.12</version>
             </dependency>
             <dependency>
                 <!-- This is needed to fix a compatibility issue between maven-plugin-api and guava -->
@@ -415,14 +413,8 @@
         </dependency>
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
-            <version>${version.findbugs}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.findbugs</groupId>
             <artifactId>annotations</artifactId>
-            <version>${version.findbugs}</version>
+            <version>2.0.3</version>
             <scope>provided</scope>
         </dependency>
 
