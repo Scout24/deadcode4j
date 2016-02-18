@@ -231,6 +231,7 @@ public final class A_UsageStatisticsManager {
         assertThatStatisticsWereNotSent();
     }
 
+    @SuppressWarnings("deprecation") // there's no non-deprecated constructor for MavenSession :|
     private void givenModes(NetworkModes networkMode, InteractivityModes interactivity) throws IllegalAccessException {
         DefaultMavenExecutionRequest mavenExecutionRequest = new DefaultMavenExecutionRequest();
         mavenExecutionRequest.setOffline(NetworkModes.OFFLINE == networkMode);
@@ -308,13 +309,13 @@ public final class A_UsageStatisticsManager {
         }
     }
 
-    private static enum NetworkModes {
+    private enum NetworkModes {
         ONLINE, OFFLINE
 
 
     }
 
-    private static enum InteractivityModes {
+    private enum InteractivityModes {
         INTERACTIVE, NON_INTERACTIVE
     }
 
