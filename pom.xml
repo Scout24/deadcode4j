@@ -60,7 +60,7 @@
         <!-- own stuff -->
         <testScenarios.directory>${java.io.tmpdir}/deadcode4j</testScenarios.directory>
         <!-- Dependency Management -->
-        <version.maven>3.3.9</version.maven>
+        <version.maven>3.2.5</version.maven>
     </properties>
 
     <build>
