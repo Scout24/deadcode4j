@@ -190,6 +190,7 @@
                     <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
                     <debug>false</debug>
                     <localRepositoryPath>${invoker.localRepositoryPath}</localRepositoryPath>
+                    <parallelThreads>3</parallelThreads>
                     <postBuildHookScript>verify</postBuildHookScript>
                     <streamLogs>true</streamLogs>
                 </configuration>
@@ -398,7 +399,7 @@
                 <groupId>org.sonatype.sisu</groupId>
                 <artifactId>sisu-guice</artifactId>
                 <classifier>no_aop</classifier>
-                <version>3.2.6</version>
+                <version>3.2.2</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -407,13 +408,13 @@
         <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
             <artifactId>maven-plugin-annotations</artifactId>
-            <version>3.4</version>
+            <version>3.3</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>annotations</artifactId>
-            <version>3.0.1</version>
+            <version>2.0.3</version>
             <scope>provided</scope>
         </dependency>
 
@@ -450,12 +451,12 @@
         <dependency>
             <groupId>org.codehaus.plexus</groupId>
             <artifactId>plexus-component-annotations</artifactId>
-            <version>1.6</version>
+            <version>1.5.5</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.plexus</groupId>
             <artifactId>plexus-utils</artifactId>
-            <version>3.0.22</version>
+            <version>3.0.17</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.plexus</groupId>
@@ -465,18 +466,18 @@
         <dependency>
             <groupId>org.eclipse.aether</groupId>
             <artifactId>aether-api</artifactId>
-            <version>1.1.0</version>
+            <version>1.0.0.v20140518</version>
         </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.16</version>
+            <version>1.7.7</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>19.0</version>
+            <version>17.0</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -486,7 +487,7 @@
         <dependency>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
-            <version>3.20.0-GA</version>
+            <version>3.18.2-GA</version>
         </dependency>
         <dependency>
             <groupId>com.github.javaparser</groupId>
@@ -514,7 +515,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>1.10.19</version>
+            <version>1.9.5</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -527,7 +528,7 @@
         <dependency>
             <groupId>org.apache.maven.plugin-testing</groupId>
             <artifactId>maven-plugin-testing-harness</artifactId>
-            <version>3.3.0</version>
+            <version>3.1.0</version>
             <scope>test</scope>
         </dependency>
         <!-- required to make @MojoRule work -->
@@ -566,7 +567,7 @@
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-commons</artifactId>
-            <version>1.11.2.RELEASE</version>
+            <version>1.8.0.RELEASE</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
