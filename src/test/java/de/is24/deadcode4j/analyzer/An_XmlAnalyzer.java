@@ -1,12 +1,17 @@
 package de.is24.deadcode4j.analyzer;
 
 import de.is24.deadcode4j.AnalysisContext;
-import mockit.Mock;
-import mockit.MockUp;
-import mockit.integration.junit4.JMockit;
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.mockito.internal.stubbing.answers.ThrowsException;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
@@ -21,11 +26,16 @@ import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-@RunWith(JMockit.class)
+@PrepareForTest(SAXParserFactory.class)
+@RunWith(PowerMockRunner.class)
 public class An_XmlAnalyzer extends AnAnalyzer<XmlAnalyzer> {
 
     private static final String XML_FILE = "de/is24/deadcode4j/analyzer/empty.xml";
@@ -72,13 +82,15 @@ public class An_XmlAnalyzer extends AnAnalyzer<XmlAnalyzer> {
     }
 
     @Test
-    public void handlesIOExceptionWhenAnalyzingFile() {
-        new MockUp<SAXParser>() {
-            @Mock
-            public void parse(InputStream is, DefaultHandler dh) throws SAXException, IOException {
-                throw new IOException("JUnit");
-            }
-        };
+    public void handlesIOExceptionWhenAnalyzingFile() throws Exception {
+        SAXParser saxMock = mock(SAXParser.class);
+        doThrow(new IOException("JUnit")).when(saxMock).parse(Mockito.any(InputStream.class), Mockito.any(DefaultHandler.class));
+        SAXParserFactory saxFactoryMock = mock(SAXParserFactory.class);
+        when(saxFactoryMock.newSAXParser()).thenReturn(saxMock);
+        PowerMockito.mockStatic(SAXParserFactory.class);
+        when(SAXParserFactory.newInstance()).thenReturn(saxFactoryMock);
+
+        initAnalyzer();
 
         try {
             analyzeFile(XML_FILE);
@@ -89,26 +101,14 @@ public class An_XmlAnalyzer extends AnAnalyzer<XmlAnalyzer> {
     }
 
     @Test(expected = RuntimeException.class)
-    public void handlesSaxExceptionInConstructor() {
-        new MockUp<SAXParserFactory>() {
-            @Mock
-            public SAXParserFactory newInstance() {
-                return new SAXParserFactory() {
-                    @Override
-                    public SAXParser newSAXParser() throws ParserConfigurationException, SAXException {
-                        throw new SAXException("JUnit");
-                    }
-                    @Override
-                    public void setFeature(String name, boolean value) throws ParserConfigurationException, SAXNotRecognizedException, SAXNotSupportedException { }
-                    @Override
-                    public boolean getFeature(String name) throws ParserConfigurationException, SAXNotRecognizedException, SAXNotSupportedException {
-                        return false;
-                    }
-                };
-            }
-        };
+    public void handlesSaxExceptionInConstructor() throws ParserConfigurationException, SAXException {
+        SAXParserFactory saxFactoryMock = mock(SAXParserFactory.class);
+        when(saxFactoryMock.newSAXParser()).thenThrow(new SAXException("JUnit"));
+        PowerMockito.mockStatic(SAXParserFactory.class);
+        when(SAXParserFactory.newInstance()).thenReturn(saxFactoryMock);
 
-        createAnalyzer();
+        initAnalyzer();
+
         fail("Should not be able to construct XmlAnalyzer!");
     }
 
