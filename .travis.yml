@@ -1,10 +1,19 @@
 sudo: false
 language: java
 jdk:
-  - openjdk7
   - openjdk6
+  - openjdk7
   - oraclejdk7
   - oraclejdk8
+env:
+  - MVN_VERSION=3.0.5
+  - MVN_VERSION=3.1.1
+  - MVN_VERSION=3.2.5
+  - MVN_VERSION=3.3.9
+matrix:
+  exclude:
+    - jdk: openjdk6
+      env: MVN_VERSION=3.3.9
 
 cache:
   apt: false
@@ -14,6 +23,13 @@ cache:
 before_cache: rm -rf $HOME/.m2/repository/de/is24/mavenplugins/deadcode4j-maven-plugin/
 
 before_install:
+  # install Maven according to build matrix
+  - MVN_URL=https://archive.apache.org/dist/maven/maven-3/$MVN_VERSION/binaries/apache-maven-$MVN_VERSION-bin.tar.gz
+  - wget -q -O /tmp/maven.tar.gz $MVN_URL
+  - tar xzf /tmp/maven.tar.gz
+  - export M2_HOME=`pwd`/apache-maven-$MVN_VERSION
+  - export PATH=$M2_HOME/bin:$PATH
+  - mvn -v
   # https://github.com/travis-ci/travis-ci/issues/1689 & https://github.com/travis-ci/travis-ci/issues/4613
   - export MAVEN_SKIP_RC=true
 
@@ -21,8 +37,8 @@ install:
   #attempt to download all dependencies in the install phase; due to http://jira.codehaus.org/browse/MDEP-82, dependency:go-offline is useless
   - mvn -B -U clean verify org.apache.maven.plugins:maven-war-plugin:2.4:help -Dinvoker.skip=true -Dmaven.main.skip=true -Dmaven.plugin.skip=true -Dmaven.test.skip=true -PenableCoverage,travis
   # surefire seems to add these dependencies dynamically
-  - mvn -B dependency:get -Dartifact=org.apache.maven.surefire:surefire-junit4:2.17
-  - mvn -B dependency:get -Dartifact=org.apache.maven.surefire:surefire-junit47:2.17
+  - mvn -B org.apache.maven.plugins:maven-dependency-plugin:2.10:get -Dartifact=org.apache.maven.surefire:surefire-junit4:2.17
+  - mvn -B org.apache.maven.plugins:maven-dependency-plugin:2.10:get -Dartifact=org.apache.maven.surefire:surefire-junit47:2.17
 script: mvn -B -o clean verify -PenableCoverage,travis
 after_success: mvn -B jacoco:report coveralls:jacoco
 
