@@ -23,3 +23,5 @@ Have a look at the [wiki](https://github.com/ImmobilienScout24/deadcode4j/wiki) 
 read about the available [goals](https://github.com/ImmobilienScout24/deadcode4j/wiki/deadcode4j-v2.1.0%3A-Usage),
 understand the [configuration](https://github.com/ImmobilienScout24/deadcode4j/wiki/deadcode4j-v2.1.0%3A-Configuration)
 or learn *deadcode4j*'s history and principles.
+
+*deadcode4j* is tested with Maven 3.0.5, 3.1.1, 3.2.5 & 3.3.9.
