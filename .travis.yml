@@ -29,7 +29,6 @@ before_install:
   - tar xzf /tmp/maven.tar.gz
   - export M2_HOME=`pwd`/apache-maven-$MVN_VERSION
   - export PATH=$M2_HOME/bin:$PATH
-  - mvn -v
   # https://github.com/travis-ci/travis-ci/issues/1689 & https://github.com/travis-ci/travis-ci/issues/4613
   - export MAVEN_SKIP_RC=true
 
