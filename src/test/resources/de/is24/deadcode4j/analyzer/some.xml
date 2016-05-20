@@ -25,4 +25,5 @@
     <restrictedElement locked="true">
         <nestedElementInRestriction>de.is24.deadcode4j.LockedClassInNestedElement</nestedElementInRestriction>
     </restrictedElement>
+    <otherRestrictedElement attributeWithClass="de.is24.deadcode4j.OtherUnlockedClassInAttribute" locked="false" />
 </root>

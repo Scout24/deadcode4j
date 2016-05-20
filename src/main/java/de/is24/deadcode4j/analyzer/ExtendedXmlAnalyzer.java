@@ -51,6 +51,16 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
         this.rootElement = rootElement;
     }
 
+    /**
+     * Creates a new <code>ExtendedXmlAnalyzer</code> that is not restricted to a specific XML root element.
+     *
+     * @see #ExtendedXmlAnalyzer(String, String, String)
+     * @since 2.1.0
+     */
+    protected ExtendedXmlAnalyzer(@Nonnull String dependerId, @Nonnull String endOfFileName) {
+        this(dependerId, endOfFileName, null);
+    }
+
     @Override
     public String toString() {
         StringBuilder buffy = new StringBuilder(1024).append(super.toString());
@@ -70,6 +80,7 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
      * Be sure to call {@link Path#registerTextAsClass()} or {@link Path#registerAttributeAsClass(String)} eventually.
      *
      * @param name the name of the XML element to match
+     * @since 2.1.0
      */
     @Nonnull
     public final Path anyElementNamed(@Nonnull String name) {
@@ -77,13 +88,13 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
     }
 
     /**
-     * Creates a new <code>ExtendedXmlAnalyzer</code> that is not restricted to a specific XML root element.
+     * Sets up a path to match any element.
+     * Be sure to call {@link Path#registerTextAsClass()} or {@link Path#registerAttributeAsClass(String)} eventually.
      *
-     * @see #ExtendedXmlAnalyzer(String, String, String)
      * @since 2.1.0
      */
-    protected ExtendedXmlAnalyzer(@Nonnull String dependerId, @Nonnull String endOfFileName) {
-        this(dependerId, endOfFileName, null);
+    public Path anyElement() {
+        return new Path(new Element());
     }
 
     @Nonnull
@@ -205,26 +216,30 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
     @Immutable
     private static class Element {
         @Nonnull
-        private final String name;
+        private final Optional<String> name;
         @Nonnull
         private final Map<String, String> attributeRestrictions;
 
+        Element() {
+            this.name = Optional.absent();
+            attributeRestrictions = emptyMap();
+        }
+
         Element(@Nonnull String name) {
             checkArgument(name.trim().length() > 0, "The Element's [name] must be set!");
-            this.name = name;
+            this.name = Optional.of(name);
             attributeRestrictions = emptyMap();
         }
 
         private Element(@Nonnull Element original, @Nonnull String attribute, @Nonnull String value) {
             name = original.name;
-            HashMap<String, String> newAttributeRestrictions = new HashMap<String, String>(original.attributeRestrictions);
-            newAttributeRestrictions.put(attribute, value);
-            attributeRestrictions = newAttributeRestrictions;
+            attributeRestrictions = new HashMap<String, String>(original.attributeRestrictions);
+            attributeRestrictions.put(attribute, value);
         }
 
         @Override
         public String toString() {
-            StringBuilder buffy = new StringBuilder(name);
+            StringBuilder buffy = new StringBuilder(name.or("*"));
             if (!attributeRestrictions.isEmpty()) {
                 buffy.append("[");
                 for (Map.Entry<String, String> entry : attributeRestrictions.entrySet()) {
@@ -242,7 +257,10 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
         }
 
         boolean matches(@Nonnull XmlElement xmlElement) {
-            return name.equals(xmlElement.name) && matchesAttributes(xmlElement);
+            if (name.isPresent() && !name.get().equals(xmlElement.name)) {
+                return false;
+            }
+            return matchesAttributes(xmlElement);
         }
 
         private boolean matchesAttributes(@Nonnull XmlElement xmlElement) {

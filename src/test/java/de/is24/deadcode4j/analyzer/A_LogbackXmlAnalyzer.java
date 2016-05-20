@@ -14,9 +14,13 @@ public class A_LogbackXmlAnalyzer extends AnAnalyzer<LogbackXmlAnalyzer> {
         analyzeFile("de/is24/deadcode4j/analyzer/logback.xml");
 
         assertThatDependenciesAreReported(
-                "dummy.logback.Property",
-                "dummy.logback.ContextListener",
-                "dummy.logback.StatusListener",
-                "dummy.logback.Appender");
+                "de.is24.deadcode4j.logback.Appender",
+                "de.is24.deadcode4j.logback.ContextListener",
+                "de.is24.deadcode4j.logback.CustomAction",
+                "de.is24.deadcode4j.logback.CustomClass",
+                "de.is24.deadcode4j.logback.Property",
+                "de.is24.deadcode4j.logback.StatusListener"
+        );
     }
+
 }
