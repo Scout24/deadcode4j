@@ -5,6 +5,7 @@ import com.google.common.collect.FluentIterable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -136,6 +137,16 @@ public final class Utils {
             throw new NullPointerException();
         }
         return reference;
+    }
+
+    /**
+     * Indicates if a <code>String</code> is either <code>null</code>, empty or consists of whitespace only.
+     *
+     * @since 2.2.0
+     */
+    public static boolean isBlank(@Nullable String string) {
+        // we simply delegate this - but we have it in one place
+        return StringUtils.isBlank(string);
     }
 
 }

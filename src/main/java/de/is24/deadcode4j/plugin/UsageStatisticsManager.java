@@ -118,7 +118,7 @@ public class UsageStatisticsManager {
         if (logger.isDebugEnabled()) {
             InputStream inputStream = urlConnection.getInputStream();
             try {
-                List<String> response = IOUtils.readLines(inputStream);
+                List<String> response = IOUtils.readLines(inputStream, "UTF-8");
                 for (String line : response) {
                     logger.debug(line);
                 }
@@ -187,31 +187,31 @@ public class UsageStatisticsManager {
                     append(deadCodeStatistics.getUsageStatisticsComment());
         }
         buffy.append("\n  value for ignoreMainClasses: ").
-                append(deadCodeStatistics.config_ignoreMainClasses);
-        buffy.append("\n  value for skipUpdateCheck: ").
-                append(deadCodeStatistics.config_skipUpdateCheck);
-        buffy.append("\n  number of classes to ignore: ").
-                append(deadCodeStatistics.config_numberOfClassesToIgnore);
-        buffy.append("\n  number of custom annotations: ").
-                append(deadCodeStatistics.config_numberOfCustomAnnotations);
-        buffy.append("\n  number of custom interfaces: ").
-                append(deadCodeStatistics.config_numberOfCustomInterfaces);
-        buffy.append("\n  number of custom superclasses: ").
-                append(deadCodeStatistics.config_numberOfCustomSuperclasses);
-        buffy.append("\n  number of custom XML definitions: ").
-                append(deadCodeStatistics.config_numberOfCustomXmlDefinitions);
-        buffy.append("\n  number of modules to skip: ").
-                append(deadCodeStatistics.config_numberOfModulesToSkip);
+                append(deadCodeStatistics.config_ignoreMainClasses)
+        .append("\n  value for skipUpdateCheck: ").
+                append(deadCodeStatistics.config_skipUpdateCheck)
+        .append("\n  number of classes to ignore: ").
+                append(deadCodeStatistics.config_numberOfClassesToIgnore)
+        .append("\n  number of custom annotations: ").
+                append(deadCodeStatistics.config_numberOfCustomAnnotations)
+        .append("\n  number of custom interfaces: ").
+                append(deadCodeStatistics.config_numberOfCustomInterfaces)
+        .append("\n  number of custom superclasses: ").
+                append(deadCodeStatistics.config_numberOfCustomSuperclasses)
+        .append("\n  number of custom XML definitions: ").
+                append(deadCodeStatistics.config_numberOfCustomXmlDefinitions)
+        .append("\n  number of modules to skip: ").
+                append(deadCodeStatistics.config_numberOfModulesToSkip)
 
-        buffy.append("\nand gathered those results: ");
-        buffy.append("\n  analyzed classes: ").append(deadCodeStatistics.numberOfAnalyzedClasses);
-        buffy.append("\n  analyzed modules: ").append(deadCodeStatistics.numberOfAnalyzedModules);
-        buffy.append("\n  found dead classes: ").append(deadCodeStatistics.numberOfDeadClassesFound);
+        .append("\nand gathered those results: ")
+        .append("\n  analyzed classes: ").append(deadCodeStatistics.numberOfAnalyzedClasses)
+        .append("\n  analyzed modules: ").append(deadCodeStatistics.numberOfAnalyzedModules)
+        .append("\n  found dead classes: ").append(deadCodeStatistics.numberOfDeadClassesFound);
 
         return buffy;
     }
 
-    public static class DeadCodeStatistics {
+    static final class DeadCodeStatistics {
         private final Boolean skipSendingUsageStatistics;
         private String usageStatisticsComment;
         public int numberOfAnalyzedClasses;

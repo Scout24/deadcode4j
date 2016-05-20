@@ -16,6 +16,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Iterables.getLast;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static de.is24.deadcode4j.Utils.checkNotNull;
+import static de.is24.deadcode4j.Utils.isBlank;
 import static java.util.Collections.emptyMap;
 
 /**
@@ -63,12 +64,11 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
 
     @Override
     public String toString() {
-        StringBuilder buffy = new StringBuilder(1024).append(super.toString());
-        buffy.append("; registered XPaths are:");
+        StringBuilder buffy = new StringBuilder(1024).append(super.toString()).append("; registered XPaths are:");
         for (XPath xPath : pathsToMatch) {
-            buffy.append("\n");
+            buffy.append('\n');
             if (rootElement != null) {
-                buffy.append("/").append(rootElement);
+                buffy.append('/').append(rootElement);
             }
             buffy.append(xPath);
         }
@@ -226,7 +226,7 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
         }
 
         Element(@Nonnull String name) {
-            checkArgument(name.trim().length() > 0, "The Element's [name] must be set!");
+            checkArgument(isBlank(name), "The Element's [name] must be set!");
             this.name = Optional.of(name);
             attributeRestrictions = emptyMap();
         }
@@ -241,12 +241,12 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
         public String toString() {
             StringBuilder buffy = new StringBuilder(name.or("*"));
             if (!attributeRestrictions.isEmpty()) {
-                buffy.append("[");
+                buffy.append('[');
                 for (Map.Entry<String, String> entry : attributeRestrictions.entrySet()) {
-                    buffy.append("@").append(entry.getKey()).append("='").append(entry.getValue()).append("' and ");
+                    buffy.append('@').append(entry.getKey()).append("='").append(entry.getValue()).append("' and ");
                 }
                 buffy.setLength(buffy.length() - 5);
-                buffy.append("]");
+                buffy.append(']');
             }
             return buffy.toString();
         }
@@ -351,7 +351,7 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
         public String toString() {
             StringBuilder buffy = new StringBuilder("//");
             for (Element pathElement : pathElements) {
-                buffy.append(pathElement).append("/");
+                buffy.append(pathElement).append('/');
             }
             buffy.setLength(buffy.length() - 1);
             return buffy.toString();

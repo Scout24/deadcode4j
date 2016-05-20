@@ -52,12 +52,13 @@ public final class SpringWebXmlAnalyzer extends BaseWebXmlAnalyzer {
                 } else if ("contextConfigLocation".equals(param.getName())) {
                     for (String configLocation : param.getValue().split(",")) {
                         configLocation = configLocation.trim();
-                        if (!configLocation.isEmpty()) {
-                            Optional<String> referencedClass =
-                                    classPoolAccessorFor(analysisContext).resolveClass(configLocation);
-                            if (referencedClass.isPresent()) {
-                                analysisContext.addDependencies("_Spring-ContextInitializer_", referencedClass.get());
-                            }
+                        if (configLocation.isEmpty()) {
+                            continue;
+                        }
+                        Optional<String> referencedClass =
+                                classPoolAccessorFor(analysisContext).resolveClass(configLocation);
+                        if (referencedClass.isPresent()) {
+                            analysisContext.addDependencies("_Spring-ContextInitializer_", referencedClass.get());
                         }
                     }
                 }

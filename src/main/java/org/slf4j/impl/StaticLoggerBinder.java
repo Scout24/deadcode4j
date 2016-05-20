@@ -19,15 +19,15 @@ public final class StaticLoggerBinder implements LoggerFactoryBinder {
 
     private static final StaticLoggerBinder INSTANCE = new StaticLoggerBinder();
 
-    @Nonnull
-    public static StaticLoggerBinder getSingleton() {
-        return INSTANCE;
-    }
-
     private final ThreadLocal<ILoggerFactory> loggerFactoryForThread = new ThreadLocal<ILoggerFactory>();
 
     private StaticLoggerBinder() {
         super();
+    }
+
+    @Nonnull
+    public static StaticLoggerBinder getSingleton() {
+        return INSTANCE;
     }
 
     /**

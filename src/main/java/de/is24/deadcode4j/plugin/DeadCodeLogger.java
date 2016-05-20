@@ -45,6 +45,7 @@ class DeadCodeLogger {
                     break;
                 default:
                     log.warn("An unexpected error occurred.");
+                    break;
             }
         }
     }
