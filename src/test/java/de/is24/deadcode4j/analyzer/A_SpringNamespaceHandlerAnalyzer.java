@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doThrow;
 
+@NotThreadSafe
 @PrepareForTest({SpringNamespaceHandlerAnalyzer.class})
 @RunWith(PowerMockRunner.class)
 public final class A_SpringNamespaceHandlerAnalyzer extends AnAnalyzer<SpringNamespaceHandlerAnalyzer> {
