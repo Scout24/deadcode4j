@@ -61,7 +61,7 @@ public abstract class BaseWebXmlAnalyzer extends XmlAnalyzer {
         final Deque<String> deque = new ArrayDeque<String>();
         final List<Param> initParams = new ArrayList<Param>();
         final Map<String, String> texts = new HashMap<String, String>();
-        StringBuilder buffer;
+        final Deque<StringBuilder> textBuffers = new ArrayDeque<StringBuilder>();
         final WebXmlHandler webXmlHandler;
 
         WebXmlAdapter(WebXmlHandler webXmlHandler) {
@@ -72,14 +72,14 @@ public abstract class BaseWebXmlAnalyzer extends XmlAnalyzer {
         public void startElement(String uri, String localName, String qName, Attributes attributes) {
             deque.add(localName);
             if (isNodeWithText()) {
-                buffer = new StringBuilder(128);
+                textBuffers.addLast(new StringBuilder(128));
             }
         }
 
         @Override
         public void characters(char[] ch, int start, int length) {
             if (isNodeWithText()) {
-                buffer.append(new String(ch, start, length).trim());
+                textBuffers.getLast().append(new String(ch, start, length).trim());
             }
         }
 
@@ -147,7 +147,7 @@ public abstract class BaseWebXmlAnalyzer extends XmlAnalyzer {
         }
 
         void storeCharacters(String localName) {
-            texts.put(localName, buffer.toString());
+            texts.put(localName, textBuffers.removeLast().toString());
         }
 
         String getText(String localName) {
