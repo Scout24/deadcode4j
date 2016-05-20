@@ -104,11 +104,12 @@
                     <version>3.0.3</version>
                     <configuration>
                         <excludeFilterFile>config/FindBugsExcludeFilter.xml</excludeFilterFile>
+                        <fork>false</fork>
                     </configuration>
                 </plugin>
                 <plugin>
                     <artifactId>maven-pmd-plugin</artifactId>
-                    <version>3.1</version>
+                    <version>3.6</version>
                     <configuration>
                         <excludeRoots>
                             <excludeRoot>${project.build.directory}/generated-sources/plugin</excludeRoot>

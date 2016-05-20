@@ -12,7 +12,7 @@
         <exclude name="AvoidReassigningParameters"/>
         <exclude name="ConfusingTernary"/>
         <exclude name="EmptyMethodInAbstractClassShouldBeAbstract"/>
-        <exclude name="UncommentedEmptyMethod"/>
+        <exclude name="UncommentedEmptyMethodBody"/>
     </rule>
     <rule ref="rulesets/java/empty.xml"/>
     <rule ref="rulesets/java/finalizers.xml"/>
