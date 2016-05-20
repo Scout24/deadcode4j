@@ -87,7 +87,7 @@
                     <version>2.17</version>
                     <configuration>
                         <parallel>classes</parallel>
-                        <parallelTestsTimeoutForcedInSeconds>8</parallelTestsTimeoutForcedInSeconds>
+                        <parallelTestsTimeoutForcedInSeconds>16</parallelTestsTimeoutForcedInSeconds>
                         <perCoreThreadCount>false</perCoreThreadCount>
                         <runOrder>random</runOrder>
                         <test>**/A_*.java,**/An_*.java</test>
