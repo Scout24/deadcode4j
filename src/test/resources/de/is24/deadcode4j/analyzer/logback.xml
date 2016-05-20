@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" debug="true">
+    <define name="prop" class="de.is24.deadcode4j.logback.Property"/>
+    <contextListener class="de.is24.deadcode4j.logback.ContextListener"/>
+    <statusListener class="de.is24.deadcode4j.logback.StatusListener"/>
+    <appender name="APPENDER" class="de.is24.deadcode4j.logback.Appender"/>
+    <myTag class="de.is24.deadcode4j.logback.CustomClass"/>
+    <myAction actionClass="de.is24.deadcode4j.logback.CustomAction"/>
+    <root level="WARN">
+        <appender-ref ref="APPENDER"/>
+    </root>
+</configuration>
