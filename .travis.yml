@@ -36,8 +36,7 @@ install:
   #attempt to download all dependencies in the install phase; due to http://jira.codehaus.org/browse/MDEP-82, dependency:go-offline is useless
   - mvn -B -U clean verify org.apache.maven.plugins:maven-war-plugin:2.4:help -Dinvoker.skip=true -Dmaven.main.skip=true -Dmaven.plugin.skip=true -Dmaven.test.skip=true -PenableCoverage,travis
   # surefire seems to add these dependencies dynamically
-  - mvn -B org.apache.maven.plugins:maven-dependency-plugin:2.10:get -Dartifact=org.apache.maven.surefire:surefire-junit4:2.17
-  - mvn -B org.apache.maven.plugins:maven-dependency-plugin:2.10:get -Dartifact=org.apache.maven.surefire:surefire-junit47:2.17
+  - mvn -B org.apache.maven.plugins:maven-dependency-plugin:2.10:get -Dartifact=org.apache.maven.surefire:surefire-junit47:2.19.1
 script: mvn -B -o clean verify -PenableCoverage,travis
 after_success: mvn -B jacoco:report coveralls:jacoco
 
