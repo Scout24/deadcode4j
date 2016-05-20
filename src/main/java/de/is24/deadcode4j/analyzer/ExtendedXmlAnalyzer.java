@@ -16,7 +16,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Iterables.getLast;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static de.is24.deadcode4j.Utils.checkNotNull;
-import static de.is24.deadcode4j.Utils.isBlank;
+import static de.is24.deadcode4j.Utils.isNotBlank;
 import static java.util.Collections.emptyMap;
 
 /**
@@ -226,7 +226,7 @@ public abstract class ExtendedXmlAnalyzer extends XmlAnalyzer {
         }
 
         Element(@Nonnull String name) {
-            checkArgument(isBlank(name), "The Element's [name] must be set!");
+            checkArgument(isNotBlank(name), "The Element's [name] must be set!");
             this.name = Optional.of(name);
             attributeRestrictions = emptyMap();
         }

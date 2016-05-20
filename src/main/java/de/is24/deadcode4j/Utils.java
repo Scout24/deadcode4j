@@ -140,13 +140,13 @@ public final class Utils {
     }
 
     /**
-     * Indicates if a <code>String</code> is either <code>null</code>, empty or consists of whitespace only.
+     * Indicates if a <code>String</code> is neither <code>null</code>, empty, nor consists of whitespace only.
      *
      * @since 2.2.0
      */
-    public static boolean isBlank(@Nullable String string) {
+    public static boolean isNotBlank(@Nullable String string) {
         // we simply delegate this - but we have it in one place
-        return StringUtils.isBlank(string);
+        return StringUtils.isNotBlank(string);
     }
 
 }

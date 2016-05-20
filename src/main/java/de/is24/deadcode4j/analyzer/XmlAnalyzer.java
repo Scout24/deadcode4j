@@ -13,7 +13,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static de.is24.deadcode4j.Utils.isBlank;
+import static de.is24.deadcode4j.Utils.isNotBlank;
 
 /**
  * Serves as a base class with which to analyze XML files.
@@ -40,7 +40,7 @@ public abstract class XmlAnalyzer extends AnalyzerAdapter {
         } catch (Exception e) {
             throw new RuntimeException("Failed to set up XML parser!", e);
         }
-        checkArgument(isBlank(endOfFileName), "[endOfFileName] must be set!");
+        checkArgument(isNotBlank(endOfFileName), "[endOfFileName] must be set!");
         this.endOfFileName = endOfFileName;
     }
 

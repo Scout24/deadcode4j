@@ -16,7 +16,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
-import static de.is24.deadcode4j.Utils.isBlank;
+import static de.is24.deadcode4j.Utils.isNotBlank;
 
 /**
  * Serves as simple base class with which to analyze XML files by defining which element nodes' text or attributes
@@ -105,7 +105,7 @@ public abstract class SimpleXmlAnalyzer extends XmlAnalyzer {
         private String attributeToReportAsClass;
 
         public Element(@Nonnull String name) {
-            checkArgument(isBlank(name), "The element's [name] must be set!");
+            checkArgument(isNotBlank(name), "The element's [name] must be set!");
             this.name = name;
         }
 
@@ -115,8 +115,8 @@ public abstract class SimpleXmlAnalyzer extends XmlAnalyzer {
          * @since 1.5
          */
         public Element withAttributeValue(@Nonnull String attributeName, @Nonnull String requiredValue) {
-            checkArgument(isBlank(attributeName), "[attributeName] must be given!");
-            checkArgument(isBlank(requiredValue), "[requiredValue] must be given!");
+            checkArgument(isNotBlank(attributeName), "[attributeName] must be given!");
+            checkArgument(isNotBlank(requiredValue), "[requiredValue] must be given!");
             this.requiredAttributeValues.put(attributeName, requiredValue);
             return this;
         }
@@ -134,7 +134,7 @@ public abstract class SimpleXmlAnalyzer extends XmlAnalyzer {
         }
 
         void setAttributeToReportAsClass(@Nonnull String attributeName) {
-            checkArgument(isBlank(attributeName), "[attributeName] must be given!");
+            checkArgument(isNotBlank(attributeName), "[attributeName] must be given!");
             checkState(this.attributeToReportAsClass == null,
                     "Already registered [" + this.attributeToReportAsClass + "] as attribute to report as class!");
             this.attributeToReportAsClass = attributeName;
