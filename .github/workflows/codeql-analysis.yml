@@ -1,0 +1,31 @@
+name: "CodeQL"
+
+on:
+  # workflow_dispatch enables manual triggering of the workflow
+  workflow_dispatch:
+  schedule:
+  - cron: '35 13 * * 2'
+env:
+  FAST_EMAIL: ${{ secrets.FAST_EMAIL }}
+  FAST_USER: ${{ secrets.FAST_USER }}
+  FAST_TOKEN: ${{ secrets.FAST_TOKEN }}
+  FAST_HTTPAUTH: ${{ secrets.FAST_HTTPAUTH }}
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+    - name: S24 static application security testing (SAST) action
+      uses: scout24/s24-sast-action@v1
+      with:
+        languages: java
+        fast_user: ${{ env.FAST_USER }}
+        fast_token: ${{ env.FAST_TOKEN }}
+        java_version: '11'
+
